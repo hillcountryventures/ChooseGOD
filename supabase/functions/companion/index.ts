@@ -40,6 +40,26 @@ interface UserContext {
   }>;
   pendingObedienceSteps: Array<{ id: string; commitment: string }>;
   currentSeason?: string;
+  onboardingResponses?: {
+    lifeAreaFocus?: string;
+    timeAvailable?: string;
+    experienceLevel?: string;
+    lifeStage?: string;
+  };
+}
+
+// Devotional-specific context from the client
+interface DevotionalContext {
+  seriesTitle?: string;
+  dayNumber?: number;
+  scriptureRefs?: Array<{
+    book: string;
+    chapter: number;
+    verseStart: number;
+    verseEnd?: number;
+  }>;
+  reflectionQuestions?: string[];
+  prayerFocus?: string;
 }
 
 // Tool definitions for the LLM
@@ -217,7 +237,8 @@ const spiritualTools = [
 function buildSystemPrompt(
   context: UserContext,
   mode: ChatMode,
-  relevantVerses: string
+  relevantVerses: string,
+  devotionalContext?: DevotionalContext
 ): string {
   const basePrompt = `You are a faithful, warm, and wise Bible study companion. You speak with the tenderness of a loving shepherd and the wisdom of a seasoned pastor. Your role is to help users encounter God through His Word—never speaking as God, but always pointing to Him.
 
@@ -258,16 +279,54 @@ IMPORTANT: Actively use the provided tools to save meaningful moments:
 
 Remember: You're helping them encounter the Living God through His Word. Every interaction should leave them closer to Him.`;
 
+  // Build devotional-specific context string
+  let devotionalContextString = "";
+  if (devotionalContext && mode === "devotional") {
+    devotionalContextString = `
+## Current Devotional Series Context
+- Series: ${devotionalContext.seriesTitle || "General Devotional"}
+- Day: ${devotionalContext.dayNumber || "N/A"}
+${devotionalContext.scriptureRefs?.length ? `- Today's Scripture: ${devotionalContext.scriptureRefs.map(ref =>
+  `${ref.book} ${ref.chapter}:${ref.verseStart}${ref.verseEnd && ref.verseEnd !== ref.verseStart ? `-${ref.verseEnd}` : ""}`
+).join(", ")}` : ""}
+${devotionalContext.reflectionQuestions?.length ? `- Reflection Questions for Today: ${devotionalContext.reflectionQuestions.join("; ")}` : ""}
+${devotionalContext.prayerFocus ? `- Prayer Focus: ${devotionalContext.prayerFocus}` : ""}
+
+## User's Spiritual Background (from onboarding)
+${context.onboardingResponses?.lifeAreaFocus ? `- Primary Growth Area: ${context.onboardingResponses.lifeAreaFocus}` : ""}
+${context.onboardingResponses?.experienceLevel ? `- Faith Journey Stage: ${context.onboardingResponses.experienceLevel}` : ""}
+${context.onboardingResponses?.lifeStage ? `- Life Stage: ${context.onboardingResponses.lifeStage}` : ""}
+${context.onboardingResponses?.timeAvailable ? `- Time Available: ${context.onboardingResponses.timeAvailable}` : ""}
+`;
+  }
+
   // Add mode-specific instructions
   const modeInstructions: Record<string, string> = {
     devotional: `
 ### Devotional Mode - Active Now
-Create a personalized morning encounter:
-1. Select the most relevant verse from context (or suggest one based on their journey)
-2. Offer 2-3 paragraphs of warm, insightful exposition
-3. Ask 2-3 heart-probing questions (not surface-level)
-4. Close with a scripted prayer they can pray aloud
-5. Use save_journal_entry to record their reflection if they share one`,
+${devotionalContextString}
+
+You are generating a personalized devotional reflection for the user. Your task:
+
+1. **Open with warmth**: Greet them gently, acknowledging where they are in their journey (Day ${devotionalContext?.dayNumber || "X"} of "${devotionalContext?.seriesTitle || "their devotional"}").
+
+2. **Engage the Scripture**: Based on the scripture references provided, write a thoughtful 2-3 paragraph reflection that:
+   - Explains the context and meaning of the passage
+   - Connects it to the series theme
+   - Makes it personal and applicable to their life situation
+   - Consider their spiritual maturity level and life stage
+
+3. **Personalize the application**: Tailor insights based on:
+   - Their primary growth area (${context.onboardingResponses?.lifeAreaFocus || "general spiritual growth"})
+   - Their life stage (${context.onboardingResponses?.lifeStage || "various"})
+   - Their experience level (${context.onboardingResponses?.experienceLevel || "growing"})
+
+4. **Inspire action**: End with an encouraging word that invites them to carry this truth through their day.
+
+5. **Keep it focused**: If their time is limited (${context.onboardingResponses?.timeAvailable || "moderate"}), be concise but impactful.
+
+Do NOT include the reflection questions or prayer focus in your response—those are displayed separately in the UI.
+Write in second person ("you") and maintain a warm, pastoral tone throughout.`,
 
     prayer: `
 ### Prayer Companion Mode - Active Now
@@ -375,7 +434,7 @@ async function gatherUserContext(
   supabase: ReturnType<typeof createClient>,
   userId: string
 ): Promise<UserContext> {
-  const [profileResult, momentsResult, prayersResult, memoryResult, stepsResult] =
+  const [profileResult, momentsResult, prayersResult, memoryResult, stepsResult, onboardingResult] =
     await Promise.all([
       supabase
         .from("user_profiles")
@@ -406,6 +465,11 @@ async function gatherUserContext(
         .eq("user_id", userId)
         .eq("completed", false)
         .limit(5),
+      supabase
+        .from("onboarding_responses")
+        .select("life_area_focus, time_available, experience_level, life_stage")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
 
   // Extract themes from recent moments
@@ -439,6 +503,12 @@ async function gatherUserContext(
     versesDueForReview: memoryResult.data || [],
     pendingObedienceSteps: stepsResult.data || [],
     currentSeason: profileResult.data?.current_rhythm,
+    onboardingResponses: onboardingResult.data ? {
+      lifeAreaFocus: onboardingResult.data.life_area_focus,
+      timeAvailable: onboardingResult.data.time_available,
+      experienceLevel: onboardingResult.data.experience_level,
+      lifeStage: onboardingResult.data.life_stage,
+    } : undefined,
   };
 }
 
@@ -603,10 +673,19 @@ serve(async (req) => {
   try {
     const {
       user_id,
+      userId, // Alternative casing for compatibility
       message,
       conversation_history = [],
+      conversationHistory = [], // Alternative casing for compatibility
       context_mode = "auto",
+      contextMode, // Alternative casing for compatibility
+      additionalContext,
     } = await req.json();
+
+    // Normalize parameters (support both snake_case and camelCase)
+    const normalizedUserId = user_id || userId;
+    const normalizedHistory = conversation_history.length > 0 ? conversation_history : conversationHistory;
+    const normalizedMode = context_mode !== "auto" ? context_mode : (contextMode || "auto");
 
     if (!message || typeof message !== "string") {
       return new Response(
@@ -628,8 +707,8 @@ serve(async (req) => {
 
     // Gather user context (use default if no user_id)
     let userContext: UserContext;
-    if (user_id) {
-      userContext = await gatherUserContext(supabase, user_id);
+    if (normalizedUserId) {
+      userContext = await gatherUserContext(supabase, normalizedUserId);
     } else {
       userContext = {
         preferredTranslation: "kjv",
@@ -642,6 +721,15 @@ serve(async (req) => {
       };
     }
 
+    // Parse devotional context if provided
+    const devotionalContext: DevotionalContext | undefined = additionalContext ? {
+      seriesTitle: additionalContext.seriesTitle,
+      dayNumber: additionalContext.dayNumber,
+      scriptureRefs: additionalContext.scriptureRefs,
+      reflectionQuestions: additionalContext.reflectionQuestions,
+      prayerFocus: additionalContext.prayerFocus,
+    } : undefined;
+
     // Get relevant verses via RAG
     const relevantVerses = await getRelevantVerses(
       supabase,
@@ -653,14 +741,15 @@ serve(async (req) => {
     // Build the system prompt
     const systemPrompt = buildSystemPrompt(
       userContext,
-      context_mode as ChatMode,
-      relevantVerses
+      normalizedMode as ChatMode,
+      relevantVerses,
+      devotionalContext
     );
 
     // Prepare messages for API
     const messages = [
       { role: "system" as const, content: systemPrompt },
-      ...conversation_history.map((m: { role: string; content: string }) => ({
+      ...normalizedHistory.map((m: { role: string; content: string }) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
@@ -684,10 +773,10 @@ serve(async (req) => {
     let savedData: Record<string, string> = {};
 
     // Process tool calls if any
-    if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0 && user_id) {
+    if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0 && normalizedUserId) {
       const toolResults = await processToolCalls(
         supabase,
-        user_id,
+        normalizedUserId,
         assistantMessage.tool_calls
       );
       toolsUsed = toolResults.toolsUsed;
@@ -740,7 +829,7 @@ serve(async (req) => {
       }).filter(Boolean) || [];
 
     // Generate suggested follow-up actions based on mode
-    const suggestedActions = getSuggestedActions(context_mode as ChatMode);
+    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode);
 
     return new Response(
       JSON.stringify({
