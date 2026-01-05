@@ -29,7 +29,7 @@ import {
 } from '../../types';
 import { useDevotionalStore, usePrimaryEnrollment, useEnrollments } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
-import { TappableVerse } from '../../components/TappableVerse';
+import { DrawNearBanner } from '../../components/devotional/DrawNearBanner';
 
 const { width } = Dimensions.get('window');
 
@@ -136,6 +136,9 @@ export default function DevotionalHubScreen() {
             />
           }
         >
+          {/* Draw Near Verse Banner */}
+          <DrawNearBanner />
+
           {/* Primary Devotional Hero Card */}
           {primaryProgress && (
             <TouchableOpacity
@@ -217,15 +220,6 @@ export default function DevotionalHubScreen() {
             <Ionicons name="add-circle-outline" size={20} color={theme.colors.primary} />
             <Text style={styles.discoverLinkText}>Discover more series</Text>
           </TouchableOpacity>
-
-          {/* Scripture footer */}
-          <View style={styles.scriptureFooter}>
-            <TappableVerse
-              reference="Psalm 1:2"
-              displayText="But his delight is in the law of the Lord, and on his law he meditates day and night."
-              variant="inline"
-            />
-          </View>
 
           {/* Empty State */}
           {progress.length === 0 && !enrollmentsLoading && (
@@ -452,14 +446,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.medium,
-  },
-
-  // Scripture Footer
-  scriptureFooter: {
-    paddingTop: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    marginBottom: theme.spacing.xl,
   },
 
   // Empty State
