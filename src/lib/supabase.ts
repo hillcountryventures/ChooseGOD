@@ -139,3 +139,65 @@ export async function searchVerses(
     return [];
   }
 }
+
+/**
+ * Fetch all verses for a specific chapter
+ */
+export async function fetchChapter(
+  book: string,
+  chapter: number,
+  translation: Translation = 'KJV'
+): Promise<VerseSource[]> {
+  try {
+    const { data, error } = await supabase
+      .from('bible_verses')
+      .select('*')
+      .eq('book', book)
+      .eq('chapter', chapter)
+      .eq('translation', translation)
+      .order('verse', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching chapter:', error);
+      return [];
+    }
+
+    return data.map((row) => ({
+      book: row.book,
+      chapter: row.chapter,
+      verse: row.verse,
+      text: row.text,
+      translation: row.translation as Translation,
+    }));
+  } catch (error) {
+    console.error('Error fetching chapter:', error);
+    return [];
+  }
+}
+
+/**
+ * Get the number of chapters in a book
+ */
+export async function getBookChapterCount(
+  book: string,
+  translation: Translation = 'KJV'
+): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('bible_verses')
+      .select('chapter')
+      .eq('book', book)
+      .eq('translation', translation)
+      .order('chapter', { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) {
+      return 0;
+    }
+
+    return data[0].chapter;
+  } catch (error) {
+    console.error('Error getting chapter count:', error);
+    return 0;
+  }
+}

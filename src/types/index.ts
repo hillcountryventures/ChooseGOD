@@ -269,6 +269,40 @@ export interface MemoryVerse {
   createdAt: Date;
 }
 
+// Bible annotation types
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink' | 'purple' | 'orange';
+
+export interface VerseHighlight {
+  id: string;
+  userId: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  color: HighlightColor;
+  createdAt: Date;
+}
+
+export interface VerseNote {
+  id: string;
+  userId: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface VerseBookmark {
+  id: string;
+  userId: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  label?: string;
+  createdAt: Date;
+}
+
 // Obedience step tracking
 export interface ObedienceStep {
   id: string;
