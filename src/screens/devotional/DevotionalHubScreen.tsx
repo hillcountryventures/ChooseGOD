@@ -1,3 +1,11 @@
+/**
+ * DevotionalHubScreen
+ * Simplified hub focused on primary devotional journey
+ *
+ * Philosophy: "We are not God, only helping others find HIM"
+ * Daily devotions as a consistent pathway to deeper relationship with God
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -21,6 +29,7 @@ import {
 } from '../../types';
 import { useDevotionalStore, usePrimaryEnrollment, useEnrollments } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { TappableVerse } from '../../components/TappableVerse';
 
 const { width } = Dimensions.get('window');
 
@@ -96,17 +105,22 @@ export default function DevotionalHubScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {/* Header */}
+        {/* Simplified Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{greeting()}</Text>
-            <Text style={styles.headerTitle}>Your Devotionals</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>Daily Devotional</Text>
+            {streak > 0 && (
+              <View style={styles.streakBadge}>
+                <Ionicons name="flame" size={14} color={theme.colors.accent} />
+                <Text style={styles.streakBadgeText}>{streak}</Text>
+              </View>
+            )}
           </View>
           <TouchableOpacity
-            style={styles.discoverButton}
+            style={styles.libraryButton}
             onPress={() => navigation.navigate('SeriesLibrary')}
           >
-            <Ionicons name="compass-outline" size={24} color={theme.colors.primary} />
+            <Ionicons name="library-outline" size={22} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -122,163 +136,106 @@ export default function DevotionalHubScreen() {
             />
           }
         >
-          {/* Streak Banner */}
-          {streak > 0 && (
-            <View style={styles.streakBanner}>
-              <View style={styles.streakIcon}>
-                <Ionicons name="flame" size={24} color={theme.colors.accent} />
-              </View>
-              <View style={styles.streakContent}>
-                <Text style={styles.streakCount}>{streak} Day Streak</Text>
-                <Text style={styles.streakText}>Keep it going!</Text>
-              </View>
-              <View style={styles.streakDays}>
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
-                  const isCompleted = index < streak;
-                  const isToday = index === new Date().getDay();
-                  return (
-                    <View
-                      key={index}
-                      style={[
-                        styles.streakDay,
-                        isCompleted && styles.streakDayCompleted,
-                        isToday && styles.streakDayToday,
-                      ]}
-                    >
-                      {isCompleted ? (
-                        <Ionicons name="checkmark" size={12} color="#fff" />
-                      ) : (
-                        <Text style={styles.streakDayText}>{day}</Text>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* Primary Devotional Card */}
+          {/* Primary Devotional Hero Card */}
           {primaryProgress && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Continue Your Journey</Text>
-              <TouchableOpacity
-                style={styles.primaryCard}
-                onPress={handleContinueDevotional}
-                activeOpacity={0.9}
+            <TouchableOpacity
+              style={styles.primaryHero}
+              onPress={handleContinueDevotional}
+              activeOpacity={0.95}
+            >
+              <LinearGradient
+                colors={getSeriesGradient(primaryProgress.seriesSlug) as [string, string]}
+                style={styles.primaryHeroGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                <LinearGradient
-                  colors={getSeriesGradient(primaryProgress.seriesSlug) as [string, string]}
-                  style={styles.primaryCardGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  {/* Progress Ring */}
-                  <View style={styles.progressRingContainer}>
-                    <View style={styles.progressRing}>
-                      <Text style={styles.progressDay}>Day</Text>
-                      <Text style={styles.progressNumber}>{primaryProgress.currentDay}</Text>
-                    </View>
+                <View style={styles.heroHeader}>
+                  <Text style={styles.heroSeriesTitle} numberOfLines={2}>
+                    {primaryProgress.seriesTitle}
+                  </Text>
+                  <View style={styles.heroDayBadge}>
+                    <Text style={styles.heroDayLabel}>Day</Text>
+                    <Text style={styles.heroDayNumber}>{primaryProgress.currentDay}</Text>
+                    <Text style={styles.heroDayOf}>of {primaryProgress.totalDays}</Text>
                   </View>
+                </View>
 
-                  <View style={styles.primaryCardContent}>
-                    <Text style={styles.primaryCardTitle} numberOfLines={2}>
-                      {primaryProgress.seriesTitle}
-                    </Text>
-                    <View style={styles.primaryCardMeta}>
-                      <View style={styles.progressBar}>
-                        <View
-                          style={[
-                            styles.progressFill,
-                            { width: `${primaryProgress.progressPercentage}%` },
-                          ]}
-                        />
-                      </View>
-                      <Text style={styles.progressText}>
-                        {Math.round(primaryProgress.progressPercentage)}% complete
-                      </Text>
-                    </View>
+                {/* Progress bar */}
+                <View style={styles.heroProgress}>
+                  <View style={styles.heroProgressBar}>
+                    <View
+                      style={[
+                        styles.heroProgressFill,
+                        { width: `${primaryProgress.progressPercentage}%` },
+                      ]}
+                    />
                   </View>
+                  <Text style={styles.heroProgressText}>
+                    {Math.round(primaryProgress.progressPercentage)}% complete
+                  </Text>
+                </View>
 
-                  <View style={styles.continueButton}>
-                    <Text style={styles.continueButtonText}>Continue</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#fff" />
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+                {/* Continue button */}
+                <View style={styles.heroCTA}>
+                  <Text style={styles.heroCTAText}>Continue</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           )}
 
-          {/* Other Enrolled Series */}
+          {/* Other Enrollments - Compact Pills */}
           {otherProgress.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Also Enrolled</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalScroll}
-              >
+            <View style={styles.otherSection}>
+              <Text style={styles.otherSectionTitle}>Also enrolled:</Text>
+              <View style={styles.otherPills}>
                 {otherProgress.map((enrollment) => (
                   <TouchableOpacity
                     key={enrollment.enrollmentId}
-                    style={styles.enrolledCard}
+                    style={styles.otherPill}
                     onPress={() => handleSeriesPress(enrollment)}
-                    activeOpacity={0.8}
                   >
-                    <LinearGradient
-                      colors={getSeriesGradient(enrollment.seriesSlug) as [string, string]}
-                      style={styles.enrolledCardGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    >
-                      <Text style={styles.enrolledCardDay}>Day {enrollment.currentDay}</Text>
-                      <Text style={styles.enrolledCardTitle} numberOfLines={2}>
-                        {enrollment.seriesTitle}
+                    <Text style={styles.otherPillText} numberOfLines={1}>
+                      {enrollment.seriesTitle}
+                    </Text>
+                    <View style={styles.otherPillBadge}>
+                      <Text style={styles.otherPillBadgeText}>
+                        Day {enrollment.currentDay}
                       </Text>
-                      <View style={styles.enrolledProgressBar}>
-                        <View
-                          style={[
-                            styles.enrolledProgressFill,
-                            { width: `${enrollment.progressPercentage}%` },
-                          ]}
-                        />
-                      </View>
-                      <Text style={styles.enrolledProgressText}>
-                        {enrollment.daysRemaining} days left
-                      </Text>
-                    </LinearGradient>
+                    </View>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
             </View>
           )}
 
-          {/* Discover More */}
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.discoverCard}
-              onPress={() => navigation.navigate('SeriesLibrary')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.discoverIconContainer}>
-                <Ionicons name="add" size={32} color={theme.colors.primary} />
-              </View>
-              <View style={styles.discoverContent}>
-                <Text style={styles.discoverTitle}>Discover More</Text>
-                <Text style={styles.discoverDescription}>
-                  Browse our library of devotional series
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color={theme.colors.textMuted} />
-            </TouchableOpacity>
+          {/* Discover Link */}
+          <TouchableOpacity
+            style={styles.discoverLink}
+            onPress={() => navigation.navigate('SeriesLibrary')}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={theme.colors.primary} />
+            <Text style={styles.discoverLinkText}>Discover more series</Text>
+          </TouchableOpacity>
+
+          {/* Scripture footer */}
+          <View style={styles.scriptureFooter}>
+            <TappableVerse
+              reference="Psalm 1:2"
+              displayText="But his delight is in the law of the Lord, and on his law he meditates day and night."
+              variant="inline"
+            />
           </View>
 
           {/* Empty State */}
           {progress.length === 0 && !enrollmentsLoading && (
             <View style={styles.emptyState}>
-              <Ionicons name="book-outline" size={64} color={theme.colors.textMuted} />
-              <Text style={styles.emptyStateTitle}>No Active Devotionals</Text>
+              <View style={styles.emptyStateIcon}>
+                <Ionicons name="book-outline" size={48} color={theme.colors.primary} />
+              </View>
+              <Text style={styles.emptyStateTitle}>Begin Your Journey</Text>
               <Text style={styles.emptyStateDescription}>
-                Start a devotional journey to grow in your faith
+                Start a devotional series to grow closer to God through daily Scripture and reflection.
               </Text>
               <TouchableOpacity
                 style={styles.emptyStateButton}
@@ -291,6 +248,7 @@ export default function DevotionalHubScreen() {
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.emptyStateButtonText}>Browse Devotionals</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -316,22 +274,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
   },
-  greeting: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   headerTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
   },
-  discoverButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: `${theme.colors.primary}20`,
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.colors.accent + '20',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  streakBadgeText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.accent,
+  },
+  libraryButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.card,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   scrollView: {
     flex: 1,
@@ -340,243 +315,191 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.xxl,
   },
-  streakBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
-    gap: theme.spacing.md,
-  },
-  streakIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: `${theme.colors.accent}20`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  streakContent: {
-    flex: 1,
-  },
-  streakCount: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  streakText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  streakDays: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  streakDay: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: theme.colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  streakDayCompleted: {
-    backgroundColor: theme.colors.accent,
-  },
-  streakDayToday: {
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-  },
-  streakDayText: {
-    fontSize: 10,
-    color: theme.colors.textMuted,
-    fontWeight: theme.fontWeight.medium,
-  },
-  section: {
-    marginBottom: theme.spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.md,
-  },
-  primaryCard: {
+
+  // Primary Hero Card
+  primaryHero: {
     borderRadius: theme.borderRadius.xl,
     overflow: 'hidden',
+    marginBottom: theme.spacing.lg,
     ...theme.shadows.lg,
   },
-  primaryCardGradient: {
+  primaryHeroGradient: {
     padding: theme.spacing.lg,
-    minHeight: 180,
+    minHeight: 200,
   },
-  progressRingContainer: {
-    position: 'absolute',
-    top: theme.spacing.lg,
-    right: theme.spacing.lg,
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.xl,
   },
-  progressRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressDay: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: theme.fontWeight.medium,
-  },
-  progressNumber: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: '#fff',
-  },
-  primaryCardContent: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  primaryCardTitle: {
+  heroSeriesTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: '#fff',
-    marginBottom: theme.spacing.md,
-    maxWidth: '70%',
+    flex: 1,
+    marginRight: theme.spacing.md,
   },
-  primaryCardMeta: {
-    marginBottom: theme.spacing.md,
+  heroDayBadge: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
   },
-  progressBar: {
+  heroDayLabel: {
+    fontSize: theme.fontSize.xs,
+    color: 'rgba(255,255,255,0.8)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroDayNumber: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: theme.fontWeight.bold,
+    color: '#fff',
+    lineHeight: 36,
+  },
+  heroDayOf: {
+    fontSize: theme.fontSize.xs,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  heroProgress: {
+    marginBottom: theme.spacing.lg,
+  },
+  heroProgressBar: {
     height: 6,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 3,
     marginBottom: theme.spacing.xs,
   },
-  progressFill: {
+  heroProgressFill: {
     height: '100%',
     backgroundColor: '#fff',
     borderRadius: 3,
   },
-  progressText: {
+  heroProgressText: {
     fontSize: theme.fontSize.sm,
     color: 'rgba(255,255,255,0.9)',
   },
-  continueButton: {
+  heroCTA: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm + 2,
     borderRadius: theme.borderRadius.full,
-    gap: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
-  continueButtonText: {
+  heroCTAText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
     color: '#fff',
   },
-  horizontalScroll: {
-    gap: theme.spacing.md,
-    paddingRight: theme.spacing.lg,
+
+  // Other Enrollments Section
+  otherSection: {
+    marginBottom: theme.spacing.lg,
   },
-  enrolledCard: {
-    width: width * 0.6,
-    borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
-  },
-  enrolledCardGradient: {
-    padding: theme.spacing.md,
-    minHeight: 140,
-  },
-  enrolledCardDay: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.semibold,
-    color: 'rgba(255,255,255,0.8)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  otherSectionTitle: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
     marginBottom: theme.spacing.sm,
   },
-  enrolledCardTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
-    marginBottom: 'auto',
+  otherPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
   },
-  enrolledProgressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 2,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.xs,
-  },
-  enrolledProgressFill: {
-    height: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 2,
-  },
-  enrolledProgressText: {
-    fontSize: theme.fontSize.xs,
-    color: 'rgba(255,255,255,0.8)',
-  },
-  discoverCard: {
+  otherPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderStyle: 'dashed',
+    gap: theme.spacing.sm,
   },
-  discoverIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: `${theme.colors.primary}10`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  discoverContent: {
-    flex: 1,
-  },
-  discoverTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-    marginBottom: 2,
-  },
-  discoverDescription: {
+  otherPillText: {
     fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
+    color: theme.colors.text,
+    fontWeight: theme.fontWeight.medium,
+    maxWidth: 120,
   },
+  otherPillBadge: {
+    backgroundColor: theme.colors.primary + '20',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
+  },
+  otherPillBadgeText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+
+  // Discover Link
+  discoverLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
+  },
+  discoverLinkText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+
+  // Scripture Footer
+  scriptureFooter: {
+    paddingTop: theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    marginBottom: theme.spacing.xl,
+  },
+
+  // Empty State
   emptyState: {
     alignItems: 'center',
     paddingVertical: theme.spacing.xxl,
   },
+  emptyStateIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: theme.colors.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
   emptyStateTitle: {
     fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
-    marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.sm,
   },
   emptyStateDescription: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+    maxWidth: 280,
     marginBottom: theme.spacing.xl,
+    lineHeight: 22,
   },
   emptyStateButton: {
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
   },
   emptyStateButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
   },
   emptyStateButtonText: {
     fontSize: theme.fontSize.md,

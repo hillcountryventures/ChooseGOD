@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,10 +21,15 @@ import {
   DevotionalDay,
   DevotionalSeries,
   getSeriesGradient,
+  BottomTabParamList,
 } from '../../types';
 import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
+import { TappableVerse } from '../../components/TappableVerse';
+import { InlineVerseText } from '../../components/InlineVerseText';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'DailyDevotional'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'DailyDevotional'>;
@@ -204,15 +211,24 @@ export default function DailyDevotionalScreen() {
           </View>
           <View style={styles.scriptureCard}>
             {currentDay?.scriptureRefs[0] && (
-              <Text style={styles.scriptureRef}>
-                {currentDay.scriptureRefs[0].book} {currentDay.scriptureRefs[0].chapter}:
-                {currentDay.scriptureRefs[0].verseStart}
-                {currentDay.scriptureRefs[0].verseEnd &&
-                  currentDay.scriptureRefs[0].verseEnd !== currentDay.scriptureRefs[0].verseStart &&
-                  `-${currentDay.scriptureRefs[0].verseEnd}`}
-              </Text>
+              <TappableVerse
+                reference={`${currentDay.scriptureRefs[0].book} ${currentDay.scriptureRefs[0].chapter}:${currentDay.scriptureRefs[0].verseStart}${
+                  currentDay.scriptureRefs[0].verseEnd &&
+                  currentDay.scriptureRefs[0].verseEnd !== currentDay.scriptureRefs[0].verseStart
+                    ? `-${currentDay.scriptureRefs[0].verseEnd}`
+                    : ''
+                }`}
+                variant="card"
+                showArrow={true}
+                style={styles.tappableRef}
+              />
             )}
             <Text style={styles.scriptureText}>{scriptureText}</Text>
+            {/* Tap hint */}
+            <View style={styles.tapHint}>
+              <Ionicons name="open-outline" size={14} color={theme.colors.textMuted} />
+              <Text style={styles.tapHintText}>Tap reference to open in Bible</Text>
+            </View>
           </View>
         </View>
 
@@ -231,7 +247,11 @@ export default function DailyDevotionalScreen() {
                 </Text>
               </View>
             ) : (
-              <Text style={styles.reflectionText}>{aiReflection}</Text>
+              <InlineVerseText
+                text={aiReflection}
+                style={styles.reflectionText}
+                verseStyle={styles.reflectionVerseLink}
+              />
             )}
           </View>
         </View>
@@ -394,16 +414,27 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.primary,
   },
-  scriptureRef: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.sm,
+  tappableRef: {
+    marginBottom: theme.spacing.md,
   },
   scriptureText: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.text,
     lineHeight: 28,
+    fontStyle: 'italic',
+  },
+  tapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  tapHintText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
     fontStyle: 'italic',
   },
   reflectionCard: {
@@ -424,6 +455,11 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
     lineHeight: 24,
+  },
+  reflectionVerseLink: {
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+    textDecorationLine: 'underline',
   },
   journalCard: {
     backgroundColor: theme.colors.card,

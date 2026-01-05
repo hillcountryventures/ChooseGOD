@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,12 @@ import {
   Modal,
   TextInput,
   Pressable,
+  Animated,
+  PanResponder,
+  Dimensions,
+  GestureResponderEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp, NavigationProp } from '@react-navigation/native';
@@ -23,6 +29,10 @@ import {
   VerseHighlight,
   VerseNote,
 } from '../types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SWIPE_THRESHOLD = 80; // Minimum swipe distance to trigger highlight
+const HEADER_HEIGHT = 100; // Height of collapsible header
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
 type BibleScreenNavigationProp = NavigationProp<BottomTabParamList>;
@@ -133,6 +143,20 @@ export default function BibleScreen() {
   const [noteText, setNoteText] = useState('');
   const [editingNote, setEditingNote] = useState<VerseNote | null>(null);
   const [showAIMenu, setShowAIMenu] = useState(false);
+
+  // Collapsible header animation
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const isHeaderVisible = useRef(true);
+
+  // Swipe gesture state
+  const [swipingVerse, setSwipingVerse] = useState<number | null>(null);
+  const swipeX = useRef(new Animated.Value(0)).current;
+
+  // Double-tap detection
+  const lastTap = useRef<{ verse: number; time: number } | null>(null);
+  const DOUBLE_TAP_DELAY = 300;
 
   // Generate verse key for annotations
   const getVerseKey = (book: string, chapter: number, verse: number) =>
@@ -311,91 +335,255 @@ export default function BibleScreen() {
     return found ? found.hex + '60' : 'transparent';
   };
 
-  // Render verse
+  // Handle scroll for collapsible header
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDiff = currentScrollY - lastScrollY.current;
+
+    // Only animate header after scrolling past a threshold
+    if (currentScrollY > 50) {
+      if (scrollDiff > 10 && isHeaderVisible.current) {
+        // Scrolling down - hide header
+        isHeaderVisible.current = false;
+        Animated.spring(headerTranslateY, {
+          toValue: -HEADER_HEIGHT,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 15,
+        }).start();
+      } else if (scrollDiff < -10 && !isHeaderVisible.current) {
+        // Scrolling up - show header
+        isHeaderVisible.current = true;
+        Animated.spring(headerTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 15,
+        }).start();
+      }
+    } else if (currentScrollY <= 50 && !isHeaderVisible.current) {
+      // Near top - always show header
+      isHeaderVisible.current = true;
+      Animated.spring(headerTranslateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 15,
+      }).start();
+    }
+
+    lastScrollY.current = currentScrollY;
+  };
+
+  // Handle double-tap for AI explain
+  const handleDoubleTap = (verse: VerseWithAnnotations) => {
+    const now = Date.now();
+
+    if (
+      lastTap.current &&
+      lastTap.current.verse === verse.verse &&
+      now - lastTap.current.time < DOUBLE_TAP_DELAY
+    ) {
+      // Double tap detected - open AI explain
+      const verseRef = `${verse.book} ${verse.chapter}:${verse.verse}`;
+      const aiAction = AI_QUICK_ACTIONS.find((a) => a.id === 'explain');
+      if (aiAction) {
+        const initialMessage = aiAction.getPrompt(verseRef, verse.text);
+        navigation.navigate('Ask', { mode: 'auto', initialMessage });
+      }
+      lastTap.current = null;
+    } else {
+      // First tap
+      lastTap.current = { verse: verse.verse, time: now };
+    }
+  };
+
+  // Create swipe pan responder for a verse
+  const createVersePanResponder = (verse: VerseWithAnnotations) => {
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to horizontal swipes
+        return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 30;
+      },
+      onPanResponderGrant: () => {
+        setSwipingVerse(verse.verse);
+        swipeX.setValue(0);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow left swipe (negative dx)
+        if (gestureState.dx < 0) {
+          swipeX.setValue(gestureState.dx);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -SWIPE_THRESHOLD) {
+          // Swipe threshold reached - apply highlight with default color (yellow)
+          const key = getVerseKey(verse.book, verse.chapter, verse.verse);
+          const existingHighlight = highlights.get(key);
+
+          if (existingHighlight) {
+            // Cycle through colors
+            const currentIndex = HIGHLIGHT_COLORS.findIndex(
+              (c) => c.color === existingHighlight.color
+            );
+            const nextIndex = (currentIndex + 1) % HIGHLIGHT_COLORS.length;
+            handleHighlight(HIGHLIGHT_COLORS[nextIndex].color);
+            setSelectedVerse(verse);
+          } else {
+            // Apply yellow highlight
+            handleHighlight('yellow');
+            setSelectedVerse(verse);
+          }
+        }
+
+        // Reset swipe animation
+        Animated.spring(swipeX, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 10,
+        }).start(() => {
+          setSwipingVerse(null);
+        });
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(swipeX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start(() => {
+          setSwipingVerse(null);
+        });
+      },
+    });
+  };
+
+  // Render verse with gestures
   const renderVerse = (verse: VerseWithAnnotations) => {
     const key = getVerseKey(verse.book, verse.chapter, verse.verse);
     const highlight = highlights.get(key);
     const note = notes.get(key);
     const isSelected = selectedVerse?.verse === verse.verse;
+    const isSwiping = swipingVerse === verse.verse;
+    const panResponder = createVersePanResponder(verse);
 
     return (
-      <Pressable
-        key={verse.verse}
-        onPress={() => handleVersePress(verse)}
-        onLongPress={() => handleVerseLongPress(verse)}
-        style={[
-          styles.verseContainer,
-          isSelected && styles.verseSelected,
-        ]}
-      >
-        <View
+      <View key={verse.verse} style={styles.verseWrapper}>
+        {/* Swipe indicator background */}
+        <View style={styles.swipeIndicator}>
+          <Ionicons
+            name="color-palette"
+            size={20}
+            color={theme.colors.primary}
+          />
+          <Text style={styles.swipeHint}>Highlight</Text>
+        </View>
+
+        <Animated.View
+          {...panResponder.panHandlers}
           style={[
-            styles.verseTextContainer,
-            { backgroundColor: getHighlightBg(highlight?.color) },
+            styles.verseContainer,
+            isSelected && styles.verseSelected,
+            isSwiping && {
+              transform: [{ translateX: swipeX }],
+            },
           ]}
         >
-          <Text style={styles.verseNumber}>{verse.verse}</Text>
-          <Text style={styles.verseText}>{verse.text}</Text>
-          {note && (
-            <View style={styles.noteIndicator}>
-              <Ionicons name="document-text" size={12} color={theme.colors.primary} />
+          <Pressable
+            onPress={() => {
+              handleDoubleTap(verse);
+              handleVersePress(verse);
+            }}
+            onLongPress={() => handleVerseLongPress(verse)}
+            delayLongPress={300}
+          >
+            <View
+              style={[
+                styles.verseTextContainer,
+                { backgroundColor: getHighlightBg(highlight?.color) },
+              ]}
+            >
+              <Text style={styles.verseNumber}>{verse.verse}</Text>
+              <Text style={styles.verseText}>{verse.text}</Text>
+              {note && (
+                <View style={styles.noteIndicator}>
+                  <Ionicons name="document-text" size={12} color={theme.colors.primary} />
+                </View>
+              )}
             </View>
-          )}
-        </View>
-      </Pressable>
+          </Pressable>
+        </Animated.View>
+      </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.bookSelector}
-          onPress={() => setShowBookPicker(true)}
-        >
-          <Text style={styles.bookTitle}>{currentBook}</Text>
-          <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
+      {/* Collapsible Header */}
+      <Animated.View
+        style={[
+          styles.collapsibleHeader,
+          {
+            transform: [{ translateY: headerTranslateY }],
+          },
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.bookSelector}
+            onPress={() => setShowBookPicker(true)}
+          >
+            <Text style={styles.bookTitle}>{currentBook}</Text>
+            <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.chapterSelector}
-          onPress={() => setShowChapterPicker(true)}
-        >
-          <Text style={styles.chapterTitle}>Chapter {currentChapter}</Text>
-          <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.chapterSelector}
+            onPress={() => setShowChapterPicker(true)}
+          >
+            <Text style={styles.chapterTitle}>Chapter {currentChapter}</Text>
+            <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Chapter navigation */}
-      <View style={styles.chapterNav}>
-        <TouchableOpacity
-          style={[styles.navButton, currentChapter === 1 && styles.navButtonDisabled]}
-          onPress={goToPreviousChapter}
-          disabled={currentChapter === 1}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={20}
-            color={currentChapter === 1 ? theme.colors.textMuted : theme.colors.text}
-          />
-        </TouchableOpacity>
+        {/* Chapter navigation */}
+        <View style={styles.chapterNav}>
+          <TouchableOpacity
+            style={[styles.navButton, currentChapter === 1 && styles.navButtonDisabled]}
+            onPress={goToPreviousChapter}
+            disabled={currentChapter === 1}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={20}
+              color={currentChapter === 1 ? theme.colors.textMuted : theme.colors.text}
+            />
+          </TouchableOpacity>
 
-        <Text style={styles.chapterIndicator}>
-          {currentChapter} of {totalChapters}
+          <Text style={styles.chapterIndicator}>
+            {currentChapter} of {totalChapters}
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.navButton, currentChapter === totalChapters && styles.navButtonDisabled]}
+            onPress={goToNextChapter}
+            disabled={currentChapter === totalChapters}
+          >
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={currentChapter === totalChapters ? theme.colors.textMuted : theme.colors.text}
+            />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      {/* Gesture hints (shown briefly) */}
+      <View style={styles.gestureHintsContainer}>
+        <Text style={styles.gestureHint}>
+          Swipe left to highlight • Double-tap for AI
         </Text>
-
-        <TouchableOpacity
-          style={[styles.navButton, currentChapter === totalChapters && styles.navButtonDisabled]}
-          onPress={goToNextChapter}
-          disabled={currentChapter === totalChapters}
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={currentChapter === totalChapters ? theme.colors.textMuted : theme.colors.text}
-          />
-        </TouchableOpacity>
       </View>
 
       {/* Verses */}
@@ -407,8 +595,13 @@ export default function BibleScreen() {
       ) : (
         <ScrollView
           style={styles.versesContainer}
-          contentContainerStyle={styles.versesContent}
+          contentContainerStyle={[
+            styles.versesContent,
+            { paddingTop: HEADER_HEIGHT + theme.spacing.sm },
+          ]}
           showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         >
           {verses.map(renderVerse)}
           <View style={{ height: 100 }} />
@@ -671,6 +864,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  collapsibleHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    backgroundColor: theme.colors.background,
+  },
+  gestureHintsContainer: {
+    position: 'absolute',
+    top: HEADER_HEIGHT,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.backgroundSecondary,
+    alignItems: 'center',
+  },
+  gestureHint: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    fontStyle: 'italic',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -737,8 +953,33 @@ const styles = StyleSheet.create({
   versesContent: {
     padding: theme.spacing.lg,
   },
-  verseContainer: {
+  verseWrapper: {
     marginBottom: theme.spacing.sm,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  swipeIndicator: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: SWIPE_THRESHOLD + 20,
+    backgroundColor: theme.colors.primary + '20',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+    paddingRight: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  swipeHint: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+  verseContainer: {
+    marginBottom: 0,
+    backgroundColor: theme.colors.background,
   },
   verseSelected: {
     backgroundColor: theme.colors.primary + '20',
