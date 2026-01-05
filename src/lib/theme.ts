@@ -1,52 +1,52 @@
 export const theme = {
   colors: {
-    // Primary colors
-    primary: '#6366F1',
-    primaryDark: '#4F46E5',
-    primaryLight: '#818CF8',
+    // Primary colors - Navy blue from logo
+    primary: '#1B3A5F',
+    primaryDark: '#142D4A',
+    primaryLight: '#2A5080',
 
-    // Accent - golden/warm tone for spiritual feel
-    accent: '#F59E0B',
-    accentDark: '#D97706',
-    accentLight: '#FBBF24',
+    // Accent - Light blue from logo background
+    accent: '#88AED0',
+    accentDark: '#6B9AC4',
+    accentLight: '#A5C4DE',
 
-    // Background colors (dark theme)
-    background: '#0F0F0F',
-    backgroundSecondary: '#1A1A1A',
-    backgroundTertiary: '#262626',
+    // Background colors (dark theme with navy tones)
+    background: '#0A1520',
+    backgroundSecondary: '#101D2C',
+    backgroundTertiary: '#182838',
 
     // Surface colors for cards, modals, etc.
-    surface: '#1F1F1F',
-    surfaceElevated: '#2A2A2A',
-    card: '#1A1A1A',
-    cardHover: '#262626',
+    surface: '#132231',
+    surfaceElevated: '#1A2D40',
+    card: '#101D2C',
+    cardHover: '#182838',
 
     // Text colors
     text: '#FFFFFF',
-    textSecondary: '#A3A3A3',
-    textMuted: '#737373',
-    textInverse: '#0F0F0F',
+    textSecondary: '#A3B8CC',
+    textMuted: '#6B8299',
+    textInverse: '#0A1520',
 
     // Border colors
-    border: '#333333',
-    borderLight: '#404040',
+    border: '#1E3448',
+    borderLight: '#2A4560',
 
     // Status colors
     success: '#22C55E',
     error: '#EF4444',
     warning: '#F59E0B',
-    info: '#3B82F6',
+    info: '#88AED0',
     prayer: '#EC4899',
     prayerDark: '#DB2777',
 
     // Input colors
-    inputBackground: '#1A1A1A',
-    inputBorder: '#333333',
-    inputFocus: '#6366F1',
+    inputBackground: '#101D2C',
+    inputBorder: '#1E3448',
+    inputFocus: '#88AED0',
 
     // Message bubbles
-    userBubble: '#6366F1',
-    assistantBubble: '#1A1A1A',
+    userBubble: '#1B3A5F',
+    assistantBubble: '#101D2C',
 
     // Bible verse highlight colors
     highlight: {
@@ -60,11 +60,11 @@ export const theme = {
 
     // Gradient backgrounds
     gradient: {
-      start: '#6366F1',
-      end: '#8B5CF6',
-      dark: ['#1F1F1F', '#2A2A2A'],
-      spiritual: ['#1A1A2E', '#16213E'],
-      spiritualFull: ['#1A1A2E', '#16213E', '#0F0F0F'],
+      start: '#1B3A5F',
+      end: '#2A5080',
+      dark: ['#132231', '#1A2D40'],
+      spiritual: ['#0A1520', '#142D4A'],
+      spiritualFull: ['#0A1520', '#142D4A', '#1B3A5F'],
     },
 
     // Opacity variants (for transparent overlays)
@@ -74,16 +74,16 @@ export const theme = {
       dark: 'rgba(0, 0, 0, 0.5)',
     },
 
-    // Semantic colors with opacity
+    // Semantic colors with opacity (navy primary)
     primaryAlpha: {
-      10: 'rgba(99, 102, 241, 0.1)',
-      15: 'rgba(99, 102, 241, 0.15)',
-      20: 'rgba(99, 102, 241, 0.2)',
-      40: 'rgba(99, 102, 241, 0.4)',
+      10: 'rgba(27, 58, 95, 0.1)',
+      15: 'rgba(27, 58, 95, 0.15)',
+      20: 'rgba(27, 58, 95, 0.2)',
+      40: 'rgba(27, 58, 95, 0.4)',
     },
     accentAlpha: {
-      10: 'rgba(245, 158, 11, 0.1)',
-      20: 'rgba(245, 158, 11, 0.2)',
+      10: 'rgba(136, 174, 208, 0.1)',
+      20: 'rgba(136, 174, 208, 0.2)',
     },
     successAlpha: {
       20: 'rgba(34, 197, 94, 0.2)',

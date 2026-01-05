@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,22 +31,17 @@ export default function WelcomeScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
-          {/* Logo/Icon Area */}
+          {/* Logo */}
           <View style={styles.logoContainer}>
-            <LinearGradient
-              colors={[theme.colors.primary, theme.colors.primaryDark]}
-              style={styles.logoGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Ionicons name="book" size={64} color="#fff" />
-            </LinearGradient>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
           {/* Welcome Text */}
           <View style={styles.textContainer}>
-            <Text style={styles.welcomeText}>Welcome to</Text>
-            <Text style={styles.appName}>ChooseGOD</Text>
             <Text style={styles.subtitle}>
               Your companion for growing closer to God through Scripture, prayer, and reflection
             </Text>
@@ -117,30 +113,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
   logoContainer: {
-    marginBottom: theme.spacing.xl,
-  },
-  logoGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
+    marginBottom: theme.spacing.lg,
     alignItems: 'center',
-    ...theme.shadows.lg,
+  },
+  logo: {
+    width: width * 0.7,
+    height: 120,
   },
   textContainer: {
     alignItems: 'center',
     marginBottom: theme.spacing.xl,
-  },
-  welcomeText: {
-    fontSize: theme.fontSize.xl,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.xs,
-  },
-  appName: {
-    fontSize: theme.fontSize.display,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.md,
   },
   subtitle: {
     fontSize: theme.fontSize.md,
