@@ -36,21 +36,21 @@ const SLIDES: Slide[] = [
     icon: 'book-outline',
     title: 'Daily Devotionals',
     description: 'Personalized spiritual journeys tailored to where you are in life and faith.',
-    gradient: ['#6366F1', '#4F46E5'],
+    gradient: [theme.colors.primary, theme.colors.primaryDark],
   },
   {
     id: '2',
     icon: 'heart-outline',
     title: 'Prayer & Journaling',
     description: 'Track your prayers, journal your thoughts, and see how God is working in your life.',
-    gradient: ['#EC4899', '#DB2777'],
+    gradient: [theme.colors.prayer, theme.colors.prayerDark],
   },
   {
     id: '3',
     icon: 'sparkles-outline',
     title: 'AI-Powered Guidance',
     description: 'Get personalized Scripture insights and spiritual guidance whenever you need it.',
-    gradient: ['#F59E0B', '#D97706'],
+    gradient: [theme.colors.accent, theme.colors.accentDark],
   },
 ];
 

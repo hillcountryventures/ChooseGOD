@@ -8,15 +8,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../../store/useStore';
-
-const TAB_BAR_HEIGHT = 65;
-
-const colors = {
-  primary: '#6366F1',
-  primaryDark: '#4F46E5',
-  accent: '#F59E0B',
-  background: '#0F0F0F',
-};
+import { theme } from '../../lib/theme';
+import { TAB_BAR } from '../../constants/dimensions';
 
 export function ChatFAB() {
   const insets = useSafeAreaInsets();
@@ -45,7 +38,7 @@ export function ChatFAB() {
     setChatSheetOpen(true);
   };
 
-  const bottomPosition = TAB_BAR_HEIGHT + insets.bottom + 16;
+  const bottomPosition = TAB_BAR.height + insets.bottom + 16;
   const hasContext = chatContext.screenType === 'bible' && chatContext.bibleContext;
 
   return (
@@ -83,7 +76,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    shadowColor: colors.primary,
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
@@ -93,7 +86,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -104,8 +97,8 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: colors.accent,
+    backgroundColor: theme.colors.accent,
     borderWidth: 2,
-    borderColor: colors.background,
+    borderColor: theme.colors.background,
   },
 });

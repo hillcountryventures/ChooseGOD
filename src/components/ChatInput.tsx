@@ -147,6 +147,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
   },
   stopButtonActive: {
-    backgroundColor: '#EF4444',
+    backgroundColor: theme.colors.error,
   },
 });

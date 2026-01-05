@@ -23,7 +23,7 @@ export default function WelcomeScreen() {
 
   return (
     <LinearGradient
-      colors={['#1a1a2e', '#16213e', '#0f0f0f']}
+      colors={theme.colors.gradient.spiritualFull as unknown as [string, string, string]}
       style={styles.container}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

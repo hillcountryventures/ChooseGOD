@@ -22,6 +22,9 @@ import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
 import { ChatMessage, ChatMode, VerseSource, SuggestedAction, ChatContext } from '../../types';
 import { supabase } from '../../lib/supabase';
+import { EDGE_FUNCTIONS } from '../../constants/database';
+import { CHAT_LIMITS } from '../../constants/limits';
+import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
 
 // Generate context-aware prompt based on current screen
 function generateContextPrompt(context: ChatContext): string {
@@ -107,7 +110,7 @@ export function ChatBottomSheet() {
     if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, ANIMATION_DELAY.scroll);
     }
   }, [messages]);
 
@@ -137,13 +140,13 @@ export function ChatBottomSheet() {
     Animated.sequence([
       Animated.timing(celebrationAnim, {
         toValue: 1,
-        duration: 300,
+        duration: ANIMATION_DURATION.normal,
         useNativeDriver: true,
       }),
-      Animated.delay(2000),
+      Animated.delay(ANIMATION_DELAY.celebration),
       Animated.timing(celebrationAnim, {
         toValue: 0,
-        duration: 300,
+        duration: ANIMATION_DURATION.normal,
         useNativeDriver: true,
       }),
     ]).start(() => setShowCelebration(false));
@@ -184,8 +187,8 @@ export function ChatBottomSheet() {
     bottomSheetRef.current?.snapToIndex(1);
 
     try {
-      // Prepare conversation history (last 10 messages)
-      const history = messages.slice(-10).map((m) => ({
+      // Prepare conversation history (last N messages)
+      const history = messages.slice(-CHAT_LIMITS.historyMessages).map((m) => ({
         role: m.role,
         content: m.content,
       }));
@@ -193,7 +196,7 @@ export function ChatBottomSheet() {
       // Include Bible context if available
       const bibleContext = chatContext.screenType === 'bible' ? chatContext.bibleContext : undefined;
 
-      const { data, error } = await supabase.functions.invoke('companion', {
+      const { data, error } = await supabase.functions.invoke(EDGE_FUNCTIONS.companion, {
         body: {
           user_id: null,
           message,

@@ -378,7 +378,7 @@ export default function SettingsScreen() {
           />
           <SettingRow
             icon="moon"
-            iconColor="#8B5CF6"
+            iconColor={theme.colors.gradient.end}
             label="Evening Examen"
             description="Reminder at 9:00 PM"
             rightElement={
@@ -454,7 +454,7 @@ export default function SettingsScreen() {
           />
           <SettingRow
             icon="heart"
-            iconColor="#EF4444"
+            iconColor={theme.colors.error}
             label="Our Philosophy"
             description="We are not God, only helping others find HIM"
             isLast

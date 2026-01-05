@@ -28,25 +28,25 @@ import { theme } from '../lib/theme';
 import { useStore } from '../store/useStore';
 import { SpiritualMoment, MomentType, VerseSource, RootStackParamList } from '../types';
 import { navigateToBibleVerse } from '../lib/navigationHelpers';
-import FloatingComposeButton from '../components/journal/FloatingComposeButton';
+import { WEEK_DAYS } from '../constants/strings';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type TabType = 'timeline' | 'habits' | 'growth';
 
-// Moment type configurations
+// Moment type configurations using theme colors
 const MOMENT_ICONS: Record<MomentType | string, { icon: string; color: string; label: string }> = {
   journal: { icon: 'book', color: theme.colors.primary, label: 'Journal' },
-  prayer: { icon: 'heart', color: '#EF4444', label: 'Prayer' },
+  prayer: { icon: 'heart', color: theme.colors.error, label: 'Prayer' },
   devotional: { icon: 'sunny', color: theme.colors.accent, label: 'Devotional' },
-  gratitude: { icon: 'sparkles', color: '#F59E0B', label: 'Gratitude' },
-  confession: { icon: 'water', color: '#3B82F6', label: 'Confession' },
+  gratitude: { icon: 'sparkles', color: theme.colors.warning, label: 'Gratitude' },
+  confession: { icon: 'water', color: theme.colors.info, label: 'Confession' },
   memory_practice: { icon: 'bulb', color: theme.colors.accent, label: 'Memory' },
-  obedience_step: { icon: 'checkmark-circle', color: '#22C55E', label: 'Obedience' },
-  lectio: { icon: 'leaf', color: '#22C55E', label: 'Lectio Divina' },
-  examen: { icon: 'moon', color: '#8B5CF6', label: 'Examen' },
-  answered_prayer: { icon: 'trophy', color: '#22C55E', label: 'Answered!' },
+  obedience_step: { icon: 'checkmark-circle', color: theme.colors.success, label: 'Obedience' },
+  lectio: { icon: 'leaf', color: theme.colors.success, label: 'Lectio Divina' },
+  examen: { icon: 'moon', color: theme.colors.gradient.end, label: 'Examen' },
+  answered_prayer: { icon: 'trophy', color: theme.colors.success, label: 'Answered!' },
 };
 
 // ============================================================================
@@ -244,7 +244,7 @@ function HabitsView({ moments }: { moments: SpiritualMoment[] }) {
       <View style={styles.calendarCard}>
         <Text style={styles.calendarTitle}>{calendarData.monthName}</Text>
         <View style={styles.calendarHeader}>
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+          {WEEK_DAYS.map((day, i) => (
             <Text key={i} style={styles.calendarDayHeader}>{day}</Text>
           ))}
         </View>
@@ -440,11 +440,16 @@ function GrowthView({ moments }: { moments: SpiritualMoment[] }) {
 // Main JourneyScreen
 // ============================================================================
 export default function JourneyScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
   const recentMoments = useStore((state) => state.recentMoments);
 
   // Calculate streak for header
   const streak = Math.min(recentMoments.length, 30);
+
+  const handleNewJournal = () => {
+    navigation.navigate('JournalCompose', {});
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -454,12 +459,17 @@ export default function JourneyScreen() {
           <Text style={styles.title}>Your Journey</Text>
           <Text style={styles.subtitle}>Track your spiritual growth</Text>
         </View>
-        {streak > 0 && (
-          <View style={styles.streakBadge}>
-            <Ionicons name="flame" size={16} color={theme.colors.accent} />
-            <Text style={styles.streakBadgeText}>{streak}</Text>
-          </View>
-        )}
+        <View style={styles.headerRight}>
+          {streak > 0 && (
+            <View style={styles.streakBadge}>
+              <Ionicons name="flame" size={16} color={theme.colors.accent} />
+              <Text style={styles.streakBadgeText}>{streak}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.newJournalButton} onPress={handleNewJournal}>
+            <Ionicons name="add" size={22} color={theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Tab Selector */}
@@ -485,9 +495,6 @@ export default function JourneyScreen() {
       {activeTab === 'timeline' && <TimelineView moments={recentMoments} />}
       {activeTab === 'habits' && <HabitsView moments={recentMoments} />}
       {activeTab === 'growth' && <GrowthView moments={recentMoments} />}
-
-      {/* Floating Compose Button */}
-      <FloatingComposeButton />
     </SafeAreaView>
   );
 }
@@ -524,13 +531,28 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
-    backgroundColor: theme.colors.accent + '20',
+    backgroundColor: theme.colors.accentAlpha[20],
     borderRadius: theme.borderRadius.full,
   },
   streakBadgeText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.accent,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  newJournalButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
 
   // Tabs
@@ -623,7 +645,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   themeBadge: {
-    backgroundColor: theme.colors.primary + '20',
+    backgroundColor: theme.colors.primaryAlpha[20],
     paddingVertical: 2,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.borderRadius.full,
@@ -648,7 +670,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.full,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '40',
+    borderColor: theme.colors.primaryAlpha[40],
   },
   linkedVerseText: {
     fontSize: theme.fontSize.xs,

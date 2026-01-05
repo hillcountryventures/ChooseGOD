@@ -36,6 +36,8 @@ export const theme = {
     error: '#EF4444',
     warning: '#F59E0B',
     info: '#3B82F6',
+    prayer: '#EC4899',
+    prayerDark: '#DB2777',
 
     // Input colors
     inputBackground: '#1A1A1A',
@@ -46,10 +48,48 @@ export const theme = {
     userBubble: '#6366F1',
     assistantBubble: '#1A1A1A',
 
-    // Special colors
+    // Bible verse highlight colors
+    highlight: {
+      yellow: '#FDE047',
+      green: '#86EFAC',
+      blue: '#93C5FD',
+      pink: '#F9A8D4',
+      purple: '#C4B5FD',
+      orange: '#FDBA74',
+    },
+
+    // Gradient backgrounds
     gradient: {
       start: '#6366F1',
       end: '#8B5CF6',
+      dark: ['#1F1F1F', '#2A2A2A'],
+      spiritual: ['#1A1A2E', '#16213E'],
+      spiritualFull: ['#1A1A2E', '#16213E', '#0F0F0F'],
+    },
+
+    // Opacity variants (for transparent overlays)
+    overlay: {
+      light: 'rgba(255, 255, 255, 0.1)',
+      medium: 'rgba(255, 255, 255, 0.2)',
+      dark: 'rgba(0, 0, 0, 0.5)',
+    },
+
+    // Semantic colors with opacity
+    primaryAlpha: {
+      10: 'rgba(99, 102, 241, 0.1)',
+      15: 'rgba(99, 102, 241, 0.15)',
+      20: 'rgba(99, 102, 241, 0.2)',
+      40: 'rgba(99, 102, 241, 0.4)',
+    },
+    accentAlpha: {
+      10: 'rgba(245, 158, 11, 0.1)',
+      20: 'rgba(245, 158, 11, 0.2)',
+    },
+    successAlpha: {
+      20: 'rgba(34, 197, 94, 0.2)',
+    },
+    errorAlpha: {
+      20: 'rgba(239, 68, 68, 0.2)',
     },
   },
 

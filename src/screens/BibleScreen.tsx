@@ -30,10 +30,11 @@ import {
   VerseHighlight,
   VerseNote,
 } from '../types';
+import { SWIPE, TAP } from '../constants';
+import { HEADER } from '../constants/dimensions';
+import { BIBLE_BOOKS } from '../data/bible/books';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = 80; // Minimum swipe distance to trigger highlight
-const HEADER_HEIGHT = 100; // Height of collapsible header
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
 
@@ -89,28 +90,7 @@ const formatDate = (date: Date): string => {
   });
 };
 
-// Book picker data
-const BIBLE_BOOKS = {
-  'Old Testament': [
-    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
-    'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
-    '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
-    'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
-    'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
-    'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
-    'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
-    'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
-  ],
-  'New Testament': [
-    'Matthew', 'Mark', 'Luke', 'John', 'Acts',
-    'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
-    'Ephesians', 'Philippians', 'Colossians',
-    '1 Thessalonians', '2 Thessalonians', '1 Timothy', '2 Timothy',
-    'Titus', 'Philemon', 'Hebrews', 'James',
-    '1 Peter', '2 Peter', '1 John', '2 John', '3 John',
-    'Jude', 'Revelation',
-  ],
-};
+// BIBLE_BOOKS is now imported from '../data/bible/books'
 
 interface VerseWithAnnotations extends VerseSource {
   highlight?: VerseHighlight;
@@ -158,7 +138,6 @@ export default function BibleScreen() {
 
   // Double-tap detection
   const lastTap = useRef<{ verse: number; time: number } | null>(null);
-  const DOUBLE_TAP_DELAY = 300;
 
   // Scroll view ref for programmatic scrolling
   const scrollViewRef = useRef<ScrollView>(null);
@@ -412,7 +391,7 @@ export default function BibleScreen() {
         // Scrolling down - hide header
         isHeaderVisible.current = false;
         Animated.spring(headerTranslateY, {
-          toValue: -HEADER_HEIGHT,
+          toValue: -HEADER.height,
           useNativeDriver: true,
           tension: 100,
           friction: 15,
@@ -448,7 +427,7 @@ export default function BibleScreen() {
     if (
       lastTap.current &&
       lastTap.current.verse === verse.verse &&
-      now - lastTap.current.time < DOUBLE_TAP_DELAY
+      now - lastTap.current.time < TAP.doubleTapDelay
     ) {
       // Double tap detected - update context and open chat sheet
       setBibleContext(currentBook, currentChapter, {
@@ -483,7 +462,7 @@ export default function BibleScreen() {
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -SWIPE_THRESHOLD) {
+        if (gestureState.dx < -SWIPE.threshold) {
           // Swipe threshold reached - apply highlight with default color (yellow)
           const key = getVerseKey(verse.book, verse.chapter, verse.verse);
           const existingHighlight = highlights.get(key);
@@ -545,7 +524,7 @@ export default function BibleScreen() {
         style={styles.verseWrapper}
         onLayout={(event) => {
           const { y } = event.nativeEvent.layout;
-          handleVerseLayout(verse.verse, y + HEADER_HEIGHT + theme.spacing.sm);
+          handleVerseLayout(verse.verse, y + HEADER.height + theme.spacing.sm);
         }}
       >
         {/* Swipe indicator background */}
@@ -675,7 +654,7 @@ export default function BibleScreen() {
           style={styles.versesContainer}
           contentContainerStyle={[
             styles.versesContent,
-            { paddingTop: HEADER_HEIGHT + theme.spacing.sm },
+            { paddingTop: HEADER.height + theme.spacing.sm },
           ]}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
@@ -937,7 +916,7 @@ export default function BibleScreen() {
             <View style={styles.noteButtonRow}>
               {editingNote && (
                 <TouchableOpacity style={styles.deleteNoteButton} onPress={handleDeleteNote}>
-                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                  <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
                   <Text style={styles.deleteNoteButtonText}>Delete</Text>
                 </TouchableOpacity>
               )}
@@ -1078,7 +1057,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: SWIPE_THRESHOLD + 20,
+    width: SWIPE.threshold + 20,
     backgroundColor: theme.colors.primary + '20',
     flexDirection: 'row',
     alignItems: 'center',
@@ -1408,13 +1387,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: theme.colors.errorAlpha[20],
     borderRadius: theme.borderRadius.lg,
   },
   deleteNoteButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
-    color: '#EF4444',
+    color: theme.colors.error,
   },
   saveNoteButton: {
     flex: 1,

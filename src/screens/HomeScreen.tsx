@@ -31,6 +31,9 @@ import { BottomTabParamList, RootStackParamList, ChatMode } from '../types';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose } from '../lib/navigationHelpers';
+import { GREETING_HOURS } from '../constants/timing';
+import { STREAK_LIMITS, BIBLE_LIMITS } from '../constants/limits';
+import { WEEK_DAYS, GREETINGS, PLACEHOLDERS, BIBLE_DEFAULTS } from '../constants/strings';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -67,7 +70,7 @@ function HeroVerseCard() {
         chapter: dailyVerse.verse.chapter,
         verse: dailyVerse.verse.verse,
         text: dailyVerse.verse.text,
-        translation: 'KJV',
+        translation: BIBLE_DEFAULTS.translation,
       },
       source: {
         type: 'verse_reflection',
@@ -91,7 +94,7 @@ function HeroVerseCard() {
   if (isLoading || !dailyVerse) {
     return (
       <View style={styles.heroCard}>
-        <LinearGradient colors={['#1F1F1F', '#2A2A2A']} style={styles.heroGradient}>
+        <LinearGradient colors={theme.colors.gradient.dark as [string, string]} style={styles.heroGradient}>
           <View style={styles.heroLoading}>
             <Ionicons name="book-outline" size={32} color={theme.colors.textMuted} />
             <Text style={styles.heroLoadingText}>Loading today&apos;s verse...</Text>
@@ -105,7 +108,7 @@ function HeroVerseCard() {
 
   return (
     <View style={styles.heroCard}>
-      <LinearGradient colors={['#1A1A2E', '#16213E']} style={styles.heroGradient}>
+      <LinearGradient colors={theme.colors.gradient.spiritual as [string, string]} style={styles.heroGradient}>
         <View style={styles.heroHeader}>
           <View style={styles.heroTitleRow}>
             <View style={styles.heroIconBadge}>
@@ -151,7 +154,7 @@ function HeroVerseCard() {
 function ProverbsOfTheDay() {
   const navigation = useNavigation<NavigationProp>();
   const dayOfMonth = new Date().getDate();
-  const proverbsChapter = Math.min(dayOfMonth, 31);
+  const proverbsChapter = Math.min(dayOfMonth, BIBLE_LIMITS.maxProverbsChapters);
 
   const handlePress = () => {
     navigateToProverbsOfDay(navigation);
@@ -181,8 +184,7 @@ function StreakBar() {
   const recentMoments = useStore((state) => state.recentMoments);
 
   // Calculate streak from recent moments
-  const streak = Math.min(recentMoments.length, 7);
-  const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const streak = Math.min(recentMoments.length, STREAK_LIMITS.weekDays);
   const today = new Date().getDay();
 
   return (
@@ -191,12 +193,12 @@ function StreakBar() {
         <View style={styles.streakTitleRow}>
           <Ionicons name="flame" size={18} color={theme.colors.accent} />
           <Text style={styles.streakTitle}>
-            {streak > 0 ? `${streak} day streak` : 'Start your streak'}
+            {streak > 0 ? `${streak} day streak` : GREETINGS.morning}
           </Text>
         </View>
       </View>
       <View style={styles.streakDays}>
-        {weekDays.map((day, index) => {
+        {WEEK_DAYS.map((day: string, index: number) => {
           const isCompleted = index <= today && streak > today - index;
           const isToday = index === today;
           return (
@@ -256,7 +258,7 @@ function ContextualCard() {
   } else if (pendingObedienceSteps.length > 0) {
     card = {
       icon: 'checkmark-circle',
-      iconBg: '#22C55E',
+      iconBg: theme.colors.success,
       title: 'Follow Through',
       subtitle: `${pendingObedienceSteps.length} commitment${pendingObedienceSteps.length > 1 ? 's' : ''} to check on`,
       onPress: () => navigation.navigate('Journey'),
@@ -264,7 +266,7 @@ function ContextualCard() {
   } else if (activePrayers.length > 0) {
     card = {
       icon: 'heart',
-      iconBg: '#EF4444',
+      iconBg: theme.colors.error,
       title: 'Continue in Prayer',
       subtitle: `${activePrayers.length} prayer${activePrayers.length > 1 ? 's' : ''} before the Lord`,
       onPress: () => openChatWithMode('prayer'),
@@ -308,7 +310,7 @@ function FloatingAskBar() {
     <View style={styles.floatingBar}>
       <TouchableOpacity style={styles.floatingInput} onPress={handlePress} activeOpacity={0.9}>
         <Ionicons name="chatbubbles-outline" size={20} color={theme.colors.primary} />
-        <Text style={styles.floatingPlaceholder}>Ask anything about Scripture...</Text>
+        <Text style={styles.floatingPlaceholder}>{PLACEHOLDERS.chatInput}</Text>
         <View style={styles.floatingArrow}>
           <Ionicons name="arrow-forward-circle" size={24} color={theme.colors.primary} />
         </View>
@@ -325,9 +327,9 @@ export default function HomeScreen() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < GREETING_HOURS.morningEnd) return GREETINGS.morning;
+    if (hour < GREETING_HOURS.afternoonEnd) return GREETINGS.afternoon;
+    return GREETINGS.evening;
   };
 
   return (
@@ -435,7 +437,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: theme.colors.accentAlpha[20],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -473,7 +475,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: theme.colors.primaryAlpha[15],
     borderRadius: theme.borderRadius.full,
   },
   heroActionText: {

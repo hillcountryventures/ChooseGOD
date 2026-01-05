@@ -98,7 +98,7 @@ export default function DevotionalCompleteScreen() {
                     ? theme.colors.primary
                     : i % 4 === 2
                     ? theme.colors.success
-                    : '#EC4899'
+                    : theme.colors.prayer
                 }
                 style={[
                   styles.confettiPiece,
@@ -182,7 +182,7 @@ export default function DevotionalCompleteScreen() {
           {/* Series Complete Message */}
           {isSeriesComplete && (
             <View style={styles.completeMessage}>
-              <Ionicons name="heart" size={24} color="#EC4899" />
+              <Ionicons name="heart" size={24} color={theme.colors.prayer} />
               <Text style={styles.completeText}>
                 You've completed this devotional journey. May God continue to bless your walk with Him!
               </Text>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
-import { useStore } from '../store/useStore';
+import { useStore, usePreferences } from '../store/useStore';
 import { RootStackParamList, SpiritualMoment } from '../types';
+import { getPromptFromSeed } from '../data/prompts/reflection';
 
 type ReflectionModalRouteProp = RouteProp<RootStackParamList, 'ReflectionModal'>;
 
@@ -23,11 +24,17 @@ export default function ReflectionModal() {
   const navigation = useNavigation();
   const route = useRoute<ReflectionModalRouteProp>();
   const { verse, reference } = route.params;
+  const preferences = usePreferences();
 
   const [reflection, setReflection] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const addMoment = useStore((state) => state.addMoment);
+
+  // Select a contextual prompt - could be enhanced with AI later
+  const reflectionPrompt = useMemo(() => {
+    return getPromptFromSeed(reference);
+  }, [reference]);
 
   const handleSave = async () => {
     if (!reflection.trim()) {
@@ -49,7 +56,7 @@ export default function ReflectionModal() {
           chapter: verse.chapter,
           verse: verse.verse,
           text: verse.text,
-          translation: 'KJV', // Default, could be made dynamic
+          translation: preferences.preferredTranslation,
         }],
         themes: [],
         createdAt: new Date(),
@@ -124,7 +131,7 @@ export default function ReflectionModal() {
           </View>
 
           {/* Reflection Prompt */}
-          <Text style={styles.prompt}>What does this verse speak to you today?</Text>
+          <Text style={styles.prompt}>{reflectionPrompt}</Text>
 
           {/* Text Input */}
           <TextInput

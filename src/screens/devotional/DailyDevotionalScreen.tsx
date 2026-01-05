@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
-  Animated,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,8 +26,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { TappableVerse } from '../../components/TappableVerse';
 import { InlineVerseText } from '../../components/InlineVerseText';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'DailyDevotional'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'DailyDevotional'>;
@@ -110,7 +106,19 @@ export default function DailyDevotionalScreen() {
   };
 
   const generateReflection = async (day: DevotionalDay, seriesData: DevotionalSeries | null) => {
-    if (!user) return;
+    // If we have substantial content in contentPrompt, use it directly
+    // This provides a better experience without waiting for AI generation
+    if (day.contentPrompt && day.contentPrompt.length > 200) {
+      setAiReflection(day.contentPrompt);
+      setLoadingReflection(false);
+      return;
+    }
+
+    if (!user) {
+      setAiReflection(day.contentPrompt || 'Take a moment to reflect on today\'s Scripture.');
+      setLoadingReflection(false);
+      return;
+    }
 
     setLoadingReflection(true);
     try {
@@ -256,17 +264,23 @@ export default function DailyDevotionalScreen() {
           </View>
         </View>
 
-        {/* Journal Prompt */}
+        {/* Reflection Questions */}
         {currentDay?.reflectionQuestions && currentDay.reflectionQuestions.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="create-outline" size={20} color={theme.colors.success} />
-              <Text style={styles.sectionTitle}>Journal Prompt</Text>
+              <Ionicons name="help-circle-outline" size={20} color={theme.colors.success} />
+              <Text style={styles.sectionTitle}>Reflection Questions</Text>
+            </View>
+            <View style={styles.questionsCard}>
+              {currentDay.reflectionQuestions.map((question, index) => (
+                <View key={index} style={styles.questionItem}>
+                  <Text style={styles.questionNumber}>{index + 1}</Text>
+                  <Text style={styles.questionText}>{question}</Text>
+                </View>
+              ))}
             </View>
             <View style={styles.journalCard}>
-              <Text style={styles.journalPrompt}>
-                {currentDay.reflectionQuestions[0]}
-              </Text>
+              <Text style={styles.journalPromptLabel}>Your Journal</Text>
               <TextInput
                 style={styles.journalInput}
                 placeholder="Write your thoughts..."
@@ -283,7 +297,7 @@ export default function DailyDevotionalScreen() {
         {currentDay?.prayerFocus && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="heart-outline" size={20} color="#EC4899" />
+              <Ionicons name="heart-outline" size={20} color={theme.colors.prayer} />
               <Text style={styles.sectionTitle}>Prayer Focus</Text>
             </View>
             <View style={styles.prayerCard}>
@@ -461,6 +475,29 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
     textDecorationLine: 'underline',
   },
+  questionsCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  questionItem: {
+    flexDirection: 'row',
+    marginBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  questionNumber: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.success,
+    width: 24,
+  },
+  questionText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    lineHeight: 22,
+    flex: 1,
+  },
   journalCard: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.lg,
@@ -472,6 +509,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
+  journalPromptLabel: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   journalInput: {
     backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.md,
@@ -482,7 +527,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   prayerCard: {
-    backgroundColor: `${theme.colors.primary}10`,
+    backgroundColor: theme.colors.primaryAlpha[10],
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
   },

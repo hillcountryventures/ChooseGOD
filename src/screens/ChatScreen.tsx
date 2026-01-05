@@ -26,6 +26,9 @@ import {
   RootStackParamList,
 } from '../types';
 import { supabase } from '../lib/supabase';
+import { EDGE_FUNCTIONS } from '../constants/database';
+import { CHAT_LIMITS } from '../constants/limits';
+import { ANIMATION_DURATION, ANIMATION_DELAY } from '../constants/animations';
 
 // ChatScreen is now deprecated - use ChatBottomSheet instead
 // This file is kept for reference but is no longer used as a tab
@@ -34,14 +37,14 @@ type ChatScreenRouteProp = RouteProp<RootStackParamList, 'Chat'>;
 const MODE_CONFIG: Record<ChatMode, { label: string; icon: string; color: string }> = {
   auto: { label: 'Ask Anything', icon: 'chatbubbles', color: theme.colors.primary },
   devotional: { label: 'Morning Devotional', icon: 'sunny', color: theme.colors.accent },
-  prayer: { label: 'Prayer Companion', icon: 'heart', color: '#EF4444' },
+  prayer: { label: 'Prayer Companion', icon: 'heart', color: theme.colors.error },
   journal: { label: 'Journal', icon: 'book', color: theme.colors.primary },
-  lectio: { label: 'Lectio Divina', icon: 'leaf', color: '#22C55E' },
-  examen: { label: 'Evening Examen', icon: 'moon', color: '#8B5CF6' },
+  lectio: { label: 'Lectio Divina', icon: 'leaf', color: theme.colors.success },
+  examen: { label: 'Evening Examen', icon: 'moon', color: theme.colors.primaryLight },
   memory: { label: 'Scripture Memory', icon: 'bulb', color: theme.colors.accent },
-  confession: { label: 'Heart Check', icon: 'water', color: '#3B82F6' },
-  gratitude: { label: 'Gratitude', icon: 'sparkles', color: '#F59E0B' },
-  celebration: { label: 'Celebration', icon: 'trophy', color: '#22C55E' },
+  confession: { label: 'Heart Check', icon: 'water', color: theme.colors.info },
+  gratitude: { label: 'Gratitude', icon: 'sparkles', color: theme.colors.warning },
+  celebration: { label: 'Celebration', icon: 'trophy', color: theme.colors.success },
 };
 
 export default function ChatScreen() {
@@ -84,7 +87,7 @@ export default function ChatScreen() {
     if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, ANIMATION_DELAY.scroll);
     }
   }, [messages]);
 
@@ -95,13 +98,13 @@ export default function ChatScreen() {
     Animated.sequence([
       Animated.timing(celebrationAnim, {
         toValue: 1,
-        duration: 300,
+        duration: ANIMATION_DURATION.normal,
         useNativeDriver: true,
       }),
-      Animated.delay(2000),
+      Animated.delay(ANIMATION_DELAY.celebration),
       Animated.timing(celebrationAnim, {
         toValue: 0,
-        duration: 300,
+        duration: ANIMATION_DURATION.normal,
         useNativeDriver: true,
       }),
     ]).start(() => setShowCelebration(false));
@@ -137,8 +140,8 @@ export default function ChatScreen() {
     setSuggestedActions([]);
 
     try {
-      // Prepare conversation history (last 10 messages)
-      const history = messages.slice(-10).map((m) => ({
+      // Prepare conversation history
+      const history = messages.slice(-CHAT_LIMITS.historyMessages).map((m) => ({
         role: m.role,
         content: m.content,
       }));
@@ -150,7 +153,7 @@ export default function ChatScreen() {
         history_length: history.length,
       });
 
-      const { data, error } = await supabase.functions.invoke('companion', {
+      const { data, error } = await supabase.functions.invoke(EDGE_FUNCTIONS.companion, {
         body: {
           user_id: null, // TODO: Add user authentication
           message,

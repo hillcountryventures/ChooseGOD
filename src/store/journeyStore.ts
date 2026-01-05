@@ -10,6 +10,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { TABLES } from '../constants/database';
 import {
   TimelineItem,
   SpiritualMoment,
@@ -187,7 +188,7 @@ export const useJourneyStore = create<JourneyState>()(
           const offset = reset ? 0 : get().timelineOffset;
 
           const { data, error } = await supabase
-            .from('spiritual_moments')
+            .from(TABLES.spiritualMoments)
             .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
@@ -237,7 +238,7 @@ export const useJourneyStore = create<JourneyState>()(
 
           // Fetch moments for the month
           const { data: moments, error: momentsError } = await supabase
-            .from('spiritual_moments')
+            .from(TABLES.spiritualMoments)
             .select('id, moment_type, created_at')
             .eq('user_id', userId)
             .gte('created_at', `${start}T00:00:00`)
@@ -279,7 +280,7 @@ export const useJourneyStore = create<JourneyState>()(
 
           // Fetch streak data
           const { data: streakData, error: streakError } = await supabase
-            .from('user_profiles')
+            .from(TABLES.userProfiles)
             .select('current_streak, longest_streak')
             .eq('id', userId)
             .single();
@@ -331,7 +332,7 @@ export const useJourneyStore = create<JourneyState>()(
 
           // Update in database
           const { error } = await supabase
-            .from('user_profiles')
+            .from(TABLES.userProfiles)
             .upsert({
               id: userId,
               current_streak: newStreak,
@@ -367,7 +368,7 @@ export const useJourneyStore = create<JourneyState>()(
           const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000);
 
           const { data: moments, error: momentsError } = await supabase
-            .from('spiritual_moments')
+            .from(TABLES.spiritualMoments)
             .select('themes, linked_verses')
             .eq('user_id', userId)
             .gte('created_at', thirtyDaysAgo.toISOString());
@@ -410,7 +411,7 @@ export const useJourneyStore = create<JourneyState>()(
 
           // Fetch or generate insight
           const { data: insight, error: insightError } = await supabase
-            .from('growth_insights')
+            .from(TABLES.growthInsights)
             .select('*')
             .eq('user_id', userId)
             .eq('insight_type', 'monthly')

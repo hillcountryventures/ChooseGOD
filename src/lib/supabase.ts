@@ -2,6 +2,9 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { RAGQueryResponse, Translation, VerseSource } from '../types';
+import { TABLES, EDGE_FUNCTIONS } from '../constants/database';
+import { BIBLE_DEFAULTS } from '../constants/strings';
+import { SEARCH_LIMITS } from '../constants/limits';
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
@@ -36,14 +39,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export async function queryBible(
   query: string,
-  translation: Translation = 'KJV',
+  translation: Translation = BIBLE_DEFAULTS.translation as Translation,
   userId?: string
 ): Promise<RAGQueryResponse> {
   const startTime = Date.now();
 
   try {
     // Call the Supabase Edge Function for RAG query
-    const { data, error } = await supabase.functions.invoke('query-bible', {
+    const { data, error } = await supabase.functions.invoke(EDGE_FUNCTIONS.queryBible, {
       body: {
         query,
         translation,
@@ -76,11 +79,11 @@ export async function fetchVerse(
   book: string,
   chapter: number,
   verse: number,
-  translation: Translation = 'KJV'
+  translation: Translation = BIBLE_DEFAULTS.translation as Translation
 ): Promise<VerseSource | null> {
   try {
     const { data, error } = await supabase
-      .from('bible_verses')
+      .from(TABLES.bibleVerses)
       .select('*')
       .eq('book', book)
       .eq('chapter', chapter)
@@ -111,12 +114,12 @@ export async function fetchVerse(
  */
 export async function searchVerses(
   keyword: string,
-  translation: Translation = 'KJV',
-  limit: number = 10
+  translation: Translation = BIBLE_DEFAULTS.translation as Translation,
+  limit: number = SEARCH_LIMITS.semanticResults
 ): Promise<VerseSource[]> {
   try {
     const { data, error } = await supabase
-      .from('bible_verses')
+      .from(TABLES.bibleVerses)
       .select('*')
       .eq('translation', translation)
       .ilike('text', `%${keyword}%`)
@@ -146,14 +149,14 @@ export async function searchVerses(
 export async function fetchChapter(
   book: string,
   chapter: number,
-  translation: Translation = 'KJV'
+  translation: Translation = BIBLE_DEFAULTS.translation as Translation
 ): Promise<VerseSource[]> {
   try {
     // Database stores translation as lowercase
     const translationLower = translation.toLowerCase();
 
     const { data, error } = await supabase
-      .from('bible_verses')
+      .from(TABLES.bibleVerses)
       .select('*')
       .eq('book', book)
       .eq('chapter', chapter)
@@ -188,14 +191,14 @@ export async function fetchChapter(
  */
 export async function getBookChapterCount(
   book: string,
-  translation: Translation = 'KJV'
+  translation: Translation = BIBLE_DEFAULTS.translation as Translation
 ): Promise<number> {
   try {
     // Database stores translation as lowercase
     const translationLower = translation.toLowerCase();
 
     const { data, error } = await supabase
-      .from('bible_verses')
+      .from(TABLES.bibleVerses)
       .select('chapter')
       .eq('book', book)
       .eq('translation', translationLower)

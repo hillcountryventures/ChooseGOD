@@ -2,6 +2,8 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { supabase } from './supabase';
+import { TABLES, NOTIFICATION_CHANNELS } from '../constants/database';
+import { theme } from './theme';
 
 // =====================================================
 // NOTIFICATION CONFIGURATION
@@ -44,11 +46,11 @@ export async function requestPermissions(): Promise<boolean> {
 
   // For Android, set up notification channel
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('devotional-reminders', {
+    await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNELS.devotionalReminders, {
       name: 'Devotional Reminders',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#6366F1',
+      lightColor: theme.colors.primary,
       sound: 'default',
     });
   }
@@ -81,7 +83,7 @@ export async function getExpoPushToken(): Promise<string | null> {
 export async function savePushToken(userId: string, token: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from('user_profiles')
+      .from(TABLES.userProfiles)
       .upsert({
         id: userId,
         notification_token: token,

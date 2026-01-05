@@ -387,12 +387,15 @@ export default function JournalComposeScreen() {
       );
       return;
     }
-    // TODO: Integrate with AI companion for suggestions
-    Alert.alert(
-      'AI Reflection',
-      'Based on your writing, consider:\n\n• What emotion are you feeling right now?\n• Is there a Bible verse that speaks to this?\n• What would you like God to help you with?',
-      [{ text: 'Thanks' }]
-    );
+    // Navigate to chat with journal context for AI-powered reflection
+    (navigation as any).navigate('Chat', {
+      mode: 'journal',
+      initialMessage: content.trim(),
+      context: {
+        type: 'journal_reflection',
+        linkedVerses: linkedVerses,
+      },
+    });
   };
 
   const canPost = content.trim().length > 0;
@@ -598,7 +601,7 @@ export default function JournalComposeScreen() {
 
             <TouchableOpacity style={styles.mediaButton} onPress={handleAddGratitude}>
               <View style={styles.mediaButtonIcon}>
-                <Ionicons name="heart-outline" size={20} color="#EF4444" />
+                <Ionicons name="heart-outline" size={20} color={theme.colors.error} />
               </View>
               <Text style={styles.mediaButtonLabel}>Gratitude</Text>
             </TouchableOpacity>
@@ -702,7 +705,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: theme.colors.primaryAlpha[15],
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
@@ -748,7 +751,7 @@ const styles = StyleSheet.create({
   verseChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '20',
+    backgroundColor: theme.colors.primaryAlpha[20],
     paddingVertical: theme.spacing.xs,
     paddingLeft: theme.spacing.sm,
     paddingRight: theme.spacing.xs,

@@ -104,7 +104,7 @@ function AnsweredPrayerCard({ prayer }: { prayer: PrayerRequest }) {
   return (
     <View style={[styles.prayerCard, styles.answeredCard]}>
       <View style={styles.answeredBadge}>
-        <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+        <Ionicons name="checkmark-circle" size={16} color={theme.colors.success} />
         <Text style={styles.answeredBadgeText}>Answered</Text>
       </View>
 
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   answeredCard: {
-    borderColor: '#22C55E30',
+    borderColor: theme.colors.successAlpha[20],
   },
   prayerText: {
     fontSize: theme.fontSize.md,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   answeredButton: {
-    backgroundColor: '#22C55E',
+    backgroundColor: theme.colors.success,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.full,
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   answeredBadgeText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
-    color: '#22C55E',
+    color: theme.colors.success,
     textTransform: 'uppercase',
   },
   reflectionContainer: {
