@@ -58,29 +58,27 @@ export function navigateToParsedVerse(
 }
 
 /**
- * Navigate to the Ask tab with a specific mode
+ * @deprecated Use useStore().setChatSheetOpen(true) and setCurrentMode() instead
+ * The Ask tab has been replaced with a Chat FAB and bottom sheet
  */
 export function navigateToAskMode(
-  navigation: AnyNavigation,
-  mode: ChatMode,
-  initialMessage?: string
+  _navigation: AnyNavigation,
+  _mode: ChatMode,
+  _initialMessage?: string
 ): void {
-  navigation.navigate('Ask', {
-    mode,
-    initialMessage,
-  });
+  console.warn('navigateToAskMode is deprecated. Use the Chat FAB instead.');
 }
 
 /**
- * Navigate to Ask tab with a question about a specific verse
+ * @deprecated Use useStore().setChatSheetOpen(true) instead
+ * The Ask tab has been replaced with a Chat FAB and bottom sheet
  */
 export function askAboutVerse(
-  navigation: AnyNavigation,
-  reference: string,
-  question?: string
+  _navigation: AnyNavigation,
+  _reference: string,
+  _question?: string
 ): void {
-  const defaultQuestion = `Tell me more about ${reference}`;
-  navigateToAskMode(navigation, 'auto', question || defaultQuestion);
+  console.warn('askAboutVerse is deprecated. Use the Chat FAB instead.');
 }
 
 /**

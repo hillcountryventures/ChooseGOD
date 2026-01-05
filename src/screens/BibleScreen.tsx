@@ -17,11 +17,12 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute, useNavigation, RouteProp, NavigationProp } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { fetchChapter, getBookChapterCount } from '../lib/supabase';
 import { useStore } from '../store/useStore';
+import { useChatContext } from '../hooks/useChatContext';
 import {
   BottomTabParamList,
   VerseSource,
@@ -35,7 +36,6 @@ const SWIPE_THRESHOLD = 80; // Minimum swipe distance to trigger highlight
 const HEADER_HEIGHT = 100; // Height of collapsible header
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
-type BibleScreenNavigationProp = NavigationProp<BottomTabParamList>;
 
 const HIGHLIGHT_COLORS: { color: HighlightColor; hex: string }[] = [
   { color: 'yellow', hex: '#FEF08A' },
@@ -114,17 +114,19 @@ const BIBLE_BOOKS = {
 
 interface VerseWithAnnotations extends VerseSource {
   highlight?: VerseHighlight;
-  note?: VerseNote;
+  notes?: VerseNote[];
 }
 
 export default function BibleScreen() {
   const route = useRoute<BibleScreenRouteProp>();
-  const navigation = useNavigation<BibleScreenNavigationProp>();
   const preferences = useStore((state) => state.preferences);
+  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
+  const { setBibleContext } = useChatContext();
 
   // Current reading position
   const [currentBook, setCurrentBook] = useState(route.params?.book || 'Proverbs');
   const [currentChapter, setCurrentChapter] = useState(route.params?.chapter || 1);
+  const [targetVerse, setTargetVerse] = useState<number | undefined>(route.params?.verse);
   const [totalChapters, setTotalChapters] = useState(31); // Proverbs has 31
 
   // Verses and loading state
@@ -133,7 +135,7 @@ export default function BibleScreen() {
 
   // Annotations (stored locally for now - would sync to Supabase)
   const [highlights, setHighlights] = useState<Map<string, VerseHighlight>>(new Map());
-  const [notes, setNotes] = useState<Map<string, VerseNote>>(new Map());
+  const [notes, setNotes] = useState<Map<string, VerseNote[]>>(new Map());
 
   // UI state
   const [selectedVerse, setSelectedVerse] = useState<VerseWithAnnotations | null>(null);
@@ -158,6 +160,10 @@ export default function BibleScreen() {
   const lastTap = useRef<{ verse: number; time: number } | null>(null);
   const DOUBLE_TAP_DELAY = 300;
 
+  // Scroll view ref for programmatic scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+  const verseLayoutsRef = useRef<Map<number, number>>(new Map());
+
   // Generate verse key for annotations
   const getVerseKey = (book: string, chapter: number, verse: number) =>
     `${book}-${chapter}-${verse}`;
@@ -178,7 +184,7 @@ export default function BibleScreen() {
         return {
           ...v,
           highlight: highlights.get(key),
-          note: notes.get(key),
+          notes: notes.get(key),
         };
       });
 
@@ -202,12 +208,47 @@ export default function BibleScreen() {
     if (route.params?.chapter) {
       setCurrentChapter(route.params.chapter);
     }
+    if (route.params?.verse) {
+      setTargetVerse(route.params.verse);
+    }
   }, [route.params]);
 
   // Load chapter when book/chapter changes
   useEffect(() => {
     loadChapter();
   }, [loadChapter]);
+
+  // Report Bible context to chat FAB
+  useEffect(() => {
+    if (selectedVerse) {
+      setBibleContext(currentBook, currentChapter, {
+        verse: selectedVerse.verse,
+        text: selectedVerse.text,
+        translation: preferences.preferredTranslation,
+      });
+    } else {
+      setBibleContext(currentBook, currentChapter);
+    }
+  }, [currentBook, currentChapter, selectedVerse, preferences.preferredTranslation, setBibleContext]);
+
+  // Scroll to target verse after verses load
+  useEffect(() => {
+    if (targetVerse && verses.length > 0 && !isLoading) {
+      // Small delay to ensure layout is complete
+      const timer = setTimeout(() => {
+        const yOffset = verseLayoutsRef.current.get(targetVerse);
+        if (yOffset !== undefined && scrollViewRef.current) {
+          scrollViewRef.current.scrollTo({
+            y: yOffset - 20, // Offset to show some context above
+            animated: true,
+          });
+        }
+        // Clear target verse after scrolling
+        setTargetVerse(undefined);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [targetVerse, verses, isLoading]);
 
   // Navigate chapters
   const goToPreviousChapter = () => {
@@ -261,37 +302,72 @@ export default function BibleScreen() {
     setSelectedVerse(null);
   };
 
-  // Open note editor
+  // Open note editor for a new note
   const handleOpenNote = () => {
     if (!selectedVerse) return;
-
-    const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
-    const existingNote = notes.get(key);
-    setEditingNote(existingNote || null);
-    setNoteText(existingNote?.content || '');
+    setEditingNote(null);
+    setNoteText('');
     setShowNoteModal(true);
   };
 
-  // Save note
+  // Open note editor to edit an existing note
+  const handleEditNote = (note: VerseNote) => {
+    setEditingNote(note);
+    setNoteText(note.content);
+    setShowNoteModal(true);
+  };
+
+  // Save note (add new or update existing)
   const handleSaveNote = () => {
-    if (!selectedVerse) return;
+    if (!selectedVerse || !noteText.trim()) {
+      setShowNoteModal(false);
+      setNoteText('');
+      setEditingNote(null);
+      return;
+    }
 
     const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
+    const existingNotes = notes.get(key) || [];
 
-    if (noteText.trim()) {
+    if (editingNote) {
+      // Update existing note
+      const updatedNotes = existingNotes.map((n) =>
+        n.id === editingNote.id
+          ? { ...n, content: noteText.trim(), updatedAt: new Date() }
+          : n
+      );
+      setNotes(new Map(notes.set(key, updatedNotes)));
+    } else {
+      // Add new note
       const newNote: VerseNote = {
-        id: editingNote?.id || `note-${Date.now()}`,
+        id: `note-${Date.now()}`,
         userId: 'local-user',
         book: selectedVerse.book,
         chapter: selectedVerse.chapter,
         verse: selectedVerse.verse,
         content: noteText.trim(),
-        createdAt: editingNote?.createdAt || new Date(),
+        createdAt: new Date(),
         updatedAt: new Date(),
       };
-      setNotes(new Map(notes.set(key, newNote)));
+      setNotes(new Map(notes.set(key, [...existingNotes, newNote])));
+    }
+
+    setShowNoteModal(false);
+    setNoteText('');
+    setEditingNote(null);
+  };
+
+  // Delete a specific note
+  const handleDeleteNote = () => {
+    if (!selectedVerse || !editingNote) return;
+
+    const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
+    const existingNotes = notes.get(key) || [];
+    const filteredNotes = existingNotes.filter((n) => n.id !== editingNote.id);
+
+    if (filteredNotes.length > 0) {
+      setNotes(new Map(notes.set(key, filteredNotes)));
     } else {
-      // Remove note if empty
       const newNotes = new Map(notes);
       newNotes.delete(key);
       setNotes(newNotes);
@@ -300,32 +376,22 @@ export default function BibleScreen() {
     setShowNoteModal(false);
     setNoteText('');
     setEditingNote(null);
-    setSelectedVerse(null);
   };
 
-  // Delete note
-  const handleDeleteNote = () => {
+  // Handle AI quick action - opens chat sheet with verse context
+  const handleAIAction = (_action: typeof AI_QUICK_ACTIONS[0]) => {
     if (!selectedVerse) return;
 
-    const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
-    const newNotes = new Map(notes);
-    newNotes.delete(key);
-    setNotes(newNotes);
-    setShowNoteModal(false);
-    setNoteText('');
-    setEditingNote(null);
-    setSelectedVerse(null);
-  };
+    // Update context with selected verse before opening sheet
+    setBibleContext(currentBook, currentChapter, {
+      verse: selectedVerse.verse,
+      text: selectedVerse.text,
+      translation: preferences.preferredTranslation,
+    });
 
-  // Handle AI quick action
-  const handleAIAction = (action: typeof AI_QUICK_ACTIONS[0]) => {
-    if (!selectedVerse) return;
-
-    const verseRef = `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`;
-    const initialMessage = action.getPrompt(verseRef, selectedVerse.text);
     setShowAIMenu(false);
     setSelectedVerse(null);
-    navigation.navigate('Ask', { mode: 'auto', initialMessage });
+    setChatSheetOpen(true);
   };
 
   // Get highlight background color
@@ -375,7 +441,7 @@ export default function BibleScreen() {
     lastScrollY.current = currentScrollY;
   };
 
-  // Handle double-tap for AI explain
+  // Handle double-tap for AI explain - opens chat sheet with verse context
   const handleDoubleTap = (verse: VerseWithAnnotations) => {
     const now = Date.now();
 
@@ -384,13 +450,13 @@ export default function BibleScreen() {
       lastTap.current.verse === verse.verse &&
       now - lastTap.current.time < DOUBLE_TAP_DELAY
     ) {
-      // Double tap detected - open AI explain
-      const verseRef = `${verse.book} ${verse.chapter}:${verse.verse}`;
-      const aiAction = AI_QUICK_ACTIONS.find((a) => a.id === 'explain');
-      if (aiAction) {
-        const initialMessage = aiAction.getPrompt(verseRef, verse.text);
-        navigation.navigate('Ask', { mode: 'auto', initialMessage });
-      }
+      // Double tap detected - update context and open chat sheet
+      setBibleContext(currentBook, currentChapter, {
+        verse: verse.verse,
+        text: verse.text,
+        translation: preferences.preferredTranslation,
+      });
+      setChatSheetOpen(true);
       lastTap.current = null;
     } else {
       // First tap
@@ -458,17 +524,30 @@ export default function BibleScreen() {
     });
   };
 
+  // Track verse layout for scrolling
+  const handleVerseLayout = (verseNum: number, y: number) => {
+    verseLayoutsRef.current.set(verseNum, y);
+  };
+
   // Render verse with gestures
   const renderVerse = (verse: VerseWithAnnotations) => {
     const key = getVerseKey(verse.book, verse.chapter, verse.verse);
     const highlight = highlights.get(key);
-    const note = notes.get(key);
+    const verseNotes = notes.get(key) || [];
     const isSelected = selectedVerse?.verse === verse.verse;
     const isSwiping = swipingVerse === verse.verse;
     const panResponder = createVersePanResponder(verse);
+    const isTargetVerse = targetVerse === verse.verse;
 
     return (
-      <View key={verse.verse} style={styles.verseWrapper}>
+      <View
+        key={verse.verse}
+        style={styles.verseWrapper}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          handleVerseLayout(verse.verse, y + HEADER_HEIGHT + theme.spacing.sm);
+        }}
+      >
         {/* Swipe indicator background */}
         <View style={styles.swipeIndicator}>
           <Ionicons
@@ -484,6 +563,7 @@ export default function BibleScreen() {
           style={[
             styles.verseContainer,
             isSelected && styles.verseSelected,
+            isTargetVerse && styles.verseHighlighted,
             isSwiping && {
               transform: [{ translateX: swipeX }],
             },
@@ -505,9 +585,12 @@ export default function BibleScreen() {
             >
               <Text style={styles.verseNumber}>{verse.verse}</Text>
               <Text style={styles.verseText}>{verse.text}</Text>
-              {note && (
+              {verseNotes.length > 0 && (
                 <View style={styles.noteIndicator}>
                   <Ionicons name="document-text" size={12} color={theme.colors.primary} />
+                  {verseNotes.length > 1 && (
+                    <Text style={styles.noteCount}>{verseNotes.length}</Text>
+                  )}
                 </View>
               )}
             </View>
@@ -579,12 +662,6 @@ export default function BibleScreen() {
         </View>
       </Animated.View>
 
-      {/* Gesture hints (shown briefly) */}
-      <View style={styles.gestureHintsContainer}>
-        <Text style={styles.gestureHint}>
-          Swipe left to highlight • Double-tap for AI
-        </Text>
-      </View>
 
       {/* Verses */}
       {isLoading ? (
@@ -594,6 +671,7 @@ export default function BibleScreen() {
         </View>
       ) : (
         <ScrollView
+          ref={scrollViewRef}
           style={styles.versesContainer}
           contentContainerStyle={[
             styles.versesContent,
@@ -620,6 +698,60 @@ export default function BibleScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Existing notes timeline */}
+          {(() => {
+            const verseKey = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
+            const existingNotes = notes.get(verseKey) || [];
+            if (existingNotes.length > 0) {
+              // Sort by date, newest first
+              const sortedNotes = [...existingNotes].sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              return (
+                <View style={styles.notesSection}>
+                  <View style={styles.notesSectionHeader}>
+                    <Text style={styles.notesSectionTitle}>
+                      Your Notes ({existingNotes.length})
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.addNoteButton}
+                      onPress={handleOpenNote}
+                    >
+                      <Ionicons name="add-circle" size={20} color={theme.colors.primary} />
+                      <Text style={styles.addNoteButtonText}>Add</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView
+                    style={styles.notesTimeline}
+                    horizontal={false}
+                    nestedScrollEnabled
+                  >
+                    {sortedNotes.map((note) => (
+                      <TouchableOpacity
+                        key={note.id}
+                        style={styles.notePreview}
+                        onPress={() => handleEditNote(note)}
+                      >
+                        <View style={styles.notePreviewHeader}>
+                          <Text style={styles.notePreviewDate}>
+                            {formatDate(note.createdAt)}
+                          </Text>
+                          {note.updatedAt.getTime() !== note.createdAt.getTime() && (
+                            <Text style={styles.noteEditedLabel}>(edited)</Text>
+                          )}
+                        </View>
+                        <Text style={styles.notePreviewContent} numberOfLines={3}>
+                          {note.content}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              );
+            }
+            return null;
+          })()}
+
           {/* Highlight colors */}
           <View style={styles.highlightRow}>
             <Text style={styles.actionLabel}>Highlight</Text>
@@ -643,10 +775,8 @@ export default function BibleScreen() {
           {/* Actions */}
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleOpenNote}>
-              <Ionicons name="create-outline" size={20} color={theme.colors.primary} />
-              <Text style={styles.actionButtonText}>
-                {notes.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? 'Edit Note' : 'Add Note'}
-              </Text>
+              <Ionicons name="add-circle-outline" size={20} color={theme.colors.primary} />
+              <Text style={styles.actionButtonText}>Add Note</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={() => setShowAIMenu(true)}>
@@ -872,21 +1002,6 @@ const styles = StyleSheet.create({
     zIndex: 100,
     backgroundColor: theme.colors.background,
   },
-  gestureHintsContainer: {
-    position: 'absolute',
-    top: HEADER_HEIGHT,
-    left: 0,
-    right: 0,
-    zIndex: 50,
-    paddingVertical: theme.spacing.xs,
-    backgroundColor: theme.colors.backgroundSecondary,
-    alignItems: 'center',
-  },
-  gestureHint: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    fontStyle: 'italic',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -985,6 +1100,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary + '20',
     borderRadius: theme.borderRadius.md,
   },
+  verseHighlighted: {
+    backgroundColor: theme.colors.accent + '30',
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.accent,
+  },
   verseTextContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1006,8 +1127,16 @@ const styles = StyleSheet.create({
     lineHeight: theme.fontSize.lg * 1.8,
   },
   noteIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: theme.spacing.xs,
     marginTop: 4,
+    gap: 2,
+  },
+  noteCount: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.bold,
   },
   actionBar: {
     position: 'absolute',
@@ -1030,6 +1159,66 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.text,
+  },
+  notesSection: {
+    marginBottom: theme.spacing.md,
+  },
+  notesSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  notesSectionTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  addNoteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.primary + '20',
+    borderRadius: theme.borderRadius.full,
+  },
+  addNoteButtonText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+  notesTimeline: {
+    maxHeight: 150,
+  },
+  notePreview: {
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.primary,
+  },
+  notePreviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+    gap: theme.spacing.sm,
+  },
+  notePreviewDate: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+  },
+  noteEditedLabel: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    fontStyle: 'italic',
+  },
+  notePreviewContent: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    lineHeight: theme.fontSize.md * 1.5,
   },
   highlightRow: {
     marginBottom: theme.spacing.md,

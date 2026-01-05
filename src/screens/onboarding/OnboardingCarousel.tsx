@@ -15,6 +15,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
+import { useDevotionalStore } from '../../store/devotionalStore';
+import { useAuthStore } from '../../store/authStore';
 
 const { width } = Dimensions.get('window');
 
@@ -57,6 +59,8 @@ export default function OnboardingCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const { markOnboardingComplete } = useDevotionalStore();
+  const { user } = useAuthStore();
 
   const handleNext = () => {
     if (currentIndex < SLIDES.length - 1) {
@@ -69,6 +73,12 @@ export default function OnboardingCarousel() {
 
   const handleSkip = () => {
     navigation.navigate('Quiz');
+  };
+
+  const handleSkipOnboarding = async () => {
+    if (user) {
+      await markOnboardingComplete(user.id);
+    }
   };
 
   const renderSlide = ({ item }: { item: Slide }) => (
@@ -128,9 +138,15 @@ export default function OnboardingCarousel() {
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* Skip Button */}
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.goHomeButton} onPress={handleSkipOnboarding}>
+            <Ionicons name="home-outline" size={16} color={theme.colors.textSecondary} />
+            <Text style={styles.goHomeText}>Go Home</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Carousel */}
         <Animated.FlatList
@@ -190,14 +206,30 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  skipButton: {
+  headerButtons: {
     position: 'absolute',
     top: 60,
+    left: theme.spacing.lg,
     right: theme.spacing.lg,
     zIndex: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  skipButton: {
     padding: theme.spacing.sm,
   },
   skipText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+  },
+  goHomeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.sm,
+    gap: 4,
+  },
+  goHomeText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
   },

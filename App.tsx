@@ -4,8 +4,13 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+// Chat FAB Components
+import { ChatFAB } from './src/components/chat/ChatFAB';
+import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
 
 // Auth Store
 import { useAuthStore } from './src/store/authStore';
@@ -15,9 +20,14 @@ import { useDevotionalStore } from './src/store/devotionalStore';
 import HomeScreen from './src/screens/HomeScreen';
 import BibleScreen from './src/screens/BibleScreen';
 import JourneyScreen from './src/screens/JourneyScreen';
-import ChatScreen from './src/screens/ChatScreen';
+// ChatScreen is now used in ChatBottomSheet, not as a tab
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
+
+// Journal Screens
+import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
+import JournalDetailScreen from './src/screens/journal/JournalDetailScreen';
+import VersePickerScreen from './src/screens/journal/VersePickerScreen';
 
 // Auth Screens
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -94,9 +104,8 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   Home: { active: 'home', inactive: 'home-outline' },
-  Bible: { active: 'book', inactive: 'book-outline' },
   Devotionals: { active: 'heart', inactive: 'heart-outline' },
-  Ask: { active: 'chatbubbles', inactive: 'chatbubbles-outline' },
+  Bible: { active: 'book', inactive: 'book-outline' },
   Journey: { active: 'trending-up', inactive: 'trending-up-outline' },
   Settings: { active: 'settings', inactive: 'settings-outline' },
 };
@@ -191,8 +200,8 @@ function TabNavigator() {
           if (!icons) return null;
           const iconName = focused ? icons.active : icons.inactive;
 
-          // Special styling for center Ask tab
-          if (route.name === 'Ask') {
+          // Special styling for center Bible tab (purple highlight)
+          if (route.name === 'Bible') {
             return (
               <View style={styles.centerTab}>
                 <Ionicons name={iconName} size={28} color="#fff" />
@@ -205,7 +214,6 @@ function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Bible" component={BibleScreen} />
       <Tab.Screen
         name="Devotionals"
         component={DevotionalNavigator}
@@ -214,8 +222,8 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Ask"
-        component={ChatScreen}
+        name="Bible"
+        component={BibleScreen}
         options={{
           tabBarLabel: '',
         }}
@@ -280,33 +288,68 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer theme={DarkTheme}>
-        <StatusBar style="light" />
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          {!user ? (
-            // Not authenticated - show auth flow
-            <RootStack.Screen name="Auth" component={AuthNavigator} />
-          ) : !onboardingCompleted ? (
-            // Authenticated but hasn't completed onboarding
-            <RootStack.Screen name="Onboarding" component={OnboardingNavigator} />
-          ) : (
-            // Fully authenticated and onboarded
-            <>
-              <RootStack.Screen name="Main" component={TabNavigator} />
-              <RootStack.Screen
-                name="ReflectionModal"
-                component={ReflectionModal}
-                options={{
-                  presentation: 'modal',
-                  animation: 'slide_from_bottom',
-                }}
-              />
-            </>
-          )}
-        </RootStack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.gestureRoot}>
+      <SafeAreaProvider>
+        <NavigationContainer theme={DarkTheme}>
+          <StatusBar style="light" />
+          <View style={styles.gestureRoot}>
+            <RootStack.Navigator screenOptions={{ headerShown: false }}>
+              {!user ? (
+                // Not authenticated - show auth flow
+                <RootStack.Screen name="Auth" component={AuthNavigator} />
+              ) : !onboardingCompleted ? (
+                // Authenticated but hasn't completed onboarding
+                <RootStack.Screen name="Onboarding" component={OnboardingNavigator} />
+              ) : (
+                // Fully authenticated and onboarded
+                <>
+                  <RootStack.Screen name="Main" component={TabNavigator} />
+                  <RootStack.Screen
+                    name="ReflectionModal"
+                    component={ReflectionModal}
+                    options={{
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="JournalCompose"
+                    component={JournalComposeScreen}
+                    options={{
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="JournalDetail"
+                    component={JournalDetailScreen}
+                    options={{
+                      animation: 'slide_from_right',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="VersePicker"
+                    component={VersePickerScreen}
+                    options={{
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                </>
+              )}
+            </RootStack.Navigator>
+
+            {/* Chat FAB and Bottom Sheet - only visible when authenticated and onboarded */}
+            {user && onboardingCompleted && (
+              <>
+                <ChatFAB />
+                <ChatBottomSheet />
+              </>
+            )}
+          </View>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -315,6 +358,9 @@ export default function App() {
 // =====================================================
 
 const styles = StyleSheet.create({
+  gestureRoot: {
+    flex: 1,
+  },
   centerTab: {
     width: 56,
     height: 56,

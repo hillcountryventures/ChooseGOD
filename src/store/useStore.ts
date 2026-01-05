@@ -11,6 +11,9 @@ import {
   MemoryVerse,
   ObedienceStep,
   SpiritualMoment,
+  JournalDraft,
+  JournalPrompt,
+  ChatContext,
 } from '../types';
 
 const defaultPreferences: UserPreferences = {
@@ -20,6 +23,13 @@ const defaultPreferences: UserPreferences = {
   eveningExamen: false,
   notificationsEnabled: false,
   maturityLevel: 'growing',
+};
+
+const defaultChatContext: ChatContext = {
+  screenType: 'home',
+  bibleContext: undefined,
+  devotionalContext: undefined,
+  timestamp: new Date(),
 };
 
 // Selector for preferences
@@ -40,6 +50,15 @@ export const useMemoryVersesDue = () => useStore((state) => state.memoryVersesDu
 // Selector for recent moments
 export const useRecentMoments = () => useStore((state) => state.recentMoments);
 
+// Selector for journal drafts
+export const useCurrentDraft = () => useStore((state) => state.currentDraft);
+export const useSavedDrafts = () => useStore((state) => state.savedDrafts);
+export const useDailyPrompts = () => useStore((state) => state.dailyPrompts);
+
+// Selectors for chat FAB
+export const useChatContextState = () => useStore((state) => state.chatContext);
+export const useChatSheetOpen = () => useStore((state) => state.chatSheetOpen);
+
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
@@ -47,12 +66,17 @@ export const useStore = create<AppState>()(
       messages: [],
       isQuerying: false,
       currentMode: 'auto',
+      chatContext: defaultChatContext,
+      chatSheetOpen: false,
       dailyVerse: null,
       preferences: defaultPreferences,
       activePrayers: [],
       memoryVersesDue: [],
       pendingObedienceSteps: [],
       recentMoments: [],
+      currentDraft: null,
+      savedDrafts: [],
+      dailyPrompts: [],
 
       // Chat actions
       addMessage: (message: ChatMessage) =>
@@ -73,6 +97,21 @@ export const useStore = create<AppState>()(
       setCurrentMode: (mode: ChatMode) =>
         set(() => ({
           currentMode: mode,
+        })),
+
+      // Chat FAB actions
+      setChatContext: (context: Partial<ChatContext>) =>
+        set((state) => ({
+          chatContext: {
+            ...state.chatContext,
+            ...context,
+            timestamp: new Date(),
+          },
+        })),
+
+      setChatSheetOpen: (open: boolean) =>
+        set(() => ({
+          chatSheetOpen: open,
         })),
 
       // Daily verse actions
@@ -132,6 +171,56 @@ export const useStore = create<AppState>()(
         set((state) => ({
           recentMoments: [moment, ...state.recentMoments].slice(0, 50),
         })),
+
+      updateMoment: (id: string, updates: Partial<SpiritualMoment>) =>
+        set((state) => ({
+          recentMoments: state.recentMoments.map((m) =>
+            m.id === id ? { ...m, ...updates, updatedAt: new Date() } : m
+          ),
+        })),
+
+      deleteMoment: (id: string) =>
+        set((state) => ({
+          recentMoments: state.recentMoments.filter((m) => m.id !== id),
+        })),
+
+      // Journal draft actions
+      setCurrentDraft: (draft: JournalDraft | null) =>
+        set(() => ({
+          currentDraft: draft,
+        })),
+
+      updateDraft: (updates: Partial<JournalDraft>) =>
+        set((state) => ({
+          currentDraft: state.currentDraft
+            ? { ...state.currentDraft, ...updates, lastSavedAt: new Date() }
+            : null,
+        })),
+
+      saveDraft: (draft: JournalDraft) =>
+        set((state) => ({
+          savedDrafts: [
+            draft,
+            ...state.savedDrafts.filter((d) => d.id !== draft.id),
+          ].slice(0, 10),
+        })),
+
+      deleteDraft: (draftId: string) =>
+        set((state) => ({
+          savedDrafts: state.savedDrafts.filter((d) => d.id !== draftId),
+          currentDraft:
+            state.currentDraft?.id === draftId ? null : state.currentDraft,
+        })),
+
+      clearDraft: () =>
+        set(() => ({
+          currentDraft: null,
+        })),
+
+      setDailyPrompts: (prompts: JournalPrompt[]) =>
+        set(() => ({
+          dailyPrompts: prompts,
+        })),
     }),
     {
       name: 'choosegod-storage',
@@ -139,8 +228,10 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({
         preferences: state.preferences,
         dailyVerse: state.dailyVerse,
+        savedDrafts: state.savedDrafts,
+        currentDraft: state.currentDraft,
+        recentMoments: state.recentMoments,
         // Don't persist messages - start fresh each session
-        // Don't persist prayers/moments - fetch from server
       }),
     }
   )

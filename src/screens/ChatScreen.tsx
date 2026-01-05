@@ -23,11 +23,13 @@ import {
   ChatMode,
   VerseSource,
   SuggestedAction,
-  BottomTabParamList,
+  RootStackParamList,
 } from '../types';
 import { supabase } from '../lib/supabase';
 
-type ChatScreenRouteProp = RouteProp<BottomTabParamList, 'Ask'>;
+// ChatScreen is now deprecated - use ChatBottomSheet instead
+// This file is kept for reference but is no longer used as a tab
+type ChatScreenRouteProp = RouteProp<RootStackParamList, 'Chat'>;
 
 const MODE_CONFIG: Record<ChatMode, { label: string; icon: string; color: string }> = {
   auto: { label: 'Ask Anything', icon: 'chatbubbles', color: theme.colors.primary },

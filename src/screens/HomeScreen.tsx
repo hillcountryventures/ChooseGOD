@@ -27,7 +27,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../lib/theme';
 import { useStore } from '../store/useStore';
 import { useDailyVerse } from '../hooks/useDailyVerse';
-import { ChatMode, BottomTabParamList, RootStackParamList } from '../types';
+import { BottomTabParamList, RootStackParamList, ChatMode } from '../types';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose } from '../lib/navigationHelpers';
@@ -237,13 +237,21 @@ function ContextualCard() {
     onPress: () => void;
   } | null = null;
 
+  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
+  const setCurrentMode = useStore((state) => state.setCurrentMode);
+
+  const openChatWithMode = (mode: ChatMode) => {
+    setCurrentMode(mode);
+    setChatSheetOpen(true);
+  };
+
   if (memoryVersesDue.length > 0) {
     card = {
       icon: 'bulb',
       iconBg: theme.colors.accent,
       title: 'Memory Review',
       subtitle: `${memoryVersesDue.length} verse${memoryVersesDue.length > 1 ? 's' : ''} ready to review`,
-      onPress: () => navigation.navigate('Ask', { mode: 'memory' }),
+      onPress: () => openChatWithMode('memory'),
     };
   } else if (pendingObedienceSteps.length > 0) {
     card = {
@@ -259,7 +267,7 @@ function ContextualCard() {
       iconBg: '#EF4444',
       title: 'Continue in Prayer',
       subtitle: `${activePrayers.length} prayer${activePrayers.length > 1 ? 's' : ''} before the Lord`,
-      onPress: () => navigation.navigate('Ask', { mode: 'prayer' }),
+      onPress: () => openChatWithMode('prayer'),
     };
   } else {
     // Default: Start devotional
@@ -287,13 +295,13 @@ function ContextualCard() {
 }
 
 // ============================================================================
-// Floating Ask Bar - Quick access to Ask tab
+// Floating Ask Bar - Quick access to Chat FAB
 // ============================================================================
 function FloatingAskBar() {
-  const navigation = useNavigation<NavigationProp>();
+  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
 
   const handlePress = () => {
-    navigation.navigate('Ask', { mode: 'auto' as ChatMode });
+    setChatSheetOpen(true);
   };
 
   return (

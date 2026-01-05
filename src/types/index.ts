@@ -47,20 +47,38 @@ export type RootStackParamList = {
     verse: BibleVerse;
     reference: string;
   };
+  JournalCompose: {
+    draftId?: string;
+    initialVerse?: {
+      book: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      translation: string;
+    };
+    initialPrompt?: string;
+    source?: {
+      type: 'standalone' | 'verse_reflection' | 'devotional' | 'ai_prompt' | 'bible_reading';
+      referenceId?: string;
+    };
+  };
+  JournalDetail: {
+    momentId: string;
+    editMode?: boolean;
+  };
+  VersePicker: {
+    selectedVerses?: VerseSource[];
+  };
 };
 
 // Bottom Tab Navigator param list
 export type BottomTabParamList = {
   Home: undefined;
+  Devotionals: NavigatorScreenParams<DevotionalStackParamList>;
   Bible: {
     book?: string;
     chapter?: number;
     verse?: number;
-  };
-  Devotionals: NavigatorScreenParams<DevotionalStackParamList>;
-  Ask: {
-    mode?: ChatMode;
-    initialMessage?: string;
   };
   Journey: undefined;
   Settings: undefined;
@@ -261,6 +279,35 @@ export type MomentType =
   | 'lectio'
   | 'examen';
 
+// Journal media types
+export type MediaType = 'photo' | 'voice' | 'drawing';
+
+export interface JournalMedia {
+  id: string;
+  type: MediaType;
+  uri: string;
+  duration?: number; // for voice notes (seconds)
+  thumbnail?: string; // for photos/drawings
+  createdAt: Date;
+}
+
+// AI-generated insights for journal entries
+export interface JournalAIInsights {
+  summary?: string;
+  suggestedVerses?: VerseSource[];
+  reflectionQuestions?: string[];
+  growthPatterns?: string[];
+  generatedAt?: Date;
+}
+
+// Entry source context
+export type JournalSourceType = 'standalone' | 'verse_reflection' | 'devotional' | 'ai_prompt' | 'bible_reading';
+
+export interface JournalSource {
+  type: JournalSourceType;
+  referenceId?: string; // e.g., devotional day ID, verse reference
+}
+
 export interface SpiritualMoment {
   id: string;
   userId: string;
@@ -271,7 +318,37 @@ export interface SpiritualMoment {
   sentimentScore?: number;
   themes: string[];
   createdAt: Date;
+  updatedAt?: Date;
   metadata?: Record<string, unknown>;
+  // Rich media support
+  media?: JournalMedia[];
+  // AI-generated insights
+  aiInsights?: JournalAIInsights;
+  // Entry status
+  status?: 'draft' | 'published';
+  // Entry source context
+  source?: JournalSource;
+}
+
+// Journal draft for auto-save
+export interface JournalDraft {
+  id: string;
+  content: string;
+  linkedVerses: VerseSource[];
+  media: JournalMedia[];
+  lastSavedAt: Date;
+  source?: JournalSource;
+}
+
+// AI prompt suggestion for journaling
+export type JournalPromptType = 'morning' | 'evening' | 'verse_based' | 'theme_based' | 'contextual';
+
+export interface JournalPrompt {
+  id: string;
+  type: JournalPromptType;
+  text: string;
+  relatedVerse?: VerseSource;
+  icon: string;
 }
 
 // Prayer request types
@@ -431,6 +508,10 @@ export interface AppState {
   isQuerying: boolean;
   currentMode: ChatMode;
 
+  // Chat FAB state
+  chatContext: ChatContext;
+  chatSheetOpen: boolean;
+
   // Daily verse
   dailyVerse: DailyVerse | null;
 
@@ -442,6 +523,11 @@ export interface AppState {
   memoryVersesDue: MemoryVerse[];
   pendingObedienceSteps: ObedienceStep[];
   recentMoments: SpiritualMoment[];
+
+  // Journal state
+  currentDraft: JournalDraft | null;
+  savedDrafts: JournalDraft[];
+  dailyPrompts: JournalPrompt[];
 
   // Actions
   addMessage: (message: ChatMessage) => void;
@@ -458,6 +544,20 @@ export interface AppState {
   addPrayer: (prayer: PrayerRequest) => void;
   updatePrayer: (id: string, updates: Partial<PrayerRequest>) => void;
   addMoment: (moment: SpiritualMoment) => void;
+  updateMoment: (id: string, updates: Partial<SpiritualMoment>) => void;
+  deleteMoment: (id: string) => void;
+
+  // Chat FAB actions
+  setChatContext: (context: Partial<ChatContext>) => void;
+  setChatSheetOpen: (open: boolean) => void;
+
+  // Journal actions
+  setCurrentDraft: (draft: JournalDraft | null) => void;
+  updateDraft: (updates: Partial<JournalDraft>) => void;
+  saveDraft: (draft: JournalDraft) => void;
+  deleteDraft: (draftId: string) => void;
+  clearDraft: () => void;
+  setDailyPrompts: (prompts: JournalPrompt[]) => void;
 }
 
 // Supabase table types
@@ -510,4 +610,31 @@ export interface TimelineItem {
   linkedVerses?: VerseSource[];
   themes?: string[];
   createdAt: Date;
+}
+
+// Chat context for FAB awareness
+export type ChatScreenType = 'home' | 'bible' | 'devotional' | 'journey' | 'settings' | 'other';
+
+export interface ChatBibleContext {
+  book: string;
+  chapter: number;
+  selectedVerse?: {
+    verse: number;
+    text: string;
+    translation: Translation;
+  };
+}
+
+export interface ChatDevotionalContext {
+  seriesId: string;
+  seriesTitle: string;
+  dayNumber: number;
+  scriptureRef?: string;
+}
+
+export interface ChatContext {
+  screenType: ChatScreenType;
+  bibleContext?: ChatBibleContext;
+  devotionalContext?: ChatDevotionalContext;
+  timestamp: Date;
 }
