@@ -159,6 +159,287 @@ const DEVOTIONAL_SERIES = [
     is_seasonal: false,
     difficulty_level: 'intermediate',
   },
+
+  // =====================================================
+  // BEGINNER LEVEL - Building Foundations
+  // =====================================================
+  {
+    slug: 'overcoming-fear',
+    title: 'Overcoming Fear and Anxiety',
+    description: 'A 7-day journey to conquer fear through faith. Discover God\'s perfect love that casts out all fear.',
+    total_days: 7,
+    topics: ['fear', 'anxiety', 'courage', 'faith', 'trust'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'gods-unfailing-love',
+    title: 'God\'s Unfailing Love',
+    description: 'Experience the depths of God\'s steadfast love over 10 transformative days. Nothing can separate you from His love.',
+    total_days: 10,
+    topics: ['love', 'grace', 'identity', 'acceptance', 'belonging'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'daily-gratitude',
+    title: 'Daily Gratitude and Thanksgiving',
+    description: 'A 14-day journey to cultivate a thankful heart. Transform your perspective through the discipline of gratitude.',
+    total_days: 14,
+    topics: ['gratitude', 'thanksgiving', 'joy', 'contentment', 'praise'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'hearing-gods-voice-beginner',
+    title: 'Hearing God\'s Voice',
+    description: 'Learn the basics of discerning God\'s voice in 7 days. Discover how God speaks through Scripture, prayer, and daily life.',
+    total_days: 7,
+    topics: ['hearing_god', 'discernment', 'guidance', 'prayer', 'listening'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+
+  // =====================================================
+  // INTERMEDIATE LEVEL - Growing in Application
+  // =====================================================
+  {
+    slug: 'power-of-prayer',
+    title: 'The Power of Prayer',
+    description: 'A 14-day deep dive into powerful, effective prayer. Learn to pray with confidence and see God move.',
+    total_days: 14,
+    topics: ['prayer', 'faith', 'intercession', 'petition', 'worship'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'fruit-of-the-spirit',
+    title: 'Fruit of the Spirit',
+    description: 'A comprehensive 21-day study on the nine fruits of the Spirit. Cultivate love, joy, peace, and more in your daily life.',
+    total_days: 21,
+    topics: ['fruit_spirit', 'character', 'holiness', 'love', 'self_control'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'trusting-gods-timing',
+    title: 'Trusting God\'s Timing',
+    description: 'A 10-day journey to embrace God\'s perfect timing. Learn patience and trust when answers seem delayed.',
+    total_days: 10,
+    topics: ['patience', 'trust', 'waiting', 'faith', 'sovereignty'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'forgiveness-healing',
+    title: 'Forgiveness and Healing',
+    description: 'A 14-day path to freedom through forgiveness. Release bitterness and experience God\'s healing touch.',
+    total_days: 14,
+    topics: ['forgiveness', 'healing', 'freedom', 'grace', 'reconciliation'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+
+  // =====================================================
+  // ADVANCED LEVEL - Deeper Study and Challenge
+  // =====================================================
+  {
+    slug: 'armor-of-god',
+    title: 'The Armor of God',
+    description: 'A 10-day intensive study on spiritual warfare. Learn to stand firm against the enemy with God\'s full armor.',
+    total_days: 10,
+    topics: ['spiritual_warfare', 'armor', 'protection', 'victory', 'faith'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'attributes-of-god',
+    title: 'Attributes of God',
+    description: 'A 21-day exploration of God\'s divine attributes. Deepen your theology and transform your worship.',
+    total_days: 21,
+    topics: ['knowing_god', 'attributes', 'theology', 'worship', 'holiness'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'faith-in-trials',
+    title: 'Faith in Trials',
+    description: 'A 14-day guide to standing strong when life is hard. Discover how trials produce perseverance and hope.',
+    total_days: 14,
+    topics: ['trials', 'perseverance', 'faith', 'hope', 'suffering'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'discipleship-obedience',
+    title: 'Discipleship and Obedience',
+    description: 'A comprehensive 30-day journey into radical discipleship. Count the cost and follow Jesus wholeheartedly.',
+    total_days: 30,
+    topics: ['discipleship', 'obedience', 'surrender', 'following_jesus', 'commitment'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+
+  // =====================================================
+  // SEASONAL DEVOTIONALS
+  // =====================================================
+  {
+    slug: 'advent-waiting-hope',
+    title: 'Waiting in Hope: Advent Journey',
+    description: 'A 25-day Advent journey preparing your heart for Christ\'s coming. Experience hope, peace, joy, and love.',
+    total_days: 25,
+    topics: ['advent', 'hope', 'waiting', 'christmas', 'prophecy'],
+    is_seasonal: true,
+    season_start_month: 12,
+    season_start_day: 1,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'lent-journey-cross',
+    title: 'Journey to the Cross: Lent Reflections',
+    description: 'A 40-day Lenten journey of reflection, repentance, and renewal. Walk with Jesus to Calvary.',
+    total_days: 40,
+    topics: ['lent', 'repentance', 'sacrifice', 'cross', 'surrender'],
+    is_seasonal: true,
+    season_start_month: 2,
+    season_start_day: 14,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'easter-triumph',
+    title: 'From Darkness to Light: Easter Triumph',
+    description: 'A 14-day celebration of resurrection and new life. Experience the power of the risen Christ.',
+    total_days: 14,
+    topics: ['easter', 'resurrection', 'hope', 'new_life', 'victory'],
+    is_seasonal: true,
+    season_start_month: 4,
+    season_start_day: 1,
+    difficulty_level: 'intermediate',
+  },
+
+  // =====================================================
+  // FAMILY-FOCUSED DEVOTIONALS
+  // =====================================================
+  {
+    slug: 'family-faith-builders',
+    title: 'Family Faith Builders',
+    description: 'A 21-day journey to strengthen family bonds through Scripture. Build a foundation of faith together.',
+    total_days: 21,
+    topics: ['family', 'faith', 'unity', 'parenting', 'legacy'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'gods-promises-families',
+    title: 'God\'s Promises for Families',
+    description: 'A 14-day exploration of God\'s promises for your family. Claim His blessings for your household.',
+    total_days: 14,
+    topics: ['family', 'promises', 'blessing', 'covenant', 'protection'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'fruit-spirit-home',
+    title: 'Fruit of the Spirit in the Home',
+    description: 'A 30-day family devotional growing love, joy, peace, and more together. Transform your home atmosphere.',
+    total_days: 30,
+    topics: ['family', 'fruit_spirit', 'home', 'character', 'relationships'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+
+  // =====================================================
+  // FOR MEN
+  // =====================================================
+  {
+    slug: 'man-of-valor',
+    title: 'Man of Valor: Biblical Courage',
+    description: 'A 14-day study on biblical manhood and courage. Draw strength from heroes like David, Joshua, and Paul.',
+    total_days: 14,
+    topics: ['men', 'courage', 'strength', 'leadership', 'integrity'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'strength-in-lord',
+    title: 'Strength in the Lord',
+    description: 'A 21-day journey for men facing life\'s battles. Find your strength in God alone.',
+    total_days: 21,
+    topics: ['men', 'strength', 'spiritual_warfare', 'perseverance', 'faith'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'leading-like-christ',
+    title: 'Leading Like Christ',
+    description: 'A 10-day guide for husbands, fathers, and leaders. Learn servant leadership from Jesus Himself.',
+    total_days: 10,
+    topics: ['men', 'leadership', 'servant_leadership', 'marriage', 'fatherhood'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+
+  // =====================================================
+  // FOR WOMEN
+  // =====================================================
+  {
+    slug: 'woman-of-grace',
+    title: 'Woman of Grace',
+    description: 'A 14-day journey embracing your identity in Christ. Discover the beauty of being a daughter of the King.',
+    total_days: 14,
+    topics: ['women', 'identity', 'grace', 'beauty', 'worth'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
+  {
+    slug: 'proverbs-31-heart',
+    title: 'Proverbs 31 Heart',
+    description: 'A 21-day study on the virtuous woman. Gain wisdom for daily living, relationships, and purpose.',
+    total_days: 21,
+    topics: ['women', 'wisdom', 'virtue', 'proverbs', 'character'],
+    is_seasonal: false,
+    difficulty_level: 'advanced',
+  },
+  {
+    slug: 'beauty-from-ashes',
+    title: 'Beauty from Ashes: Healing and Hope',
+    description: 'A 10-day journey from brokenness to wholeness. God turns your mourning into dancing.',
+    total_days: 10,
+    topics: ['women', 'healing', 'hope', 'restoration', 'redemption'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+
+  // =====================================================
+  // FOR TEENAGERS
+  // =====================================================
+  {
+    slug: 'teen-identity-christ',
+    title: 'Identity in Christ',
+    description: 'A 14-day journey for teens navigating life\'s pressures. Discover who you really are in Jesus.',
+    total_days: 14,
+    topics: ['teens', 'identity', 'purpose', 'self_worth', 'belonging'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'teen-faith-over-fear',
+    title: 'Faith Over Fear',
+    description: 'A 7-day guide for teens handling anxiety and peer pressure. Choose faith over fear every day.',
+    total_days: 7,
+    topics: ['teens', 'fear', 'faith', 'courage', 'peer_pressure'],
+    is_seasonal: false,
+    difficulty_level: 'beginner',
+  },
+  {
+    slug: 'teen-live-boldly',
+    title: 'Live Boldly: Teen Discipleship',
+    description: 'A 30-day journey to grow deeper in faith, prayer, and purpose. Live boldly for Christ.',
+    total_days: 30,
+    topics: ['teens', 'discipleship', 'boldness', 'prayer', 'purpose'],
+    is_seasonal: false,
+    difficulty_level: 'intermediate',
+  },
 ];
 
 // =====================================================
@@ -234,6 +515,67 @@ function generateDaysForSeries(series) {
     'mind': [
       { book: 'Romans', chapter: 12, verseStart: 1, verseEnd: 2 },
       { book: 'Philippians', chapter: 4, verseStart: 8, verseEnd: 9 },
+    ],
+    // New topic areas for expanded devotional library
+    'fear': [
+      { book: '2 Timothy', chapter: 1, verseStart: 7, verseEnd: 7 },
+      { book: 'Isaiah', chapter: 41, verseStart: 10, verseEnd: 13 },
+      { book: '1 John', chapter: 4, verseStart: 18, verseEnd: 18 },
+    ],
+    'love': [
+      { book: 'Romans', chapter: 8, verseStart: 38, verseEnd: 39 },
+      { book: '1 John', chapter: 4, verseStart: 7, verseEnd: 12 },
+      { book: 'Jeremiah', chapter: 31, verseStart: 3, verseEnd: 3 },
+    ],
+    'fruit_spirit': [
+      { book: 'Galatians', chapter: 5, verseStart: 22, verseEnd: 23 },
+      { book: 'John', chapter: 15, verseStart: 1, verseEnd: 8 },
+      { book: 'Colossians', chapter: 3, verseStart: 12, verseEnd: 17 },
+    ],
+    'patience': [
+      { book: 'Psalm', chapter: 27, verseStart: 14, verseEnd: 14 },
+      { book: 'Isaiah', chapter: 40, verseStart: 31, verseEnd: 31 },
+      { book: 'James', chapter: 5, verseStart: 7, verseEnd: 8 },
+    ],
+    'spiritual_warfare': [
+      { book: 'Ephesians', chapter: 6, verseStart: 10, verseEnd: 18 },
+      { book: '2 Corinthians', chapter: 10, verseStart: 3, verseEnd: 5 },
+      { book: 'James', chapter: 4, verseStart: 7, verseEnd: 7 },
+    ],
+    'trials': [
+      { book: 'James', chapter: 1, verseStart: 2, verseEnd: 4 },
+      { book: 'Romans', chapter: 5, verseStart: 3, verseEnd: 5 },
+      { book: '1 Peter', chapter: 1, verseStart: 6, verseEnd: 7 },
+    ],
+    'discipleship': [
+      { book: 'Luke', chapter: 9, verseStart: 23, verseEnd: 25 },
+      { book: 'Matthew', chapter: 28, verseStart: 19, verseEnd: 20 },
+      { book: 'John', chapter: 8, verseStart: 31, verseEnd: 32 },
+    ],
+    'easter': [
+      { book: 'Romans', chapter: 6, verseStart: 9, verseEnd: 11 },
+      { book: '1 Corinthians', chapter: 15, verseStart: 55, verseEnd: 57 },
+      { book: 'John', chapter: 11, verseStart: 25, verseEnd: 26 },
+    ],
+    'family': [
+      { book: 'Joshua', chapter: 24, verseStart: 15, verseEnd: 15 },
+      { book: 'Psalm', chapter: 127, verseStart: 3, verseEnd: 5 },
+      { book: 'Colossians', chapter: 3, verseStart: 18, verseEnd: 21 },
+    ],
+    'men': [
+      { book: 'Joshua', chapter: 1, verseStart: 9, verseEnd: 9 },
+      { book: '1 Corinthians', chapter: 16, verseStart: 13, verseEnd: 14 },
+      { book: 'Micah', chapter: 6, verseStart: 8, verseEnd: 8 },
+    ],
+    'women': [
+      { book: 'Proverbs', chapter: 31, verseStart: 25, verseEnd: 31 },
+      { book: '1 Peter', chapter: 3, verseStart: 3, verseEnd: 4 },
+      { book: 'Isaiah', chapter: 61, verseStart: 3, verseEnd: 3 },
+    ],
+    'teens': [
+      { book: '1 Timothy', chapter: 4, verseStart: 12, verseEnd: 12 },
+      { book: 'Jeremiah', chapter: 29, verseStart: 11, verseEnd: 11 },
+      { book: 'Psalm', chapter: 119, verseStart: 9, verseEnd: 11 },
     ],
   };
 

@@ -437,6 +437,7 @@ export const ONBOARDING_QUIZ: QuizQuestion[] = [
 // =====================================================
 
 export const SERIES_GRADIENTS: Record<string, [string, string]> = {
+  // Original series
   'overcoming-anxiety': ['#6366F1', '#4F46E5'], // Indigo - peace
   'strengthening-marriage': ['#EC4899', '#DB2777'], // Pink - love
   'biblical-parenting': ['#F59E0B', '#D97706'], // Amber - warmth
@@ -452,6 +453,49 @@ export const SERIES_GRADIENTS: Record<string, [string, string]> = {
   'names-attributes-jesus': ['#EF4444', '#DC2626'], // Red - blood of Christ
   'victory-temptation': ['#F97316', '#EA580C'], // Orange - fire/passion
   'renewing-your-mind': ['#14B8A6', '#0D9488'], // Teal - freshness
+
+  // Beginner Level
+  'overcoming-fear': ['#7C3AED', '#5B21B6'], // Violet - courage
+  'gods-unfailing-love': ['#EC4899', '#BE185D'], // Rose - love
+  'daily-gratitude': ['#FBBF24', '#F59E0B'], // Amber - thankfulness
+  'hearing-gods-voice-beginner': ['#22D3EE', '#06B6D4'], // Cyan - listening
+
+  // Intermediate Level
+  'power-of-prayer': ['#3B82F6', '#1D4ED8'], // Blue - heaven connection
+  'fruit-of-the-spirit': ['#34D399', '#10B981'], // Emerald - growth
+  'trusting-gods-timing': ['#A78BFA', '#8B5CF6'], // Purple - patience
+  'forgiveness-healing': ['#4ADE80', '#22C55E'], // Green - restoration
+
+  // Advanced Level
+  'armor-of-god': ['#F97316', '#C2410C'], // Orange - battle/fire
+  'attributes-of-god': ['#818CF8', '#6366F1'], // Indigo - divine mystery
+  'faith-in-trials': ['#FB7185', '#F43F5E'], // Rose - perseverance
+  'discipleship-obedience': ['#2DD4BF', '#14B8A6'], // Teal - commitment
+
+  // Seasonal
+  'advent-waiting-hope': ['#EF4444', '#DC2626'], // Red - Christmas anticipation
+  'lent-journey-cross': ['#A855F7', '#7C3AED'], // Purple - sacrifice
+  'easter-triumph': ['#FCD34D', '#FBBF24'], // Gold - resurrection glory
+
+  // Family-focused
+  'family-faith-builders': ['#F472B6', '#EC4899'], // Pink - family love
+  'gods-promises-families': ['#60A5FA', '#3B82F6'], // Blue - covenant
+  'fruit-spirit-home': ['#4ADE80', '#22C55E'], // Green - growing together
+
+  // For Men
+  'man-of-valor': ['#64748B', '#475569'], // Slate - strength
+  'strength-in-lord': ['#0EA5E9', '#0284C7'], // Sky - power
+  'leading-like-christ': ['#6366F1', '#4F46E5'], // Indigo - leadership
+
+  // For Women
+  'woman-of-grace': ['#F9A8D4', '#F472B6'], // Pink - grace/beauty
+  'proverbs-31-heart': ['#C084FC', '#A855F7'], // Purple - wisdom
+  'beauty-from-ashes': ['#FCA5A5', '#F87171'], // Red/coral - restoration
+
+  // For Teenagers
+  'teen-identity-christ': ['#38BDF8', '#0EA5E9'], // Sky - fresh/young
+  'teen-faith-over-fear': ['#A78BFA', '#8B5CF6'], // Violet - courage
+  'teen-live-boldly': ['#FB923C', '#F97316'], // Orange - boldness
 };
 
 export function getSeriesGradient(slug: string): [string, string] {
