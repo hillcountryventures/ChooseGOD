@@ -9,9 +9,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Screens
 import HomeScreen from './src/screens/HomeScreen';
+import BibleScreen from './src/screens/BibleScreen';
 import JourneyScreen from './src/screens/JourneyScreen';
 import ChatScreen from './src/screens/ChatScreen';
-import PrayersScreen from './src/screens/PrayersScreen';
+// PrayersScreen removed from tabs - accessible from Home
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 
@@ -49,9 +50,9 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   Home: { active: 'home', inactive: 'home-outline' },
-  Journey: { active: 'trending-up', inactive: 'trending-up-outline' },
+  Bible: { active: 'book', inactive: 'book-outline' },
   Ask: { active: 'chatbubbles', inactive: 'chatbubbles-outline' },
-  Prayers: { active: 'heart', inactive: 'heart-outline' },
+  Journey: { active: 'trending-up', inactive: 'trending-up-outline' },
   Settings: { active: 'settings', inactive: 'settings-outline' },
 };
 
@@ -92,7 +93,7 @@ function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Journey" component={JourneyScreen} />
+      <Tab.Screen name="Bible" component={BibleScreen} />
       <Tab.Screen
         name="Ask"
         component={ChatScreen}
@@ -100,7 +101,7 @@ function TabNavigator() {
           tabBarLabel: '',
         }}
       />
-      <Tab.Screen name="Prayers" component={PrayersScreen} />
+      <Tab.Screen name="Journey" component={JourneyScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

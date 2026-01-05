@@ -1,9 +1,41 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BottomTabScreenProps as RNBottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { CompositeScreenProps } from '@react-navigation/native';
+import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
+import type { OnboardingResponses, DevotionalSeries } from './devotional';
+
+// Re-export devotional types
+export * from './devotional';
+
+// Auth Stack Navigator param list
+export type AuthStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+  ForgotPassword: undefined;
+};
+
+// Onboarding Stack Navigator param list
+export type OnboardingStackParamList = {
+  Welcome: undefined;
+  Carousel: undefined;
+  Quiz: undefined;
+  Recommendations: { quizResponses: OnboardingResponses };
+  NotificationSetup: { selectedSeriesIds: string[] };
+  EnrollConfirm: { seriesIds: string[]; primarySeriesId: string };
+};
+
+// Devotional Stack Navigator param list
+export type DevotionalStackParamList = {
+  DevotionalHub: undefined;
+  SeriesLibrary: undefined;
+  SeriesDetail: { seriesId: string; series?: DevotionalSeries };
+  DailyDevotional: { enrollmentId: string; seriesId: string; dayNumber: number };
+  DevotionalComplete: { seriesId: string; dayNumber: number; seriesTitle: string };
+};
 
 // Root Stack Navigator param list
 export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: undefined;
   Chat: {
     initialMessage?: string;
@@ -25,12 +57,12 @@ export type BottomTabParamList = {
     chapter?: number;
     verse?: number;
   };
-  Journey: undefined;
+  Devotionals: NavigatorScreenParams<DevotionalStackParamList>;
   Ask: {
     mode?: ChatMode;
     initialMessage?: string;
   };
-  Prayers: undefined;
+  Journey: undefined;
   Settings: undefined;
 };
 
@@ -41,6 +73,18 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
 export type BottomTabScreenProps<T extends keyof BottomTabParamList> =
   CompositeScreenProps<
     RNBottomTabScreenProps<BottomTabParamList, T>,
+    NativeStackScreenProps<RootStackParamList>
+  >;
+
+export type AuthStackScreenProps<T extends keyof AuthStackParamList> =
+  NativeStackScreenProps<AuthStackParamList, T>;
+
+export type OnboardingStackScreenProps<T extends keyof OnboardingStackParamList> =
+  NativeStackScreenProps<OnboardingStackParamList, T>;
+
+export type DevotionalStackScreenProps<T extends keyof DevotionalStackParamList> =
+  CompositeScreenProps<
+    NativeStackScreenProps<DevotionalStackParamList, T>,
     NativeStackScreenProps<RootStackParamList>
   >;
 

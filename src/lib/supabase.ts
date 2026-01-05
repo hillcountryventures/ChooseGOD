@@ -149,16 +149,24 @@ export async function fetchChapter(
   translation: Translation = 'KJV'
 ): Promise<VerseSource[]> {
   try {
+    // Database stores translation as lowercase
+    const translationLower = translation.toLowerCase();
+
     const { data, error } = await supabase
       .from('bible_verses')
       .select('*')
       .eq('book', book)
       .eq('chapter', chapter)
-      .eq('translation', translation)
+      .eq('translation', translationLower)
       .order('verse', { ascending: true });
 
     if (error) {
       console.error('Error fetching chapter:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      console.log(`No verses found for ${book} ${chapter} (${translationLower})`);
       return [];
     }
 
@@ -167,7 +175,7 @@ export async function fetchChapter(
       chapter: row.chapter,
       verse: row.verse,
       text: row.text,
-      translation: row.translation as Translation,
+      translation: row.translation.toUpperCase() as Translation,
     }));
   } catch (error) {
     console.error('Error fetching chapter:', error);
@@ -183,11 +191,14 @@ export async function getBookChapterCount(
   translation: Translation = 'KJV'
 ): Promise<number> {
   try {
+    // Database stores translation as lowercase
+    const translationLower = translation.toLowerCase();
+
     const { data, error } = await supabase
       .from('bible_verses')
       .select('chapter')
       .eq('book', book)
-      .eq('translation', translation)
+      .eq('translation', translationLower)
       .order('chapter', { ascending: false })
       .limit(1);
 

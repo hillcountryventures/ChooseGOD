@@ -407,7 +407,7 @@ export default function HomeScreen() {
         <ProverbsOfTheDay
           onPress={() => {
             const chapter = new Date().getDate();
-            navigateToChat('lectio', `Let's read and reflect on Proverbs ${chapter} together`);
+            navigation.navigate('Bible', { book: 'Proverbs', chapter });
           }}
         />
 
