@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Keyboard,
   Animated,
+  Platform,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -80,6 +81,7 @@ export function ChatBottomSheet() {
   const inputRef = useRef<any>(null);
   const celebrationAnim = useRef(new Animated.Value(0)).current;
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isClosingRef = useRef(false);
   const insets = useSafeAreaInsets();
 
   // Store state
@@ -131,8 +133,23 @@ export function ChatBottomSheet() {
     if (index === -1) {
       setChatSheetOpen(false);
       Keyboard.dismiss();
+      isClosingRef.current = false;
     }
   }, [setChatSheetOpen]);
+
+  // Proper close handler that ALWAYS works
+  const handleClose = useCallback(() => {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+
+    // Dismiss keyboard first
+    Keyboard.dismiss();
+
+    // Close the sheet after brief delay to let keyboard animation start
+    setTimeout(() => {
+      bottomSheetRef.current?.close();
+    }, Platform.OS === 'ios' ? 50 : 0);
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -141,6 +158,7 @@ export function ChatBottomSheet() {
         disappearsOnIndex={-1}
         appearsOnIndex={0}
         opacity={0.5}
+        pressBehavior="close"
       />
     ),
     []
@@ -366,6 +384,9 @@ export function ChatBottomSheet() {
       handleIndicatorStyle={styles.handleIndicator}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
+      enableHandlePanningGesture={true}
+      enableContentPanningGesture={true}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -397,10 +418,12 @@ export function ChatBottomSheet() {
             <Ionicons name="refresh" size={18} color={theme.colors.textMuted} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => setChatSheetOpen(false)}
+            style={styles.closeButton}
+            onPress={handleClose}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            activeOpacity={0.7}
           >
-            <Ionicons name="close" size={20} color={theme.colors.textMuted} />
+            <Ionicons name="close" size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -426,6 +449,7 @@ export function ChatBottomSheet() {
       <BottomSheetScrollView
         style={styles.messageList}
         contentContainerStyle={styles.messageListContent}
+        keyboardShouldPersistTaps="handled"
       >
         {!hasMessages && (
           <View style={styles.emptyState}>
@@ -587,6 +611,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 22,
+    marginLeft: theme.spacing.xs,
   },
   contextBanner: {
     flexDirection: 'row',

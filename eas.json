@@ -12,7 +12,12 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://rtozduhxrfsksygsmwuj.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0b3pkdWh4cmZza3N5Z3Ntd3VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MjU3OTQsImV4cCI6MjA4MzIwMTc5NH0.wDBmX1WiOHA7DBaZC8nzuO7MqmCa3TOi3aQ-YsdeC5I",
+        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "appl_YdofSCNUFqkTUNzuOTwwrvdZtJF"
+      }
     }
   },
   "submit": {
