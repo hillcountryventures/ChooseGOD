@@ -15,6 +15,7 @@ import {
   GestureResponderEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -30,6 +31,7 @@ import {
   HighlightColor,
   VerseHighlight,
   VerseNote,
+  VerseBookmark,
 } from '../types';
 import { SWIPE, TAP } from '../constants';
 import { HEADER } from '../constants/dimensions';
@@ -118,6 +120,7 @@ export default function BibleScreen() {
   // Annotations (stored locally for now - would sync to Supabase)
   const [highlights, setHighlights] = useState<Map<string, VerseHighlight>>(new Map());
   const [notes, setNotes] = useState<Map<string, VerseNote[]>>(new Map());
+  const [bookmarks, setBookmarks] = useState<Map<string, VerseBookmark>>(new Map());
 
   // UI state
   const [selectedVerse, setSelectedVerse] = useState<VerseWithAnnotations | null>(null);
@@ -231,19 +234,6 @@ export default function BibleScreen() {
     }
   }, [targetVerse, verses, isLoading]);
 
-  // Navigate chapters
-  const goToPreviousChapter = () => {
-    if (currentChapter > 1) {
-      setCurrentChapter(currentChapter - 1);
-    }
-  };
-
-  const goToNextChapter = () => {
-    if (currentChapter < totalChapters) {
-      setCurrentChapter(currentChapter + 1);
-    }
-  };
-
   // Handle verse selection
   const handleVersePress = (verse: VerseWithAnnotations) => {
     setSelectedVerse(verse);
@@ -280,6 +270,35 @@ export default function BibleScreen() {
     const newHighlights = new Map(highlights);
     newHighlights.delete(key);
     setHighlights(newHighlights);
+    setSelectedVerse(null);
+  };
+
+  // Toggle bookmark for selected verse
+  const handleBookmark = () => {
+    if (!selectedVerse) return;
+
+    const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
+    const existingBookmark = bookmarks.get(key);
+
+    if (existingBookmark) {
+      // Remove bookmark
+      const newBookmarks = new Map(bookmarks);
+      newBookmarks.delete(key);
+      setBookmarks(newBookmarks);
+      Alert.alert('Bookmark Removed', `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} removed from bookmarks.`);
+    } else {
+      // Add bookmark
+      const newBookmark: VerseBookmark = {
+        id: `bookmark-${Date.now()}`,
+        userId: 'local-user',
+        book: selectedVerse.book,
+        chapter: selectedVerse.chapter,
+        verse: selectedVerse.verse,
+        createdAt: new Date(),
+      };
+      setBookmarks(new Map(bookmarks.set(key, newBookmark)));
+      Alert.alert('Bookmarked!', `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} added to your bookmarks.`);
+    }
     setSelectedVerse(null);
   };
 
@@ -592,7 +611,14 @@ export default function BibleScreen() {
           },
         ]}
       >
-        {/* Header */}
+        {/* Chapter indicator - at top */}
+        <View style={styles.chapterNav}>
+          <Text style={styles.chapterIndicator}>
+            {currentChapter} of {totalChapters}
+          </Text>
+        </View>
+
+        {/* Book/Chapter selectors - below navigation */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.bookSelector}
@@ -608,37 +634,6 @@ export default function BibleScreen() {
           >
             <Text style={styles.chapterTitle}>Chapter {currentChapter}</Text>
             <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Chapter navigation */}
-        <View style={styles.chapterNav}>
-          <TouchableOpacity
-            style={[styles.navButton, currentChapter === 1 && styles.navButtonDisabled]}
-            onPress={goToPreviousChapter}
-            disabled={currentChapter === 1}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={20}
-              color={currentChapter === 1 ? theme.colors.textMuted : theme.colors.text}
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.chapterIndicator}>
-            {currentChapter} of {totalChapters}
-          </Text>
-
-          <TouchableOpacity
-            style={[styles.navButton, currentChapter === totalChapters && styles.navButtonDisabled]}
-            onPress={goToNextChapter}
-            disabled={currentChapter === totalChapters}
-          >
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={currentChapter === totalChapters ? theme.colors.textMuted : theme.colors.text}
-            />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -765,9 +760,15 @@ export default function BibleScreen() {
               <Text style={styles.actionButtonText}>Ask AI</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="bookmark-outline" size={20} color={theme.colors.primary} />
-              <Text style={styles.actionButtonText}>Bookmark</Text>
+            <TouchableOpacity style={styles.actionButton} onPress={handleBookmark}>
+              <Ionicons
+                name={selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.actionButtonText}>
+                {selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? 'Bookmarked' : 'Bookmark'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
