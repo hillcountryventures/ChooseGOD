@@ -233,14 +233,14 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'American Standard Version',
     description: 'Literal word-for-word (1901)',
     language: 'English',
-    isAvailable: false, // Set to true after running: node seed-translations.js asv
+    isAvailable: true,
   },
   {
     id: 'BBE',
     name: 'Bible in Basic English',
     description: 'Simple vocabulary translation',
     language: 'English',
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     id: 'WEB',
@@ -279,7 +279,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Almeida Atualizada',
     description: 'Tradução portuguesa',
     language: 'Português',
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     id: 'PACF',
@@ -302,7 +302,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Schlachter',
     description: 'Schlachter Übersetzung',
     language: 'Deutsch',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== FRENCH =====
@@ -311,7 +311,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'French Bible',
     description: 'Traduction française',
     language: 'Français',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== CHINESE =====
@@ -320,7 +320,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: '和合本',
     description: 'Chinese Union Version',
     language: '中文',
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     id: 'CNCV',
@@ -336,7 +336,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: '한국어 성경',
     description: 'Korean Bible',
     language: '한국어',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== RUSSIAN =====
@@ -345,7 +345,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Синодальный',
     description: 'Synodal Translation',
     language: 'Русский',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== ARABIC =====
@@ -354,7 +354,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'الكتاب المقدس',
     description: 'Smith & Van Dyke',
     language: 'العربية',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== GREEK =====
@@ -363,7 +363,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Ελληνική Βίβλος',
     description: 'Greek Bible',
     language: 'Ελληνικά',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== VIETNAMESE =====
@@ -372,7 +372,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Kinh Thánh',
     description: 'Vietnamese Bible',
     language: 'Tiếng Việt',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== ROMANIAN =====
@@ -381,7 +381,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Cornilescu',
     description: 'Biblia Cornilescu',
     language: 'Română',
-    isAvailable: false,
+    isAvailable: true,
   },
 
   // ===== FINNISH =====
@@ -390,7 +390,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Raamattu',
     description: 'Finnish Bible',
     language: 'Suomi',
-    isAvailable: false,
+    isAvailable: true,
   },
 ];
 

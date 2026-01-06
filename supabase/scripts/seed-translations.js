@@ -392,17 +392,35 @@ function parseScrollmapperFormat(bibleData) {
     // Has a verses property
     return parseScrollmapperFormat(bibleData.verses);
   } else if (bibleData.books) {
-    // Has a books property
-    for (const book of bibleData.books) {
-      const bookIndex = book.book_id - 1;
+    // Has a books property with chapters nested inside
+    for (let bookIndex = 0; bookIndex < bibleData.books.length; bookIndex++) {
+      const book = bibleData.books[bookIndex];
       const bookName = BOOK_NAMES[bookIndex] || book.name || `Book ${bookIndex + 1}`;
-      for (const v of book.verses || []) {
-        verses.push({
-          book: bookName,
-          chapter: v.chapter,
-          verse: v.verse,
-          text: v.text,
-        });
+
+      // Check if verses are nested in chapters
+      if (book.chapters && Array.isArray(book.chapters)) {
+        for (const chapter of book.chapters) {
+          if (chapter.verses && Array.isArray(chapter.verses)) {
+            for (const v of chapter.verses) {
+              verses.push({
+                book: bookName,
+                chapter: v.chapter || chapter.chapter,
+                verse: v.verse,
+                text: v.text,
+              });
+            }
+          }
+        }
+      } else if (book.verses) {
+        // Verses directly under book
+        for (const v of book.verses) {
+          verses.push({
+            book: bookName,
+            chapter: v.chapter,
+            verse: v.verse,
+            text: v.text,
+          });
+        }
       }
     }
   }
