@@ -20,6 +20,8 @@ import {
 } from '../../types';
 import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { useIsPremium, useSubscriptionStore } from '../../store/subscriptionStore';
+import { FREE_ENROLLMENT_LIMIT } from '../../constants/subscription';
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'SeriesDetail'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'SeriesDetail'>;
@@ -36,6 +38,8 @@ export default function SeriesDetailScreen() {
     fetchEnrollments,
   } = useDevotionalStore();
   const enrollments = useEnrollments();
+  const isPremium = useIsPremium();
+  const showPaywall = useSubscriptionStore((s) => s.showPaywall);
 
   const [series, setSeries] = useState<DevotionalSeries | null>(routeSeries || null);
   const [loading, setLoading] = useState(!routeSeries);
@@ -61,6 +65,12 @@ export default function SeriesDetailScreen() {
 
   const handleEnroll = async () => {
     if (!user || !series) return;
+
+    // Check if free user has reached enrollment limit
+    if (!isPremium && enrollments.length >= FREE_ENROLLMENT_LIMIT) {
+      showPaywall();
+      return;
+    }
 
     setEnrolling(true);
     const enrollment = await enrollInSeries(user.id, series.id, enrollments.length === 0);
