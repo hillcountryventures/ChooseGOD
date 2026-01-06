@@ -33,7 +33,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose } from '../lib/navigationHelpers';
 import { GREETING_HOURS } from '../constants/timing';
 import { STREAK_LIMITS, BIBLE_LIMITS } from '../constants/limits';
-import { WEEK_DAYS, GREETINGS, PLACEHOLDERS, BIBLE_DEFAULTS } from '../constants/strings';
+import { WEEK_DAYS, GREETINGS, BIBLE_DEFAULTS } from '../constants/strings';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -297,29 +297,6 @@ function ContextualCard() {
 }
 
 // ============================================================================
-// Floating Ask Bar - Quick access to Chat FAB
-// ============================================================================
-function FloatingAskBar() {
-  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
-
-  const handlePress = () => {
-    setChatSheetOpen(true);
-  };
-
-  return (
-    <View style={styles.floatingBar}>
-      <TouchableOpacity style={styles.floatingInput} onPress={handlePress} activeOpacity={0.9}>
-        <Ionicons name="chatbubbles-outline" size={20} color={theme.colors.primary} />
-        <Text style={styles.floatingPlaceholder}>{PLACEHOLDERS.chatInput}</Text>
-        <View style={styles.floatingArrow}>
-          <Ionicons name="arrow-forward-circle" size={24} color={theme.colors.primary} />
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ============================================================================
 // Main HomeScreen
 // ============================================================================
 export default function HomeScreen() {
@@ -346,10 +323,10 @@ export default function HomeScreen() {
             <Text style={styles.subtitle}>What&apos;s on your heart today?</Text>
           </View>
           <TouchableOpacity
-            style={styles.profileButton}
+            style={styles.settingsButton}
             onPress={() => navigation.navigate('Settings')}
           >
-            <Ionicons name="person-circle-outline" size={36} color={theme.colors.textSecondary} />
+            <Ionicons name="settings-outline" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -365,12 +342,9 @@ export default function HomeScreen() {
         {/* Contextual Action Card - One priority action */}
         <ContextualCard />
 
-        {/* Spacer for floating bar */}
+        {/* Spacer for floating bar (now global) */}
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Floating Ask Bar */}
-      <FloatingAskBar />
     </SafeAreaView>
   );
 }
@@ -409,8 +383,15 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  profileButton: {
-    padding: theme.spacing.xs,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
 
   // Hero Verse Card
@@ -630,37 +611,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
     marginTop: 2,
-  },
-
-  // Floating Ask Bar
-  floatingBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.background,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  floatingInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.full,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: theme.spacing.sm,
-  },
-  floatingPlaceholder: {
-    flex: 1,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textMuted,
-  },
-  floatingArrow: {
-    marginLeft: theme.spacing.sm,
   },
 });

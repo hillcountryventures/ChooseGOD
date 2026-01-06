@@ -33,13 +33,13 @@ export const REVENUECAT_ENTITLEMENTS = {
  */
 export const REVENUECAT_PRODUCT_IDS = {
   // Monthly subscription with 7-day free trial
-  monthly: 'monthly',
+  monthly: 'choosegodmonthly',
 
   // Yearly subscription (~25% savings) with 7-day free trial
-  yearly: 'yearly',
+  yearly: 'choosegodannual',
 
   // Lifetime one-time purchase
-  lifetime: 'lifetime',
+  lifetime: 'choosegodlifetime',
 } as const;
 
 // =====================================================
@@ -52,6 +52,12 @@ export const REVENUECAT_PRODUCT_IDS = {
  * Set to a higher number for a more generous free tier.
  */
 export const FREE_CHAT_LIMIT = 1;
+
+/**
+ * Number of active devotional enrollments allowed for free users.
+ * Premium users get unlimited enrollments.
+ */
+export const FREE_ENROLLMENT_LIMIT = 1;
 
 // =====================================================
 // Paywall Content
@@ -156,7 +162,7 @@ export interface SubscriptionPlan {
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
-    id: REVENUECAT_PRODUCT_IDS.annual,
+    id: REVENUECAT_PRODUCT_IDS.yearly,
     name: 'Annual',
     price: '$36.00',
     period: 'year',

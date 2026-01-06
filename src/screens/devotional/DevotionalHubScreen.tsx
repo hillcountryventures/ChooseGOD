@@ -29,7 +29,9 @@ import {
 } from '../../types';
 import { useDevotionalStore, usePrimaryEnrollment, useEnrollments } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { useIsPremium, useSubscriptionStore } from '../../store/subscriptionStore';
 import { DrawNearBanner } from '../../components/devotional/DrawNearBanner';
+import { FREE_ENROLLMENT_LIMIT } from '../../constants/subscription';
 
 const { width } = Dimensions.get('window');
 
@@ -46,6 +48,8 @@ export default function DevotionalHubScreen() {
 
   const enrollments = useEnrollments();
   const primaryEnrollment = usePrimaryEnrollment();
+  const isPremium = useIsPremium();
+  const showPaywall = useSubscriptionStore((s) => s.showPaywall);
 
   const [refreshing, setRefreshing] = useState(false);
   const [progress, setProgress] = useState<EnrollmentProgress[]>([]);
@@ -79,7 +83,15 @@ export default function DevotionalHubScreen() {
     }
   };
 
-  const handleSeriesPress = (enrollment: EnrollmentProgress) => {
+  const handleSeriesPress = (enrollment: EnrollmentProgress, index: number) => {
+    // Free users can only access the first devotional (primary is index 0, others start at 1)
+    const isLocked = !isPremium && index >= FREE_ENROLLMENT_LIMIT;
+
+    if (isLocked) {
+      showPaywall();
+      return;
+    }
+
     navigation.navigate('DailyDevotional', {
       enrollmentId: enrollment.enrollmentId,
       seriesId: enrollment.seriesId,
@@ -187,27 +199,64 @@ export default function DevotionalHubScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Other Enrollments - Compact Pills */}
+          {/* Other Enrollments - Cards */}
           {otherProgress.length > 0 && (
             <View style={styles.otherSection}>
-              <Text style={styles.otherSectionTitle}>Also enrolled:</Text>
-              <View style={styles.otherPills}>
-                {otherProgress.map((enrollment) => (
-                  <TouchableOpacity
-                    key={enrollment.enrollmentId}
-                    style={styles.otherPill}
-                    onPress={() => handleSeriesPress(enrollment)}
-                  >
-                    <Text style={styles.otherPillText} numberOfLines={1}>
-                      {enrollment.seriesTitle}
-                    </Text>
-                    <View style={styles.otherPillBadge}>
-                      <Text style={styles.otherPillBadgeText}>
-                        Day {enrollment.currentDay}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+              <Text style={styles.otherSectionTitle}>Your Devotionals</Text>
+              <View style={styles.enrollmentCards}>
+                {otherProgress.map((enrollment, index) => {
+                  const enrollmentIndex = index + 1; // +1 because primary is index 0
+                  const isLocked = !isPremium && enrollmentIndex >= FREE_ENROLLMENT_LIMIT;
+
+                  return (
+                    <TouchableOpacity
+                      key={enrollment.enrollmentId}
+                      style={styles.enrollmentCard}
+                      onPress={() => handleSeriesPress(enrollment, enrollmentIndex)}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={getSeriesGradient(enrollment.seriesSlug) as [string, string]}
+                        style={styles.enrollmentCardGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                      >
+                        {/* Lock overlay for non-premium users */}
+                        {isLocked && (
+                          <View style={styles.lockOverlay}>
+                            <View style={styles.lockBadge}>
+                              <Ionicons name="lock-closed" size={14} color="#fff" />
+                              <Text style={styles.lockText}>Pro</Text>
+                            </View>
+                          </View>
+                        )}
+
+                        <Text style={styles.enrollmentCardTitle} numberOfLines={2}>
+                          {enrollment.seriesTitle}
+                        </Text>
+
+                        <View style={styles.enrollmentCardFooter}>
+                          <View style={styles.enrollmentCardDay}>
+                            <Text style={styles.enrollmentCardDayLabel}>Day</Text>
+                            <Text style={styles.enrollmentCardDayNumber}>
+                              {enrollment.currentDay}/{enrollment.totalDays}
+                            </Text>
+                          </View>
+
+                          {/* Mini progress bar */}
+                          <View style={styles.enrollmentCardProgress}>
+                            <View
+                              style={[
+                                styles.enrollmentCardProgressFill,
+                                { width: `${enrollment.progressPercentage}%` },
+                              ]}
+                            />
+                          </View>
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           )}
@@ -396,42 +445,85 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   otherSectionTitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.sm,
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
   },
-  otherPills: {
+  enrollmentCards: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.sm,
+    gap: theme.spacing.md,
   },
-  otherPill: {
+  enrollmentCard: {
+    width: (width - theme.spacing.lg * 2 - theme.spacing.md) / 2,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
+    ...theme.shadows.md,
+  },
+  enrollmentCardGradient: {
+    padding: theme.spacing.md,
+    minHeight: 120,
+    justifyContent: 'space-between',
+  },
+  enrollmentCardTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: '#fff',
+    marginBottom: theme.spacing.sm,
+  },
+  enrollmentCardFooter: {
+    marginTop: 'auto',
+  },
+  enrollmentCardDay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+    marginBottom: theme.spacing.xs,
+  },
+  enrollmentCardDayLabel: {
+    fontSize: theme.fontSize.xs,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  enrollmentCardDayNumber: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: '#fff',
+  },
+  enrollmentCardProgress: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 2,
+  },
+  enrollmentCardProgressFill: {
+    height: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 2,
+  },
+  lockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  lockBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: theme.spacing.sm,
-  },
-  otherPillText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text,
-    fontWeight: theme.fontWeight.medium,
-    maxWidth: 120,
-  },
-  otherPillBadge: {
-    backgroundColor: theme.colors.primary + '20',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    gap: 4,
   },
-  otherPillBadgeText: {
+  lockText: {
     fontSize: theme.fontSize.xs,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontWeight: theme.fontWeight.semibold,
+    color: '#fff',
   },
 
   // Discover Link

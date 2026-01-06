@@ -37,6 +37,7 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: undefined;
+  Settings: undefined;
   Chat: {
     initialMessage?: string;
     conversationId?: string;
@@ -81,7 +82,7 @@ export type BottomTabParamList = {
     verse?: number;
   };
   Journey: undefined;
-  Settings: undefined;
+  Prayers: undefined;
 };
 
 // Screen props types

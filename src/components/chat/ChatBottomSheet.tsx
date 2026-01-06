@@ -99,13 +99,17 @@ export function ChatBottomSheet() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState('');
 
-  // Snap points: small (300), half, full
-  const snapPoints = useMemo(() => [300, '50%', '94%'], []);
+  // Snap points: half, full (start at half screen)
+  const snapPoints = useMemo(() => ['50%', '94%'], []);
 
   // Control sheet open/close
   useEffect(() => {
     if (chatSheetOpen) {
-      bottomSheetRef.current?.snapToIndex(0);
+      bottomSheetRef.current?.snapToIndex(0); // Opens at 50%
+      // Auto-focus input after sheet animates open
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
     } else {
       bottomSheetRef.current?.close();
     }
@@ -209,6 +213,8 @@ export function ChatBottomSheet() {
       // Include Bible context if available
       const bibleContext = chatContext.screenType === 'bible' ? chatContext.bibleContext : undefined;
 
+      console.log('[ChatBottomSheet] Invoking edge function:', EDGE_FUNCTIONS.companion);
+
       const { data, error } = await supabase.functions.invoke(EDGE_FUNCTIONS.companion, {
         body: {
           user_id: null,
@@ -217,6 +223,14 @@ export function ChatBottomSheet() {
           context_mode: currentMode,
           bible_context: bibleContext,
         },
+      });
+
+      console.log('[ChatBottomSheet] Response:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorContext: error?.context,
+        dataKeys: data ? Object.keys(data) : [],
       });
 
       if (error) {
@@ -523,7 +537,11 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
   headerButton: {
-    padding: theme.spacing.xs,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
   },
   contextBanner: {
     flexDirection: 'row',

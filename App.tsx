@@ -8,9 +8,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Chat FAB Components
-import { ChatFAB } from './src/components/chat/ChatFAB';
+// Chat Components
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
+import { FloatingAskBar } from './src/components/chat/FloatingAskBar';
 import { PaywallModal } from './src/components/PaywallModal';
 
 // Auth Store
@@ -25,6 +25,7 @@ import JourneyScreen from './src/screens/JourneyScreen';
 // ChatScreen is now used in ChatBottomSheet, not as a tab
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
+import PrayersScreen from './src/screens/PrayersScreen';
 
 // Journal Screens
 import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
@@ -109,7 +110,7 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   Devotionals: { active: 'heart', inactive: 'heart-outline' },
   Bible: { active: 'book', inactive: 'book-outline' },
   Journey: { active: 'trending-up', inactive: 'trending-up-outline' },
-  Settings: { active: 'settings', inactive: 'settings-outline' },
+  Prayers: { active: 'hand-left', inactive: 'hand-left-outline' },
 };
 
 // =====================================================
@@ -231,7 +232,7 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen name="Journey" component={JourneyScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Prayers" component={PrayersScreen} />
     </Tab.Navigator>
   );
 }
@@ -342,14 +343,22 @@ export default function App() {
                       animation: 'slide_from_bottom',
                     }}
                   />
+                  <RootStack.Screen
+                    name="Settings"
+                    component={SettingsScreen}
+                    options={{
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
                 </>
               )}
             </RootStack.Navigator>
 
-            {/* Chat FAB and Bottom Sheet - only visible when authenticated and onboarded */}
+            {/* Floating Ask Bar & Chat - only visible when authenticated and onboarded */}
             {user && onboardingCompleted && (
               <>
-                <ChatFAB />
+                <FloatingAskBar />
                 <ChatBottomSheet />
                 <PaywallModal
                   visible={isPaywallVisible}
