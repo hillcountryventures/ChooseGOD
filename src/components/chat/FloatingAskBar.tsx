@@ -16,24 +16,18 @@ import {
   Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { useStore } from '../../store/useStore';
-import { RootStackParamList, ChatMessage } from '../../types';
+import { ChatMessage } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { EDGE_FUNCTIONS } from '../../constants/database';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 export function FloatingAskBar() {
-  const navigation = useNavigation<NavigationProp>();
   const inputRef = useRef<TextInput>(null);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
 
   const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
-  const setCurrentMode = useStore((state) => state.setCurrentMode);
   const addMessage = useStore((state) => state.addMessage);
   const setIsQuerying = useStore((state) => state.setIsQuerying);
   const currentMode = useStore((state) => state.currentMode);
@@ -118,35 +112,8 @@ export function FloatingAskBar() {
     }
   };
 
-  const handlePrayMode = () => {
-    setCurrentMode('prayer');
-    setChatSheetOpen(true);
-  };
-
-  const handleJournalMode = () => {
-    navigation.navigate('JournalCompose', {});
-  };
-
   return (
     <View style={styles.container}>
-      {/* Quick action chips */}
-      <View style={styles.actionChips}>
-        <TouchableOpacity
-          style={styles.actionChip}
-          onPress={handlePrayMode}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="heart-outline" size={14} color={theme.colors.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionChip}
-          onPress={handleJournalMode}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="journal-outline" size={14} color={theme.colors.primary} />
-        </TouchableOpacity>
-      </View>
-
       {/* Main input bar */}
       <View style={styles.inputBar}>
         <TouchableOpacity
@@ -198,23 +165,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: theme.spacing.md,
     paddingBottom: theme.spacing.sm,
-  },
-  actionChips: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.xs,
-  },
-  actionChip: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   inputBar: {
     flexDirection: 'row',

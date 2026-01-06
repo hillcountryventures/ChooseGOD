@@ -147,7 +147,7 @@ export default function ChatScreen() {
       }));
 
       // Call the companion API
-      console.log('Calling companion function with:', {
+      console.log('[Chat] Calling companion function with:', {
         message,
         context_mode: currentMode,
         history_length: history.length,
@@ -162,7 +162,14 @@ export default function ChatScreen() {
         },
       });
 
-      console.log('Response received:', { data, error });
+      console.log('[Chat] Response received:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorType: error ? typeof error : 'none',
+        errorMessage: error?.message,
+        errorContext: error?.context,
+        dataKeys: data ? Object.keys(data) : [],
+      });
 
       if (error) {
         console.error('Supabase function error:', error);

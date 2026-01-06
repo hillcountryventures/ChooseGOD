@@ -13,20 +13,23 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetTextInput,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useStore } from '../../store/useStore';
 import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
-import { ChatMessage, ChatMode, VerseSource, SuggestedAction, ChatContext } from '../../types';
+import { ChatMessage, VerseSource, SuggestedAction, ChatContext, RootStackParamList } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { EDGE_FUNCTIONS } from '../../constants/database';
 import { CHAT_LIMITS } from '../../constants/limits';
 import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
 import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
 import { FREE_CHAT_LIMIT } from '../../constants/subscription';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Generate context-aware prompt based on current screen
 function generateContextPrompt(context: ChatContext): string {
@@ -71,6 +74,7 @@ function generateInitialMessage(context: ChatContext): string | undefined {
 }
 
 export function ChatBottomSheet() {
+  const navigation = useNavigation<NavigationProp>();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<any>(null);
@@ -301,7 +305,27 @@ export function ChatBottomSheet() {
   };
 
   const handleActionPress = (action: SuggestedAction) => {
-    handleSend(action.prompt);
+    // Close the chat sheet and navigate to Journal with context
+    setChatSheetOpen(false);
+
+    // Get the last assistant message for context (verse sources)
+    const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop();
+    const firstSource = lastAssistantMessage?.sources?.[0];
+
+    // Navigate to Journal with the action as a prompt
+    navigation.navigate('JournalCompose', {
+      initialPrompt: `${action.label}\n\n${action.prompt}`,
+      initialVerse: firstSource ? {
+        book: firstSource.book,
+        chapter: firstSource.chapter,
+        verse: firstSource.verse,
+        text: firstSource.text,
+        translation: firstSource.translation,
+      } : undefined,
+      source: {
+        type: 'ai_prompt',
+      },
+    });
   };
 
   const handleVersePress = (verse: VerseSource) => {

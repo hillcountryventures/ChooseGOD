@@ -231,6 +231,7 @@ export const useStore = create<AppState>()(
         savedDrafts: state.savedDrafts,
         currentDraft: state.currentDraft,
         recentMoments: state.recentMoments,
+        activePrayers: state.activePrayers,
         // Don't persist messages - start fresh each session
       }),
     }

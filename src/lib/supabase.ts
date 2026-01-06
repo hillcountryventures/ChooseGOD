@@ -21,6 +21,12 @@ const ExpoSecureStoreAdapter = {
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
+// Debug: Log Supabase configuration (remove in production)
+if (__DEV__) {
+  console.log('[Supabase] URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING');
+  console.log('[Supabase] Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'MISSING');
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: ExpoSecureStoreAdapter,
@@ -82,17 +88,25 @@ export async function fetchVerse(
   translation: Translation = BIBLE_DEFAULTS.translation as Translation
 ): Promise<VerseSource | null> {
   try {
+    // Database stores translation as lowercase
+    const translationLower = translation.toLowerCase();
+
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
       .select('*')
       .eq('book', book)
       .eq('chapter', chapter)
       .eq('verse', verse)
-      .eq('translation', translation)
-      .single();
+      .eq('translation', translationLower)
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid error when no rows found
 
     if (error) {
       console.error('Error fetching verse:', error);
+      return null;
+    }
+
+    if (!data) {
+      console.log(`Verse not found: ${book} ${chapter}:${verse} (${translationLower})`);
       return null;
     }
 
@@ -101,7 +115,7 @@ export async function fetchVerse(
       chapter: data.chapter,
       verse: data.verse,
       text: data.text,
-      translation: data.translation as Translation,
+      translation: data.translation.toUpperCase() as Translation,
     };
   } catch (error) {
     console.error('Error fetching verse:', error);

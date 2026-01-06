@@ -59,7 +59,7 @@ const POPULAR_VERSES = [
   { book: 'Romans', chapter: 8, verse: 28 },
   { book: 'Proverbs', chapter: 3, verse: 5 },
   { book: 'Isaiah', chapter: 41, verse: 10 },
-  { book: 'Psalm', chapter: 23, verse: 1 },
+  { book: 'Psalms', chapter: 23, verse: 1 },
   { book: 'Matthew', chapter: 11, verse: 28 },
 ];
 

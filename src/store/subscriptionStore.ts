@@ -88,6 +88,12 @@ export const useSubscriptionStore = create<SubscriptionState>()(
        * Call this once at app startup (in App.tsx)
        */
       initialize: async () => {
+        // Prevent multiple initializations
+        if (get().isInitialized) {
+          console.log('[RevenueCat] Already initialized, skipping');
+          return;
+        }
+
         try {
           set({ isLoading: true, error: null });
 
@@ -104,6 +110,16 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               isInitialized: true,
               error: 'RevenueCat API key not configured',
             });
+            return;
+          }
+
+          // Check if RevenueCat is already configured
+          const isConfigured = await Purchases.isConfigured();
+          if (isConfigured) {
+            console.log('[RevenueCat] SDK already configured, fetching customer info');
+            set({ isInitialized: true });
+            await get().refreshCustomerInfo();
+            set({ isLoading: false });
             return;
           }
 
