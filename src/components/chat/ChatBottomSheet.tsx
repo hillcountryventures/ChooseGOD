@@ -129,6 +129,23 @@ export function ChatBottomSheet() {
     }
   }, [messages]);
 
+  // Auto-expand to full height when keyboard appears on iOS
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      // Snap to full screen (index 1 = '94%') so input is always visible
+      // Small delay lets keyboard animation start first for smoother feel
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(1);
+      }, 100);
+    });
+
+    return () => {
+      showSubscription.remove();
+    };
+  }, []);
+
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
       setChatSheetOpen(false);
@@ -382,7 +399,7 @@ export function ChatBottomSheet() {
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior="interactive"
+      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       enableHandlePanningGesture={true}
