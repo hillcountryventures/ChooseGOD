@@ -37,9 +37,6 @@ export const REVENUECAT_PRODUCT_IDS = {
 
   // Yearly subscription (~25% savings) with 7-day free trial
   yearly: 'choosegodannual',
-
-  // Lifetime one-time purchase
-  lifetime: 'choosegodlifetime',
 } as const;
 
 // =====================================================
@@ -79,32 +76,32 @@ export const PAYWALL_CONTENT = {
     {
       icon: 'chatbubbles',
       title: 'Unlimited AI Conversations',
-      description: 'Ask questions about Scripture anytime, with faithful, citation-backed answers.',
+      description: 'Ask anything about Scripture—get thoughtful, verse-backed answers anytime.',
     },
     {
       icon: 'book',
       title: 'Exact Bible Citations',
-      description: 'Every response grounded in Scripture with direct verse references.',
+      description: 'Every answer cites chapter and verse so you can read it yourself.',
     },
     {
       icon: 'heart',
       title: 'Prayer & Devotional Support',
-      description: 'Guided prayer prompts, lectio divina, and spiritual reflection.',
+      description: 'Guided prayers, lectio divina, and daily reflections to grow your faith.',
     },
     {
       icon: 'shield-checkmark',
       title: 'Trustworthy & Private',
-      description: 'No hallucinations. No ads. Your conversations stay private.',
+      description: 'Grounded in Scripture only. No ads. Your conversations stay completely private.',
     },
     {
       icon: 'sparkles',
       title: 'Personalized Devotional Insights',
-      description: 'Get tailored Scripture recommendations based on your spiritual journey.',
+      description: 'Scripture recommendations that meet you where you are spiritually.',
     },
     {
       icon: 'git-branch',
       title: 'Cross-Reference Discovery',
-      description: 'Explore connected passages and themes across the entire Bible.',
+      description: 'Discover how passages connect across the entire Bible.',
     },
   ],
 
