@@ -1,3 +1,25 @@
+// Font size scale factors for user preferences
+export const FONT_SIZE_SCALES = {
+  small: 0.875,   // 87.5% of base
+  medium: 1,      // 100% of base (default)
+  large: 1.25,    // 125% of base
+} as const;
+
+export type FontSizePreference = keyof typeof FONT_SIZE_SCALES;
+
+/**
+ * Get a scaled font size based on user preference
+ * @param baseSize - The base font size from theme.fontSize
+ * @param preference - User's font size preference (small, medium, large)
+ * @returns Scaled font size
+ */
+export function getScaledFontSize(
+  baseSize: number,
+  preference: FontSizePreference = 'medium'
+): number {
+  return Math.round(baseSize * FONT_SIZE_SCALES[preference]);
+}
+
 export const theme = {
   colors: {
     // Primary colors - Indigo/purple

@@ -23,6 +23,7 @@ import { theme } from '../lib/theme';
 import { fetchChapter, getBookChapterCount } from '../lib/supabase';
 import { useStore } from '../store/useStore';
 import { useChatContext } from '../hooks/useChatContext';
+import { useFontSize } from '../hooks/useFontSize';
 import {
   BottomTabParamList,
   VerseSource,
@@ -102,6 +103,7 @@ export default function BibleScreen() {
   const preferences = useStore((state) => state.preferences);
   const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
   const { setBibleContext } = useChatContext();
+  const { sizes: fontSizes } = useFontSize();
 
   // Current reading position
   const [currentBook, setCurrentBook] = useState(route.params?.book || 'Proverbs');
@@ -563,7 +565,7 @@ export default function BibleScreen() {
               ]}
             >
               <Text style={styles.verseNumber}>{verse.verse}</Text>
-              <Text style={styles.verseText}>{verse.text}</Text>
+              <Text style={[styles.verseText, { fontSize: fontSizes.lg, lineHeight: fontSizes.lg * 1.8 }]}>{verse.text}</Text>
               {verseNotes.length > 0 && (
                 <View style={styles.noteIndicator}>
                   <Ionicons name="document-text" size={12} color={theme.colors.primary} />

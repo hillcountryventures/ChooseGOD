@@ -5,7 +5,7 @@
  * Settings help personalize the Scripture experience
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -23,8 +23,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/authStore';
-import { Translation, TRANSLATIONS } from '../types';
+import { Translation, AVAILABLE_TRANSLATIONS } from '../types';
 import { navigateToBibleReference } from '../lib/navigationHelpers';
+import {
+  requestPermissions,
+  scheduleDevotionalReminder,
+  cancelDevotionalReminders,
+  areNotificationsEnabled,
+} from '../lib/notifications';
+import { updateUserProfile } from '../lib/supabase';
 
 // ============================================================================
 // Setting Row Component
@@ -101,25 +108,28 @@ function TranslationPicker({
 }) {
   return (
     <View style={styles.pickerContainer}>
-      {TRANSLATIONS.map((t, index) => (
+      {AVAILABLE_TRANSLATIONS.map((t, index) => (
         <TouchableOpacity
           key={t.id}
           style={[
             styles.pickerOption,
             value === t.id && styles.pickerOptionSelected,
-            index === TRANSLATIONS.length - 1 && styles.pickerOptionLast,
+            index === AVAILABLE_TRANSLATIONS.length - 1 && styles.pickerOptionLast,
           ]}
           onPress={() => onChange(t.id)}
         >
           <View style={styles.pickerOptionContent}>
-            <Text
-              style={[
-                styles.pickerOptionText,
-                value === t.id && styles.pickerOptionTextSelected,
-              ]}
-            >
-              {t.id}
-            </Text>
+            <View style={styles.pickerOptionHeader}>
+              <Text
+                style={[
+                  styles.pickerOptionText,
+                  value === t.id && styles.pickerOptionTextSelected,
+                ]}
+              >
+                {t.id}
+              </Text>
+              <Text style={styles.pickerOptionLanguage}>{t.language}</Text>
+            </View>
             <Text style={styles.pickerOptionDescription}>{t.description}</Text>
           </View>
           {value === t.id && (
@@ -262,8 +272,108 @@ export default function SettingsScreen() {
   const recentMoments = useStore((state) => state.recentMoments);
   const activePrayers = useStore((state) => state.activePrayers);
   const signOut = useAuthStore((state) => state.signOut);
+  const user = useAuthStore((state) => state.user);
 
   const [showPhilosophy, setShowPhilosophy] = useState(false);
+  const [isSchedulingNotification, setIsSchedulingNotification] = useState(false);
+
+  // Handle translation change - updates local store and syncs to Supabase
+  const handleTranslationChange = useCallback(async (translation: Translation) => {
+    // Update local preferences immediately for responsive UI
+    updatePreferences({ preferredTranslation: translation });
+
+    // Sync to Supabase if user is logged in
+    if (user?.id) {
+      await updateUserProfile(user.id, { preferredTranslation: translation });
+    }
+  }, [updatePreferences, user?.id]);
+
+  // Handle notification toggle changes
+  const handleNotificationToggle = useCallback(async (enabled: boolean) => {
+    if (enabled) {
+      // Request permissions first
+      const granted = await requestPermissions();
+      if (!granted) {
+        Alert.alert(
+          'Notifications Disabled',
+          'Please enable notifications in your device settings to receive reminders.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+    } else {
+      // Cancel all notifications when disabled
+      await cancelDevotionalReminders();
+    }
+    updatePreferences({ notificationsEnabled: enabled });
+  }, [updatePreferences]);
+
+  // Handle morning devotional toggle
+  const handleMorningDevotionalToggle = useCallback(async (enabled: boolean) => {
+    setIsSchedulingNotification(true);
+    try {
+      if (enabled) {
+        // Check if notifications are enabled first
+        const notificationsEnabled = await areNotificationsEnabled();
+        if (!notificationsEnabled) {
+          const granted = await requestPermissions();
+          if (!granted) {
+            Alert.alert(
+              'Enable Notifications',
+              'Please enable notifications to receive morning devotional reminders.',
+              [{ text: 'OK' }]
+            );
+            setIsSchedulingNotification(false);
+            return;
+          }
+          updatePreferences({ notificationsEnabled: true });
+        }
+        // Schedule morning reminder at 7:00 AM
+        await scheduleDevotionalReminder({ hours: 7, minutes: 0 }, 'Morning Devotional');
+      } else {
+        // Cancel morning reminders
+        await cancelDevotionalReminders();
+      }
+      updatePreferences({ dailyDevotional: enabled });
+    } catch (error) {
+      console.error('Error toggling morning devotional:', error);
+      Alert.alert('Error', 'Failed to update notification settings.');
+    } finally {
+      setIsSchedulingNotification(false);
+    }
+  }, [updatePreferences]);
+
+  // Handle evening examen toggle
+  const handleEveningExamenToggle = useCallback(async (enabled: boolean) => {
+    setIsSchedulingNotification(true);
+    try {
+      if (enabled) {
+        // Check if notifications are enabled first
+        const notificationsEnabled = await areNotificationsEnabled();
+        if (!notificationsEnabled) {
+          const granted = await requestPermissions();
+          if (!granted) {
+            Alert.alert(
+              'Enable Notifications',
+              'Please enable notifications to receive evening examen reminders.',
+              [{ text: 'OK' }]
+            );
+            setIsSchedulingNotification(false);
+            return;
+          }
+          updatePreferences({ notificationsEnabled: true });
+        }
+        // Schedule evening reminder at 9:00 PM
+        await scheduleDevotionalReminder({ hours: 21, minutes: 0 }, 'Evening Examen');
+      }
+      updatePreferences({ eveningExamen: enabled });
+    } catch (error) {
+      console.error('Error toggling evening examen:', error);
+      Alert.alert('Error', 'Failed to update notification settings.');
+    } finally {
+      setIsSchedulingNotification(false);
+    }
+  }, [updatePreferences]);
 
   // Handle clear chat with confirmation
   const handleClearChat = () => {
@@ -334,8 +444,17 @@ export default function SettingsScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.subtitle}>Personalize your experience</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>Settings</Text>
+            <Text style={styles.subtitle}>Personalize your experience</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={24} color={theme.colors.text} />
+          </TouchableOpacity>
         </View>
 
         {/* Scripture Settings */}
@@ -344,7 +463,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionInnerLabel}>Preferred Translation</Text>
           <TranslationPicker
             value={preferences.preferredTranslation}
-            onChange={(t) => updatePreferences({ preferredTranslation: t })}
+            onChange={handleTranslationChange}
           />
           <View style={styles.divider} />
           <Text style={styles.sectionInnerLabel}>Font Size</Text>
@@ -365,9 +484,8 @@ export default function SettingsScreen() {
             rightElement={
               <Switch
                 value={preferences.dailyDevotional}
-                onValueChange={(value) =>
-                  updatePreferences({ dailyDevotional: value })
-                }
+                onValueChange={handleMorningDevotionalToggle}
+                disabled={isSchedulingNotification}
                 trackColor={{
                   false: theme.colors.border,
                   true: theme.colors.primary,
@@ -379,14 +497,13 @@ export default function SettingsScreen() {
           <SettingRow
             icon="moon"
             iconColor={theme.colors.gradient.end}
-            label="Evening Examen"
+            label="Evening Reflection"
             description="Reminder at 9:00 PM"
             rightElement={
               <Switch
                 value={preferences.eveningExamen}
-                onValueChange={(value) =>
-                  updatePreferences({ eveningExamen: value })
-                }
+                onValueChange={handleEveningExamenToggle}
+                disabled={isSchedulingNotification}
                 trackColor={{
                   false: theme.colors.border,
                   true: theme.colors.primary,
@@ -404,9 +521,8 @@ export default function SettingsScreen() {
             rightElement={
               <Switch
                 value={preferences.notificationsEnabled}
-                onValueChange={(value) =>
-                  updatePreferences({ notificationsEnabled: value })
-                }
+                onValueChange={handleNotificationToggle}
+                disabled={isSchedulingNotification}
                 trackColor={{
                   false: theme.colors.border,
                   true: theme.colors.primary,
@@ -505,9 +621,23 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.lg,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: theme.fontSize.xxl,
@@ -616,6 +746,19 @@ const styles = StyleSheet.create({
   },
   pickerOptionContent: {
     flex: 1,
+  },
+  pickerOptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  pickerOptionLanguage: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
   },
   pickerOptionText: {
     fontSize: theme.fontSize.md,

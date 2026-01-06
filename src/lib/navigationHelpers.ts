@@ -6,11 +6,12 @@
  * These helpers make it easy to navigate users to Scripture from anywhere
  */
 
-import { NavigationProp, CommonActions } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { parseReference, ParsedVerse } from './verseParser';
-import type { BottomTabParamList, RootStackParamList, ChatMode } from '../types';
+import type { ChatMode } from '../types';
 
-type AnyNavigation = NavigationProp<RootStackParamList & BottomTabParamList>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyNavigation = any;
 
 /**
  * Navigate to a specific Bible verse

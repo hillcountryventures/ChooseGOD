@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
 import { AuthStackParamList } from '../../types/navigation';
+
+const Logo = require('../../../assets/logo.png');
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -70,10 +73,7 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="sparkles" size={48} color={theme.colors.accent} />
-            </View>
-            <Text style={styles.title}>ChooseGOD</Text>
+            <Image source={Logo} style={styles.logo} resizeMode="contain" />
             <Text style={styles.subtitle}>Welcome back</Text>
           </View>
 
@@ -182,20 +182,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: theme.spacing.xl,
   },
-  logoContainer: {
-    width: 80,
+  logo: {
+    width: 220,
     height: 80,
-    borderRadius: theme.borderRadius.xl,
-    backgroundColor: theme.colors.accent + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.typography.sizes.xxxl,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
   },
   subtitle: {
     fontSize: theme.typography.sizes.md,

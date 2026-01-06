@@ -182,41 +182,224 @@ export interface DailyVerse {
 }
 
 // Bible translations
-export type Translation = 'KJV' | 'NIV' | 'ESV' | 'NKJV' | 'NLT';
+// Use AVAILABLE_TRANSLATIONS to get only translations seeded in the database
+export type Translation =
+  // English (Public Domain)
+  | 'KJV' | 'ASV' | 'BBE' | 'WEB' | 'DARBY' | 'YLT'
+  // Spanish
+  | 'RVR'
+  // Portuguese
+  | 'PAA' | 'PACF'
+  // German (Public Domain)
+  | 'LUTHER' | 'SCHLACHTER'
+  // French
+  | 'FRENCH'
+  // Chinese
+  | 'CUV' | 'CNCV'
+  // Korean
+  | 'KOREAN'
+  // Russian (Public Domain)
+  | 'SYNODAL'
+  // Arabic (Public Domain)
+  | 'ARABIC'
+  // Greek (Public Domain)
+  | 'GREEK'
+  // Vietnamese
+  | 'VIETNAMESE'
+  // Romanian (Public Domain)
+  | 'ROMANIAN'
+  // Finnish (Public Domain)
+  | 'FINNISH';
 
 export interface TranslationInfo {
   id: Translation;
   name: string;
   description: string;
+  language: string;
+  isAvailable: boolean; // Whether this translation is seeded in the database
 }
 
 export const TRANSLATIONS: TranslationInfo[] = [
+  // ===== ENGLISH (Public Domain) =====
   {
     id: 'KJV',
     name: 'King James Version',
-    description: 'Classic, traditional English translation',
+    description: 'Classic, traditional English (1611)',
+    language: 'English',
+    isAvailable: true,
   },
   {
-    id: 'NIV',
-    name: 'New International Version',
-    description: 'Modern, easy-to-read translation',
+    id: 'ASV',
+    name: 'American Standard Version',
+    description: 'Literal word-for-word (1901)',
+    language: 'English',
+    isAvailable: false, // Set to true after running: node seed-translations.js asv
   },
   {
-    id: 'ESV',
-    name: 'English Standard Version',
-    description: 'Literal, word-for-word translation',
+    id: 'BBE',
+    name: 'Bible in Basic English',
+    description: 'Simple vocabulary translation',
+    language: 'English',
+    isAvailable: false,
   },
   {
-    id: 'NKJV',
-    name: 'New King James Version',
-    description: 'Updated KJV with modern language',
+    id: 'WEB',
+    name: 'World English Bible',
+    description: 'Modern public domain',
+    language: 'English',
+    isAvailable: false,
   },
   {
-    id: 'NLT',
-    name: 'New Living Translation',
-    description: 'Thought-for-thought translation',
+    id: 'DARBY',
+    name: 'Darby Translation',
+    description: 'Literal by J.N. Darby',
+    language: 'English',
+    isAvailable: false,
+  },
+  {
+    id: 'YLT',
+    name: "Young's Literal",
+    description: 'Extremely literal translation',
+    language: 'English',
+    isAvailable: false,
+  },
+
+  // ===== SPANISH =====
+  {
+    id: 'RVR',
+    name: 'Reina-Valera 1960',
+    description: 'Traducción clásica en español',
+    language: 'Español',
+    isAvailable: true,
+  },
+
+  // ===== PORTUGUESE =====
+  {
+    id: 'PAA',
+    name: 'Almeida Atualizada',
+    description: 'Tradução portuguesa',
+    language: 'Português',
+    isAvailable: false,
+  },
+  {
+    id: 'PACF',
+    name: 'Almeida Corrigida',
+    description: 'Tradução fiel',
+    language: 'Português',
+    isAvailable: false,
+  },
+
+  // ===== GERMAN =====
+  {
+    id: 'LUTHER',
+    name: 'Luther 1912',
+    description: 'Martin Luther Übersetzung',
+    language: 'Deutsch',
+    isAvailable: false,
+  },
+  {
+    id: 'SCHLACHTER',
+    name: 'Schlachter',
+    description: 'Schlachter Übersetzung',
+    language: 'Deutsch',
+    isAvailable: false,
+  },
+
+  // ===== FRENCH =====
+  {
+    id: 'FRENCH',
+    name: 'French Bible',
+    description: 'Traduction française',
+    language: 'Français',
+    isAvailable: false,
+  },
+
+  // ===== CHINESE =====
+  {
+    id: 'CUV',
+    name: '和合本',
+    description: 'Chinese Union Version',
+    language: '中文',
+    isAvailable: false,
+  },
+  {
+    id: 'CNCV',
+    name: '新译本',
+    description: 'New Contemporary',
+    language: '中文',
+    isAvailable: false,
+  },
+
+  // ===== KOREAN =====
+  {
+    id: 'KOREAN',
+    name: '한국어 성경',
+    description: 'Korean Bible',
+    language: '한국어',
+    isAvailable: false,
+  },
+
+  // ===== RUSSIAN =====
+  {
+    id: 'SYNODAL',
+    name: 'Синодальный',
+    description: 'Synodal Translation',
+    language: 'Русский',
+    isAvailable: false,
+  },
+
+  // ===== ARABIC =====
+  {
+    id: 'ARABIC',
+    name: 'الكتاب المقدس',
+    description: 'Smith & Van Dyke',
+    language: 'العربية',
+    isAvailable: false,
+  },
+
+  // ===== GREEK =====
+  {
+    id: 'GREEK',
+    name: 'Ελληνική Βίβλος',
+    description: 'Greek Bible',
+    language: 'Ελληνικά',
+    isAvailable: false,
+  },
+
+  // ===== VIETNAMESE =====
+  {
+    id: 'VIETNAMESE',
+    name: 'Kinh Thánh',
+    description: 'Vietnamese Bible',
+    language: 'Tiếng Việt',
+    isAvailable: false,
+  },
+
+  // ===== ROMANIAN =====
+  {
+    id: 'ROMANIAN',
+    name: 'Cornilescu',
+    description: 'Biblia Cornilescu',
+    language: 'Română',
+    isAvailable: false,
+  },
+
+  // ===== FINNISH =====
+  {
+    id: 'FINNISH',
+    name: 'Raamattu',
+    description: 'Finnish Bible',
+    language: 'Suomi',
+    isAvailable: false,
   },
 ];
+
+// Helper to get only available translations (seeded in database)
+export const AVAILABLE_TRANSLATIONS = TRANSLATIONS.filter(t => t.isAvailable);
+
+// Helper to get translations by language
+export const getTranslationsByLanguage = (language: string) =>
+  TRANSLATIONS.filter(t => t.language === language);
 
 // User preferences for store
 export interface UserPreferences {

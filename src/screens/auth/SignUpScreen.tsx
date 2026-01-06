@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
 import { AuthStackParamList } from '../../types/navigation';
+
+const Logo = require('../../../assets/logo.png');
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
 
@@ -99,8 +102,8 @@ export default function SignUpScreen() {
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join ChooseGOD today</Text>
+            <Image source={Logo} style={styles.logo} resizeMode="contain" />
+            <Text style={styles.subtitle}>Join us today</Text>
           </View>
 
           <View style={styles.form}>
@@ -231,13 +234,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   header: {
+    alignItems: 'center',
     marginBottom: theme.spacing.xl,
   },
-  title: {
-    fontSize: theme.typography.sizes.xxxl,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+  logo: {
+    width: 200,
+    height: 70,
+    marginBottom: theme.spacing.sm,
   },
   subtitle: {
     fontSize: theme.typography.sizes.md,

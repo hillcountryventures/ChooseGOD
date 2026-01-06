@@ -132,10 +132,13 @@ export async function searchVerses(
   limit: number = SEARCH_LIMITS.semanticResults
 ): Promise<VerseSource[]> {
   try {
+    // Database stores translation as lowercase
+    const translationLower = translation.toLowerCase();
+
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
       .select('*')
-      .eq('translation', translation)
+      .eq('translation', translationLower)
       .ilike('text', `%${keyword}%`)
       .limit(limit);
 
@@ -149,7 +152,7 @@ export async function searchVerses(
       chapter: row.chapter,
       verse: row.verse,
       text: row.text,
-      translation: row.translation as Translation,
+      translation: row.translation.toUpperCase() as Translation,
     }));
   } catch (error) {
     console.error('Error searching verses:', error);
@@ -227,5 +230,93 @@ export async function getBookChapterCount(
   } catch (error) {
     console.error('Error getting chapter count:', error);
     return 0;
+  }
+}
+
+/**
+ * Update user profile preferences in Supabase
+ * This syncs local preferences to the database for use by edge functions
+ */
+export async function updateUserProfile(
+  userId: string,
+  preferences: {
+    preferredTranslation?: Translation;
+    maturityLevel?: string;
+    dailyDevotional?: boolean;
+    eveningExamen?: boolean;
+  }
+): Promise<boolean> {
+  try {
+    const updates: Record<string, unknown> = {};
+
+    if (preferences.preferredTranslation !== undefined) {
+      // Store as lowercase to match database convention
+      updates.preferred_translation = preferences.preferredTranslation.toLowerCase();
+    }
+    if (preferences.maturityLevel !== undefined) {
+      updates.maturity_level = preferences.maturityLevel;
+    }
+    if (preferences.dailyDevotional !== undefined) {
+      updates.daily_devotional = preferences.dailyDevotional;
+    }
+    if (preferences.eveningExamen !== undefined) {
+      updates.evening_examen = preferences.eveningExamen;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return true; // Nothing to update
+    }
+
+    const { error } = await supabase
+      .from(TABLES.userProfiles)
+      .upsert({
+        id: userId,
+        ...updates,
+      });
+
+    if (error) {
+      console.error('Error updating user profile:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    return false;
+  }
+}
+
+/**
+ * Fetch user profile from Supabase
+ * Used to sync preferences on app load or sign in
+ */
+export async function fetchUserProfile(
+  userId: string
+): Promise<{
+  preferredTranslation?: Translation;
+  maturityLevel?: string;
+  dailyDevotional?: boolean;
+  eveningExamen?: boolean;
+} | null> {
+  try {
+    const { data, error } = await supabase
+      .from(TABLES.userProfiles)
+      .select('preferred_translation, maturity_level, daily_devotional, evening_examen')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      preferredTranslation: data.preferred_translation?.toUpperCase() as Translation | undefined,
+      maturityLevel: data.maturity_level,
+      dailyDevotional: data.daily_devotional,
+      eveningExamen: data.evening_examen,
+    };
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
   }
 }
