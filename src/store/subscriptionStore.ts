@@ -60,10 +60,15 @@ function checkPremiumStatus(customerInfo: CustomerInfo | null): boolean {
 }
 
 /**
- * Get today's date string for comparison
+ * Get today's date string for comparison (local timezone)
+ * Uses local date to reset at midnight in user's timezone
  */
 function getTodayString(): string {
-  return new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // =====================================================

@@ -21,7 +21,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useStore } from '../../store/useStore';
 import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
-import { ChatMessage, VerseSource, SuggestedAction, ChatContext, RootStackParamList } from '../../types';
+import { ChatMessage, VerseSource, ChatContext, RootStackParamList } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { EDGE_FUNCTIONS } from '../../constants/database';
 import { CHAT_LIMITS } from '../../constants/limits';
@@ -99,7 +99,6 @@ export function ChatBottomSheet() {
 
   // Local state
   const [inputText, setInputText] = useState('');
-  const [suggestedActions, setSuggestedActions] = useState<SuggestedAction[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState('');
 
@@ -202,7 +201,6 @@ export function ChatBottomSheet() {
     };
     addMessage(userMessage);
     setIsQuerying(true);
-    setSuggestedActions([]);
 
     // Expand sheet when sending
     bottomSheetRef.current?.snapToIndex(1);
@@ -270,11 +268,6 @@ export function ChatBottomSheet() {
       if (data.celebration) {
         triggerCelebration(data.celebration.message);
       }
-
-      // Set suggested actions
-      if (data.suggestedActions) {
-        setSuggestedActions(data.suggestedActions);
-      }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         return;
@@ -304,17 +297,43 @@ export function ChatBottomSheet() {
     }
   };
 
-  const handleActionPress = (action: SuggestedAction) => {
-    // Close the chat sheet and navigate to Journal with context
-    setChatSheetOpen(false);
-
-    // Get the last assistant message for context (verse sources)
+  // Get the last assistant message for context
+  const getLastAssistantContext = () => {
     const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop();
-    const firstSource = lastAssistantMessage?.sources?.[0];
+    const sources = lastAssistantMessage?.sources || [];
+    const content = lastAssistantMessage?.content || '';
+    return { sources, content };
+  };
 
-    // Navigate to Journal with the action as a prompt
+  const handleJournalPress = () => {
+    setChatSheetOpen(false);
+    const { sources, content } = getLastAssistantContext();
+    const firstSource = sources[0];
+
+    // Navigate to Journal with chat context
     navigation.navigate('JournalCompose', {
-      initialPrompt: `${action.label}\n\n${action.prompt}`,
+      initialPrompt: content ? `Reflection:\n\n` : '',
+      initialVerse: firstSource ? {
+        book: firstSource.book,
+        chapter: firstSource.chapter,
+        verse: firstSource.verse,
+        text: firstSource.text,
+        translation: firstSource.translation,
+      } : undefined,
+      source: {
+        type: 'ai_prompt',
+      },
+    });
+  };
+
+  const handlePrayPress = () => {
+    setChatSheetOpen(false);
+    const { sources } = getLastAssistantContext();
+    const firstSource = sources[0];
+
+    // Navigate to Journal with prayer starter
+    navigation.navigate('JournalCompose', {
+      initialPrompt: 'Dear Lord,\n\n',
       initialVerse: firstSource ? {
         book: firstSource.book,
         chapter: firstSource.chapter,
@@ -373,10 +392,7 @@ export function ChatBottomSheet() {
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={() => {
-              clearMessages();
-              setSuggestedActions([]);
-            }}
+            onPress={() => clearMessages()}
           >
             <Ionicons name="refresh" size={18} color={theme.colors.textMuted} />
           </TouchableOpacity>
@@ -431,18 +447,23 @@ export function ChatBottomSheet() {
           </View>
         )}
 
-        {/* Suggested actions */}
-        {suggestedActions.length > 0 && !isQuerying && (
+        {/* Action buttons - Journal and Pray */}
+        {hasMessages && !isQuerying && messages[messages.length - 1]?.role === 'assistant' && (
           <View style={styles.actionsContainer}>
-            {suggestedActions.map((action, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.actionButton}
-                onPress={() => handleActionPress(action)}
-              >
-                <Text style={styles.actionButtonText}>{action.label}</Text>
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleJournalPress}
+            >
+              <Ionicons name="book-outline" size={16} color={theme.colors.primary} />
+              <Text style={styles.actionButtonText}>Journal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handlePrayPress}
+            >
+              <Ionicons name="hand-left-outline" size={16} color={theme.colors.primary} />
+              <Text style={styles.actionButtonText}>Pray</Text>
+            </TouchableOpacity>
           </View>
         )}
       </BottomSheetScrollView>
@@ -618,7 +639,10 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   actionButton: {
-    paddingVertical: theme.spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.full,

@@ -35,7 +35,7 @@ import { SWIPE, TAP } from '../constants';
 import { HEADER } from '../constants/dimensions';
 import { BIBLE_BOOKS } from '../data/bible/books';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
 
@@ -1124,9 +1124,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    height: SCREEN_HEIGHT * 0.6,
     backgroundColor: theme.colors.card,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
   },
@@ -1170,7 +1173,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   notesTimeline: {
-    maxHeight: 150,
+    maxHeight: SCREEN_HEIGHT * 0.25,
   },
   notePreview: {
     backgroundColor: theme.colors.backgroundSecondary,
