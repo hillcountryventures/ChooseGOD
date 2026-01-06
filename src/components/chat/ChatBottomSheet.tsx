@@ -25,6 +25,8 @@ import { supabase } from '../../lib/supabase';
 import { EDGE_FUNCTIONS } from '../../constants/database';
 import { CHAT_LIMITS } from '../../constants/limits';
 import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
+import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
+import { FREE_CHAT_LIMIT } from '../../constants/subscription';
 
 // Generate context-aware prompt based on current screen
 function generateContextPrompt(context: ChatContext): string {
@@ -86,6 +88,10 @@ export function ChatBottomSheet() {
   const addMessage = useStore((s) => s.addMessage);
   const setIsQuerying = useStore((s) => s.setIsQuerying);
   const clearMessages = useStore((s) => s.clearMessages);
+
+  // Premium status - check if user can use chat
+  const { isPremium, canUseChat, freeQueriesRemaining, showPaywall } = usePremiumStatus();
+  const { incrementUsage } = useChatUsageTracking();
 
   // Local state
   const [inputText, setInputText] = useState('');
@@ -163,6 +169,13 @@ export function ChatBottomSheet() {
   const handleSend = async (message: string) => {
     if (!message.trim()) return;
 
+    // Check if user can use chat (premium or free queries remaining)
+    if (!canUseChat) {
+      // Show custom paywall modal
+      showPaywall();
+      return;
+    }
+
     // Cancel any existing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -232,6 +245,9 @@ export function ChatBottomSheet() {
       };
       addMessage(assistantMessage);
 
+      // Track usage for free tier users (only after successful response)
+      incrementUsage();
+
       // Handle celebration
       if (data.celebration) {
         triggerCelebration(data.celebration.message);
@@ -299,6 +315,22 @@ export function ChatBottomSheet() {
         <View style={styles.headerLeft}>
           <Ionicons name="chatbubbles" size={20} color={theme.colors.primary} />
           <Text style={styles.headerTitle}>Ask</Text>
+          {/* Premium badge or free queries remaining */}
+          {isPremium ? (
+            <View style={styles.premiumBadge}>
+              <Ionicons name="star" size={10} color={theme.colors.accent} />
+              <Text style={styles.premiumBadgeText}>Pro</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.freeQueriesBadge}
+              onPress={showPaywall}
+            >
+              <Text style={styles.freeQueriesText}>
+                {freeQueriesRemaining}/{FREE_CHAT_LIMIT} free
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity
@@ -459,6 +491,31 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.lg,
     fontWeight: '600',
     color: theme.colors.text,
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.accentAlpha[20],
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.full,
+    gap: 3,
+  },
+  premiumBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.accent,
+  },
+  freeQueriesBadge: {
+    backgroundColor: theme.colors.primaryAlpha[15],
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.full,
+  },
+  freeQueriesText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   headerRight: {
     flexDirection: 'row',

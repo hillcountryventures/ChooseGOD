@@ -11,10 +11,12 @@ import { Ionicons } from '@expo/vector-icons';
 // Chat FAB Components
 import { ChatFAB } from './src/components/chat/ChatFAB';
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
+import { PaywallModal } from './src/components/PaywallModal';
 
 // Auth Store
 import { useAuthStore } from './src/store/authStore';
 import { useDevotionalStore } from './src/store/devotionalStore';
+import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
 
 // Main Screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -254,11 +256,16 @@ function LoadingScreen() {
 export default function App() {
   const { user, initialized, initialize } = useAuthStore();
   const { onboardingCompleted, checkOnboardingStatus } = useDevotionalStore();
+  const initializeSubscription = useSubscriptionStore((s) => s.initialize);
+  const hidePaywall = useSubscriptionStore((s) => s.hidePaywall);
+  const isPaywallVisible = useIsPaywallVisible();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
-  // Initialize auth on mount
+  // Initialize auth and RevenueCat on mount
   useEffect(() => {
     initialize();
+    // Initialize RevenueCat subscription SDK
+    initializeSubscription();
   }, []);
 
   // Check onboarding status when user changes
@@ -344,6 +351,10 @@ export default function App() {
               <>
                 <ChatFAB />
                 <ChatBottomSheet />
+                <PaywallModal
+                  visible={isPaywallVisible}
+                  onClose={hidePaywall}
+                />
               </>
             )}
           </View>
