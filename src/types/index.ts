@@ -120,6 +120,9 @@ export type ChatMode =
   | 'gratitude'
   | 'celebration';
 
+// Wit level for Grok-style personality
+export type WitLevel = 'low' | 'medium' | 'high';
+
 // Spiritual intent types (detected by AI)
 export type SpiritualIntent =
   | 'question'
@@ -691,6 +694,8 @@ export interface AppState {
   messages: ChatMessage[];
   isQuerying: boolean;
   currentMode: ChatMode;
+  witLevel: WitLevel;
+  isTyping: boolean;
 
   // Chat FAB state
   chatContext: ChatContext;
@@ -715,12 +720,15 @@ export interface AppState {
 
   // Actions
   addMessage: (message: ChatMessage) => void;
+  updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
   clearMessages: () => void;
   setDailyVerse: (verse: DailyVerse | null) => void;
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
   setPreferences: (prefs: Partial<UserPreferences>) => void;
   setIsQuerying: (isQuerying: boolean) => void;
   setCurrentMode: (mode: ChatMode) => void;
+  setWitLevel: (level: WitLevel) => void;
+  setIsTyping: (isTyping: boolean) => void;
   setActivePrayers: (prayers: PrayerRequest[]) => void;
   setMemoryVersesDue: (verses: MemoryVerse[]) => void;
   setPendingObedienceSteps: (steps: ObedienceStep[]) => void;

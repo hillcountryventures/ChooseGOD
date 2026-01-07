@@ -18,8 +18,9 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+// Export these for direct fetch usage (streaming)
+export const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+export const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Debug: Log Supabase configuration (remove in production)
 if (__DEV__) {
@@ -230,6 +231,57 @@ export async function getBookChapterCount(
   } catch (error) {
     console.error('Error getting chapter count:', error);
     return 0;
+  }
+}
+
+/**
+ * Fetch a verse in multiple translations for parallel comparison
+ * Returns the verse in each requested translation (skips unavailable ones)
+ */
+export async function fetchVerseParallel(
+  book: string,
+  chapter: number,
+  verse: number,
+  translations: Translation[] = ['KJV', 'ASV', 'BBE']
+): Promise<VerseSource[]> {
+  try {
+    // Convert translations to lowercase for database query
+    const translationsLower = translations.map((t) => t.toLowerCase());
+
+    const { data, error } = await supabase
+      .from(TABLES.bibleVerses)
+      .select('*')
+      .eq('book', book)
+      .eq('chapter', chapter)
+      .eq('verse', verse)
+      .in('translation', translationsLower);
+
+    if (error) {
+      console.error('Error fetching parallel verses:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Sort by the order of requested translations
+    const sortedData = data.sort((a, b) => {
+      const indexA = translationsLower.indexOf(a.translation.toLowerCase());
+      const indexB = translationsLower.indexOf(b.translation.toLowerCase());
+      return indexA - indexB;
+    });
+
+    return sortedData.map((row) => ({
+      book: row.book,
+      chapter: row.chapter,
+      verse: row.verse,
+      text: row.text,
+      translation: row.translation.toUpperCase() as Translation,
+    }));
+  } catch (error) {
+    console.error('Error fetching parallel verses:', error);
+    return [];
   }
 }
 

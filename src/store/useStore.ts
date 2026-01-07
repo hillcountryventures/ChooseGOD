@@ -7,6 +7,7 @@ import {
   DailyVerse,
   UserPreferences,
   ChatMode,
+  WitLevel,
   PrayerRequest,
   MemoryVerse,
   ObedienceStep,
@@ -66,6 +67,8 @@ export const useStore = create<AppState>()(
       messages: [],
       isQuerying: false,
       currentMode: 'auto',
+      witLevel: 'medium',
+      isTyping: false,
       chatContext: defaultChatContext,
       chatSheetOpen: false,
       dailyVerse: null,
@@ -84,6 +87,13 @@ export const useStore = create<AppState>()(
           messages: [...state.messages, message],
         })),
 
+      updateMessage: (id: string, updates: Partial<ChatMessage>) =>
+        set((state) => ({
+          messages: state.messages.map((msg) =>
+            msg.id === id ? { ...msg, ...updates } : msg
+          ),
+        })),
+
       clearMessages: () =>
         set(() => ({
           messages: [],
@@ -97,6 +107,16 @@ export const useStore = create<AppState>()(
       setCurrentMode: (mode: ChatMode) =>
         set(() => ({
           currentMode: mode,
+        })),
+
+      setWitLevel: (level: WitLevel) =>
+        set(() => ({
+          witLevel: level,
+        })),
+
+      setIsTyping: (isTyping: boolean) =>
+        set(() => ({
+          isTyping,
         })),
 
       // Chat FAB actions
