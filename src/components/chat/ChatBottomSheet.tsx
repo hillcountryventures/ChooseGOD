@@ -86,6 +86,7 @@ export function ChatBottomSheet() {
   const celebrationAnim = useRef(new Animated.Value(0)).current;
   const abortControllerRef = useRef<AbortController | null>(null);
   const isClosingRef = useRef(false);
+  const handleSendRef = useRef<(message: string, isRetry?: boolean) => void>(() => {});
   const insets = useSafeAreaInsets();
 
   // Store state
@@ -114,7 +115,7 @@ export function ChatBottomSheet() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState('');
 
-  // Voice input
+  // Voice input - uses ref to avoid circular dependency with handleSend
   const {
     isListening,
     isAvailable: isVoiceAvailable,
@@ -125,7 +126,7 @@ export function ChatBottomSheet() {
     onResult: (transcript) => {
       // When voice input completes, send the message
       if (transcript.trim()) {
-        handleSend(transcript);
+        handleSendRef.current(transcript);
       }
     },
     onPartialResult: (partial) => {
@@ -245,7 +246,7 @@ export function ChatBottomSheet() {
     }
   }, [setIsQuerying]);
 
-  const handleSend = async (message: string) => {
+  const handleSend = useCallback(async (message: string, isRetry: boolean = false) => {
     if (!message.trim()) return;
 
     // Check network connectivity first
@@ -261,7 +262,8 @@ export function ChatBottomSheet() {
     }
 
     // Check if user can use chat (premium or free queries remaining)
-    if (!canUseChat) {
+    // Retries don't check quota since the original attempt was already validated
+    if (!isRetry && !canUseChat) {
       // Show custom paywall modal
       showPaywall();
       return;
@@ -346,8 +348,11 @@ export function ChatBottomSheet() {
               content: fullResponse,
             });
 
-            // Track usage for free tier users
-            incrementUsage();
+            // Track usage for free tier users only on successful non-retry requests
+            // This protects users from losing quota on connection failures
+            if (!isRetry) {
+              incrementUsage();
+            }
 
             // Success haptic
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -392,7 +397,7 @@ export function ChatBottomSheet() {
         return;
       }
 
-      // Handle timeout errors specifically (from AbortSignal.timeout)
+      // Handle timeout errors specifically (from manual timeout pattern)
       // This only triggers after automatic retry has already failed
       if (error instanceof Error && error.name === 'TimeoutError') {
         console.error('Request timed out after retries:', error);
@@ -425,7 +430,12 @@ export function ChatBottomSheet() {
       setIsQuerying(false);
       abortControllerRef.current = null;
     }
-  };
+  }, [canUseChat, showPaywall, currentMode, addMessage, setIsQuerying, messages, chatContext, updateMessage, incrementUsage]);
+
+  // Keep ref in sync with handleSend for voice input callback
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [handleSend]);
 
   const handleContextPromptTap = () => {
     const initialMessage = generateInitialMessage(chatContext);
@@ -494,6 +504,10 @@ export function ChatBottomSheet() {
   const handleSuggestedActionPress = useCallback((action: SuggestedAction) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
+    // Check if this is a "Try again" retry action - these don't consume quota
+    const isRetryAction = action.label.toLowerCase() === 'try again' ||
+                          action.icon === 'refresh-outline';
+
     // Check if this is a prayer-related action
     const isPrayerAction =
       action.label.toLowerCase().includes('pray') ||
@@ -504,7 +518,7 @@ export function ChatBottomSheet() {
       setCurrentMode('prayer');
     }
 
-    handleSend(action.prompt);
+    handleSend(action.prompt, isRetryAction);
   }, [handleSend, currentMode, setCurrentMode]);
 
   // Handle mode selection with premium gating
