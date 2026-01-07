@@ -464,7 +464,8 @@ export type MomentType =
   | 'memory_practice'
   | 'obedience_step'
   | 'lectio'
-  | 'examen';
+  | 'examen'
+  | 'answered_prayer';
 
 // Journal media types
 export type MediaType = 'photo' | 'voice' | 'drawing';

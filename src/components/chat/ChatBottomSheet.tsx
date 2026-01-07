@@ -8,6 +8,8 @@ import {
   Keyboard,
   Animated,
   Platform,
+  Share,
+  Alert,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -18,6 +20,8 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useStore } from '../../store/useStore';
@@ -28,7 +32,8 @@ import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { CHAT_LIMITS } from '../../constants/limits';
 import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
 import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
-import { FREE_CHAT_LIMIT } from '../../constants/subscription';
+import { FREE_CHAT_LIMIT, isPremiumChatMode, PREMIUM_CHAT_MODES, FREE_CHAT_MODES } from '../../constants/subscription';
+import type { ChatMode } from '../../types';
 import {
   streamCompanionResponse,
   generateContextPrompt,
@@ -38,11 +43,45 @@ import { useVoiceInput } from '../../hooks/useVoiceInput';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// Helper functions for mode display
+function getModeIcon(mode: ChatMode): keyof typeof Ionicons.glyphMap {
+  const icons: Record<ChatMode, keyof typeof Ionicons.glyphMap> = {
+    auto: 'chatbubbles-outline',
+    devotional: 'sunny-outline',
+    prayer: 'hand-left-outline',
+    lectio: 'book-outline',
+    examen: 'moon-outline',
+    memory: 'school-outline',
+    confession: 'heart-outline',
+    gratitude: 'gift-outline',
+    celebration: 'sparkles-outline',
+    journal: 'create-outline',
+  };
+  return icons[mode] || 'chatbubbles-outline';
+}
+
+function getModeName(mode: ChatMode): string {
+  const names: Record<ChatMode, string> = {
+    auto: 'Ask',
+    devotional: 'Devotional',
+    prayer: 'Prayer',
+    lectio: 'Lectio Divina',
+    examen: 'Examen',
+    memory: 'Memory',
+    confession: 'Confession',
+    gratitude: 'Gratitude',
+    celebration: 'Celebrate',
+    journal: 'Journal',
+  };
+  return names[mode] || mode;
+}
+
 export function ChatBottomSheet() {
   const navigation = useNavigation<NavigationProp>();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flashListRef = useRef<FlashListRef<ChatMessage>>(null);
   const inputRef = useRef<any>(null);
+  const viewShotRef = useRef<View>(null);
   const celebrationAnim = useRef(new Animated.Value(0)).current;
   const abortControllerRef = useRef<AbortController | null>(null);
   const isClosingRef = useRef(false);
@@ -62,9 +101,12 @@ export function ChatBottomSheet() {
   const clearMessages = useStore((s) => s.clearMessages);
   const dailyVerse = useStore((s) => s.dailyVerse);
 
-  // Premium status - check if user can use chat
-  const { isPremium, canUseChat, freeQueriesRemaining, showPaywall } = usePremiumStatus();
+  // Premium status - check if user can use chat and modes
+  const { isPremium, canUseChat, canUseChatMode, freeQueriesRemaining, showPaywall } = usePremiumStatus();
   const { incrementUsage } = useChatUsageTracking();
+
+  // State for mode selector
+  const [showModeSelector, setShowModeSelector] = useState(false);
 
   // Local state
   const [inputText, setInputText] = useState('');
@@ -303,9 +345,12 @@ export function ChatBottomSheet() {
           onError: (errorMsg) => {
             console.error('[ChatBottomSheet] Stream error:', errorMsg);
 
-            // Update message with error
+            // Update message with friendly error and retry suggestion
             updateMessage(assistantMessageId, {
-              content: `I'm having trouble connecting right now.\n\nError: ${errorMsg}`,
+              content: `I'm having trouble connecting right now. ${errorMsg}\n\nTap "Try again" below to retry.`,
+              suggestedActions: [
+                { label: 'Try again', prompt: message, icon: 'refresh-outline' },
+              ],
             });
 
             // Error haptic
@@ -333,9 +378,12 @@ export function ChatBottomSheet() {
       // Error haptic
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
-      // Update placeholder with error message
+      // Update placeholder with friendly error and retry option
       updateMessage(assistantMessageId, {
-        content: `I'm having trouble connecting right now.\n\nError: ${errorDetails}`,
+        content: `I'm having trouble connecting right now. ${errorDetails}\n\nTap "Try again" below to retry.`,
+        suggestedActions: [
+          { label: 'Try again', prompt: message, icon: 'refresh-outline' },
+        ],
       });
 
       setIsQuerying(false);
@@ -423,29 +471,145 @@ export function ChatBottomSheet() {
     handleSend(action.prompt);
   }, [handleSend, currentMode, setCurrentMode]);
 
-  // Toggle prayer mode
-  const handlePrayerModeToggle = useCallback(() => {
+  // Handle mode selection with premium gating
+  const handleModeSelect = useCallback((mode: ChatMode) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newMode = currentMode === 'prayer' ? 'auto' : 'prayer';
-    setCurrentMode(newMode);
 
-    // If entering prayer mode with no messages, add a welcome prompt
-    if (newMode === 'prayer' && messages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: "I'm here to guide you in prayer. You can share what's on your heart, ask for Scripture to pray over a situation, or let me lead you through ACTS prayer (Adoration, Confession, Thanksgiving, Supplication).\n\nWhat would you like to bring before the Lord today?",
-        timestamp: new Date(),
-        mode: 'prayer',
-        suggestedActions: [
-          { label: 'ACTS Prayer', prompt: 'Guide me through ACTS prayer', icon: 'list-outline' },
-          { label: 'Scripture to pray', prompt: 'Give me a Scripture to pray over my situation', icon: 'book-outline' },
-          { label: 'Pray for peace', prompt: 'Help me pray for peace in my anxious heart', icon: 'heart-outline' },
-        ],
-      };
-      addMessage(welcomeMessage);
+    // Check if mode requires premium
+    if (!canUseChatMode(mode)) {
+      showPaywall();
+      setShowModeSelector(false);
+      return;
     }
-  }, [currentMode, setCurrentMode, messages.length, addMessage]);
+
+    setCurrentMode(mode);
+    setShowModeSelector(false);
+
+    // Add welcome message for specific modes
+    if (messages.length === 0) {
+      const modeWelcomes: Partial<Record<ChatMode, { content: string; actions: SuggestedAction[] }>> = {
+        prayer: {
+          content: "I'm here to guide you in prayer. You can share what's on your heart, ask for Scripture to pray over a situation, or let me lead you through ACTS prayer (Adoration, Confession, Thanksgiving, Supplication).\n\nWhat would you like to bring before the Lord today?",
+          actions: [
+            { label: 'ACTS Prayer', prompt: 'Guide me through ACTS prayer', icon: 'list-outline' },
+            { label: 'Scripture to pray', prompt: 'Give me a Scripture to pray over my situation', icon: 'book-outline' },
+            { label: 'Pray for peace', prompt: 'Help me pray for peace in my anxious heart', icon: 'heart-outline' },
+          ],
+        },
+        lectio: {
+          content: "Welcome to Lectio Divina, an ancient practice of prayerful Scripture reading. I'll guide you through four movements: Reading, Meditation, Prayer, and Contemplation.\n\nWould you like to begin, or do you have a specific passage in mind?",
+          actions: [
+            { label: 'Begin Lectio', prompt: 'Guide me through Lectio Divina', icon: 'book-outline' },
+            { label: 'Choose passage', prompt: 'I have a specific passage I want to pray with', icon: 'search-outline' },
+          ],
+        },
+        examen: {
+          content: "Welcome to the Evening Examen, a practice of reflecting on your day with God. I'll help you notice where God was present and where you might have missed Him.\n\nAre you ready to begin?",
+          actions: [
+            { label: 'Begin Examen', prompt: 'Guide me through the Evening Examen', icon: 'moon-outline' },
+            { label: 'Quick reflection', prompt: 'Help me with a quick end-of-day reflection', icon: 'time-outline' },
+          ],
+        },
+        memory: {
+          content: "Scripture memory mode activated! I can help you memorize verses using techniques like first-letter prompts, story associations, and spaced repetition.\n\nWhat verse would you like to work on?",
+          actions: [
+            { label: 'Add new verse', prompt: 'I want to memorize a new verse', icon: 'add-outline' },
+            { label: 'Review verses', prompt: 'Quiz me on my memory verses', icon: 'school-outline' },
+          ],
+        },
+        confession: {
+          content: "This is a safe space for heart examination. As Psalm 139:23-24 says, 'Search me, O God, and know my heart.'\n\nTake a moment. What's weighing on your heart?",
+          actions: [
+            { label: 'Heart check', prompt: 'Help me examine my heart with Psalm 139', icon: 'heart-outline' },
+            { label: 'Confess', prompt: 'I need to confess something to God', icon: 'chatbubble-outline' },
+          ],
+        },
+        gratitude: {
+          content: "Let's focus on gratitude! 'In everything give thanks' (1 Thessalonians 5:18).\n\nWhat blessings—big or small—are you noticing today?",
+          actions: [
+            { label: 'Share blessing', prompt: 'I want to share something I\'m grateful for', icon: 'gift-outline' },
+            { label: 'Help me notice', prompt: 'Help me recognize blessings I might be overlooking', icon: 'eye-outline' },
+          ],
+        },
+      };
+
+      const welcome = modeWelcomes[mode];
+      if (welcome) {
+        const welcomeMessage: ChatMessage = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: welcome.content,
+          timestamp: new Date(),
+          mode,
+          suggestedActions: welcome.actions,
+        };
+        addMessage(welcomeMessage);
+      }
+    }
+  }, [canUseChatMode, showPaywall, setCurrentMode, messages.length, addMessage]);
+
+  // Toggle prayer mode (uses handleModeSelect)
+  const handlePrayerModeToggle = useCallback(() => {
+    const newMode = currentMode === 'prayer' ? 'auto' : 'prayer';
+    handleModeSelect(newMode);
+  }, [currentMode, handleModeSelect]);
+
+  // Toggle mode selector panel
+  const handleModeSelectorToggle = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowModeSelector(prev => !prev);
+  }, []);
+
+  // Share conversation as image or text
+  const handleShareConversation = useCallback(async () => {
+    if (messages.length === 0) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      // Try to capture as image first
+      if (viewShotRef.current) {
+        const uri = await captureRef(viewShotRef, {
+          format: 'png',
+          quality: 1,
+        });
+
+        if (uri && await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'image/png',
+            dialogTitle: 'Share this Scripture conversation',
+          });
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Image share failed, falling back to text:', error);
+    }
+
+    // Fallback: Share as text
+    try {
+      const conversationText = messages
+        .map((m) => {
+          const role = m.role === 'user' ? 'You' : 'Companion';
+          let text = `${role}: ${m.content}`;
+          if (m.sources && m.sources.length > 0) {
+            const refs = m.sources
+              .map((s) => `${s.book} ${s.chapter}:${s.verse}`)
+              .join(', ');
+            text += `\n📖 ${refs}`;
+          }
+          return text;
+        })
+        .join('\n\n---\n\n');
+
+      await Share.share({
+        message: `${conversationText}\n\n✝️ Shared from ChooseGOD`,
+      });
+    } catch (error) {
+      console.error('Share failed:', error);
+      Alert.alert('Share Failed', 'Unable to share this conversation.');
+    }
+  }, [messages]);
 
   const isPrayerMode = currentMode === 'prayer';
 
@@ -497,6 +661,26 @@ export function ChatBottomSheet() {
           )}
         </View>
         <View style={styles.headerRight}>
+          {/* Share conversation */}
+          {hasMessages && (
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleShareConversation}
+            >
+              <Ionicons name="share-outline" size={18} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+          )}
+          {/* Mode selector toggle */}
+          <TouchableOpacity
+            style={[styles.headerButton, showModeSelector && styles.headerButtonActive]}
+            onPress={handleModeSelectorToggle}
+          >
+            <Ionicons
+              name="compass-outline"
+              size={18}
+              color={showModeSelector ? theme.colors.accent : theme.colors.textMuted}
+            />
+          </TouchableOpacity>
           {/* Prayer mode toggle */}
           <TouchableOpacity
             style={[styles.headerButton, isPrayerMode && styles.headerButtonActive]}
@@ -524,6 +708,76 @@ export function ChatBottomSheet() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Mode Selector Panel */}
+      {showModeSelector && (
+        <View style={styles.modeSelectorPanel}>
+          <Text style={styles.modeSelectorTitle}>Spiritual Practices</Text>
+          <View style={styles.modeSelectorGrid}>
+            {/* Free modes */}
+            {FREE_CHAT_MODES.map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.modeSelectorItem,
+                  currentMode === mode && styles.modeSelectorItemActive,
+                ]}
+                onPress={() => handleModeSelect(mode)}
+              >
+                <Ionicons
+                  name={getModeIcon(mode)}
+                  size={20}
+                  color={currentMode === mode ? theme.colors.primary : theme.colors.textSecondary}
+                />
+                <Text style={[
+                  styles.modeSelectorItemText,
+                  currentMode === mode && styles.modeSelectorItemTextActive,
+                ]}>
+                  {getModeName(mode)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {/* Premium modes */}
+            {PREMIUM_CHAT_MODES.map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.modeSelectorItem,
+                  currentMode === mode && styles.modeSelectorItemActive,
+                  !isPremium && styles.modeSelectorItemLocked,
+                ]}
+                onPress={() => handleModeSelect(mode)}
+              >
+                <View style={styles.modeSelectorItemIconRow}>
+                  <Ionicons
+                    name={getModeIcon(mode)}
+                    size={20}
+                    color={currentMode === mode ? theme.colors.accent : theme.colors.textSecondary}
+                  />
+                  {!isPremium && (
+                    <Ionicons
+                      name="lock-closed"
+                      size={10}
+                      color={theme.colors.accent}
+                      style={styles.modeSelectorLockIcon}
+                    />
+                  )}
+                </View>
+                <Text style={[
+                  styles.modeSelectorItemText,
+                  currentMode === mode && styles.modeSelectorItemTextActive,
+                  !isPremium && styles.modeSelectorItemTextLocked,
+                ]}>
+                  {getModeName(mode)}
+                </Text>
+                {!isPremium && (
+                  <Text style={styles.modeSelectorProBadge}>PRO</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Context Banner - show daily verse on home screen */}
       {chatContext.screenType === 'home' && dailyVerse ? (
@@ -562,7 +816,7 @@ export function ChatBottomSheet() {
       )}
 
       {/* Messages */}
-      <View style={styles.messageList}>
+      <View style={styles.messageList} ref={viewShotRef} collapsable={false}>
         {!hasMessages ? (
           <View style={styles.emptyState}>
             <Ionicons
@@ -814,6 +1068,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 22,
     marginLeft: theme.spacing.xs,
+  },
+  // Mode selector styles
+  modeSelectorPanel: {
+    backgroundColor: theme.colors.surface,
+    marginHorizontal: theme.spacing.md,
+    marginVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modeSelectorTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+  },
+  modeSelectorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+  },
+  modeSelectorItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.background,
+    minWidth: 72,
+    gap: 4,
+  },
+  modeSelectorItemActive: {
+    backgroundColor: theme.colors.primaryAlpha[15],
+    borderWidth: 1,
+    borderColor: theme.colors.primaryAlpha[20],
+  },
+  modeSelectorItemLocked: {
+    opacity: 0.8,
+  },
+  modeSelectorItemIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  modeSelectorLockIcon: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+  },
+  modeSelectorItemText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  modeSelectorItemTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  modeSelectorItemTextLocked: {
+    color: theme.colors.textMuted,
+  },
+  modeSelectorProBadge: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: theme.colors.accent,
+    marginTop: 2,
   },
   contextBanner: {
     flexDirection: 'row',

@@ -137,6 +137,7 @@ function getTitleForMomentType(type: MomentType): string {
     obedience_step: 'Obedience Step',
     lectio: 'Lectio Divina',
     examen: 'Daily Examen',
+    answered_prayer: 'Answered Prayer',
   };
   return titles[type] || 'Moment';
 }

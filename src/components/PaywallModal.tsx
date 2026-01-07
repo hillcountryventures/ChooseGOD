@@ -212,7 +212,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
   };
 
   // Render feature item
-  const renderFeature = (feature: typeof PAYWALL_CONTENT.features[0], index: number) => (
+  const renderFeature = (feature: { icon: string; title: string; description: string }, index: number) => (
     <View key={index} style={styles.featureRow}>
       <View style={styles.featureIcon}>
         <Ionicons

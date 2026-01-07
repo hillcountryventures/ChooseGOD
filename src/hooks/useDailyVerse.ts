@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { fetchVerse } from '../lib/supabase';
 import { DailyVerse, BibleVerse } from '../types';
@@ -53,19 +53,38 @@ const FALLBACK_VERSES: Record<string, string> = {
   'Psalms-46-10': 'Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.',
 };
 
+// Get today's date string (uses device's local timezone for consistency)
+const getTodayString = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
 export function useDailyVerse() {
   const [isLoading, setIsLoading] = useState(false);
-  const { dailyVerse, setDailyVerse, preferences } = useStore();
+  const dailyVerse = useStore((state) => state.dailyVerse);
+  const setDailyVerse = useStore((state) => state.setDailyVerse);
+  const preferences = useStore((state) => state.preferences);
+
+  // Effect to automatically clear stale verse when date changes
+  // This runs on mount and whenever dailyVerse changes
+  useEffect(() => {
+    const today = getTodayString();
+    if (dailyVerse && dailyVerse.date !== today) {
+      console.log('[useDailyVerse] Auto-clearing stale verse from:', dailyVerse.date);
+      setDailyVerse(null);
+    }
+  }, [dailyVerse, setDailyVerse]);
 
   const fetchDailyVerse = useCallback(async (forceRefresh = false) => {
-    // Check if we already have today's verse
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayString();
 
-    // Clear stale verse from a different day
+    // Clear stale verse from a different day IMMEDIATELY
     if (dailyVerse && dailyVerse.date !== today) {
+      console.log('[useDailyVerse] Clearing stale verse from:', dailyVerse.date, 'today is:', today);
       setDailyVerse(null);
     }
 
+    // Return cached verse if still valid
     if (!forceRefresh && dailyVerse?.date === today) {
       return dailyVerse;
     }
@@ -102,7 +121,7 @@ export function useDailyVerse() {
           verse: verseRef.verse,
           text: verseText,
         },
-        date: today,
+        date: getTodayString(), // Use consistent date format
       };
 
       setDailyVerse(newVerse);

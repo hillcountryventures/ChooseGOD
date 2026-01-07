@@ -27,6 +27,7 @@ import * as Speech from 'expo-speech';
 import { theme } from '../lib/theme';
 import { VerseSource, Translation } from '../types';
 import { fetchVerseParallel } from '../lib/supabase';
+import { usePremiumStatus } from '../hooks/usePremiumStatus';
 
 // Default translations to compare (English versions available in DB)
 const COMPARE_TRANSLATIONS: Translation[] = ['KJV', 'ASV', 'BBE'];
@@ -36,34 +37,48 @@ interface ShareableVerseCardProps {
   onPress?: () => void;
   showShareButton?: boolean;
   compact?: boolean;
+  /** Optional: Allow selecting a specific gradient index */
+  gradientIndex?: number;
+  /** Optional: Show gradient picker UI */
+  showGradientPicker?: boolean;
+  /** Optional: Callback when gradient is changed */
+  onGradientChange?: (index: number) => void;
 }
-
-// Card background gradient presets (rotate through for visual variety)
-const CARD_GRADIENTS: [string, string][] = [
-  ['#1a1a2e', '#16213e'], // Deep blue (default)
-  ['#2d1f3d', '#1a1a2e'], // Purple twilight
-  ['#1f2d1a', '#1a2e16'], // Forest green
-  ['#2d1a1a', '#2e1616'], // Warm ember
-  ['#1a2d2d', '#162e2e'], // Teal ocean
-];
 
 export function ShareableVerseCard({
   source,
   onPress,
   showShareButton = true,
   compact = false,
+  gradientIndex: propGradientIndex,
+  showGradientPicker = false,
+  onGradientChange,
 }: ShareableVerseCardProps) {
   const viewShotRef = useRef<View>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showParallel, setShowParallel] = useState(false);
   const [parallelVerses, setParallelVerses] = useState<VerseSource[]>([]);
   const [isLoadingParallel, setIsLoadingParallel] = useState(false);
+  const [selectedGradientIndex, setSelectedGradientIndex] = useState<number | null>(null);
 
-  // Pick gradient based on book name hash for consistency
-  const gradientIndex =
+  // Get available gradients based on premium status
+  const { isPremium, availableGradients, showPaywall } = usePremiumStatus();
+
+  // Calculate default gradient index based on verse (for consistency)
+  const defaultGradientIndex =
     (source.book.charCodeAt(0) + source.chapter + source.verse) %
-    CARD_GRADIENTS.length;
-  const gradient = CARD_GRADIENTS[gradientIndex];
+    availableGradients.length;
+
+  // Use prop > local state > default
+  const currentGradientIndex = propGradientIndex ?? selectedGradientIndex ?? defaultGradientIndex;
+  const gradient = availableGradients[currentGradientIndex] || availableGradients[0];
+
+  // Handle gradient selection
+  const handleGradientSelect = useCallback((index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedGradientIndex(index);
+    onGradientChange?.(index);
+  }, [onGradientChange]);
 
   // Stop speaking when component unmounts
   useEffect(() => {
@@ -284,6 +299,46 @@ export function ShareableVerseCard({
         </View>
       )}
 
+      {/* Gradient Picker - shown when enabled */}
+      {showGradientPicker && (
+        <View style={styles.gradientPickerContainer}>
+          <Text style={styles.gradientPickerLabel}>
+            Card Style {!isPremium && <Text style={styles.gradientPickerProLabel}>(3 free, 12 with Pro)</Text>}
+          </Text>
+          <View style={styles.gradientPickerRow}>
+            {availableGradients.map((grad, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.gradientPickerSwatch,
+                  currentGradientIndex === index && styles.gradientPickerSwatchSelected,
+                ]}
+                onPress={() => handleGradientSelect(index)}
+                activeOpacity={0.7}
+              >
+                <LinearGradient
+                  colors={grad}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientPickerSwatchInner}
+                />
+              </TouchableOpacity>
+            ))}
+            {/* Show "more" button for free users */}
+            {!isPremium && (
+              <TouchableOpacity
+                style={styles.gradientPickerMoreButton}
+                onPress={showPaywall}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={16} color={theme.colors.accent} />
+                <Text style={styles.gradientPickerMoreText}>+9</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Parallel Translations Panel */}
       {showParallel && (
         <View style={styles.parallelContainer}>
@@ -433,7 +488,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.sm,
   },
   actionButtonActive: {
-    backgroundColor: theme.colors.errorAlpha?.[10] || 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: theme.colors.errorAlpha?.[20] || 'rgba(239, 68, 68, 0.1)',
     borderRadius: theme.borderRadius.full,
   },
   actionButtonText: {
@@ -513,6 +568,56 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: theme.fontSize.sm * 1.6,
     fontStyle: 'italic',
+  },
+  // Gradient picker styles
+  gradientPickerContainer: {
+    marginTop: theme.spacing.md,
+    maxWidth: 340,
+  },
+  gradientPickerLabel: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.xs,
+    fontWeight: theme.fontWeight.medium,
+  },
+  gradientPickerProLabel: {
+    color: theme.colors.accent,
+    fontWeight: theme.fontWeight.normal,
+  },
+  gradientPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+  },
+  gradientPickerSwatch: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.borderRadius.md,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  gradientPickerSwatchSelected: {
+    borderColor: theme.colors.accent,
+  },
+  gradientPickerSwatchInner: {
+    flex: 1,
+    borderRadius: theme.borderRadius.md - 2,
+  },
+  gradientPickerMoreButton: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.accentAlpha?.[20] || 'rgba(251, 191, 36, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 2,
+  },
+  gradientPickerMoreText: {
+    fontSize: 10,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.accent,
   },
 });
 

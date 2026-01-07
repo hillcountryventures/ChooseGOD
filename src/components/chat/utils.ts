@@ -212,8 +212,26 @@ export async function streamCompanionResponse(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
+    let errorText = '';
+    try {
+      errorText = await response.text();
+      // Try to parse as JSON for better error messages
+      const errorJson = JSON.parse(errorText);
+      errorText = errorJson.error || errorJson.details || errorText;
+    } catch {
+      // Keep raw text if not JSON
+    }
+
+    // Provide user-friendly error messages
+    if (response.status === 500) {
+      throw new Error('The server encountered an issue. Please try again in a moment.');
+    } else if (response.status === 429) {
+      throw new Error('Too many requests. Please wait a moment before trying again.');
+    } else if (response.status === 401 || response.status === 403) {
+      throw new Error('Authentication issue. Please restart the app.');
+    } else {
+      throw new Error(errorText || `Server error (${response.status})`);
+    }
   }
 
   if (!response.body) {

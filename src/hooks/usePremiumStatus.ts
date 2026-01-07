@@ -14,7 +14,14 @@ import {
   useFreeQueriesRemaining,
   useIsPaywallVisible,
 } from '../store/subscriptionStore';
-import { FREE_CHAT_LIMIT } from '../constants/subscription';
+import {
+  FREE_CHAT_LIMIT,
+  isPremiumChatMode,
+  getAvailableChatModes,
+  getAvailableVerseGradients,
+  getJournalInsightFeatures,
+} from '../constants/subscription';
+import type { ChatMode } from '../types';
 
 // =====================================================
 // Types
@@ -31,6 +38,16 @@ export interface PremiumStatus {
   canUseChat: boolean;
   freeQueriesRemaining: number;
   freeQueriesTotal: number;
+
+  // Chat mode access
+  canUseChatMode: (mode: ChatMode) => boolean;
+  availableChatModes: ChatMode[];
+
+  // Verse card gradients
+  availableGradients: [string, string][];
+
+  // Journal insights
+  journalInsightFeatures: ReturnType<typeof getJournalInsightFeatures>;
 
   // Paywall visibility
   isPaywallVisible: boolean;
@@ -98,6 +115,27 @@ export function usePremiumStatus(): PremiumStatus {
     return canUseChatFn();
   }, [canUseChatFn, isPremium, freeQueriesRemaining]);
 
+  // Check if user can use a specific chat mode
+  const canUseChatMode = useCallback((mode: ChatMode): boolean => {
+    if (isPremium) return true;
+    return !isPremiumChatMode(mode);
+  }, [isPremium]);
+
+  // Get available chat modes based on premium status
+  const availableChatModes = useMemo(() => {
+    return getAvailableChatModes(isPremium);
+  }, [isPremium]);
+
+  // Get available verse card gradients
+  const availableGradients = useMemo(() => {
+    return getAvailableVerseGradients(isPremium);
+  }, [isPremium]);
+
+  // Get journal insight features
+  const journalInsightFeatures = useMemo(() => {
+    return getJournalInsightFeatures(isPremium);
+  }, [isPremium]);
+
   return {
     isPremium,
     isLoading,
@@ -106,6 +144,10 @@ export function usePremiumStatus(): PremiumStatus {
     canUseChat,
     freeQueriesRemaining,
     freeQueriesTotal: FREE_CHAT_LIMIT,
+    canUseChatMode,
+    availableChatModes,
+    availableGradients,
+    journalInsightFeatures,
     isPaywallVisible,
     showPaywall,
     hidePaywall,
