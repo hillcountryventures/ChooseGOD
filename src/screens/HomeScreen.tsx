@@ -340,12 +340,8 @@ function ContextualCard() {
     onPress: () => void;
   } | null = null;
 
-  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
-  const setCurrentMode = useStore((state) => state.setCurrentMode);
-
   const openChatWithMode = (mode: ChatMode) => {
-    setCurrentMode(mode);
-    setChatSheetOpen(true);
+    openChatHub(navigation, { contextMode: mode });
   };
 
   if (memoryVersesDue.length > 0) {
@@ -370,7 +366,7 @@ function ContextualCard() {
       iconBg: theme.colors.error,
       title: 'Continue in Prayer',
       subtitle: `${activePrayers.length} prayer${activePrayers.length > 1 ? 's' : ''} before the Lord`,
-      onPress: () => openChatWithMode('prayer'),
+      onPress: () => navigation.navigate('Prayers'),
     };
   } else {
     // Default: Start devotional
