@@ -16,6 +16,7 @@ import {
   Platform,
   Alert,
   Share,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +25,11 @@ import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
 import * as Speech from 'expo-speech';
 import { theme } from '../lib/theme';
-import { VerseSource } from '../types';
+import { VerseSource, Translation } from '../types';
+import { fetchVerseParallel } from '../lib/supabase';
+
+// Default translations to compare (English versions available in DB)
+const COMPARE_TRANSLATIONS: Translation[] = ['KJV', 'ASV', 'BBE'];
 
 interface ShareableVerseCardProps {
   source: VerseSource;
@@ -50,6 +55,9 @@ export function ShareableVerseCard({
 }: ShareableVerseCardProps) {
   const viewShotRef = useRef<View>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showParallel, setShowParallel] = useState(false);
+  const [parallelVerses, setParallelVerses] = useState<VerseSource[]>([]);
+  const [isLoadingParallel, setIsLoadingParallel] = useState(false);
 
   // Pick gradient based on book name hash for consistency
   const gradientIndex =
@@ -63,6 +71,36 @@ export function ShareableVerseCard({
       Speech.stop();
     };
   }, []);
+
+  // Handle compare/collapse parallel translations
+  const handleCompare = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (showParallel) {
+      // Collapse
+      setShowParallel(false);
+      return;
+    }
+
+    // Expand and fetch parallel translations
+    setIsLoadingParallel(true);
+    setShowParallel(true);
+
+    try {
+      const verses = await fetchVerseParallel(
+        source.book,
+        source.chapter,
+        source.verse,
+        COMPARE_TRANSLATIONS
+      );
+      setParallelVerses(verses);
+    } catch (error) {
+      console.error('Error fetching parallel translations:', error);
+      setParallelVerses([]);
+    } finally {
+      setIsLoadingParallel(false);
+    }
+  }, [source, showParallel]);
 
   // Handle listen/stop action
   const handleListen = useCallback(async () => {
@@ -214,6 +252,22 @@ export function ShareableVerseCard({
             </Text>
           </TouchableOpacity>
 
+          {/* Compare button */}
+          <TouchableOpacity
+            style={[styles.actionButton, showParallel && styles.actionButtonCompareActive]}
+            onPress={handleCompare}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={showParallel ? 'chevron-up' : 'git-compare-outline'}
+              size={16}
+              color={showParallel ? theme.colors.accent : theme.colors.primary}
+            />
+            <Text style={[styles.actionButtonText, showParallel && styles.actionButtonTextCompare]}>
+              {showParallel ? 'Hide' : 'Compare'}
+            </Text>
+          </TouchableOpacity>
+
           {/* Share button */}
           <TouchableOpacity
             style={styles.actionButton}
@@ -227,6 +281,42 @@ export function ShareableVerseCard({
             />
             <Text style={styles.actionButtonText}>Share</Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Parallel Translations Panel */}
+      {showParallel && (
+        <View style={styles.parallelContainer}>
+          {isLoadingParallel ? (
+            <View style={styles.parallelLoading}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={styles.parallelLoadingText}>Loading translations...</Text>
+            </View>
+          ) : parallelVerses.length === 0 ? (
+            <Text style={styles.parallelEmptyText}>
+              No additional translations available for this verse.
+            </Text>
+          ) : (
+            parallelVerses.map((verse, index) => (
+              <View
+                key={verse.translation}
+                style={[
+                  styles.parallelVerse,
+                  index < parallelVerses.length - 1 && styles.parallelVerseBorder,
+                ]}
+              >
+                <View style={styles.parallelHeader}>
+                  <Text style={styles.parallelTranslation}>{verse.translation}</Text>
+                  {verse.translation === source.translation && (
+                    <View style={styles.currentBadge}>
+                      <Text style={styles.currentBadgeText}>Current</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.parallelText}>{verse.text}</Text>
+              </View>
+            ))
+          )}
         </View>
       )}
     </View>
@@ -353,6 +443,76 @@ const styles = StyleSheet.create({
   },
   actionButtonTextActive: {
     color: theme.colors.error,
+  },
+  actionButtonCompareActive: {
+    backgroundColor: theme.colors.accentAlpha?.[10] || 'rgba(251, 191, 36, 0.1)',
+    borderRadius: theme.borderRadius.full,
+  },
+  actionButtonTextCompare: {
+    color: theme.colors.accent,
+  },
+  // Parallel translations panel
+  parallelContainer: {
+    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+    maxWidth: 340,
+  },
+  parallelLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  parallelLoadingText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textMuted,
+  },
+  parallelEmptyText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textMuted,
+    padding: theme.spacing.md,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  parallelVerse: {
+    padding: theme.spacing.md,
+  },
+  parallelVerseBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  parallelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+  },
+  parallelTranslation: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.accent,
+  },
+  currentBadge: {
+    backgroundColor: theme.colors.primaryAlpha?.[20] || 'rgba(99, 102, 241, 0.2)',
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
+  },
+  currentBadgeText: {
+    fontSize: 10,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.primary,
+  },
+  parallelText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text,
+    lineHeight: theme.fontSize.sm * 1.6,
+    fontStyle: 'italic',
   },
 });
 
