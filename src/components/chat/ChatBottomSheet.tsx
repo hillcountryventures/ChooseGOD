@@ -23,57 +23,19 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useStore } from '../../store/useStore';
 import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
-import { ChatMessage, VerseSource, ChatContext, RootStackParamList } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { EDGE_FUNCTIONS } from '../../constants/database';
+import { ChatMessage, VerseSource, RootStackParamList } from '../../types';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { CHAT_LIMITS } from '../../constants/limits';
 import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
 import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
 import { FREE_CHAT_LIMIT } from '../../constants/subscription';
+import {
+  streamCompanionResponse,
+  generateContextPrompt,
+  generateInitialMessage,
+} from './utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-// Generate context-aware prompt based on current screen
-function generateContextPrompt(context: ChatContext): string {
-  switch (context.screenType) {
-    case 'bible':
-      if (context.bibleContext?.selectedVerse) {
-        const { book, chapter, selectedVerse } = context.bibleContext;
-        const truncatedText = selectedVerse.text.length > 60
-          ? selectedVerse.text.slice(0, 60) + '...'
-          : selectedVerse.text;
-        return `Ask about ${book} ${chapter}:${selectedVerse.verse} - "${truncatedText}"`;
-      }
-      if (context.bibleContext) {
-        return `Ask about ${context.bibleContext.book} ${context.bibleContext.chapter}`;
-      }
-      return 'Ask about Scripture...';
-
-    case 'devotional':
-      if (context.devotionalContext) {
-        return `Ask about Day ${context.devotionalContext.dayNumber} of "${context.devotionalContext.seriesTitle}"`;
-      }
-      return 'Ask about your devotional...';
-
-    case 'journey':
-      return 'Reflect on your spiritual journey...';
-
-    default:
-      return 'Ask anything about Scripture...';
-  }
-}
-
-// Generate initial message for context
-function generateInitialMessage(context: ChatContext): string | undefined {
-  if (context.screenType === 'bible' && context.bibleContext) {
-    const { book, chapter, selectedVerse } = context.bibleContext;
-    if (selectedVerse) {
-      return `Help me understand ${book} ${chapter}:${selectedVerse.verse}`;
-    }
-    return `What are the key themes in ${book} ${chapter}?`;
-  }
-  return undefined;
-}
 
 export function ChatBottomSheet() {
   const navigation = useNavigation<NavigationProp>();
@@ -93,6 +55,7 @@ export function ChatBottomSheet() {
   const isQuerying = useStore((s) => s.isQuerying);
   const currentMode = useStore((s) => s.currentMode);
   const addMessage = useStore((s) => s.addMessage);
+  const updateMessage = useStore((s) => s.updateMessage);
   const setIsQuerying = useStore((s) => s.setIsQuerying);
   const clearMessages = useStore((s) => s.clearMessages);
 
@@ -104,7 +67,6 @@ export function ChatBottomSheet() {
   const [inputText, setInputText] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState('');
-  const [witLevel, setWitLevel] = useState<'low' | 'medium' | 'high'>('medium');
 
   // Snap points: half, full (start at half screen)
   const snapPoints = useMemo(() => ['50%', '94%'], []);
@@ -246,8 +208,19 @@ export function ChatBottomSheet() {
     // Expand sheet when sending
     bottomSheetRef.current?.snapToIndex(1);
 
+    // Create placeholder assistant message for streaming
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: ChatMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '', // Start empty, will be filled by streaming
+      timestamp: new Date(),
+      mode: currentMode,
+    };
+    addMessage(assistantMessage);
+
     try {
-      // Prepare conversation history (last N messages)
+      // Prepare conversation history (last N messages, excluding the placeholder)
       const history = messages.slice(-CHAT_LIMITS.historyMessages).map((m) => ({
         role: m.role,
         content: m.content,
@@ -256,65 +229,72 @@ export function ChatBottomSheet() {
       // Include Bible context if available
       const bibleContext = chatContext.screenType === 'bible' ? chatContext.bibleContext : undefined;
 
-      console.log('[ChatBottomSheet] Invoking edge function:', EDGE_FUNCTIONS.companion);
+      console.log('[ChatBottomSheet] Starting streaming response');
 
-      const { data, error } = await supabase.functions.invoke(EDGE_FUNCTIONS.companion, {
-        body: {
-          user_id: null,
+      // Use streaming API
+      await streamCompanionResponse(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+          userId: null,
           message,
-          conversation_history: history,
-          context_mode: currentMode,
-          bible_context: bibleContext,
-          wit_level: witLevel,
+          conversationHistory: history,
+          contextMode: currentMode,
+          bibleContext,
         },
-      });
+        {
+          onMeta: ({ sources, suggestedActions }) => {
+            // Update message with metadata (sources, suggested actions)
+            updateMessage(assistantMessageId, {
+              sources: sources as VerseSource[],
+              suggestedActions,
+            });
+          },
+          onContent: (_chunk, fullContent) => {
+            // Update message content as it streams in
+            updateMessage(assistantMessageId, {
+              content: fullContent,
+            });
+          },
+          onDone: (fullResponse) => {
+            // Finalize message
+            updateMessage(assistantMessageId, {
+              content: fullResponse,
+            });
 
-      console.log('[ChatBottomSheet] Response:', {
-        hasData: !!data,
-        hasError: !!error,
-        errorMessage: error?.message,
-        errorContext: error?.context,
-        dataKeys: data ? Object.keys(data) : [],
-      });
+            // Track usage for free tier users
+            incrementUsage();
 
-      if (error) {
-        throw new Error(error.message || String(error));
-      }
+            // Success haptic
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      if (!data) {
-        throw new Error('No data received from the server');
-      }
+            setIsQuerying(false);
+            abortControllerRef.current = null;
+          },
+          onError: (errorMsg) => {
+            console.error('[ChatBottomSheet] Stream error:', errorMsg);
 
-      if (data.error) {
-        throw new Error(data.error + (data.details ? `: ${data.details}` : ''));
-      }
+            // Update message with error
+            updateMessage(assistantMessageId, {
+              content: `I'm having trouble connecting right now.\n\nError: ${errorMsg}`,
+            });
 
-      // Add assistant response
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response || 'No response received',
-        sources: data.sources as VerseSource[],
-        timestamp: new Date(),
-        mode: currentMode,
-        toolsUsed: data.toolsUsed,
-        celebration: data.celebration,
-        suggestedActions: data.suggestedActions,
-      };
-      addMessage(assistantMessage);
+            // Error haptic
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
-      // Track usage for free tier users (only after successful response)
-      incrementUsage();
-
-      // Success haptic
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      // Handle celebration
-      if (data.celebration) {
-        triggerCelebration(data.celebration.message);
-      }
+            setIsQuerying(false);
+            abortControllerRef.current = null;
+          },
+        },
+        abortControllerRef.current?.signal
+      );
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
+        // User cancelled, remove the empty placeholder message
+        updateMessage(assistantMessageId, {
+          content: 'Cancelled.',
+        });
+        setIsQuerying(false);
         return;
       }
 
@@ -324,16 +304,13 @@ export function ChatBottomSheet() {
       // Error haptic
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
+      // Update placeholder with error message
+      updateMessage(assistantMessageId, {
         content: `I'm having trouble connecting right now.\n\nError: ${errorDetails}`,
-        timestamp: new Date(),
-      };
-      addMessage(errorMessage);
-    } finally {
-      abortControllerRef.current = null;
+      });
+
       setIsQuerying(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -441,20 +418,6 @@ export function ChatBottomSheet() {
           )}
         </View>
         <View style={styles.headerRight}>
-          {/* Wit Level Toggle */}
-          <TouchableOpacity
-            style={styles.witToggle}
-            onPress={() => {
-              const next = witLevel === 'low' ? 'medium' : witLevel === 'medium' ? 'high' : 'low';
-              setWitLevel(next);
-              Haptics.selectionAsync();
-            }}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.witText}>
-              {witLevel === 'low' ? 'Focused' : witLevel === 'medium' ? 'Balanced' : 'Playful'}
-            </Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => clearMessages()}
@@ -648,17 +611,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
-  },
-  witToggle: {
-    backgroundColor: theme.colors.primaryAlpha[20],
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.full,
-  },
-  witText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.primary,
-    fontWeight: '600',
   },
   headerButton: {
     width: 36,
