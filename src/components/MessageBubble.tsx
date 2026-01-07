@@ -23,6 +23,7 @@ import { theme } from '../lib/theme';
 import { ChatMessage, VerseSource, SuggestedAction } from '../types';
 import { navigateToBibleVerse } from '../lib/navigationHelpers';
 import { InlineVerseText } from './InlineVerseText';
+import { ShareableVerseCard } from './ShareableVerseCard';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -135,54 +136,65 @@ export function MessageBubble({
         </View>
       )}
 
-      {/* Tappable verse source cards */}
+      {/* Beautiful shareable verse cards */}
       {!isUser && message.sources && message.sources.length > 0 && (
         <View style={styles.sourcesContainer}>
           <Text style={styles.sourcesLabel}>Referenced Scripture:</Text>
-          {message.sources.map((source, index) => (
-            <TouchableOpacity
+          {message.sources.slice(0, 3).map((source, index) => (
+            <ShareableVerseCard
               key={`${source.book}-${source.chapter}-${source.verse}-${index}`}
+              source={source}
               onPress={() => handleVerseCardPress(source)}
-              activeOpacity={0.7}
-              style={styles.verseCard}
-            >
-              <View style={styles.verseCardContent}>
-                <View style={styles.verseCardHeader}>
-                  <Ionicons name="book-outline" size={14} color={theme.colors.primary} />
-                  <Text style={styles.verseReference}>
-                    {source.book} {source.chapter}:{source.verse}
-                  </Text>
-                  <Ionicons name="arrow-forward" size={12} color={theme.colors.primary} />
-                </View>
-                <Text style={styles.verseText} numberOfLines={2}>
-                  {source.text}
-                </Text>
-              </View>
-            </TouchableOpacity>
+              compact={message.sources && message.sources.length > 1}
+            />
           ))}
+          {message.sources.length > 3 && (
+            <Text style={styles.moreVersesText}>
+              + {message.sources.length - 3} more verses
+            </Text>
+          )}
         </View>
       )}
 
       {/* Suggested actions */}
       {!isUser && message.suggestedActions && message.suggestedActions.length > 0 && (
         <View style={styles.suggestedActions}>
-          {message.suggestedActions.map((action, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.suggestedAction}
-              onPress={() => onActionPress?.(action)}
-              activeOpacity={0.7}
-            >
-              {action.icon && (
-                <Ionicons
-                  name={action.icon as keyof typeof Ionicons.glyphMap}
-                  size={14}
-                  color={theme.colors.primary}
-                />
-              )}
-              <Text style={styles.suggestedActionText}>{action.label}</Text>
-            </TouchableOpacity>
-          ))}
+          {message.suggestedActions.map((action, index) => {
+            // Check if this is a prayer-related action
+            const isPrayerAction =
+              action.label.toLowerCase().includes('pray') ||
+              action.prompt.toLowerCase().includes('pray');
+
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.suggestedAction,
+                  isPrayerAction && styles.suggestedActionPrayer,
+                ]}
+                onPress={() => onActionPress?.(action)}
+                activeOpacity={0.7}
+              >
+                {isPrayerAction ? (
+                  <Text style={styles.prayerEmoji}>🙏</Text>
+                ) : action.icon ? (
+                  <Ionicons
+                    name={action.icon as keyof typeof Ionicons.glyphMap}
+                    size={14}
+                    color={theme.colors.primary}
+                  />
+                ) : null}
+                <Text
+                  style={[
+                    styles.suggestedActionText,
+                    isPrayerAction && styles.suggestedActionTextPrayer,
+                  ]}
+                >
+                  {action.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
 
@@ -288,34 +300,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
     fontWeight: theme.fontWeight.medium,
   },
-  verseCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.xs,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-  },
-  verseCardContent: {
-    padding: theme.spacing.sm,
-  },
-  verseCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.xs,
-  },
-  verseReference: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
-    flex: 1,
-  },
-  verseText: {
-    fontSize: theme.fontSize.sm,
+  moreVersesText: {
+    textAlign: 'center',
     color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.sm,
+    marginTop: theme.spacing.sm,
     fontStyle: 'italic',
-    lineHeight: theme.fontSize.sm * 1.4,
   },
 
   // Suggested actions
@@ -338,6 +328,19 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.medium,
+  },
+  // Prayer action special styles
+  suggestedActionPrayer: {
+    backgroundColor: theme.colors.prayer + '20',
+    borderWidth: 1,
+    borderColor: theme.colors.prayer + '40',
+  },
+  prayerEmoji: {
+    fontSize: 14,
+  },
+  suggestedActionTextPrayer: {
+    color: theme.colors.prayer,
+    fontWeight: '600',
   },
 });
 
