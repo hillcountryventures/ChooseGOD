@@ -148,6 +148,7 @@ export function updateRateLimitState(
 // ============ STREAMING UTILITIES ============
 
 import { VerseSource, SuggestedAction, ChatMode, ChatBibleContext } from '../../types';
+import EventSource from 'react-native-sse';
 
 export interface StreamEvent {
   type: 'meta' | 'content' | 'done' | 'error';
@@ -185,11 +186,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Stream a response from the companion Edge Function.
- * Uses Server-Sent Events (SSE) for real-time streaming.
- * Includes adaptive timeout and retry for cold start resilience.
- */
 // Quota context for free tier users
 export interface QuotaContext {
   isFreeTier: boolean;
@@ -198,6 +194,21 @@ export interface QuotaContext {
   isLastSeed: boolean;
 }
 
+/**
+ * Creates a custom error with a name property (React Native compatible).
+ * DOMException is not available in React Native.
+ */
+function createNamedError(message: string, name: string): Error {
+  const error = new Error(message);
+  error.name = name;
+  return error;
+}
+
+/**
+ * Stream a response from the companion Edge Function.
+ * Uses react-native-sse for proper SSE support in React Native.
+ * Includes adaptive timeout and retry for cold start resilience.
+ */
 export async function streamCompanionResponse(
   supabaseUrl: string,
   supabaseAnonKey: string,
@@ -220,29 +231,56 @@ export async function streamCompanionResponse(
   while (attempt <= MAX_RETRIES) {
     // Check if user cancelled before attempting
     if (signal?.aborted) {
-      throw new DOMException('Request aborted', 'AbortError');
+      throw createNamedError('Request aborted', 'AbortError');
     }
 
+    const timeoutMs = attempt === 0 ? INITIAL_TIMEOUT_MS : RETRY_TIMEOUT_MS;
+
     try {
-      // Use longer timeout on retry (server is likely warming up)
-      const timeoutMs = attempt === 0 ? INITIAL_TIMEOUT_MS : RETRY_TIMEOUT_MS;
-      const timeoutSignal = AbortSignal.timeout(timeoutMs);
-
-      // Combine user signal with timeout signal (abort on either)
-      const combinedSignal = signal
-        ? AbortSignal.any([signal, timeoutSignal])
-        : timeoutSignal;
-
       console.log(`[Stream] Attempt ${attempt + 1}/${MAX_RETRIES + 1}, timeout: ${timeoutMs}ms`);
 
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'apikey': supabaseAnonKey,
-        },
-        body: JSON.stringify({
+      await new Promise<void>((resolve, reject) => {
+        let fullContent = '';
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        let eventSource: EventSource | null = null;
+        let resolved = false;
+
+        const cleanup = () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+        };
+
+        const done = (error?: Error) => {
+          if (resolved) return;
+          resolved = true;
+          cleanup();
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        };
+
+        // Set up timeout
+        timeoutId = setTimeout(() => {
+          done(createNamedError('Request timed out', 'TimeoutError'));
+        }, timeoutMs);
+
+        // Handle user abort
+        if (signal) {
+          signal.addEventListener('abort', () => {
+            done(createNamedError('Request aborted', 'AbortError'));
+          });
+        }
+
+        // Create SSE connection using react-native-sse
+        const requestBody = JSON.stringify({
           user_id: params.userId,
           message: params.message,
           conversation_history: params.conversationHistory,
@@ -251,130 +289,110 @@ export async function streamCompanionResponse(
           wit_level: params.witLevel || 'medium',
           stream: true,
           quota_context: params.quotaContext,
-        }),
-        signal: combinedSignal,
-      });
+        });
 
-      if (!response.ok) {
-        let errorText = '';
-        try {
-          errorText = await response.text();
-          const errorJson = JSON.parse(errorText);
-          errorText = errorJson.error || errorJson.details || errorText;
-        } catch {
-          // Keep raw text if not JSON
-        }
+        eventSource = new EventSource(functionUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'apikey': supabaseAnonKey,
+          },
+          method: 'POST',
+          body: requestBody,
+        });
 
-        // HTTP errors that should NOT be retried
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('Authentication issue. Please restart the app.');
-        }
-        if (response.status === 429) {
-          throw new Error('Too many requests. Please wait a moment before trying again.');
-        }
+        eventSource.addEventListener('open', () => {
+          console.log('[Stream] SSE connection opened');
+        });
 
-        // Server errors (500, 502, 503, 504) - might be cold start related, could retry
-        if (response.status >= 500 && attempt < MAX_RETRIES) {
-          lastError = new Error(`Server error (${response.status})`);
-          attempt++;
-          console.log(`[Stream] Server error ${response.status}, retrying after backoff...`);
-          callbacks.onRetry?.(attempt); // Notify UI of retry
-          await sleep(1000 * attempt); // Exponential backoff: 1s, 2s, etc.
-          continue;
-        }
+        eventSource.addEventListener('message', (event) => {
+          const eventData = event.data;
+          if (!eventData) return;
 
-        throw new Error(errorText || `Server error (${response.status})`);
-      }
+          try {
+            const data: StreamEvent = JSON.parse(eventData);
 
-      if (!response.body) {
-        throw new Error('Response body is null');
-      }
+            switch (data.type) {
+              case 'meta':
+                callbacks.onMeta({
+                  sources: data.sources || [],
+                  suggestedActions: data.suggestedActions || [],
+                  threadId: data.thread_id || '',
+                  witLevel: data.wit_level || 'medium',
+                });
+                break;
 
-      // Successfully connected - process the stream
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let fullContent = '';
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            break;
-          }
-
-          buffer += decoder.decode(value, { stream: true });
-
-          // Process complete SSE events from the buffer
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const jsonStr = line.slice(6).trim();
-              if (!jsonStr) continue;
-
-              try {
-                const event: StreamEvent = JSON.parse(jsonStr);
-
-                switch (event.type) {
-                  case 'meta':
-                    callbacks.onMeta({
-                      sources: event.sources || [],
-                      suggestedActions: event.suggestedActions || [],
-                      threadId: event.thread_id || '',
-                      witLevel: event.wit_level || 'medium',
-                    });
-                    break;
-
-                  case 'content':
-                    if (event.content) {
-                      fullContent += event.content;
-                      callbacks.onContent(event.content, fullContent);
-                    }
-                    break;
-
-                  case 'done':
-                    callbacks.onDone(event.fullResponse || fullContent);
-                    break;
-
-                  case 'error':
-                    callbacks.onError(event.error || 'Unknown streaming error');
-                    break;
+              case 'content':
+                if (data.content) {
+                  fullContent += data.content;
+                  callbacks.onContent(data.content, fullContent);
                 }
-              } catch (parseError) {
-                console.warn('[Stream] Failed to parse SSE event:', jsonStr, parseError);
-              }
+                break;
+
+              case 'done':
+                callbacks.onDone(data.fullResponse || fullContent);
+                done();
+                break;
+
+              case 'error':
+                callbacks.onError(data.error || 'Unknown streaming error');
+                done(new Error(data.error || 'Streaming error'));
+                break;
             }
+          } catch (parseError) {
+            console.warn('[Stream] Failed to parse SSE event:', eventData, parseError);
           }
-        }
-      } finally {
-        reader.releaseLock();
-      }
+        });
+
+        eventSource.addEventListener('error', (event) => {
+          console.error('[Stream] SSE error:', event);
+
+          // Extract error details from the event
+          const errorEvent = event as { message?: string; xhrStatus?: number; type?: string };
+
+          // Check for specific HTTP errors
+          if (errorEvent.xhrStatus === 401 || errorEvent.xhrStatus === 403) {
+            done(new Error('Authentication issue. Please restart the app.'));
+            return;
+          }
+          if (errorEvent.xhrStatus === 429) {
+            done(new Error('Too many requests. Please wait a moment before trying again.'));
+            return;
+          }
+          if (errorEvent.xhrStatus && errorEvent.xhrStatus >= 500) {
+            done(new Error(`Server error (${errorEvent.xhrStatus})`));
+            return;
+          }
+
+          done(new Error(errorEvent.message || 'Connection error'));
+        });
+      });
 
       // Success - exit the retry loop
       return;
+
     } catch (error) {
       // User cancelled - don't retry
       if (error instanceof Error && error.name === 'AbortError') {
         throw error;
       }
 
-      // Timeout error - retry if we have attempts left
-      if (error instanceof Error && error.name === 'TimeoutError') {
+      // Timeout or server error - retry if we have attempts left
+      if (error instanceof Error && (error.name === 'TimeoutError' || error.message.includes('Server error'))) {
         lastError = error;
         if (attempt < MAX_RETRIES) {
           attempt++;
-          console.log(`[Stream] Timeout, retrying (attempt ${attempt + 1})...`);
-          callbacks.onRetry?.(attempt); // Notify UI of retry
+          console.log(`[Stream] Error, retrying (attempt ${attempt + 1})...`);
+          callbacks.onRetry?.(attempt);
           await sleep(1000 * attempt);
           continue;
         }
-        // Out of retries - throw with friendly message
-        const timeoutError = new Error('COLD_START_TIMEOUT');
-        timeoutError.name = 'TimeoutError';
-        throw timeoutError;
+        // Out of retries
+        if (error.name === 'TimeoutError') {
+          const timeoutError = new Error('COLD_START_TIMEOUT');
+          timeoutError.name = 'TimeoutError';
+          throw timeoutError;
+        }
       }
 
       // Other errors - throw immediately
