@@ -10,7 +10,7 @@
  * - Quick: Tappable verse, floating ask bar
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Share,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -30,10 +31,11 @@ import { useDailyVerse } from '../hooks/useDailyVerse';
 import { BottomTabParamList, RootStackParamList, ChatMode } from '../types';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose } from '../lib/navigationHelpers';
+import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose, openChatHub } from '../lib/navigationHelpers';
 import { GREETING_HOURS } from '../constants/timing';
 import { STREAK_LIMITS, BIBLE_LIMITS } from '../constants/limits';
 import { WEEK_DAYS, GREETINGS, BIBLE_DEFAULTS } from '../constants/strings';
+import { useChatQuota } from '../hooks/useChatQuota';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -91,6 +93,21 @@ function HeroVerseCard() {
     }
   };
 
+  const handleAskAboutVerse = () => {
+    if (!dailyVerse) return;
+    const reference = `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`;
+    openChatHub(navigation, {
+      contextVerse: {
+        book: dailyVerse.verse.book,
+        chapter: dailyVerse.verse.chapter,
+        verse: dailyVerse.verse.verse,
+        text: dailyVerse.verse.text,
+        translation: BIBLE_DEFAULTS.translation,
+      },
+      initialMessage: `Help me understand ${reference}: "${dailyVerse.verse.text}"`,
+    });
+  };
+
   if (isLoading || !dailyVerse) {
     return (
       <View style={styles.heroCard}>
@@ -134,6 +151,10 @@ function HeroVerseCard() {
         </TouchableOpacity>
 
         <View style={styles.heroActions}>
+          <TouchableOpacity style={styles.heroActionBtn} onPress={handleAskAboutVerse}>
+            <Ionicons name="chatbubble-outline" size={16} color={theme.colors.primary} />
+            <Text style={styles.heroActionText}>Ask</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.heroActionBtn} onPress={handleReflect}>
             <Ionicons name="pencil-outline" size={16} color={theme.colors.primary} />
             <Text style={styles.heroActionText}>Reflect</Text>
@@ -218,6 +239,86 @@ function StreakBar() {
         })}
       </View>
     </View>
+  );
+}
+
+// ============================================================================
+// Ask the Bible Button - Primary entry point for AI chat
+// Includes pulse animation when all 3 seeds are available
+// ============================================================================
+function AskTheBibleButton() {
+  const navigation = useNavigation<NavigationProp>();
+  const { seedsRemaining, totalSeeds, isPremium } = useChatQuota();
+
+  // Pulse animation for when all seeds are available (draws attention)
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    // Only animate if all seeds are available (fresh day) and not premium
+    if (seedsRemaining === totalSeeds && !isPremium) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.02,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+
+      return () => pulse.stop();
+    } else {
+      // Reset to normal scale
+      pulseAnim.setValue(1);
+    }
+  }, [seedsRemaining, totalSeeds, isPremium, pulseAnim]);
+
+  const handlePress = () => {
+    openChatHub(navigation);
+  };
+
+  return (
+    <Animated.View style={[styles.askBibleButton, { transform: [{ scale: pulseAnim }] }]}>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
+        <LinearGradient
+          colors={[theme.colors.primary, '#818CF8'] as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.askBibleGradient}
+        >
+          <View style={styles.askBibleIconContainer}>
+            <Ionicons name="chatbubbles" size={24} color="#fff" />
+          </View>
+          <View style={styles.askBibleContent}>
+            <Text style={styles.askBibleTitle}>Ask the Bible</Text>
+            <Text style={styles.askBibleSubtitle}>
+              {isPremium
+                ? 'Unlimited questions & guidance'
+                : seedsRemaining === totalSeeds
+                  ? `${seedsRemaining} fresh seeds ready`
+                  : `${seedsRemaining} seed${seedsRemaining !== 1 ? 's' : ''} remaining`}
+            </Text>
+          </View>
+          {/* Seed indicator for free users */}
+          {!isPremium && (
+            <View style={styles.askBibleSeeds}>
+              {Array.from({ length: totalSeeds }).map((_, i) => (
+                <Text key={i} style={styles.askBibleSeedEmoji}>
+                  {i < seedsRemaining ? '🌱' : '·'}
+                </Text>
+              ))}
+            </View>
+          )}
+          <Ionicons name="arrow-forward" size={20} color="rgba(255,255,255,0.8)" />
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -342,8 +443,11 @@ export default function HomeScreen() {
         {/* Contextual Action Card - One priority action */}
         <ContextualCard />
 
-        {/* Spacer for floating bar (now global) */}
-        <View style={{ height: 100 }} />
+        {/* Ask the Bible Button - Dedicated chat entry point */}
+        <AskTheBibleButton />
+
+        {/* Bottom padding */}
+        <View style={{ height: 20 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -577,6 +681,51 @@ const styles = StyleSheet.create({
   },
   streakDayTextCompleted: {
     color: '#fff',
+  },
+
+  // Ask the Bible Button
+  askBibleButton: {
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
+    ...theme.shadows.md,
+  },
+  askBibleGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+  },
+  askBibleIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  askBibleContent: {
+    flex: 1,
+    marginLeft: theme.spacing.md,
+  },
+  askBibleTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: '#fff',
+  },
+  askBibleSubtitle: {
+    fontSize: theme.fontSize.sm,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
+  askBibleSeeds: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+    gap: 2,
+  },
+  askBibleSeedEmoji: {
+    fontSize: 14,
   },
 
   // Contextual Card

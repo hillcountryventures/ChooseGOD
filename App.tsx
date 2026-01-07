@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, NavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,8 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Chat Components
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
-import { FloatingAskBar } from './src/components/chat/FloatingAskBar';
 import { PaywallModal } from './src/components/PaywallModal';
+import ChatHubScreen from './src/screens/ChatHubScreen';
 
 // Auth Store
 import { useAuthStore } from './src/store/authStore';
@@ -60,6 +60,14 @@ import {
   OnboardingStackParamList,
   DevotionalStackParamList,
 } from './src/types';
+
+// Notifications
+import {
+  setupNotificationListeners,
+  handleNotificationResponse,
+  scheduleDailyWisdomNotification,
+  requestPermissions,
+} from './src/lib/notifications';
 
 // =====================================================
 // THEME & COLORS
@@ -262,12 +270,51 @@ export default function App() {
   const isPaywallVisible = useIsPaywallVisible();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
+  // Navigation ref for deep-linking from notifications
+  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
+
   // Initialize auth and RevenueCat on mount
   useEffect(() => {
     initialize();
     // Initialize RevenueCat subscription SDK
     initializeSubscription();
   }, []);
+
+  // Set up notification listeners for deep-linking
+  useEffect(() => {
+    // Handle notification taps (deep-link to ChatHub, etc.)
+    const cleanup = setupNotificationListeners(
+      undefined, // onNotificationReceived - handled by default
+      (response) => {
+        const navData = handleNotificationResponse(response);
+        if (navData && navigationRef.current) {
+          // Navigate to the specified screen with params
+          // Small delay to ensure navigation is ready
+          setTimeout(() => {
+            // Use type assertion for dynamic navigation from notifications
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (navigationRef.current as any)?.navigate(navData.screen, navData.params);
+          }, 100);
+        }
+      }
+    );
+
+    return cleanup;
+  }, []);
+
+  // Schedule daily wisdom notification when user is authenticated
+  useEffect(() => {
+    async function setupDailyWisdom() {
+      if (user && onboardingCompleted) {
+        const hasPermission = await requestPermissions();
+        if (hasPermission) {
+          // Schedule for 8:00 AM local time
+          await scheduleDailyWisdomNotification({ hours: 8, minutes: 0 });
+        }
+      }
+    }
+    setupDailyWisdom();
+  }, [user, onboardingCompleted]);
 
   // Check onboarding status when user changes
   useEffect(() => {
@@ -298,7 +345,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.gestureRoot}>
       <SafeAreaProvider>
-        <NavigationContainer theme={DarkTheme}>
+        <NavigationContainer ref={navigationRef} theme={DarkTheme}>
           <StatusBar style="light" />
           <View style={styles.gestureRoot}>
             <RootStack.Navigator screenOptions={{ headerShown: false }}>
@@ -351,14 +398,21 @@ export default function App() {
                       animation: 'slide_from_bottom',
                     }}
                   />
+                  <RootStack.Screen
+                    name="ChatHub"
+                    component={ChatHubScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
                 </>
               )}
             </RootStack.Navigator>
 
-            {/* Floating Ask Bar & Chat - only visible when authenticated and onboarded */}
+            {/* Chat Bottom Sheet & Paywall - only visible when authenticated and onboarded */}
             {user && onboardingCompleted && (
               <>
-                <FloatingAskBar />
                 <ChatBottomSheet />
                 <PaywallModal
                   visible={isPaywallVisible}

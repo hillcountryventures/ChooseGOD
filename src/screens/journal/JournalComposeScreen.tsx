@@ -379,22 +379,26 @@ export default function JournalComposeScreen() {
   };
 
   const handleAskAI = () => {
-    if (!content.trim()) {
-      Alert.alert(
-        'Start Writing First',
-        'Write something in your journal, then tap Ask AI for reflection prompts or verse suggestions.',
-        [{ text: 'OK' }]
-      );
-      return;
+    // Build context message for AI
+    let contextMessage = '';
+
+    if (content.trim()) {
+      // If user has written something, ask AI to help reflect on it
+      contextMessage = `Help me reflect on what I've written:\n\n"${content.trim()}"`;
+    } else if (linkedVerses.length > 0) {
+      // If they have a verse linked, ask AI to help them journal about it
+      const verse = linkedVerses[0];
+      contextMessage = `Give me 3 reflection questions to help me journal about ${verse.book} ${verse.chapter}:${verse.verse}`;
+    } else {
+      // No content or verse - offer seed questions for journaling
+      contextMessage = 'Give me 3 thoughtful journaling prompts to help me start writing about my spiritual journey today.';
     }
-    // Navigate to chat with journal context for AI-powered reflection
-    (navigation as any).navigate('Chat', {
-      mode: 'journal',
-      initialMessage: content.trim(),
-      context: {
-        type: 'journal_reflection',
-        linkedVerses: linkedVerses,
-      },
+
+    // Navigate to ChatHub for AI-powered journaling assistance
+    (navigation as any).navigate('ChatHub', {
+      contextMode: 'journal',
+      initialMessage: contextMessage,
+      contextVerse: linkedVerses.length > 0 ? linkedVerses[0] : undefined,
     });
   };
 

@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { useStore } from '../store/useStore';
 import { fetchVerse } from '../lib/supabase';
-import { DailyVerse, BibleVerse } from '../types';
+import { DailyVerse } from '../types';
 
 // Curated list of popular/meaningful verses for daily devotional
 // Note: Book names must match database exactly (e.g., "Psalms" not "Psalm")
@@ -64,6 +65,9 @@ export function useDailyVerse() {
   const dailyVerse = useStore((state) => state.dailyVerse);
   const setDailyVerse = useStore((state) => state.setDailyVerse);
   const preferences = useStore((state) => state.preferences);
+
+  // Track the last known app state for detecting foreground transitions
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
   // Effect to automatically clear stale verse when date changes
   // This runs on mount and whenever dailyVerse changes
@@ -133,6 +137,32 @@ export function useDailyVerse() {
       setIsLoading(false);
     }
   }, [dailyVerse, preferences.preferredTranslation, setDailyVerse]);
+
+  // Effect to refresh verse when app comes to foreground
+  // This ensures the verse updates if the user leaves the app overnight
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      // App is coming to the foreground (from background or inactive)
+      if (
+        appStateRef.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        const today = getTodayString();
+        // Check if the cached verse is stale
+        if (!dailyVerse || dailyVerse.date !== today) {
+          console.log('[useDailyVerse] App foregrounded - fetching fresh verse');
+          fetchDailyVerse(true); // Force refresh
+        }
+      }
+      appStateRef.current = nextAppState;
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [dailyVerse, fetchDailyVerse]);
 
   return {
     dailyVerse,

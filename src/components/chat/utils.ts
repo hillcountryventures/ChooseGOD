@@ -190,6 +190,14 @@ function sleep(ms: number): Promise<void> {
  * Uses Server-Sent Events (SSE) for real-time streaming.
  * Includes adaptive timeout and retry for cold start resilience.
  */
+// Quota context for free tier users
+export interface QuotaContext {
+  isFreeTier: boolean;
+  seedsRemaining: number;
+  totalSeeds: number;
+  isLastSeed: boolean;
+}
+
 export async function streamCompanionResponse(
   supabaseUrl: string,
   supabaseAnonKey: string,
@@ -200,6 +208,7 @@ export async function streamCompanionResponse(
     contextMode: ChatMode;
     bibleContext?: ChatBibleContext;
     witLevel?: WitLevel;
+    quotaContext?: QuotaContext;
   },
   callbacks: StreamCallbacks,
   signal?: AbortSignal
@@ -241,6 +250,7 @@ export async function streamCompanionResponse(
           bible_context: params.bibleContext,
           wit_level: params.witLevel || 'medium',
           stream: true,
+          quota_context: params.quotaContext,
         }),
         signal: combinedSignal,
       });

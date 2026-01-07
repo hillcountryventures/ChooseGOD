@@ -150,6 +150,31 @@ export function navigateToProverbsOfDay(navigation: AnyNavigation): void {
 }
 
 /**
+ * Open the ChatHub screen for "Ask the Bible" interactions
+ * Can optionally pass context verse and initial message
+ */
+export function openChatHub(
+  navigation: AnyNavigation,
+  options?: {
+    contextVerse?: {
+      book: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      translation: string;
+    };
+    contextMode?: ChatMode;
+    initialMessage?: string;
+  }
+): void {
+  navigation.navigate('ChatHub', {
+    contextVerse: options?.contextVerse,
+    contextMode: options?.contextMode,
+    initialMessage: options?.initialMessage,
+  });
+}
+
+/**
  * Navigate to Journey tab
  */
 export function navigateToJourney(navigation: AnyNavigation): void {

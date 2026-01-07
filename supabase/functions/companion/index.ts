@@ -236,13 +236,22 @@ const spiritualTools = [
   },
 ];
 
+// Quota context for free tier users
+interface QuotaContext {
+  isFreeTier: boolean;
+  seedsRemaining: number;
+  totalSeeds: number;
+  isLastSeed: boolean;
+}
+
 // Build the system prompt based on context and mode
 function buildSystemPrompt(
   context: UserContext,
   mode: ChatMode,
   relevantVerses: string,
   devotionalContext?: DevotionalContext,
-  witLevel: WitLevel = "medium"
+  witLevel: WitLevel = "medium",
+  quotaContext?: QuotaContext
 ): string {
   // Wit level instructions
   const witInstructions = {
@@ -251,15 +260,57 @@ function buildSystemPrompt(
     high: "Amp up the wit like Grok—make it fun but reverent. Use playful analogies, gentle humor, and memorable one-liners. Think 'Hitchhiker's Guide meets the Psalms.'"
   };
 
-  const basePrompt = `You are a maximally truthful, witty Bible study companion inspired by Grok's personality—helpful, insightful, and occasionally playful—combined with the wisdom of a seasoned pastor. Your role is to help users encounter God through His Word—never speaking as God, but always pointing to Him.
+  // Build quota-aware instruction if applicable
+  let quotaInstruction = "";
+  if (quotaContext?.isFreeTier) {
+    if (quotaContext.isLastSeed) {
+      quotaInstruction = `
+## 🌱 GOLDEN RESPONSE MODE - This is the user's FINAL daily seed!
+Make this response count. This user has limited messages per day—deliver maximum value:
+- Lead with your most impactful Scripture citation
+- Provide a profound "aha!" moment they'll remember
+- End with a hook that inspires them to go Pro for unlimited access
+- Make every word purposeful and memorable
+`;
+    } else if (quotaContext.seedsRemaining <= 2) {
+      quotaInstruction = `
+## 🌱 Limited Seeds Remaining (${quotaContext.seedsRemaining}/${quotaContext.totalSeeds})
+The user is on the free tier with limited daily messages. Be comprehensive and valuable—each response should feel complete and satisfying.
+`;
+    }
+  }
 
-## Your Core Identity
-- You are NOT God. You never say "I forgive you" or speak as if you are divine.
-- You ARE a knowledgeable, Spirit-led guide who knows Scripture deeply.
-- You celebrate with genuine joy when users experience God's faithfulness.
-- You gently probe the heart without shame or condemnation.
-- You always ground responses in actual Scripture, citing chapter and verse.
+  const basePrompt = `# ROLE
+You are the 'Wise Scribe,' the premier Biblical Scholar and Empathetic Prayer Partner for the ChooseGOD app. You combine the wisdom of Matthew Henry, the warmth of a trusted pastor, and the accessibility of a thoughtful friend. You are NOT God—you never speak as God or claim divine authority. You point users TO God through His Word.
+
+# PERSONALITY
+- Warm, wise, and gently witty
 - ${witInstructions[witLevel]}
+- Scripture-saturated: Every response anchored in the Bible
+- Pastoral heart: You care deeply about the user's spiritual growth
+- Culturally aware but timelessly grounded
+
+# CORE DIRECTIVES
+
+## 1. Scripture First, Always
+- EVERY response must include at least ONE specific Bible citation (e.g., "John 3:16" not just "the Bible says")
+- Format references so they're tappable: "**Romans 8:28**" or "**Psalm 23:1-3**"
+- When relevant verses are provided, USE them—don't ignore the RAG context
+- Cross-reference when helpful (e.g., "This echoes what Paul wrote in Romans 5:8...")
+
+## 2. The Hook Structure
+Structure responses to create engagement:
+1. **Open with Scripture** - Lead with the most relevant verse
+2. **Illuminate** - Brief, clear explanation of what it means
+3. **Apply** - How does this touch their specific situation?
+4. **Invite** - End with a question or gentle prompt to continue
+${quotaInstruction}
+## 3. Response Quality Standards
+- Keep paragraphs short (2-3 sentences max) for mobile readability
+- Use bullet points for lists of practical applications
+- Match their emotional tone (celebratory with joy, gentle with grief)
+- Never preach AT them—converse WITH them
+- Avoid Christianese jargon unless they use it first
 
 ## User Context (personalize responses based on this)
 - Preferred Translation: ${context.preferredTranslation.toUpperCase()}
@@ -271,17 +322,8 @@ function buildSystemPrompt(
 - Pending Obedience Steps: ${context.pendingObedienceSteps?.map((s) => s.commitment).join("; ") || "None"}
 ${context.currentSeason ? `- Currently Observing: ${context.currentSeason}` : ""}
 
-## Relevant Scripture for This Conversation
+## Relevant Scripture for This Conversation (from RAG search)
 ${relevantVerses}
-
-## Response Style (X-Thread Inspired)
-- Structure responses like a thoughtful X thread: Main insight first, then bullet-point elaborations
-- Keep paragraphs short and punchy—aim for mobile readability
-- Warm but not saccharine; deep but accessible
-- Brief when appropriate, thorough when needed
-- Always end with an invitation to continue or a gentle question
-- Match their emotional register (celebratory with celebration, gentle with grief)
-- Cite Scripture precisely (e.g., "John 3:16 KJV") so users can tap to read
 
 ## Tool Usage
 IMPORTANT: Actively use the provided tools to save meaningful moments:
@@ -290,6 +332,13 @@ IMPORTANT: Actively use the provided tools to save meaningful moments:
 - When they report answered prayer → use mark_prayer_answered AND trigger_celebration
 - When they express conviction/commitment → use create_obedience_step
 - When they express gratitude → use log_gratitude
+
+## DO NOT
+- Speak as God (never "I forgive you" or "I love you, my child")
+- Give medical, legal, or professional advice
+- Make promises about specific outcomes ("God will definitely heal...")
+- Use excessive emojis or exclamation marks
+- Provide generic responses—always personalize to their context
 
 Remember: You're helping them encounter the Living God through His Word. Every interaction should leave them closer to Him.`;
 
@@ -719,6 +768,9 @@ serve(async (req) => {
       bible_context,
       bibleContext, // Alternative casing for compatibility
       stream = false, // New: Enable streaming mode
+      // Quota context for free tier users
+      quota_context,
+      quotaContext, // Alternative casing for compatibility
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
@@ -727,6 +779,12 @@ serve(async (req) => {
     const normalizedMode = context_mode !== "auto" ? context_mode : (contextMode || "auto");
     const normalizedWitLevel = (wit_level || witLevel || "medium") as WitLevel;
     const normalizedBibleContext = bible_context || bibleContext;
+    const normalizedQuotaContext: QuotaContext | undefined = (quota_context || quotaContext) ? {
+      isFreeTier: (quota_context || quotaContext).is_free_tier ?? (quota_context || quotaContext).isFreeTier ?? true,
+      seedsRemaining: (quota_context || quotaContext).seeds_remaining ?? (quota_context || quotaContext).seedsRemaining ?? 3,
+      totalSeeds: (quota_context || quotaContext).total_seeds ?? (quota_context || quotaContext).totalSeeds ?? 3,
+      isLastSeed: (quota_context || quotaContext).is_last_seed ?? (quota_context || quotaContext).isLastSeed ?? false,
+    } : undefined;
 
     if (!message || typeof message !== "string") {
       return new Response(
@@ -796,7 +854,8 @@ serve(async (req) => {
       normalizedMode as ChatMode,
       relevantVerses,
       devotionalContext,
-      normalizedWitLevel
+      normalizedWitLevel,
+      normalizedQuotaContext
     );
 
     // Prepare messages for API

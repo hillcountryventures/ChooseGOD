@@ -15,6 +15,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -123,9 +125,9 @@ export async function scheduleDevotionalReminder(
         sound: 'default',
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: time.hours,
         minute: time.minutes,
-        repeats: true,
       },
     });
 
@@ -133,6 +135,81 @@ export async function scheduleDevotionalReminder(
   } catch (error) {
     console.error('Error scheduling devotional reminder:', error);
     return null;
+  }
+}
+
+/**
+ * Schedule a daily "Ask the Bible" wisdom notification
+ * Deep-links users directly into ChatHub with a pre-populated question
+ * This drives engagement with the 3-Seed system
+ */
+export async function scheduleDailyWisdomNotification(
+  time: { hours: number; minutes: number } = { hours: 8, minutes: 0 }
+): Promise<string | null> {
+  try {
+    // Cancel any existing daily wisdom notifications
+    await cancelDailyWisdomNotifications();
+
+    const wisdomPrompts = [
+      {
+        title: "Your Daily Seed is Ready",
+        body: "How does today's Scripture apply to your current season? Tap to ask the Bible.",
+        message: "I'm ready for my morning devotion. Can you share a meaningful verse for today and help me apply it to my life?",
+      },
+      {
+        title: "Good Morning, Seeker",
+        body: "A fresh word awaits. What question is on your heart today?",
+        message: "What Scripture speaks to finding peace and purpose today?",
+      },
+      {
+        title: "Start Your Day in the Word",
+        body: "Your daily seeds are refreshed. Ask anything about Scripture.",
+        message: "Give me an encouraging verse to meditate on today with a brief explanation of its context.",
+      },
+    ];
+
+    // Pick a random prompt for variety
+    const prompt = wisdomPrompts[Math.floor(Math.random() * wisdomPrompts.length)];
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: prompt.title,
+        body: prompt.body,
+        data: {
+          type: 'ASK_AI_DEEP_LINK',
+          screen: 'ChatHub',
+          params: {
+            initialMessage: prompt.message,
+            contextMode: 'devotional',
+          },
+        },
+        sound: 'default',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hours,
+        minute: time.minutes,
+      },
+    });
+
+    console.log('[Notifications] Daily wisdom notification scheduled for', time);
+    return identifier;
+  } catch (error) {
+    console.error('Error scheduling daily wisdom notification:', error);
+    return null;
+  }
+}
+
+/**
+ * Cancel all daily wisdom notifications
+ */
+export async function cancelDailyWisdomNotifications(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of scheduled) {
+    if (notification.content.data?.type === 'ASK_AI_DEEP_LINK') {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
   }
 }
 
@@ -232,6 +309,12 @@ export function handleNotificationResponse(
   const data = response.notification.request.content.data;
 
   switch (data?.type) {
+    case 'ASK_AI_DEEP_LINK':
+      // Deep-link directly to ChatHub with pre-populated message
+      return {
+        screen: (data.screen as string) || 'ChatHub',
+        params: data.params as Record<string, unknown>,
+      };
     case 'devotional_reminder':
       return { screen: 'Devotionals' };
     case 'streak':

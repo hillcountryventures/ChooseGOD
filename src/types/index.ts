@@ -44,6 +44,17 @@ export type RootStackParamList = {
     mode?: ChatMode;
     context?: Record<string, unknown>;
   };
+  ChatHub: {
+    contextVerse?: {
+      book: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      translation: string;
+    };
+    contextMode?: ChatMode;
+    initialMessage?: string;
+  };
   ReflectionModal: {
     verse: BibleVerse;
     reference: string;
