@@ -272,7 +272,7 @@ function buildSystemPrompt(
 ## ✨ PRO USER - Scholar-Level Deep Dive Mode
 This user is a Pro subscriber. Deliver your highest-quality, seminary-level response on every query.
 
-**Structure your response with these four labeled sections (use bold labels, NOT markdown headers):**
+**Structure your response with these THREE labeled sections (use bold labels, NOT markdown headers):**
 
 **The Revelation**
 Share ONE Greek or Hebrew word insight that changes the emotional weight or meaning of the verse. Format: "The original *Greek* word here is *agape* (ἀγάπη), which specifically means..."
@@ -283,14 +283,12 @@ Show how this passage connects to another part of Scripture (e.g., how an Old Te
 **The Practice**
 • Give 2-3 specific, actionable bullet points for applying this truth today
 
-**The Breath**
-End with a short, personal closing prayer (2-3 sentences) that invites God's presence.
-
 **Format Rules:**
 - Make responses comprehensive and deeply insightful
 - Use paragraph breaks for mobile readability
 - Bold all Scripture references: **Romans 8:28**
 - NEVER use ### headers - use **Bold Labels** instead
+- Do NOT include a closing prayer in the response - the user can request one via an action button
 - This response should feel like getting a private session with a seminary professor who genuinely cares
 `;
   } else if (quotaContext?.isFreeTier) {
@@ -301,7 +299,7 @@ This is the user's FINAL daily seed. Deliver a "Scholar-level" response that cre
 
 **Opening:** Begin with: "As we conclude our time together today, let me share something profound about this Scripture..."
 
-**Structure your response with these four labeled sections (use bold labels, NOT markdown headers):**
+**Structure your response with these THREE labeled sections (use bold labels, NOT markdown headers):**
 
 **The Revelation**
 Share ONE Greek or Hebrew word insight that changes the emotional weight or meaning of the verse. Format: "The original *Greek* word here is *agape* (ἀγάπη), which specifically means..."
@@ -312,9 +310,6 @@ Show how this passage connects to another part of Scripture (e.g., how an Old Te
 **The Practice**
 • Give 2-3 specific, actionable bullet points for applying this truth today
 
-**The Breath**
-End with a short, personal closing prayer (2-3 sentences) that invites God's presence.
-
 **Final Invitation:** Close with: "There is so much more to uncover in His Word. I am here whenever you are ready to walk deeper into the mysteries of the Kingdom."
 
 **Format Rules:**
@@ -322,6 +317,7 @@ End with a short, personal closing prayer (2-3 sentences) that invites God's pre
 - Use paragraph breaks for mobile readability
 - Bold all Scripture references: **Romans 8:28**
 - NEVER use ### headers - use **Bold Labels** instead
+- Do NOT include a closing prayer - the user can request one via an action button
 - This response should feel like getting a private session with a seminary professor who genuinely cares
 `;
     } else if (quotaContext.seedsRemaining !== undefined && quotaContext.seedsRemaining <= 2) {
@@ -973,7 +969,7 @@ serve(async (req) => {
       }).filter(Boolean) || [];
 
     // Generate suggested follow-up actions based on mode
-    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode);
+    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode, normalizedQuotaContext?.isPremium ?? false);
 
     // Generate a unique thread ID for caching
     const threadId = crypto.randomUUID();
@@ -1132,12 +1128,15 @@ serve(async (req) => {
   }
 });
 
-function getSuggestedActions(mode: ChatMode): Array<{ label: string; prompt: string; icon?: string }> {
+function getSuggestedActions(mode: ChatMode, isPremium: boolean = false): Array<{ label: string; prompt: string; icon?: string }> {
+  // "The Breath" action for Pro users - a closing prayer to wrap up the conversation
+  const breathAction = { label: "The Breath", prompt: "Close our time with a short prayer that invites God's presence into what we've learned", icon: "leaf-outline" };
+
   const actions: Record<string, Array<{ label: string; prompt: string; icon?: string }>> = {
     devotional: [
       { label: "Go deeper", prompt: "Tell me more about this passage", icon: "layers-outline" },
       { label: "Apply today", prompt: "How can I apply this to my life today?", icon: "footsteps-outline" },
-      { label: "Pray about it", prompt: "Help me pray about what I just learned", icon: "hand-left-outline" },
+      ...(isPremium ? [breathAction] : [{ label: "Pray about it", prompt: "Help me pray about what I just learned", icon: "hand-left-outline" }]),
     ],
     prayer: [
       { label: "Pray again", prompt: "Write another prayer for this same need", icon: "refresh-outline" },
@@ -1180,7 +1179,11 @@ function getSuggestedActions(mode: ChatMode): Array<{ label: string; prompt: str
       { label: "Find Scripture", prompt: "What Scripture relates to what I'm processing?", icon: "book-outline" },
       { label: "Turn to prayer", prompt: "Help me turn this reflection into a prayer", icon: "hand-left-outline" },
     ],
-    auto: [
+    auto: isPremium ? [
+      { label: "Go deeper", prompt: "Tell me more about this passage", icon: "layers-outline" },
+      { label: "Related verses", prompt: "Show me related verses", icon: "book-outline" },
+      breathAction,
+    ] : [
       { label: "Pray about this", prompt: "Help me pray about this", icon: "hand-left-outline" },
       { label: "Related verses", prompt: "Show me related verses", icon: "book-outline" },
       { label: "Apply today", prompt: "How can I apply this today?", icon: "footsteps-outline" },
