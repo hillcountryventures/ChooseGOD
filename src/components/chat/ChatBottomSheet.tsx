@@ -17,6 +17,7 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useStore } from '../../store/useStore';
@@ -103,6 +104,7 @@ export function ChatBottomSheet() {
   const [inputText, setInputText] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState('');
+  const [witLevel, setWitLevel] = useState<'low' | 'medium' | 'high'>('medium');
 
   // Snap points: half, full (start at half screen)
   const snapPoints = useMemo(() => ['50%', '94%'], []);
@@ -161,6 +163,7 @@ export function ChatBottomSheet() {
 
     // Dismiss keyboard first
     Keyboard.dismiss();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Close the sheet after brief delay to let keyboard animation start
     setTimeout(() => {
@@ -226,6 +229,9 @@ export function ChatBottomSheet() {
     abortControllerRef.current = new AbortController();
     setInputText('');
 
+    // Haptic feedback on send
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -259,6 +265,7 @@ export function ChatBottomSheet() {
           conversation_history: history,
           context_mode: currentMode,
           bible_context: bibleContext,
+          wit_level: witLevel,
         },
       });
 
@@ -299,6 +306,9 @@ export function ChatBottomSheet() {
       // Track usage for free tier users (only after successful response)
       incrementUsage();
 
+      // Success haptic
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       // Handle celebration
       if (data.celebration) {
         triggerCelebration(data.celebration.message);
@@ -310,6 +320,9 @@ export function ChatBottomSheet() {
 
       console.error('Error sending message:', error);
       const errorDetails = error instanceof Error ? error.message : String(error);
+
+      // Error haptic
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -428,6 +441,20 @@ export function ChatBottomSheet() {
           )}
         </View>
         <View style={styles.headerRight}>
+          {/* Wit Level Toggle */}
+          <TouchableOpacity
+            style={styles.witToggle}
+            onPress={() => {
+              const next = witLevel === 'low' ? 'medium' : witLevel === 'medium' ? 'high' : 'low';
+              setWitLevel(next);
+              Haptics.selectionAsync();
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.witText}>
+              {witLevel === 'low' ? 'Focused' : witLevel === 'medium' ? 'Balanced' : 'Playful'}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => clearMessages()}
@@ -621,6 +648,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
+  },
+  witToggle: {
+    backgroundColor: theme.colors.primaryAlpha[20],
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  witText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   headerButton: {
     width: 36,
