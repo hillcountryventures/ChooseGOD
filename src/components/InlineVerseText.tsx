@@ -1,6 +1,7 @@
 /**
  * InlineVerseText Component
  * Renders text with automatically detected verse references as tappable links
+ * Also supports basic markdown formatting (bold and italic)
  *
  * Philosophy: "We are not God, only helping others find HIM"
  * Any mention of Scripture becomes a doorway back to God's Word
@@ -46,9 +47,64 @@ interface InlineVerseTextProps {
 }
 
 interface TextSegment {
-  type: 'text' | 'verse';
+  type: 'text' | 'verse' | 'bold' | 'italic' | 'bolditalic';
   content: string;
   reference?: DetectedReference;
+}
+
+/**
+ * Parse basic markdown (bold and italic) into segments
+ */
+function parseMarkdown(text: string): Array<{ type: 'text' | 'bold' | 'italic' | 'bolditalic'; content: string }> {
+  const segments: Array<{ type: 'text' | 'bold' | 'italic' | 'bolditalic'; content: string }> = [];
+
+  // Regex patterns for markdown
+  // Match ***text*** or ___text___ (bold+italic)
+  // Match **text** or __text__ (bold)
+  // Match *text* or _text_ (italic) - but not inside words
+  const pattern = /(\*\*\*(.+?)\*\*\*|___(.+?)___|(?<!\w)\*\*(.+?)\*\*(?!\w)|(?<!\w)__(.+?)__(?!\w)|(?<!\w)\*(.+?)\*(?!\w)|(?<!\w)_(.+?)_(?!\w))/g;
+
+  let lastIndex = 0;
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    // Add text before this match
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+
+    // Determine the type based on which group matched
+    const fullMatch = match[0];
+    let content = '';
+    let type: 'bold' | 'italic' | 'bolditalic' = 'text' as any;
+
+    if (match[2] || match[3]) {
+      // ***text*** or ___text___
+      content = match[2] || match[3];
+      type = 'bolditalic';
+    } else if (match[4] || match[5]) {
+      // **text** or __text__
+      content = match[4] || match[5];
+      type = 'bold';
+    } else if (match[6] || match[7]) {
+      // *text* or _text_
+      content = match[6] || match[7];
+      type = 'italic';
+    }
+
+    if (content) {
+      segments.push({ type, content });
+    }
+
+    lastIndex = match.index + fullMatch.length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  return segments.length > 0 ? segments : [{ type: 'text', content: text }];
 }
 
 /**
@@ -95,6 +151,38 @@ function segmentText(text: string, references: DetectedReference[]): TextSegment
   return segments;
 }
 
+/**
+ * Render a text segment with markdown formatting
+ */
+function renderMarkdownSegment(
+  content: string,
+  index: number,
+  baseStyle?: TextStyle
+): React.ReactNode {
+  const mdSegments = parseMarkdown(content);
+
+  if (mdSegments.length === 1 && mdSegments[0].type === 'text') {
+    return <Text key={index}>{content}</Text>;
+  }
+
+  return (
+    <Text key={index}>
+      {mdSegments.map((seg, i) => {
+        switch (seg.type) {
+          case 'bold':
+            return <Text key={i} style={styles.bold}>{seg.content}</Text>;
+          case 'italic':
+            return <Text key={i} style={styles.italic}>{seg.content}</Text>;
+          case 'bolditalic':
+            return <Text key={i} style={styles.boldItalic}>{seg.content}</Text>;
+          default:
+            return <Text key={i}>{seg.content}</Text>;
+        }
+      })}
+    </Text>
+  );
+}
+
 export function InlineVerseText({
   text,
   style,
@@ -130,24 +218,37 @@ export function InlineVerseText({
     }
   };
 
-  // If no verse references found, render simple text
+  // If no verse references found, render text with markdown
   if (references.length === 0) {
+    const mdSegments = parseMarkdown(text);
     return (
       <Text style={style} numberOfLines={numberOfLines} selectable={selectable}>
-        {text}
+        {mdSegments.map((seg, i) => {
+          switch (seg.type) {
+            case 'bold':
+              return <Text key={i} style={styles.bold}>{seg.content}</Text>;
+            case 'italic':
+              return <Text key={i} style={styles.italic}>{seg.content}</Text>;
+            case 'bolditalic':
+              return <Text key={i} style={styles.boldItalic}>{seg.content}</Text>;
+            default:
+              return <Text key={i}>{seg.content}</Text>;
+          }
+        })}
       </Text>
     );
   }
 
-  // Render text with tappable verse references
+  // Render text with tappable verse references and markdown
   return (
     <Text style={style} numberOfLines={numberOfLines} selectable={selectable}>
       {segments.map((segment, index) => {
         if (segment.type === 'text') {
-          return <Text key={index}>{segment.content}</Text>;
+          // Render text segment with markdown parsing
+          return renderMarkdownSegment(segment.content, index, style);
         }
 
-        // Verse reference - make it tappable
+        // Verse reference - make it tappable (bold by default for visibility)
         return (
           <Text
             key={index}
@@ -214,6 +315,16 @@ const styles = StyleSheet.create({
   verseHighlight: {
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.medium,
+  },
+  bold: {
+    fontWeight: '700',
+  },
+  italic: {
+    fontStyle: 'italic',
+  },
+  boldItalic: {
+    fontWeight: '700',
+    fontStyle: 'italic',
   },
 });
 
