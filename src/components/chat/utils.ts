@@ -170,11 +170,25 @@ export interface StreamCallbacks {
   onContent: (chunk: string, fullContent: string) => void;
   onDone: (fullResponse: string) => void;
   onError: (error: string) => void;
+  onRetry?: (attempt: number) => void; // Called when automatic retry starts
+}
+
+// Timeout configuration for cold start handling
+const INITIAL_TIMEOUT_MS = 30000; // 30s for first attempt
+const RETRY_TIMEOUT_MS = 45000; // 45s for retries (server is likely warming)
+const MAX_RETRIES = 1; // One retry with backoff
+
+/**
+ * Sleep helper for retry backoff
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
  * Stream a response from the companion Edge Function.
  * Uses Server-Sent Events (SSE) for real-time streaming.
+ * Includes adaptive timeout and retry for cold start resilience.
  */
 export async function streamCompanionResponse(
   supabaseUrl: string,
@@ -191,112 +205,173 @@ export async function streamCompanionResponse(
   signal?: AbortSignal
 ): Promise<void> {
   const functionUrl = `${supabaseUrl}/functions/v1/companion`;
+  let attempt = 0;
+  let lastError: Error | null = null;
 
-  const response = await fetch(functionUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseAnonKey}`,
-      'apikey': supabaseAnonKey,
-    },
-    body: JSON.stringify({
-      user_id: params.userId,
-      message: params.message,
-      conversation_history: params.conversationHistory,
-      context_mode: params.contextMode,
-      bible_context: params.bibleContext,
-      wit_level: params.witLevel || 'medium',
-      stream: true, // Enable streaming mode
-    }),
-    signal,
-  });
+  while (attempt <= MAX_RETRIES) {
+    // Check if user cancelled before attempting
+    if (signal?.aborted) {
+      throw new DOMException('Request aborted', 'AbortError');
+    }
 
-  if (!response.ok) {
-    let errorText = '';
     try {
-      errorText = await response.text();
-      // Try to parse as JSON for better error messages
-      const errorJson = JSON.parse(errorText);
-      errorText = errorJson.error || errorJson.details || errorText;
-    } catch {
-      // Keep raw text if not JSON
-    }
+      // Use longer timeout on retry (server is likely warming up)
+      const timeoutMs = attempt === 0 ? INITIAL_TIMEOUT_MS : RETRY_TIMEOUT_MS;
+      const timeoutSignal = AbortSignal.timeout(timeoutMs);
 
-    // Provide user-friendly error messages
-    if (response.status === 500) {
-      throw new Error('The server encountered an issue. Please try again in a moment.');
-    } else if (response.status === 429) {
-      throw new Error('Too many requests. Please wait a moment before trying again.');
-    } else if (response.status === 401 || response.status === 403) {
-      throw new Error('Authentication issue. Please restart the app.');
-    } else {
-      throw new Error(errorText || `Server error (${response.status})`);
-    }
-  }
+      // Combine user signal with timeout signal (abort on either)
+      const combinedSignal = signal
+        ? AbortSignal.any([signal, timeoutSignal])
+        : timeoutSignal;
 
-  if (!response.body) {
-    throw new Error('Response body is null');
-  }
+      console.log(`[Stream] Attempt ${attempt + 1}/${MAX_RETRIES + 1}, timeout: ${timeoutMs}ms`);
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let fullContent = '';
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'apikey': supabaseAnonKey,
+        },
+        body: JSON.stringify({
+          user_id: params.userId,
+          message: params.message,
+          conversation_history: params.conversationHistory,
+          context_mode: params.contextMode,
+          bible_context: params.bibleContext,
+          wit_level: params.witLevel || 'medium',
+          stream: true,
+        }),
+        signal: combinedSignal,
+      });
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+          const errorJson = JSON.parse(errorText);
+          errorText = errorJson.error || errorJson.details || errorText;
+        } catch {
+          // Keep raw text if not JSON
+        }
 
-      if (done) {
-        break;
+        // HTTP errors that should NOT be retried
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Authentication issue. Please restart the app.');
+        }
+        if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment before trying again.');
+        }
+
+        // Server errors (500, 502, 503, 504) - might be cold start related, could retry
+        if (response.status >= 500 && attempt < MAX_RETRIES) {
+          lastError = new Error(`Server error (${response.status})`);
+          attempt++;
+          console.log(`[Stream] Server error ${response.status}, retrying after backoff...`);
+          callbacks.onRetry?.(attempt); // Notify UI of retry
+          await sleep(1000 * attempt); // Exponential backoff: 1s, 2s, etc.
+          continue;
+        }
+
+        throw new Error(errorText || `Server error (${response.status})`);
       }
 
-      buffer += decoder.decode(value, { stream: true });
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
 
-      // Process complete SSE events from the buffer
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+      // Successfully connected - process the stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullContent = '';
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6).trim();
-          if (!jsonStr) continue;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
 
-          try {
-            const event: StreamEvent = JSON.parse(jsonStr);
+          if (done) {
+            break;
+          }
 
-            switch (event.type) {
-              case 'meta':
-                callbacks.onMeta({
-                  sources: event.sources || [],
-                  suggestedActions: event.suggestedActions || [],
-                  threadId: event.thread_id || '',
-                  witLevel: event.wit_level || 'medium',
-                });
-                break;
+          buffer += decoder.decode(value, { stream: true });
 
-              case 'content':
-                if (event.content) {
-                  fullContent += event.content;
-                  callbacks.onContent(event.content, fullContent);
+          // Process complete SSE events from the buffer
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6).trim();
+              if (!jsonStr) continue;
+
+              try {
+                const event: StreamEvent = JSON.parse(jsonStr);
+
+                switch (event.type) {
+                  case 'meta':
+                    callbacks.onMeta({
+                      sources: event.sources || [],
+                      suggestedActions: event.suggestedActions || [],
+                      threadId: event.thread_id || '',
+                      witLevel: event.wit_level || 'medium',
+                    });
+                    break;
+
+                  case 'content':
+                    if (event.content) {
+                      fullContent += event.content;
+                      callbacks.onContent(event.content, fullContent);
+                    }
+                    break;
+
+                  case 'done':
+                    callbacks.onDone(event.fullResponse || fullContent);
+                    break;
+
+                  case 'error':
+                    callbacks.onError(event.error || 'Unknown streaming error');
+                    break;
                 }
-                break;
-
-              case 'done':
-                callbacks.onDone(event.fullResponse || fullContent);
-                break;
-
-              case 'error':
-                callbacks.onError(event.error || 'Unknown streaming error');
-                break;
+              } catch (parseError) {
+                console.warn('[Stream] Failed to parse SSE event:', jsonStr, parseError);
+              }
             }
-          } catch (parseError) {
-            console.warn('[Stream] Failed to parse SSE event:', jsonStr, parseError);
           }
         }
+      } finally {
+        reader.releaseLock();
       }
+
+      // Success - exit the retry loop
+      return;
+    } catch (error) {
+      // User cancelled - don't retry
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw error;
+      }
+
+      // Timeout error - retry if we have attempts left
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        lastError = error;
+        if (attempt < MAX_RETRIES) {
+          attempt++;
+          console.log(`[Stream] Timeout, retrying (attempt ${attempt + 1})...`);
+          callbacks.onRetry?.(attempt); // Notify UI of retry
+          await sleep(1000 * attempt);
+          continue;
+        }
+        // Out of retries - throw with friendly message
+        const timeoutError = new Error('COLD_START_TIMEOUT');
+        timeoutError.name = 'TimeoutError';
+        throw timeoutError;
+      }
+
+      // Other errors - throw immediately
+      throw error;
     }
-  } finally {
-    reader.releaseLock();
   }
+
+  // Should not reach here, but just in case
+  throw lastError || new Error('Failed to connect after retries');
 }
