@@ -81,6 +81,7 @@ export function useDailyVerse() {
 
   const fetchDailyVerse = useCallback(async (forceRefresh = false) => {
     const today = getTodayString();
+    const currentTranslation = preferences.preferredTranslation;
 
     // Clear stale verse from a different day IMMEDIATELY
     if (dailyVerse && dailyVerse.date !== today) {
@@ -88,8 +89,8 @@ export function useDailyVerse() {
       setDailyVerse(null);
     }
 
-    // Return cached verse if still valid
-    if (!forceRefresh && dailyVerse?.date === today) {
+    // Return cached verse if still valid (same date AND same translation)
+    if (!forceRefresh && dailyVerse?.date === today && dailyVerse?.translation === currentTranslation) {
       return dailyVerse;
     }
 
@@ -126,6 +127,7 @@ export function useDailyVerse() {
           text: verseText,
         },
         date: getTodayString(), // Use consistent date format
+        translation: currentTranslation,
       };
 
       setDailyVerse(newVerse);
