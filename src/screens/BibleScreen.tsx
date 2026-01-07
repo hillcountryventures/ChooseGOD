@@ -17,7 +17,7 @@ import {
   NativeSyntheticEvent,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
@@ -102,6 +102,7 @@ interface VerseWithAnnotations extends VerseSource {
 
 export default function BibleScreen() {
   const route = useRoute<BibleScreenRouteProp>();
+  const insets = useSafeAreaInsets();
   const preferences = useStore((state) => state.preferences);
   const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
   const { setBibleContext } = useChatContext();
@@ -545,7 +546,7 @@ export default function BibleScreen() {
         style={styles.verseWrapper}
         onLayout={(event) => {
           const { y } = event.nativeEvent.layout;
-          handleVerseLayout(verse.verse, y + HEADER.height + theme.spacing.sm);
+          handleVerseLayout(verse.verse, y + HEADER.height + insets.top + theme.spacing.md);
         }}
       >
         {/* Swipe indicator background */}
@@ -601,12 +602,13 @@ export default function BibleScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Collapsible Header */}
       <Animated.View
         style={[
           styles.collapsibleHeader,
           {
+            paddingTop: insets.top + 12,
             transform: [{ translateY: headerTranslateY }],
           },
         ]}
@@ -623,17 +625,21 @@ export default function BibleScreen() {
           <TouchableOpacity
             style={styles.bookSelector}
             onPress={() => setShowBookPicker(true)}
+            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            activeOpacity={0.7}
           >
             <Text style={styles.bookTitle}>{currentBook}</Text>
-            <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
+            <Ionicons name="chevron-down" size={18} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.chapterSelector}
             onPress={() => setShowChapterPicker(true)}
+            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            activeOpacity={0.7}
           >
             <Text style={styles.chapterTitle}>Chapter {currentChapter}</Text>
-            <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
+            <Ionicons name="chevron-down" size={14} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -651,7 +657,7 @@ export default function BibleScreen() {
           style={styles.versesContainer}
           contentContainerStyle={[
             styles.versesContent,
-            { paddingTop: HEADER.height + theme.spacing.sm },
+            { paddingTop: HEADER.height + insets.top + theme.spacing.md },
           ]}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
@@ -967,7 +973,7 @@ export default function BibleScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -987,16 +993,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    gap: theme.spacing.sm,
   },
   bookSelector: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: theme.spacing.xs,
+    minHeight: 48,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.surface,
   },
   bookTitle: {
     fontSize: theme.fontSize.xl,
@@ -1006,14 +1019,16 @@ const styles = StyleSheet.create({
   chapterSelector: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: theme.spacing.xs,
+    minHeight: 48,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.full,
   },
   chapterTitle: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
     color: theme.colors.text,
   },
