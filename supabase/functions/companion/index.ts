@@ -343,13 +343,30 @@ Do NOT include the reflection questions or prayer focus in your response—those
 Write in second person ("you") and maintain a warm, pastoral tone throughout.`,
 
     prayer: `
-### Prayer Companion Mode - Active Now
-- Mirror their prayer language with empathy
-- Suggest Scripture-based ways to pray (ACTS: Adoration, Confession, Thanksgiving, Supplication)
-- Offer biblical promises that apply to their situation
-- If they're struggling to pray, gently guide them into words
-- Use create_prayer_request to save their prayer needs
-- NEVER pray "as God" or give prophetic utterances`,
+### Prayer Mode - Active Now
+You are a gentle, Scripture-guided prayer companion. Your role is to help the user turn the provided verses and their request into a heartfelt, biblical prayer—never speaking as God, but always pointing to Him.
+
+**Core Guidelines:**
+- Speak directly to God in the prayer (using "Dear Father," "Lord," "Heavenly Father," etc.)
+- Weave in the exact words of the provided Scripture naturally and reverently
+- Include adoration, confession (if appropriate), thanksgiving, and supplication as the context fits (ACTS framework)
+- Keep the prayer warm, personal, and encouraging
+- End with "In Jesus' name, Amen" or a similar biblical closing
+- Do NOT add commentary, teaching, or speculation outside the provided verses
+- Do NOT say "I pray" or speak on behalf of the user—write the prayer FOR them to pray
+- Structure the response as a single, flowing prayer (no bullet points, no headings)
+- If the user's request includes a personal situation, reflect it gently and biblically
+
+**When to Generate a Prayer:**
+- User explicitly asks to "pray about this" or similar
+- User selects a "Pray about it" action
+- User shares a burden, struggle, or praise and wants prayer
+
+**After the Prayer:**
+- Use create_prayer_request tool to save meaningful prayer needs
+- If they're praising God for an answer, use mark_prayer_answered and trigger_celebration
+
+NEVER pray "as God" or give prophetic utterances. You are helping them approach the throne of grace.`,
 
     lectio: `
 ### Lectio Divina Mode - Active Now
@@ -431,13 +448,16 @@ Use log_gratitude for things they're thankful for`,
 ### Auto Mode - Active Now
 Detect the user's spiritual intent and respond appropriately:
 - Question about Scripture → Answer with citations
-- Prayer language or need → Enter prayer companion mode
+- Prayer request or "pray about this" → Generate a heartfelt, Scripture-grounded prayer for them to pray (see prayer mode guidelines: speak directly to God, weave in Scripture, use ACTS framework, end with "In Jesus' name, Amen")
 - Reflective/journaling language → Enter journal mode
 - Expressing gratitude → Use log_gratitude and celebrate with them
 - Expressing struggle/confession → Be gentle, point to grace
 - Reporting answered prayer → Celebrate! Use mark_prayer_answered
 - Seeking guidance → Offer wisdom grounded in Scripture
 - Expressing commitment → Use create_obedience_step
+
+**Prayer Detection Keywords:** "pray about", "help me pray", "pray for", "prayer for", "turn this into a prayer", "pray over", "want to pray"
+When these are detected, generate an actual prayer (not guidance about prayer) that the user can pray aloud or silently.
 
 Always use the appropriate tools to save meaningful moments.`
   );
@@ -698,6 +718,7 @@ serve(async (req) => {
       witLevel, // Alternative casing for compatibility
       bible_context,
       bibleContext, // Alternative casing for compatibility
+      stream = false, // New: Enable streaming mode
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
@@ -779,7 +800,7 @@ serve(async (req) => {
     );
 
     // Prepare messages for API
-    const messages = [
+    const apiMessages = [
       { role: "system" as const, content: systemPrompt },
       ...normalizedHistory.map((m: { role: string; content: string }) => ({
         role: m.role as "user" | "assistant",
@@ -788,10 +809,109 @@ serve(async (req) => {
       { role: "user" as const, content: enhancedMessage },
     ];
 
+    // Extract verse sources for the response (prepare early for streaming)
+    const sourceMatches = relevantVerses.match(
+      /(\w+)\s+(\d+):(\d+)\s+\([A-Z]+\):\s+"([^"]+)"/g
+    );
+    const sources =
+      sourceMatches?.slice(0, 5).map((match) => {
+        const parts = match.match(
+          /(\w+)\s+(\d+):(\d+)\s+\(([A-Z]+)\):\s+"([^"]+)"/
+        );
+        if (parts) {
+          return {
+            book: parts[1],
+            chapter: parseInt(parts[2]),
+            verse: parseInt(parts[3]),
+            translation: parts[4],
+            text: parts[5],
+          };
+        }
+        return null;
+      }).filter(Boolean) || [];
+
+    // Generate suggested follow-up actions based on mode
+    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode);
+
+    // Generate a unique thread ID for caching
+    const threadId = crypto.randomUUID();
+
+    // ============ STREAMING MODE ============
+    if (stream) {
+      const streamHeaders = {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      };
+
+      // For streaming, we don't use tools (simplifies real-time response)
+      // Tool processing happens in a separate non-streaming call if needed
+      const streamResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: apiMessages,
+        temperature: 0.7,
+        max_tokens: 1200,
+        stream: true,
+      });
+
+      const encoder = new TextEncoder();
+      let fullResponse = "";
+
+      const readable = new ReadableStream({
+        async start(controller) {
+          try {
+            // Send initial metadata event
+            const metaEvent = `data: ${JSON.stringify({
+              type: "meta",
+              sources,
+              suggestedActions,
+              thread_id: threadId,
+              wit_level: normalizedWitLevel,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(metaEvent));
+
+            // Stream content chunks
+            for await (const chunk of streamResponse) {
+              const content = chunk.choices[0]?.delta?.content || "";
+              if (content) {
+                fullResponse += content;
+                const contentEvent = `data: ${JSON.stringify({
+                  type: "content",
+                  content,
+                })}\n\n`;
+                controller.enqueue(encoder.encode(contentEvent));
+              }
+            }
+
+            // Send completion event
+            const doneEvent = `data: ${JSON.stringify({
+              type: "done",
+              fullResponse,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(doneEvent));
+
+            controller.close();
+          } catch (error) {
+            console.error("Streaming error:", error);
+            const errorEvent = `data: ${JSON.stringify({
+              type: "error",
+              error: error instanceof Error ? error.message : "Unknown error",
+            })}\n\n`;
+            controller.enqueue(encoder.encode(errorEvent));
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(readable, { headers: streamHeaders });
+    }
+
+    // ============ NON-STREAMING MODE (original behavior) ============
     // Call OpenAI with tools
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages,
+      messages: apiMessages,
       tools: spiritualTools,
       tool_choice: "auto",
       temperature: 0.7,
@@ -820,7 +940,7 @@ serve(async (req) => {
         const followUp = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
-            ...messages,
+            ...apiMessages,
             {
               role: "assistant" as const,
               content: null,
@@ -838,33 +958,6 @@ serve(async (req) => {
         responseText = followUp.choices[0].message.content || "I've recorded that for you.";
       }
     }
-
-    // Extract verse sources for the response
-    const sourceMatches = relevantVerses.match(
-      /(\w+)\s+(\d+):(\d+)\s+\([A-Z]+\):\s+"([^"]+)"/g
-    );
-    const sources =
-      sourceMatches?.slice(0, 5).map((match) => {
-        const parts = match.match(
-          /(\w+)\s+(\d+):(\d+)\s+\(([A-Z]+)\):\s+"([^"]+)"/
-        );
-        if (parts) {
-          return {
-            book: parts[1],
-            chapter: parseInt(parts[2]),
-            verse: parseInt(parts[3]),
-            translation: parts[4],
-            text: parts[5],
-          };
-        }
-        return null;
-      }).filter(Boolean) || [];
-
-    // Generate suggested follow-up actions based on mode
-    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode);
-
-    // Generate a unique thread ID for caching
-    const threadId = crypto.randomUUID();
 
     return new Response(
       JSON.stringify({
@@ -897,32 +990,58 @@ serve(async (req) => {
   }
 });
 
-function getSuggestedActions(mode: ChatMode): Array<{ label: string; prompt: string }> {
-  const actions: Record<string, Array<{ label: string; prompt: string }>> = {
+function getSuggestedActions(mode: ChatMode): Array<{ label: string; prompt: string; icon?: string }> {
+  const actions: Record<string, Array<{ label: string; prompt: string; icon?: string }>> = {
     devotional: [
-      { label: "Go deeper", prompt: "Tell me more about this passage" },
-      { label: "Apply it", prompt: "How can I apply this today?" },
-      { label: "Pray", prompt: "Help me pray about what I learned" },
+      { label: "Go deeper", prompt: "Tell me more about this passage", icon: "layers-outline" },
+      { label: "Apply today", prompt: "How can I apply this to my life today?", icon: "footsteps-outline" },
+      { label: "Pray about it", prompt: "Help me pray about what I just learned", icon: "hand-left-outline" },
     ],
     prayer: [
-      { label: "Scripture to pray", prompt: "Give me a Scripture to pray" },
-      { label: "ACTS prayer", prompt: "Guide me through ACTS prayer" },
-      { label: "Intercede", prompt: "Help me pray for others" },
+      { label: "Pray again", prompt: "Write another prayer for this same need", icon: "refresh-outline" },
+      { label: "Add Scripture", prompt: "Add more Scripture to this prayer", icon: "book-outline" },
+      { label: "Intercede", prompt: "Write a prayer I can pray for someone else going through this", icon: "people-outline" },
+      { label: "Save this prayer", prompt: "Save this as a prayer I want to keep praying", icon: "bookmark-outline" },
     ],
     examen: [
-      { label: "Continue", prompt: "What's the next question?" },
-      { label: "Go deeper", prompt: "I want to explore that more" },
-      { label: "Confess", prompt: "I need to confess something" },
+      { label: "Continue", prompt: "What's the next reflection question?", icon: "arrow-forward-outline" },
+      { label: "Go deeper", prompt: "I want to explore that feeling more deeply", icon: "search-outline" },
+      { label: "Confess", prompt: "I need to confess something to God", icon: "heart-outline" },
     ],
     lectio: [
-      { label: "Next movement", prompt: "I'm ready for the next step" },
-      { label: "Stay here", prompt: "I want to sit with this longer" },
-      { label: "Share insight", prompt: "I noticed something..." },
+      { label: "Next movement", prompt: "I'm ready for the next step of Lectio Divina", icon: "arrow-forward-outline" },
+      { label: "Stay here", prompt: "I want to sit with this word/phrase longer", icon: "pause-outline" },
+      { label: "Share insight", prompt: "I noticed something meaningful...", icon: "bulb-outline" },
+    ],
+    confession: [
+      { label: "I'm ready", prompt: "I'm ready to confess what's on my heart", icon: "heart-outline" },
+      { label: "Help me examine", prompt: "Help me examine my heart with Psalm 139", icon: "search-outline" },
+      { label: "Receive grace", prompt: "Remind me of God's forgiveness", icon: "sunny-outline" },
+    ],
+    gratitude: [
+      { label: "More blessings", prompt: "Help me recognize more blessings I may have overlooked", icon: "gift-outline" },
+      { label: "Thank God", prompt: "Help me turn this into a prayer of thanksgiving", icon: "hand-left-outline" },
+      { label: "Share testimony", prompt: "I want to share what God has done", icon: "megaphone-outline" },
+    ],
+    celebration: [
+      { label: "Tell the story", prompt: "Let me tell you how God answered this prayer", icon: "chatbubbles-outline" },
+      { label: "Find Scripture", prompt: "What Scripture speaks to this answered prayer?", icon: "book-outline" },
+      { label: "Share it", prompt: "Help me share this testimony with others", icon: "share-outline" },
+    ],
+    memory: [
+      { label: "Quiz me", prompt: "Quiz me on the verse I'm memorizing", icon: "school-outline" },
+      { label: "Explain context", prompt: "What's the context of this verse?", icon: "information-circle-outline" },
+      { label: "Apply it", prompt: "How does this verse apply to my situation?", icon: "footsteps-outline" },
+    ],
+    journal: [
+      { label: "Reflect deeper", prompt: "Help me reflect more deeply on this", icon: "search-outline" },
+      { label: "Find Scripture", prompt: "What Scripture relates to what I'm processing?", icon: "book-outline" },
+      { label: "Turn to prayer", prompt: "Help me turn this reflection into a prayer", icon: "hand-left-outline" },
     ],
     auto: [
-      { label: "Devotional", prompt: "Give me a morning devotional" },
-      { label: "Prayer help", prompt: "I want to pray about something" },
-      { label: "Ask question", prompt: "I have a question about Scripture" },
+      { label: "Pray about this", prompt: "Help me pray about this", icon: "hand-left-outline" },
+      { label: "Related verses", prompt: "Show me related verses", icon: "book-outline" },
+      { label: "Apply today", prompt: "How can I apply this today?", icon: "footsteps-outline" },
     ],
   };
 
