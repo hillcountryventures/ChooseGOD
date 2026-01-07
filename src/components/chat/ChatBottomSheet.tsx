@@ -24,6 +24,7 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import NetInfo from '@react-native-community/netinfo';
 import { useStore } from '../../store/useStore';
 import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
@@ -247,6 +248,18 @@ export function ChatBottomSheet() {
   const handleSend = async (message: string) => {
     if (!message.trim()) return;
 
+    // Check network connectivity first
+    const netState = await NetInfo.fetch();
+    if (!netState.isConnected) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        'No Connection',
+        'Please check your internet connection and try again.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     // Check if user can use chat (premium or free queries remaining)
     if (!canUseChat) {
       // Show custom paywall modal
@@ -359,6 +372,13 @@ export function ChatBottomSheet() {
             setIsQuerying(false);
             abortControllerRef.current = null;
           },
+          onRetry: (attempt) => {
+            // Show warming up message during automatic retry
+            console.log(`[ChatBottomSheet] Automatic retry ${attempt}...`);
+            updateMessage(assistantMessageId, {
+              content: 'Warming up... just a moment.',
+            });
+          },
         },
         abortControllerRef.current?.signal
       );
@@ -369,6 +389,22 @@ export function ChatBottomSheet() {
           content: 'Cancelled.',
         });
         setIsQuerying(false);
+        return;
+      }
+
+      // Handle timeout errors specifically (from AbortSignal.timeout)
+      // This only triggers after automatic retry has already failed
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        console.error('Request timed out after retries:', error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        updateMessage(assistantMessageId, {
+          content: 'The companion is still warming up — this sometimes happens after periods of inactivity. Tap below to try again; it usually works on the second attempt.',
+          suggestedActions: [
+            { label: 'Try again', prompt: message, icon: 'refresh-outline' },
+          ],
+        });
+        setIsQuerying(false);
+        abortControllerRef.current = null;
         return;
       }
 
