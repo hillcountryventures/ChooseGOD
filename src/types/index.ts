@@ -192,6 +192,7 @@ export interface UserSettings {
 export interface DailyVerse {
   verse: BibleVerse;
   date: string;
+  translation?: Translation;
   reflection?: string;
 }
 
