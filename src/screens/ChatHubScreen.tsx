@@ -47,6 +47,7 @@ import { useChatQuota } from '../hooks/useChatQuota';
 import { FREE_CHAT_MODES, PREMIUM_CHAT_MODES } from '../constants/subscription';
 import { streamCompanionResponse } from '../components/chat/utils';
 import { useVoiceInput } from '../hooks/useVoiceInput';
+import { ScriptureSkeleton } from '../components/ScriptureSkeleton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type ChatHubRouteProp = RouteProp<RootStackParamList, 'ChatHub'>;
@@ -156,8 +157,20 @@ function SeedTracker({
   );
 }
 
+// Growth verses for spiritual encouragement
+const GROWTH_VERSES = [
+  { text: "But grow in the grace and knowledge of our Lord and Savior Jesus Christ.", ref: "2 Peter 3:18" },
+  { text: "I am the vine; you are the branches. If you remain in me and I in you, you will bear much fruit.", ref: "John 15:5" },
+  { text: "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.", ref: "Galatians 6:9" },
+  { text: "The grass withers and the flowers fall, but the word of our God endures forever.", ref: "Isaiah 40:8" },
+  { text: "Your word is a lamp for my feet, a light on my path.", ref: "Psalm 119:105" },
+];
+
 // No Seeds Card (shown when quota exhausted)
 function NoSeedsCard({ onUpgradePress }: { onUpgradePress: () => void }) {
+  // Select a random verse on mount
+  const verse = useMemo(() => GROWTH_VERSES[Math.floor(Math.random() * GROWTH_VERSES.length)], []);
+
   return (
     <View style={styles.noSeedsCard}>
       <View style={styles.noSeedsContent}>
@@ -171,11 +184,9 @@ function NoSeedsCard({ onUpgradePress }: { onUpgradePress: () => void }) {
           <Text style={styles.noSeedsButtonText}>Unlock Unlimited ($2.99/mo)</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.noSeedsTestimonial}>
-        <Text style={styles.testimonialText}>
-          "This AI transformed my morning devotion."
-        </Text>
-        <Text style={styles.testimonialAuthor}>— Sarah M.</Text>
+      <View style={styles.growthVerseContainer}>
+        <Text style={styles.growthVerseText}>"{verse.text}"</Text>
+        <Text style={styles.growthVerseRef}>— {verse.ref}</Text>
       </View>
     </View>
   );
@@ -198,6 +209,7 @@ export default function ChatHubScreen() {
   const inputRef = useRef<TextInput>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const verseQuickViewRef = useRef<BottomSheet>(null);
+  const handleSendRef = useRef<(message: string, isRetry?: boolean) => void>(() => {});
 
   // Route params for context
   const {
@@ -239,7 +251,7 @@ export default function ChatHubScreen() {
     verseEnd?: number;
   } | null>(null);
 
-  // Voice input
+  // Voice input - uses ref to avoid circular dependency with handleSend
   const {
     isListening,
     isAvailable: isVoiceAvailable,
@@ -249,7 +261,7 @@ export default function ChatHubScreen() {
   } = useVoiceInput({
     onResult: (transcript) => {
       if (transcript.trim()) {
-        handleSend(transcript);
+        handleSendRef.current(transcript);
       }
     },
     onPartialResult: (partial) => {
@@ -269,7 +281,7 @@ export default function ChatHubScreen() {
     if (routeInitialMessage && !hasInitialized) {
       setHasInitialized(true);
       setTimeout(() => {
-        handleSend(routeInitialMessage);
+        handleSendRef.current(routeInitialMessage);
       }, 300);
     } else if (!hasInitialized) {
       setHasInitialized(true);
@@ -300,7 +312,7 @@ export default function ChatHubScreen() {
     }
   }, [setIsQuerying]);
 
-  const handleSend = async (message: string) => {
+  const handleSend = async (message: string, isRetry: boolean = false) => {
     if (!message.trim()) return;
 
     // Check network connectivity
@@ -315,15 +327,10 @@ export default function ChatHubScreen() {
       return;
     }
 
-    // Check quota (seeds)
-    if (!hasSeeds) {
-      showPaywall();
-      return;
-    }
-
-    // Use a seed
-    const canProceed = await useSeed();
-    if (!canProceed) {
+    // Check quota (seeds) - but don't consume yet
+    // Seeds are only consumed on successful response (in onDone callback)
+    // Retries don't check quota since the original attempt was already validated
+    if (!isRetry && !hasSeeds) {
       showPaywall();
       return;
     }
@@ -408,13 +415,29 @@ export default function ChatHubScreen() {
               content: fullContent,
             });
           },
-          onDone: (fullResponse) => {
+          onDone: async (fullResponse) => {
             updateMessage(assistantMessageId, {
               content: fullResponse,
             });
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             setIsQuerying(false);
             abortControllerRef.current = null;
+
+            // Only consume the seed AFTER successful response
+            // This protects users from losing seeds on errors
+            if (!isRetry) {
+              const wasLastSeed = seedsRemaining === 1;
+              await useSeed();
+
+              // If this was the final seed, show paywall after 2-second delay
+              // This lets the user digest the "Golden Response" before the ask
+              if (wasLastSeed && !isPremium) {
+                setTimeout(() => {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  showPaywall();
+                }, 2000);
+              }
+            }
           },
           onError: (errorMsg) => {
             updateMessage(assistantMessageId, {
@@ -468,15 +491,25 @@ export default function ChatHubScreen() {
     }
   };
 
+  // Keep ref in sync with handleSend for voice input and initial message callbacks
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [isPremium, hasSeeds, seedsRemaining, isOnLastSeed, currentMode, messages, contextVerse]);
+
   const handleSuggestedActionPress = useCallback((action: SuggestedAction) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Check if this is a "Try again" retry action - these don't consume seeds
+    const isRetryAction = action.label.toLowerCase() === 'try again' ||
+                          action.icon === 'refresh-outline';
+
     const isPrayerAction =
       action.label.toLowerCase().includes('pray') ||
       action.prompt.toLowerCase().includes('pray');
     if (isPrayerAction && currentMode !== 'prayer') {
       setCurrentMode('prayer');
     }
-    handleSend(action.prompt);
+    handleSendRef.current(action.prompt, isRetryAction);
   }, [currentMode, setCurrentMode]);
 
   const handleModeSelect = useCallback((mode: ChatMode) => {
@@ -789,11 +822,7 @@ export default function ChatHubScreen() {
               ListFooterComponent={
                 isQuerying ? (
                   <View style={styles.typingContainer}>
-                    <View style={styles.skeletonContainer}>
-                      <View style={[styles.skeletonLine, { width: '85%' }]} />
-                      <View style={[styles.skeletonLine, { width: '70%' }]} />
-                      <View style={[styles.skeletonLine, { width: '55%' }]} />
-                    </View>
+                    <ScriptureSkeleton lineCount={4} />
                   </View>
                 ) : null
               }
@@ -1058,23 +1087,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  noSeedsTestimonial: {
+  growthVerseContainer: {
     marginTop: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     alignItems: 'center',
   },
-  testimonialText: {
+  growthVerseText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
     fontStyle: 'italic',
     textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: theme.spacing.sm,
   },
-  testimonialAuthor: {
+  growthVerseRef: {
     fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    marginTop: 4,
+    color: theme.colors.accent,
+    marginTop: 6,
+    fontWeight: '600',
   },
 
   // Mode Selector
@@ -1203,23 +1235,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // Typing / Skeleton
+  // Typing container for skeleton loader
   typingContainer: {
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.sm,
-  },
-  skeletonContainer: {
-    backgroundColor: '#FFFDF5',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: '#E8E1D3',
-    gap: theme.spacing.sm,
-  },
-  skeletonLine: {
-    height: 16,
-    backgroundColor: theme.colors.border,
-    borderRadius: 4,
   },
 
   // Listening Banner
