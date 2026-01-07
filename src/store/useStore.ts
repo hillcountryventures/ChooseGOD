@@ -254,6 +254,17 @@ export const useStore = create<AppState>()(
         activePrayers: state.activePrayers,
         // Don't persist messages - start fresh each session
       }),
+      onRehydrateStorage: () => (state) => {
+        // Clear stale daily verse on app startup
+        if (state?.dailyVerse) {
+          const now = new Date();
+          const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+          if (state.dailyVerse.date !== today) {
+            console.log('[Store] Clearing stale daily verse from:', state.dailyVerse.date);
+            state.dailyVerse = null;
+          }
+        }
+      },
     }
   )
 );
