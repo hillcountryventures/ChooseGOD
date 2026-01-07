@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
 import * as auth from '../lib/auth';
+import { useSubscriptionStore } from './subscriptionStore';
 
 interface AuthStore {
   user: User | null;
@@ -32,12 +33,22 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         initialized: true,
       });
 
+      // Link user to RevenueCat if already logged in
+      if (session?.user?.id) {
+        useSubscriptionStore.getState().loginUser(session.user.id);
+      }
+
       // Listen for auth state changes
       auth.onAuthStateChange((session) => {
         set({
           session,
           user: session?.user ?? null,
         });
+
+        // Sync with RevenueCat
+        if (session?.user?.id) {
+          useSubscriptionStore.getState().loginUser(session.user.id);
+        }
       });
     } catch (error) {
       console.error('Error initializing auth:', error);
@@ -57,6 +68,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   signOut: async () => {
     await auth.signOut();
+    await useSubscriptionStore.getState().logoutUser();
     set({ user: null, session: null });
   },
 

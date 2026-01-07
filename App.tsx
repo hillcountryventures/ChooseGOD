@@ -273,11 +273,19 @@ export default function App() {
   // Navigation ref for deep-linking from notifications
   const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
 
-  // Initialize auth and RevenueCat on mount
+  // Initialize RevenueCat first, then auth (auth may call RevenueCat methods)
   useEffect(() => {
-    initialize();
-    // Initialize RevenueCat subscription SDK
-    initializeSubscription();
+    async function initializeApp() {
+      try {
+        // Initialize RevenueCat first so it's ready when auth tries to call loginUser
+        await initializeSubscription();
+        // Then initialize auth (which may call subscriptionStore.loginUser)
+        await initialize();
+      } catch (error) {
+        console.error('[App] Initialization error:', error);
+      }
+    }
+    initializeApp();
   }, []);
 
   // Set up notification listeners for deep-linking

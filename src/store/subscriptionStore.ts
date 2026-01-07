@@ -37,6 +37,8 @@ export interface SubscriptionState {
 
   // Actions
   initialize: () => Promise<void>;
+  loginUser: (userId: string) => Promise<void>;
+  logoutUser: () => Promise<void>;
   refreshCustomerInfo: () => Promise<void>;
   showPaywall: () => void;
   hidePaywall: () => void;
@@ -164,6 +166,13 @@ export const useSubscriptionStore = create<SubscriptionState>()(
        */
       refreshCustomerInfo: async () => {
         try {
+          // Ensure RevenueCat is configured before fetching customer info
+          const isConfigured = await Purchases.isConfigured();
+          if (!isConfigured) {
+            console.log('[RevenueCat] SDK not configured yet, skipping refresh');
+            return;
+          }
+
           const customerInfo = await Purchases.getCustomerInfo();
           const isPremium = checkPremiumStatus(customerInfo);
 
@@ -174,6 +183,53 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           set({
             error: error instanceof Error ? error.message : 'Failed to fetch subscription status',
           });
+        }
+      },
+
+      /**
+       * Login user to RevenueCat (link Supabase user ID)
+       * Call this when user signs in or signs up
+       */
+      loginUser: async (userId: string) => {
+        try {
+          // Ensure RevenueCat is initialized before attempting login
+          const isConfigured = await Purchases.isConfigured();
+          if (!isConfigured) {
+            console.log('[RevenueCat] SDK not configured yet, skipping login');
+            return;
+          }
+
+          console.log('[RevenueCat] Logging in user:', userId);
+          const { customerInfo } = await Purchases.logIn(userId);
+          const isPremium = checkPremiumStatus(customerInfo);
+          console.log('[RevenueCat] User logged in, premium:', isPremium);
+          set({ customerInfo, isPremium });
+        } catch (error) {
+          console.error('[RevenueCat] Error logging in user:', error);
+          set({
+            error: error instanceof Error ? error.message : 'Failed to login to RevenueCat',
+          });
+        }
+      },
+
+      /**
+       * Logout user from RevenueCat
+       * Call this when user signs out
+       */
+      logoutUser: async () => {
+        try {
+          // Ensure RevenueCat is initialized before attempting logout
+          const isConfigured = await Purchases.isConfigured();
+          if (!isConfigured) {
+            console.log('[RevenueCat] SDK not configured yet, skipping logout');
+            return;
+          }
+
+          console.log('[RevenueCat] Logging out user');
+          const customerInfo = await Purchases.logOut();
+          set({ customerInfo, isPremium: false });
+        } catch (error) {
+          console.error('[RevenueCat] Error logging out user:', error);
         }
       },
 
