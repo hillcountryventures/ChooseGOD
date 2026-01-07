@@ -236,12 +236,15 @@ const spiritualTools = [
   },
 ];
 
-// Quota context for free tier users
+// Quota context for subscription tier awareness
 interface QuotaContext {
-  isFreeTier: boolean;
-  seedsRemaining: number;
-  totalSeeds: number;
-  isLastSeed: boolean;
+  // Pro users
+  isPremium?: boolean;
+  // Free tier users
+  isFreeTier?: boolean;
+  seedsRemaining?: number;
+  totalSeeds?: number;
+  isLastSeed?: boolean;
 }
 
 // Build the system prompt based on context and mode
@@ -262,7 +265,35 @@ function buildSystemPrompt(
 
   // Build quota-aware instruction if applicable
   let quotaInstruction = "";
-  if (quotaContext?.isFreeTier) {
+
+  // Pro users get the "Golden Response" treatment on EVERY query
+  if (quotaContext?.isPremium) {
+    quotaInstruction = `
+## ✨ PRO USER - Scholar-Level Deep Dive Mode
+This user is a Pro subscriber. Deliver your highest-quality, seminary-level response on every query.
+
+**Structure your response with these four labeled sections (use bold labels, NOT markdown headers):**
+
+**The Revelation**
+Share ONE Greek or Hebrew word insight that changes the emotional weight or meaning of the verse. Format: "The original *Greek* word here is *agape* (ἀγάπη), which specifically means..."
+
+**The Connection**
+Show how this passage connects to another part of Scripture (e.g., how an Old Testament theme points to Christ, or how Paul echoes the Psalms)
+
+**The Practice**
+• Give 2-3 specific, actionable bullet points for applying this truth today
+
+**The Breath**
+End with a short, personal closing prayer (2-3 sentences) that invites God's presence.
+
+**Format Rules:**
+- Make responses comprehensive and deeply insightful
+- Use paragraph breaks for mobile readability
+- Bold all Scripture references: **Romans 8:28**
+- NEVER use ### headers - use **Bold Labels** instead
+- This response should feel like getting a private session with a seminary professor who genuinely cares
+`;
+  } else if (quotaContext?.isFreeTier) {
     if (quotaContext.isLastSeed) {
       quotaInstruction = `
 ## 🌱 GOLDEN RESPONSE PROTOCOL - Deep Discernment Mode
@@ -293,9 +324,9 @@ End with a short, personal closing prayer (2-3 sentences) that invites God's pre
 - NEVER use ### headers - use **Bold Labels** instead
 - This response should feel like getting a private session with a seminary professor who genuinely cares
 `;
-    } else if (quotaContext.seedsRemaining <= 2) {
+    } else if (quotaContext.seedsRemaining !== undefined && quotaContext.seedsRemaining <= 2) {
       quotaInstruction = `
-## 🌱 Limited Seeds Remaining (${quotaContext.seedsRemaining}/${quotaContext.totalSeeds})
+## 🌱 Limited Seeds Remaining (${quotaContext.seedsRemaining}/${quotaContext.totalSeeds ?? 3})
 The user is on the free tier with limited daily messages. Be comprehensive and valuable—each response should feel complete and satisfying. Include at least 2 Scripture citations and one practical application.
 `;
     }
@@ -827,11 +858,15 @@ serve(async (req) => {
     const normalizedMode = context_mode !== "auto" ? context_mode : (contextMode || "auto");
     const normalizedWitLevel = (wit_level || witLevel || "medium") as WitLevel;
     const normalizedBibleContext = bible_context || bibleContext;
-    const normalizedQuotaContext: QuotaContext | undefined = (quota_context || quotaContext) ? {
-      isFreeTier: (quota_context || quotaContext).is_free_tier ?? (quota_context || quotaContext).isFreeTier ?? true,
-      seedsRemaining: (quota_context || quotaContext).seeds_remaining ?? (quota_context || quotaContext).seedsRemaining ?? 3,
-      totalSeeds: (quota_context || quotaContext).total_seeds ?? (quota_context || quotaContext).totalSeeds ?? 3,
-      isLastSeed: (quota_context || quotaContext).is_last_seed ?? (quota_context || quotaContext).isLastSeed ?? false,
+    const rawQuotaContext = quota_context || quotaContext;
+    const normalizedQuotaContext: QuotaContext | undefined = rawQuotaContext ? {
+      // Pro users send isPremium: true
+      isPremium: rawQuotaContext.is_premium ?? rawQuotaContext.isPremium ?? false,
+      // Free tier users send these fields
+      isFreeTier: rawQuotaContext.is_free_tier ?? rawQuotaContext.isFreeTier,
+      seedsRemaining: rawQuotaContext.seeds_remaining ?? rawQuotaContext.seedsRemaining,
+      totalSeeds: rawQuotaContext.total_seeds ?? rawQuotaContext.totalSeeds,
+      isLastSeed: rawQuotaContext.is_last_seed ?? rawQuotaContext.isLastSeed ?? false,
     } : undefined;
 
     if (!message || typeof message !== "string") {

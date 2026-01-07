@@ -385,12 +385,16 @@ export default function ChatHubScreen() {
       } : undefined;
 
       // Build quota context for backend
-      const quotaContext = !isPremium ? {
-        isFreeTier: true,
-        seedsRemaining,
-        totalSeeds,
-        isLastSeed: isOnLastSeed,
-      } : undefined;
+      // Pro users get isPremium flag for enhanced "Golden Response" on every query
+      // Free users get seed tracking info
+      const quotaContext = isPremium
+        ? { isPremium: true }
+        : {
+            isFreeTier: true,
+            seedsRemaining,
+            totalSeeds,
+            isLastSeed: isOnLastSeed,
+          };
 
       await streamCompanionResponse(
         supabaseUrl,
