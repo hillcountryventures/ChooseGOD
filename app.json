@@ -34,7 +34,14 @@
     "plugins": [
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow ChooseGOD to use the microphone for voice input.",
+          "speechRecognitionPermission": "Allow ChooseGOD to use speech recognition for hands-free questions and prayers."
+        }
+      ]
     ],
     "extra": {
       "eas": {
