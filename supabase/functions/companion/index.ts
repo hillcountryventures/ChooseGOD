@@ -24,6 +24,9 @@ type ChatMode =
   | "gratitude"
   | "celebration";
 
+// Wit level for Grok-style personality
+type WitLevel = "low" | "medium" | "high";
+
 // User context gathered from database
 interface UserContext {
   preferredTranslation: string;
@@ -238,9 +241,17 @@ function buildSystemPrompt(
   context: UserContext,
   mode: ChatMode,
   relevantVerses: string,
-  devotionalContext?: DevotionalContext
+  devotionalContext?: DevotionalContext,
+  witLevel: WitLevel = "medium"
 ): string {
-  const basePrompt = `You are a faithful, warm, and wise Bible study companion. You speak with the tenderness of a loving shepherd and the wisdom of a seasoned pastor. Your role is to help users encounter God through His Word—never speaking as God, but always pointing to Him.
+  // Wit level instructions
+  const witInstructions = {
+    low: "Be straightforward and direct. Focus on clarity over cleverness.",
+    medium: "Inject subtle wit or encouragement when natural (e.g., 'Don't panic—God's got this, as Philippians 4:6 reminds us'). Be warm but not over-the-top.",
+    high: "Amp up the wit like Grok—make it fun but reverent. Use playful analogies, gentle humor, and memorable one-liners. Think 'Hitchhiker's Guide meets the Psalms.'"
+  };
+
+  const basePrompt = `You are a maximally truthful, witty Bible study companion inspired by Grok's personality—helpful, insightful, and occasionally playful—combined with the wisdom of a seasoned pastor. Your role is to help users encounter God through His Word—never speaking as God, but always pointing to Him.
 
 ## Your Core Identity
 - You are NOT God. You never say "I forgive you" or speak as if you are divine.
@@ -248,6 +259,7 @@ function buildSystemPrompt(
 - You celebrate with genuine joy when users experience God's faithfulness.
 - You gently probe the heart without shame or condemnation.
 - You always ground responses in actual Scripture, citing chapter and verse.
+- ${witInstructions[witLevel]}
 
 ## User Context (personalize responses based on this)
 - Preferred Translation: ${context.preferredTranslation.toUpperCase()}
@@ -262,12 +274,14 @@ ${context.currentSeason ? `- Currently Observing: ${context.currentSeason}` : ""
 ## Relevant Scripture for This Conversation
 ${relevantVerses}
 
-## Response Style
-- Warm but not saccharine
-- Deep but accessible
+## Response Style (X-Thread Inspired)
+- Structure responses like a thoughtful X thread: Main insight first, then bullet-point elaborations
+- Keep paragraphs short and punchy—aim for mobile readability
+- Warm but not saccharine; deep but accessible
 - Brief when appropriate, thorough when needed
 - Always end with an invitation to continue or a gentle question
 - Match their emotional register (celebratory with celebration, gentle with grief)
+- Cite Scripture precisely (e.g., "John 3:16 KJV") so users can tap to read
 
 ## Tool Usage
 IMPORTANT: Actively use the provided tools to save meaningful moments:
@@ -680,12 +694,18 @@ serve(async (req) => {
       context_mode = "auto",
       contextMode, // Alternative casing for compatibility
       additionalContext,
+      wit_level = "medium",
+      witLevel, // Alternative casing for compatibility
+      bible_context,
+      bibleContext, // Alternative casing for compatibility
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
     const normalizedUserId = user_id || userId;
     const normalizedHistory = conversation_history.length > 0 ? conversation_history : conversationHistory;
     const normalizedMode = context_mode !== "auto" ? context_mode : (contextMode || "auto");
+    const normalizedWitLevel = (wit_level || witLevel || "medium") as WitLevel;
+    const normalizedBibleContext = bible_context || bibleContext;
 
     if (!message || typeof message !== "string") {
       return new Response(
@@ -738,12 +758,24 @@ serve(async (req) => {
       userContext.preferredTranslation
     );
 
+    // Enhance message with Bible context if provided
+    let enhancedMessage = message;
+    if (normalizedBibleContext) {
+      const { book, chapter, selectedVerse } = normalizedBibleContext;
+      if (selectedVerse) {
+        enhancedMessage = `[Context: User is reading ${book} ${chapter}:${selectedVerse.verse} - "${selectedVerse.text}"]\n\n${message}`;
+      } else if (book && chapter) {
+        enhancedMessage = `[Context: User is reading ${book} chapter ${chapter}]\n\n${message}`;
+      }
+    }
+
     // Build the system prompt
     const systemPrompt = buildSystemPrompt(
       userContext,
       normalizedMode as ChatMode,
       relevantVerses,
-      devotionalContext
+      devotionalContext,
+      normalizedWitLevel
     );
 
     // Prepare messages for API
@@ -753,7 +785,7 @@ serve(async (req) => {
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      { role: "user" as const, content: message },
+      { role: "user" as const, content: enhancedMessage },
     ];
 
     // Call OpenAI with tools
@@ -831,6 +863,9 @@ serve(async (req) => {
     // Generate suggested follow-up actions based on mode
     const suggestedActions = getSuggestedActions(normalizedMode as ChatMode);
 
+    // Generate a unique thread ID for caching
+    const threadId = crypto.randomUUID();
+
     return new Response(
       JSON.stringify({
         response: responseText,
@@ -839,6 +874,8 @@ serve(async (req) => {
         celebration,
         suggestedActions,
         savedData,
+        thread_id: threadId,
+        wit_level: normalizedWitLevel,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
