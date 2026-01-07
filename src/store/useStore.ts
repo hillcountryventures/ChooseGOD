@@ -254,14 +254,31 @@ export const useStore = create<AppState>()(
         activePrayers: state.activePrayers,
         // Don't persist messages - start fresh each session
       }),
-      onRehydrateStorage: () => (state) => {
-        // Clear stale daily verse on app startup
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('[Store] Error rehydrating:', error);
+          return;
+        }
+        // Clear stale daily verse on app startup (wrong date or wrong translation)
+        // Note: We need to use useStore.setState() since direct mutation doesn't trigger updates
         if (state?.dailyVerse) {
           const now = new Date();
           const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-          if (state.dailyVerse.date !== today) {
-            console.log('[Store] Clearing stale daily verse from:', state.dailyVerse.date);
-            state.dailyVerse = null;
+          const currentTranslation = state.preferences?.preferredTranslation;
+          const isStaleDate = state.dailyVerse.date !== today;
+          const isWrongTranslation = currentTranslation && state.dailyVerse.translation !== currentTranslation;
+
+          if (isStaleDate || isWrongTranslation) {
+            console.log('[Store] Clearing stale daily verse:', {
+              verseDate: state.dailyVerse.date,
+              today,
+              verseTranslation: state.dailyVerse.translation,
+              currentTranslation,
+            });
+            // Use setTimeout to ensure store is fully initialized before updating
+            setTimeout(() => {
+              useStore.setState({ dailyVerse: null });
+            }, 0);
           }
         }
       },
