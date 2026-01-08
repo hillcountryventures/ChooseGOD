@@ -9,12 +9,14 @@ export function useChatContext() {
     (
       book: string,
       chapter: number,
-      selectedVerse?: { verse: number; text: string; translation: Translation }
+      selectedVerse?: { verse: number; text: string; translation: Translation },
+      pendingMessage?: string
     ) => {
       setChatContext({
         screenType: 'bible',
         bibleContext: { book, chapter, selectedVerse },
         devotionalContext: undefined,
+        pendingMessage,
       });
     },
     [setChatContext]

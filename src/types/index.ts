@@ -842,4 +842,5 @@ export interface ChatContext {
   bibleContext?: ChatBibleContext;
   devotionalContext?: ChatDevotionalContext;
   timestamp: Date;
+  pendingMessage?: string; // Auto-send this message when chat opens
 }

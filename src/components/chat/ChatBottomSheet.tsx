@@ -93,6 +93,7 @@ export function ChatBottomSheet() {
   const chatSheetOpen = useStore((s) => s.chatSheetOpen);
   const setChatSheetOpen = useStore((s) => s.setChatSheetOpen);
   const chatContext = useStore((s) => s.chatContext);
+  const setChatContext = useStore((s) => s.setChatContext);
   const messages = useStore((s) => s.messages);
   const isQuerying = useStore((s) => s.isQuerying);
   const currentMode = useStore((s) => s.currentMode);
@@ -146,10 +147,21 @@ export function ChatBottomSheet() {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 300);
+
+      // Auto-send pending message if one exists (e.g., from "Explain this verse")
+      if (chatContext.pendingMessage) {
+        const messageToSend = chatContext.pendingMessage;
+        // Clear the pending message immediately to prevent re-sending
+        setChatContext({ pendingMessage: undefined });
+        // Send after a brief delay to let the sheet animate open
+        setTimeout(() => {
+          handleSendRef.current(messageToSend);
+        }, 400);
+      }
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [chatSheetOpen]);
+  }, [chatSheetOpen, chatContext.pendingMessage, setChatContext]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
