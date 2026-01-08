@@ -272,6 +272,8 @@ export default function SettingsScreen() {
   const recentMoments = useStore((state) => state.recentMoments);
   const activePrayers = useStore((state) => state.activePrayers);
   const signOut = useAuthStore((state) => state.signOut);
+  const deleteAccount = useAuthStore((state) => state.deleteAccount);
+  const isDeleting = useAuthStore((state) => state.isDeleting);
   const user = useAuthStore((state) => state.user);
 
   const [showPhilosophy, setShowPhilosophy] = useState(false);
@@ -430,6 +432,51 @@ export default function SettingsScreen() {
     );
   };
 
+  // Handle delete account (Apple App Store requirement)
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This will remove all your data including:\n\n• Reading progress\n• Journal entries\n• Prayer requests\n• Chat history\n• All preferences\n\nThis action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: () => {
+            // Second confirmation for safety
+            Alert.alert(
+              'Final Confirmation',
+              'Type DELETE to confirm. Your account and all data will be permanently removed.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, Delete Everything',
+                  style: 'destructive',
+                  onPress: async () => {
+                    const result = await deleteAccount();
+                    if (result.success) {
+                      Alert.alert(
+                        'Account Deleted',
+                        'Your account has been permanently deleted. We hope to see you again.',
+                        [{ text: 'OK' }]
+                      );
+                    } else {
+                      Alert.alert(
+                        'Error',
+                        result.error || 'Failed to delete account. Please try again.',
+                        [{ text: 'OK' }]
+                      );
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
+  };
+
   // Handle footer verse tap
   const handleFooterVersePress = () => {
     navigateToBibleReference(navigation, 'Psalm 119:105');
@@ -554,8 +601,15 @@ export default function SettingsScreen() {
             icon="log-out-outline"
             iconColor={theme.colors.textSecondary}
             label="Sign Out"
-            isLast
             onPress={handleSignOut}
+          />
+          <SettingRow
+            icon="person-remove-outline"
+            iconColor={theme.colors.error}
+            label={isDeleting ? "Deleting..." : "Delete Account"}
+            description="Permanently remove all data"
+            isLast
+            onPress={isDeleting ? undefined : handleDeleteAccount}
           />
         </View>
 
