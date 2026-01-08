@@ -19,15 +19,16 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { fetchChapter, getBookChapterCount } from '../lib/supabase';
 import { useStore } from '../store/useStore';
-import { useChatContext } from '../hooks/useChatContext';
 import { useFontSize } from '../hooks/useFontSize';
 import {
   BottomTabParamList,
+  RootStackParamList,
   VerseSource,
   HighlightColor,
   VerseHighlight,
@@ -102,12 +103,13 @@ interface VerseWithAnnotations extends VerseSource {
   bookmark?: VerseBookmark;
 }
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export default function BibleScreen() {
   const route = useRoute<BibleScreenRouteProp>();
+  const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
   const preferences = useStore((state) => state.preferences);
-  const setChatSheetOpen = useStore((state) => state.setChatSheetOpen);
-  const { setBibleContext } = useChatContext();
   const { sizes: fontSizes } = useFontSize();
 
   // Current reading position
@@ -206,18 +208,6 @@ export default function BibleScreen() {
     loadChapter();
   }, [loadChapter]);
 
-  // Report Bible context to chat FAB
-  useEffect(() => {
-    if (selectedVerse) {
-      setBibleContext(currentBook, currentChapter, {
-        verse: selectedVerse.verse,
-        text: selectedVerse.text,
-        translation: preferences.preferredTranslation,
-      });
-    } else {
-      setBibleContext(currentBook, currentChapter);
-    }
-  }, [currentBook, currentChapter, selectedVerse, preferences.preferredTranslation, setBibleContext]);
 
   // Scroll to target verse after verses load
   useEffect(() => {
@@ -382,7 +372,7 @@ export default function BibleScreen() {
     setEditingNote(null);
   };
 
-  // Handle AI quick action - opens chat sheet with verse context and auto-sends prompt
+  // Handle AI quick action - navigates to ChatHubScreen with verse context
   const handleAIAction = (action: typeof AI_QUICK_ACTIONS[0]) => {
     if (!selectedVerse) return;
 
@@ -390,16 +380,21 @@ export default function BibleScreen() {
     const displayReference = `${currentBook} ${currentChapter}:${selectedVerse.verse}`;
     const prompt = action.getPrompt(displayReference, selectedVerse.text);
 
-    // Update context with selected verse AND the pending message to auto-send
-    setBibleContext(currentBook, currentChapter, {
-      verse: selectedVerse.verse,
-      text: selectedVerse.text,
-      translation: preferences.preferredTranslation,
-    }, prompt);
-
+    // Close modals and clear selection
     setShowAIMenu(false);
     setSelectedVerse(null);
-    setChatSheetOpen(true);
+
+    // Navigate to ChatHubScreen with verse context and initial message
+    navigation.navigate('ChatHub', {
+      contextVerse: {
+        book: currentBook,
+        chapter: currentChapter,
+        verse: selectedVerse.verse,
+        text: selectedVerse.text,
+        translation: preferences.preferredTranslation,
+      },
+      initialMessage: prompt,
+    });
   };
 
   // Get highlight background color
@@ -458,13 +453,16 @@ export default function BibleScreen() {
       lastTap.current.verse === verse.verse &&
       now - lastTap.current.time < TAP.doubleTapDelay
     ) {
-      // Double tap detected - update context and open chat sheet
-      setBibleContext(currentBook, currentChapter, {
-        verse: verse.verse,
-        text: verse.text,
-        translation: preferences.preferredTranslation,
+      // Double tap detected - navigate to ChatHubScreen with verse context
+      navigation.navigate('ChatHub', {
+        contextVerse: {
+          book: currentBook,
+          chapter: currentChapter,
+          verse: verse.verse,
+          text: verse.text,
+          translation: preferences.preferredTranslation,
+        },
       });
-      setChatSheetOpen(true);
       lastTap.current = null;
     } else {
       // First tap
@@ -775,8 +773,8 @@ export default function BibleScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={() => setShowAIMenu(true)}>
-              <Ionicons name="chatbubble-outline" size={20} color={theme.colors.primary} />
-              <Text style={styles.actionButtonText}>Ask AI</Text>
+              <Ionicons name="book-outline" size={20} color={theme.colors.primary} />
+              <Text style={styles.actionButtonText}>Ask the Bible</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={handleBookmark}>
@@ -966,7 +964,7 @@ export default function BibleScreen() {
           <View style={styles.aiMenuContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                Ask AI about {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
+                Ask the Bible about {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
               </Text>
               <TouchableOpacity onPress={() => setShowAIMenu(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
