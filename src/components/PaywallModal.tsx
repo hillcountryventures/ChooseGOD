@@ -15,7 +15,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Dimensions,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +28,10 @@ import Purchases, {
 import { theme } from '../lib/theme';
 import { PAYWALL_CONTENT, REVENUECAT_PRODUCT_IDS } from '../constants/subscription';
 import { useSubscriptionStore } from '../store/subscriptionStore';
+
+// Legal URLs
+const PRIVACY_POLICY_URL = 'https://marketing-site-theta-rust.vercel.app/privacy.html';
+const TERMS_OF_USE_URL = 'https://marketing-site-theta-rust.vercel.app/index.html#terms';
 
 // =====================================================
 // Types
@@ -295,6 +299,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             <View style={styles.iconContainer}>
               <Ionicons name="sparkles" size={40} color={theme.colors.accent} />
             </View>
+            <Text style={styles.subscriptionTitle}>ChooseGOD Pro</Text>
             <Text style={styles.headline}>{PAYWALL_CONTENT.headline}</Text>
             <Text style={styles.subheadline}>{PAYWALL_CONTENT.subheadline}</Text>
           </View>
@@ -362,12 +367,31 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             {isRestoring ? (
               <ActivityIndicator size="small" color={theme.colors.accent} />
             ) : (
-              <Text style={styles.restoreText}>{PAYWALL_CONTENT.restoreText}</Text>
+              <Text style={styles.restoreText}>Restore Purchases</Text>
             )}
           </TouchableOpacity>
 
-          {/* Terms */}
-          <Text style={styles.termsText}>{PAYWALL_CONTENT.termsText}</Text>
+          {/* Auto-Renewal Disclosure */}
+          <Text style={styles.renewalDisclosure}>
+            Subscription automatically renews unless canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.
+          </Text>
+
+          {/* Legal Links */}
+          <View style={styles.legalLinks}>
+            <TouchableOpacity
+              style={styles.legalButton}
+              onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+            >
+              <Text style={styles.legalButtonText}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <View style={styles.legalDivider} />
+            <TouchableOpacity
+              style={styles.legalButton}
+              onPress={() => Linking.openURL(TERMS_OF_USE_URL)}
+            >
+              <Text style={styles.legalButtonText}>Terms of Use</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </LinearGradient>
     </Modal>
@@ -377,8 +401,6 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
 // =====================================================
 // Styles
 // =====================================================
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -413,7 +435,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accentAlpha[20],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  subscriptionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 8,
   },
   headline: {
     fontSize: 28,
@@ -617,10 +647,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.accent,
   },
-  termsText: {
-    fontSize: 12,
+  renewalDisclosure: {
+    fontSize: 11,
     color: theme.colors.textMuted,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 16,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  legalButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  legalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.accent,
+    textDecorationLine: 'underline',
+  },
+  legalDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: theme.colors.border,
   },
 });
