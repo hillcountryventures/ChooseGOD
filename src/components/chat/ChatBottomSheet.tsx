@@ -898,6 +898,7 @@ export function ChatBottomSheet() {
           <FlashList
             ref={flashListRef}
             data={messages}
+            extraData={isQuerying}
             renderItem={({ item }) => (
               <MessageBubble
                 message={item}
