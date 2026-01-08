@@ -6,6 +6,9 @@ import type { OnboardingResponses, DevotionalSeries } from './devotional';
 // Re-export devotional types
 export * from './devotional';
 
+// Re-export reading plan types
+export * from './readingPlan';
+
 // Auth Stack Navigator param list
 export type AuthStackParamList = {
   Login: undefined;
