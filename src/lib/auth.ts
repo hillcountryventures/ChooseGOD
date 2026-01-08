@@ -7,11 +7,25 @@ export interface AuthState {
   loading: boolean;
 }
 
-export async function signUp(email: string, password: string) {
+export async function signUp(email: string, password: string, displayName?: string) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        display_name: displayName,
+      },
+    },
   });
+
+  // If sign-up succeeded and we have a user, create their profile
+  if (!error && data.user && displayName) {
+    await supabase.from('user_profiles').upsert({
+      id: data.user.id,
+      display_name: displayName,
+    });
+  }
+
   return { data, error };
 }
 

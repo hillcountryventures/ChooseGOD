@@ -29,12 +29,15 @@ export default function SignUpScreen() {
   const navigation = useNavigation<NavigationProp>();
   const signUp = useAuthStore((state) => state.signUp);
 
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
+    firstName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -42,6 +45,10 @@ export default function SignUpScreen() {
 
   const validate = () => {
     const newErrors: typeof errors = {};
+
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
 
     if (!email) {
       newErrors.email = 'Email is required';
@@ -68,18 +75,16 @@ export default function SignUpScreen() {
   const handleSignUp = async () => {
     if (!validate()) return;
 
+    const displayName = lastName.trim()
+      ? `${firstName.trim()} ${lastName.trim()}`
+      : firstName.trim();
+
     setLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, displayName);
     setLoading(false);
 
     if (error) {
       Alert.alert('Error', error.message);
-    } else {
-      Alert.alert(
-        'Success',
-        'Please check your email to verify your account.',
-        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
-      );
     }
   };
 
@@ -107,6 +112,51 @@ export default function SignUpScreen() {
           </View>
 
           <View style={styles.form}>
+            <View style={styles.nameRow}>
+              <View style={[styles.inputGroup, styles.nameInput]}>
+                <Text style={styles.label}>First Name</Text>
+                <View style={[styles.inputWrapper, errors.firstName && styles.inputError]}>
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color={theme.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="First"
+                    placeholderTextColor={theme.colors.textMuted}
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    autoCapitalize="words"
+                    autoComplete="given-name"
+                  />
+                </View>
+                {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+              </View>
+
+              <View style={[styles.inputGroup, styles.nameInput]}>
+                <Text style={styles.label}>Last Name</Text>
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color={theme.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Last"
+                    placeholderTextColor={theme.colors.textMuted}
+                    value={lastName}
+                    onChangeText={setLastName}
+                    autoCapitalize="words"
+                    autoComplete="family-name"
+                  />
+                </View>
+              </View>
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <View style={[styles.inputWrapper, errors.email && styles.inputError]}>
@@ -248,6 +298,13 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: theme.spacing.xl,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
+  nameInput: {
+    flex: 1,
   },
   inputGroup: {
     marginBottom: theme.spacing.md,

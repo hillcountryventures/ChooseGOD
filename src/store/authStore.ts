@@ -11,7 +11,7 @@ interface AuthStore {
 
   // Actions
   initialize: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -56,8 +56,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string) => {
-    const { error } = await auth.signUp(email, password);
+  signUp: async (email: string, password: string, displayName?: string) => {
+    const { error } = await auth.signUp(email, password, displayName);
     return { error: error as Error | null };
   },
 
