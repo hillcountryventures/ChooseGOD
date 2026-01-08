@@ -10,7 +10,7 @@
  * - Quick: Tappable verse, floating ask bar
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -38,6 +38,12 @@ import { WEEK_DAYS, GREETINGS, BIBLE_DEFAULTS } from '../constants/strings';
 import { useChatQuota } from '../hooks/useChatQuota';
 import { useUserProfile, getFirstName } from '../hooks/useUserProfile';
 import { useAuthStore } from '../store/authStore';
+import WayfarerProgressCard from '../components/WayfarerProgressCard';
+import ReminderSetupModal from '../components/ReminderSetupModal';
+import GraceSummaryModal, { GraceSummaryData } from '../components/GraceSummaryModal';
+import { useReadingPlanStore, useActiveProgress, useTodaysReading, useWayfarerState } from '../store/readingPlanStore';
+import { requestPermissions, scheduleWayfarerReminder } from '../lib/notifications';
+import { supabase } from '../lib/supabase';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -403,6 +409,22 @@ export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
   const { profile } = useUserProfile();
 
+  // Reminder modal state
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+
+  // Grace Path modal state
+  const [showGraceSummaryModal, setShowGraceSummaryModal] = useState(false);
+  const [graceSummaryLoading, setGraceSummaryLoading] = useState(false);
+  const [graceSummaryError, setGraceSummaryError] = useState<string | null>(null);
+  const [graceSummaryData, setGraceSummaryData] = useState<GraceSummaryData | null>(null);
+
+  // Reading plan state
+  const activeProgress = useActiveProgress();
+  const todaysReading = useTodaysReading();
+  const wayfarerState = useWayfarerState();
+  const { applyGracePath, applyPatientPath, enrollInPlan, fetchAvailablePlans } = useReadingPlanStore();
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < GREETING_HOURS.morningEnd) return GREETINGS.morning;
@@ -412,6 +434,170 @@ export default function HomeScreen() {
 
   // Get personalized first name (from profile or email)
   const firstName = getFirstName(profile?.displayName ?? null, user?.email ?? null);
+
+  // Wayfarer handlers
+  const handleStartReading = () => {
+    if (todaysReading) {
+      // Navigate to Bible at the first verse of today's reading
+      const firstRef = todaysReading.versesJson[0];
+      if (firstRef) {
+        navigateToBibleVerse(navigation, firstRef.book, firstRef.startChapter);
+      }
+    }
+  };
+
+  const handleGracePath = async () => {
+    if (!activeProgress || !user?.id) return;
+
+    // Open modal immediately with loading state
+    setShowGraceSummaryModal(true);
+    setGraceSummaryLoading(true);
+    setGraceSummaryError(null);
+    setGraceSummaryData(null);
+
+    try {
+      // Build missed sections from wayfarer state
+      const missedSections = wayfarerState.missedReadingTitles.map((title, index) => {
+        // Parse the display title to extract verse references
+        // Format is typically "Genesis 13-15" or "Psalm 1-3"
+        const dayNumber = activeProgress.currentDay - wayfarerState.daysMissed + index;
+        return {
+          dayNumber,
+          displayTitle: title,
+          versesJson: parseDisplayTitleToVerseRefs(title),
+        };
+      });
+
+      // Call the Grace Path edge function
+      const { data, error } = await supabase.functions.invoke('grace-path-summary', {
+        body: {
+          userId: user.id,
+          progressId: activeProgress.progressId,
+          missedSections,
+          preferredTranslation: 'KJV',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.summary) {
+        setGraceSummaryData({
+          summary: data.summary,
+          daysCovered: data.daysCovered || missedSections.length,
+          chaptersCovered: data.chaptersCovered || [],
+        });
+
+        // Apply the grace path in the database
+        await applyGracePath(activeProgress.progressId, data.summary);
+      } else {
+        throw new Error(data?.error || 'Failed to generate summary');
+      }
+    } catch (error) {
+      console.error('Grace Path error:', error);
+      setGraceSummaryError(
+        error instanceof Error ? error.message : 'Failed to generate summary. Please try again.'
+      );
+    } finally {
+      setGraceSummaryLoading(false);
+    }
+  };
+
+  // Helper to parse display titles like "Genesis 13-15" into verse references
+  const parseDisplayTitleToVerseRefs = (title: string): Array<{ book: string; startChapter: number; endChapter: number }> => {
+    // Match patterns like "Genesis 13-15", "Psalm 1", "1 Kings 5-7"
+    const match = title.match(/^(\d?\s?[A-Za-z]+)\s+(\d+)(?:-(\d+))?$/);
+    if (match) {
+      const book = match[1].trim();
+      const startChapter = parseInt(match[2], 10);
+      const endChapter = match[3] ? parseInt(match[3], 10) : startChapter;
+      return [{ book, startChapter, endChapter }];
+    }
+    // Fallback: return empty if parsing fails
+    return [];
+  };
+
+  const handlePatientPath = async () => {
+    if (activeProgress) {
+      await applyPatientPath(activeProgress.progressId);
+    }
+  };
+
+  // Grace Summary modal handlers
+  const handleGraceSummaryContinue = () => {
+    setShowGraceSummaryModal(false);
+    // Navigate to today's reading
+    if (todaysReading) {
+      const firstRef = todaysReading.versesJson[0];
+      if (firstRef) {
+        navigateToBibleVerse(navigation, firstRef.book, firstRef.startChapter);
+      }
+    }
+  };
+
+  const handleGraceSummaryClose = () => {
+    setShowGraceSummaryModal(false);
+  };
+
+  // Show reminder modal when user wants to enroll
+  const handleEnrollPress = () => {
+    setShowReminderModal(true);
+  };
+
+  // Handle enrollment with reminder
+  const handleEnrollWithReminder = async (selectedTime: Date) => {
+    if (!user?.id) return;
+
+    setIsEnrolling(true);
+    try {
+      // 1. Request notification permissions
+      const hasPermission = await requestPermissions();
+
+      // 2. Schedule daily reminder if permission granted
+      if (hasPermission) {
+        await scheduleWayfarerReminder({
+          hours: selectedTime.getHours(),
+          minutes: selectedTime.getMinutes(),
+        });
+      }
+
+      // 3. Fetch plans and enroll
+      await fetchAvailablePlans();
+      const plans = useReadingPlanStore.getState().availablePlans;
+      const canonicalPlan = plans.find(p => p.slug === 'canonical-365');
+
+      if (canonicalPlan) {
+        await enrollInPlan(user.id, canonicalPlan.id);
+      }
+
+      setShowReminderModal(false);
+    } catch (error) {
+      console.error('Error enrolling with reminder:', error);
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  // Handle enrollment without reminder (skip)
+  const handleEnrollSkipReminder = async () => {
+    if (!user?.id) return;
+
+    setIsEnrolling(true);
+    try {
+      await fetchAvailablePlans();
+      const plans = useReadingPlanStore.getState().availablePlans;
+      const canonicalPlan = plans.find(p => p.slug === 'canonical-365');
+
+      if (canonicalPlan) {
+        await enrollInPlan(user.id, canonicalPlan.id);
+      }
+
+      setShowReminderModal(false);
+    } catch (error) {
+      console.error('Error enrolling:', error);
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -439,6 +625,14 @@ export default function HomeScreen() {
         {/* Hero Verse Card - Tappable to Bible */}
         <HeroVerseCard />
 
+        {/* Wayfarer Bible Reading Plan Card */}
+        <WayfarerProgressCard
+          onStartReading={handleStartReading}
+          onGracePath={handleGracePath}
+          onPatientPath={handlePatientPath}
+          onEnrollPress={handleEnrollPress}
+        />
+
         {/* Proverbs of the Day - Tappable to Bible */}
         <ProverbsOfTheDay />
 
@@ -454,6 +648,24 @@ export default function HomeScreen() {
         {/* Bottom padding */}
         <View style={{ height: 20 }} />
       </ScrollView>
+
+      {/* Reminder Setup Modal for Wayfarer enrollment */}
+      <ReminderSetupModal
+        visible={showReminderModal}
+        onConfirm={handleEnrollWithReminder}
+        onSkip={handleEnrollSkipReminder}
+        isLoading={isEnrolling}
+      />
+
+      {/* Grace Path Summary Modal */}
+      <GraceSummaryModal
+        visible={showGraceSummaryModal}
+        isLoading={graceSummaryLoading}
+        error={graceSummaryError}
+        summaryData={graceSummaryData}
+        onContinueReading={handleGraceSummaryContinue}
+        onClose={handleGraceSummaryClose}
+      />
     </SafeAreaView>
   );
 }
