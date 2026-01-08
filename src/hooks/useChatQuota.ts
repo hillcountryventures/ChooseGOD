@@ -4,81 +4,32 @@
  * Premium users get unlimited access.
  * Free users get 3 "seeds" (messages) per day that reset at midnight.
  * Seeds are framed as a spiritual practice, not a restriction.
+ *
+ * This hook wraps the Zustand store and adds premium status logic.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect } from 'react';
+import { useChatQuotaStore, TOTAL_SEEDS } from '../store/chatQuotaStore';
 import { usePremiumStatus } from './usePremiumStatus';
-
-const STORAGE_KEY = 'daily_seeds_state';
-const DAILY_SEED_LIMIT = 3;
-
-interface SeedState {
-  seedsRemaining: number;
-  lastResetDate: string; // YYYY-MM-DD format
-  seedsUsedToday: number;
-}
-
-// Get today's date in YYYY-MM-DD format (local timezone)
-const getTodayString = (): string => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-};
 
 export function useChatQuota() {
   const { isPremium } = usePremiumStatus();
-  const [seedsRemaining, setSeedsRemaining] = useState(DAILY_SEED_LIMIT);
-  const [seedsUsedToday, setSeedsUsedToday] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isOnLastSeed, setIsOnLastSeed] = useState(false);
-  const [showFinalSeedInterstitial, setShowFinalSeedInterstitial] = useState(false);
 
-  // Load state from storage
+  // Get state from Zustand store
+  const seedsRemaining = useChatQuotaStore((s) => s.seedsRemaining);
+  const seedsUsedToday = useChatQuotaStore((s) => s.seedsUsedToday);
+  const isOnLastSeed = useChatQuotaStore((s) => s.isOnLastSeed);
+  const showFinalSeedInterstitial = useChatQuotaStore((s) => s.showFinalSeedInterstitial);
+
+  // Get actions from store
+  const storeUseSeed = useChatQuotaStore((s) => s.useSeed);
+  const storeDismissFinalSeedInterstitial = useChatQuotaStore((s) => s.dismissFinalSeedInterstitial);
+  const checkAndResetDaily = useChatQuotaStore((s) => s.checkAndResetDaily);
+
+  // Check for day rollover when hook mounts or when app comes to foreground
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        const today = getTodayString();
-
-        if (stored) {
-          const state: SeedState = JSON.parse(stored);
-
-          // Check if we need to reset for a new day
-          if (state.lastResetDate !== today) {
-            // New day - reset seeds
-            const newState: SeedState = {
-              seedsRemaining: DAILY_SEED_LIMIT,
-              lastResetDate: today,
-              seedsUsedToday: 0,
-            };
-            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-            setSeedsRemaining(DAILY_SEED_LIMIT);
-            setSeedsUsedToday(0);
-            setIsOnLastSeed(false);
-          } else {
-            // Same day - use stored values
-            setSeedsRemaining(state.seedsRemaining);
-            setSeedsUsedToday(state.seedsUsedToday);
-            setIsOnLastSeed(state.seedsRemaining === 1);
-          }
-        } else {
-          // First time - initialize
-          const newState: SeedState = {
-            seedsRemaining: DAILY_SEED_LIMIT,
-            lastResetDate: today,
-            seedsUsedToday: 0,
-          };
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-        }
-      } catch (error) {
-        console.error('[useChatQuota] Error loading state:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadState();
-  }, []);
+    checkAndResetDaily();
+  }, [checkAndResetDaily]);
 
   // Use a seed (called when user sends a message)
   const useSeed = useCallback(async (): Promise<boolean> => {
@@ -87,37 +38,8 @@ export function useChatQuota() {
       return true;
     }
 
-    if (seedsRemaining <= 0) {
-      return false; // No seeds left
-    }
-
-    const wasOnLastSeed = seedsRemaining === 1;
-    const newRemaining = seedsRemaining - 1;
-    const newUsed = seedsUsedToday + 1;
-
-    setSeedsRemaining(newRemaining);
-    setSeedsUsedToday(newUsed);
-    setIsOnLastSeed(newRemaining === 1);
-
-    // Show interstitial when they've just used their last seed
-    if (wasOnLastSeed) {
-      setShowFinalSeedInterstitial(true);
-    }
-
-    try {
-      const today = getTodayString();
-      const newState: SeedState = {
-        seedsRemaining: newRemaining,
-        lastResetDate: today,
-        seedsUsedToday: newUsed,
-      };
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-    } catch (error) {
-      console.error('[useChatQuota] Error saving state:', error);
-    }
-
-    return true;
-  }, [isPremium, seedsRemaining, seedsUsedToday]);
+    return storeUseSeed();
+  }, [isPremium, storeUseSeed]);
 
   // Check if user can send a message
   const canSendMessage = useCallback((): boolean => {
@@ -127,8 +49,8 @@ export function useChatQuota() {
 
   // Dismiss the final seed interstitial
   const dismissFinalSeedInterstitial = useCallback(() => {
-    setShowFinalSeedInterstitial(false);
-  }, []);
+    storeDismissFinalSeedInterstitial();
+  }, [storeDismissFinalSeedInterstitial]);
 
   // Get the message for the current seed state
   const getSeedMessage = useCallback((): string | null => {
@@ -149,8 +71,8 @@ export function useChatQuota() {
     // State
     seedsRemaining,
     seedsUsedToday,
-    totalSeeds: DAILY_SEED_LIMIT,
-    isLoading,
+    totalSeeds: TOTAL_SEEDS,
+    isLoading: false, // Zustand handles rehydration, no async loading needed
     isOnLastSeed,
     showFinalSeedInterstitial,
 
