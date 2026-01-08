@@ -36,6 +36,8 @@ import { GREETING_HOURS } from '../constants/timing';
 import { STREAK_LIMITS, BIBLE_LIMITS } from '../constants/limits';
 import { WEEK_DAYS, GREETINGS, BIBLE_DEFAULTS } from '../constants/strings';
 import { useChatQuota } from '../hooks/useChatQuota';
+import { useUserProfile, getFirstName } from '../hooks/useUserProfile';
+import { useAuthStore } from '../store/authStore';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -398,6 +400,8 @@ function ContextualCard() {
 // ============================================================================
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const user = useAuthStore((state) => state.user);
+  const { profile } = useUserProfile();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -405,6 +409,9 @@ export default function HomeScreen() {
     if (hour < GREETING_HOURS.afternoonEnd) return GREETINGS.afternoon;
     return GREETINGS.evening;
   };
+
+  // Get personalized first name (from profile or email)
+  const firstName = getFirstName(profile?.displayName ?? null, user?.email ?? null);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -416,7 +423,9 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.greeting}>
+              {getGreeting()}{firstName ? `, ${firstName}` : ''}
+            </Text>
             <Text style={styles.subtitle}>What&apos;s on your heart today?</Text>
           </View>
           <TouchableOpacity
