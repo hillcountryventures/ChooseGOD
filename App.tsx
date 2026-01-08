@@ -5,8 +5,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+// Divine Entrance Splash
+import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
 
 // Chat Components
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
@@ -245,18 +248,6 @@ function TabNavigator() {
   );
 }
 
-// =====================================================
-// LOADING SCREEN
-// =====================================================
-
-function LoadingScreen() {
-  return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={styles.loadingText}>Loading...</Text>
-    </View>
-  );
-}
 
 // =====================================================
 // MAIN APP
@@ -338,14 +329,16 @@ export default function App() {
     checkOnboarding();
   }, [user]);
 
-  // Show loading while initializing
+  // Show Divine Entrance splash while initializing
+  // This replaces the cold "Loading..." screen with a warm, spiritual transition
   if (!initialized || (user && checkingOnboarding)) {
     return (
       <SafeAreaProvider>
-        <View style={styles.loadingContainer}>
-          <StatusBar style="light" />
-          <LoadingScreen />
-        </View>
+        <StatusBar style="light" />
+        <DivineEntranceSplash
+          isLoading={true}
+          minimumDisplayTime={2000}
+        />
       </SafeAreaProvider>
     );
   }
@@ -456,16 +449,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  loadingText: {
-    marginTop: 16,
-    color: colors.textMuted,
-    fontSize: 16,
   },
 });
