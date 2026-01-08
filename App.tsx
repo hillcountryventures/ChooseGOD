@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme, NavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, NavigationContainerRef, LinkingOptions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 
 // Divine Entrance Splash
 import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
@@ -18,6 +19,7 @@ import ChatHubScreen from './src/screens/ChatHubScreen';
 
 // Auth Store
 import { useAuthStore } from './src/store/authStore';
+import { supabase } from './src/lib/supabase';
 import { useDevotionalStore } from './src/store/devotionalStore';
 import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
 
@@ -109,6 +111,26 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
 const DevotionalStack = createNativeStackNavigator<DevotionalStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+// Deep linking configuration
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: [Linking.createURL('/'), 'choosegod://'],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          Login: 'login',
+        },
+      },
+      Main: {
+        screens: {
+          Home: 'home',
+          Bible: 'bible',
+        },
+      },
+    },
+  },
+};
 
 // =====================================================
 // TAB ICONS
@@ -301,6 +323,36 @@ export default function App() {
     return cleanup;
   }, []);
 
+  // Handle deep links for Supabase auth (email confirmation, password reset)
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      const url = event.url;
+      if (url.includes('access_token') || url.includes('refresh_token')) {
+        // Extract tokens from URL and set session
+        const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+    };
+
+    // Handle deep link when app is opened from closed state
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+
+    // Handle deep link when app is already open
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    return () => subscription.remove();
+  }, []);
+
   // Schedule daily wisdom notification when user is authenticated
   useEffect(() => {
     async function setupDailyWisdom() {
@@ -346,7 +398,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.gestureRoot}>
       <SafeAreaProvider>
-        <NavigationContainer ref={navigationRef} theme={DarkTheme}>
+        <NavigationContainer ref={navigationRef} theme={DarkTheme} linking={linking}>
           <StatusBar style="light" />
           <View style={styles.gestureRoot}>
             <RootStack.Navigator screenOptions={{ headerShown: false }}>
