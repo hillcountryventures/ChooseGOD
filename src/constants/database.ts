@@ -14,6 +14,12 @@ export const TABLES = {
   journalEntries: 'journal_entries',
   spiritualMoments: 'spiritual_moments',
   growthInsights: 'growth_insights',
+  // Reading plan tables
+  readingPlans: 'reading_plans',
+  planSections: 'plan_sections',
+  userReadingProgress: 'user_reading_progress',
+  skippedSessions: 'skipped_sessions',
+  readingSessionLogs: 'reading_session_logs',
 } as const;
 
 // Edge function names
@@ -41,6 +47,13 @@ export const COLUMNS = {
 export const RPC_FUNCTIONS = {
   matchVerses: 'match_verses',
   searchVerses: 'search_verses',
+  // Reading plan functions
+  getUserReadingPlanProgress: 'get_user_reading_plan_progress',
+  getTodaysReading: 'get_todays_reading',
+  completeReadingDay: 'complete_reading_day',
+  applyGracePath: 'apply_grace_path',
+  applyPatientPath: 'apply_patient_path',
+  updateReadingStreak: 'update_reading_streak',
 } as const;
 
 // Notification channels
