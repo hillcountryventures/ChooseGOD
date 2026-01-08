@@ -12,10 +12,11 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  GestureResponderEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -98,6 +99,7 @@ const formatDate = (date: Date): string => {
 interface VerseWithAnnotations extends VerseSource {
   highlight?: VerseHighlight;
   notes?: VerseNote[];
+  bookmark?: VerseBookmark;
 }
 
 export default function BibleScreen() {
@@ -170,6 +172,7 @@ export default function BibleScreen() {
           ...v,
           highlight: highlights.get(key),
           notes: notes.get(key),
+          bookmark: bookmarks.get(key),
         };
       });
 
@@ -183,7 +186,7 @@ export default function BibleScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentBook, currentChapter, preferences.preferredTranslation, highlights, notes]);
+  }, [currentBook, currentChapter, preferences.preferredTranslation, highlights, notes, bookmarks]);
 
   // Update from route params
   useEffect(() => {
@@ -379,16 +382,20 @@ export default function BibleScreen() {
     setEditingNote(null);
   };
 
-  // Handle AI quick action - opens chat sheet with verse context
-  const handleAIAction = (_action: typeof AI_QUICK_ACTIONS[0]) => {
+  // Handle AI quick action - opens chat sheet with verse context and auto-sends prompt
+  const handleAIAction = (action: typeof AI_QUICK_ACTIONS[0]) => {
     if (!selectedVerse) return;
 
-    // Update context with selected verse before opening sheet
+    // Generate the prompt for this action
+    const displayReference = `${currentBook} ${currentChapter}:${selectedVerse.verse}`;
+    const prompt = action.getPrompt(displayReference, selectedVerse.text);
+
+    // Update context with selected verse AND the pending message to auto-send
     setBibleContext(currentBook, currentChapter, {
       verse: selectedVerse.verse,
       text: selectedVerse.text,
       translation: preferences.preferredTranslation,
-    });
+    }, prompt);
 
     setShowAIMenu(false);
     setSelectedVerse(null);
@@ -535,6 +542,7 @@ export default function BibleScreen() {
     const key = getVerseKey(verse.book, verse.chapter, verse.verse);
     const highlight = highlights.get(key);
     const verseNotes = notes.get(key) || [];
+    const isBookmarked = bookmarks.has(key);
     const isSelected = selectedVerse?.verse === verse.verse;
     const isSwiping = swipingVerse === verse.verse;
     const panResponder = createVersePanResponder(verse);
@@ -586,6 +594,11 @@ export default function BibleScreen() {
             >
               <Text style={styles.verseNumber}>{verse.verse}</Text>
               <Text style={[styles.verseText, { fontSize: fontSizes.lg, lineHeight: fontSizes.lg * 1.8 }]}>{verse.text}</Text>
+              {isBookmarked && (
+                <View style={styles.bookmarkIndicator}>
+                  <Ionicons name="bookmark" size={14} color={theme.colors.accent} />
+                </View>
+              )}
               {verseNotes.length > 0 && (
                 <View style={styles.noteIndicator}>
                   <Ionicons name="document-text" size={12} color={theme.colors.primary} />
@@ -876,70 +889,75 @@ export default function BibleScreen() {
 
       {/* Note Editor Modal */}
       <Modal visible={showNoteModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.noteModalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editingNote ? 'Edit Note' : 'Add Note'}
-              </Text>
-              <TouchableOpacity onPress={() => {
-                setShowNoteModal(false);
-                setEditingNote(null);
-              }}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.noteVerseRef}>
-              {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
-            </Text>
-
-            <Text style={styles.noteVersePreview} numberOfLines={3}>
-              &quot;{selectedVerse?.text}&quot;
-            </Text>
-
-            {editingNote && (
-              <View style={styles.noteTimestamps}>
-                <Text style={styles.timestampText}>
-                  Created: {formatDate(editingNote.createdAt)}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.noteModalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingNote ? 'Edit Note' : 'Add Note'}
                 </Text>
-                {editingNote.updatedAt.getTime() !== editingNote.createdAt.getTime() && (
-                  <Text style={styles.timestampText}>
-                    Updated: {formatDate(editingNote.updatedAt)}
-                  </Text>
-                )}
-              </View>
-            )}
-
-            <TextInput
-              style={styles.noteInput}
-              multiline
-              placeholder="Write your notes, thoughts, or reflections..."
-              placeholderTextColor={theme.colors.textMuted}
-              value={noteText}
-              onChangeText={setNoteText}
-              textAlignVertical="top"
-              autoFocus
-            />
-
-            <View style={styles.noteButtonRow}>
-              {editingNote && (
-                <TouchableOpacity style={styles.deleteNoteButton} onPress={handleDeleteNote}>
-                  <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
-                  <Text style={styles.deleteNoteButtonText}>Delete</Text>
+                <TouchableOpacity onPress={() => {
+                  setShowNoteModal(false);
+                  setEditingNote(null);
+                }}>
+                  <Ionicons name="close" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
+              </View>
+
+              <Text style={styles.noteVerseRef}>
+                {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
+              </Text>
+
+              <Text style={styles.noteVersePreview} numberOfLines={3}>
+                &quot;{selectedVerse?.text}&quot;
+              </Text>
+
+              {editingNote && (
+                <View style={styles.noteTimestamps}>
+                  <Text style={styles.timestampText}>
+                    Created: {formatDate(editingNote.createdAt)}
+                  </Text>
+                  {editingNote.updatedAt.getTime() !== editingNote.createdAt.getTime() && (
+                    <Text style={styles.timestampText}>
+                      Updated: {formatDate(editingNote.updatedAt)}
+                    </Text>
+                  )}
+                </View>
               )}
-              <TouchableOpacity
-                style={[styles.saveNoteButton, editingNote && styles.saveNoteButtonWithDelete]}
-                onPress={handleSaveNote}
-              >
-                <Text style={styles.saveNoteButtonText}>
-                  {editingNote ? 'Save Changes' : 'Save Note'}
-                </Text>
-              </TouchableOpacity>
+
+              <TextInput
+                style={styles.noteInput}
+                multiline
+                placeholder="Write your notes, thoughts, or reflections..."
+                placeholderTextColor={theme.colors.textMuted}
+                value={noteText}
+                onChangeText={setNoteText}
+                textAlignVertical="top"
+                autoFocus
+              />
+
+              <View style={styles.noteButtonRow}>
+                {editingNote && (
+                  <TouchableOpacity style={styles.deleteNoteButton} onPress={handleDeleteNote}>
+                    <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
+                    <Text style={styles.deleteNoteButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[styles.saveNoteButton, editingNote && styles.saveNoteButtonWithDelete]}
+                  onPress={handleSaveNote}
+                >
+                  <Text style={styles.saveNoteButtonText}>
+                    {editingNote ? 'Save Changes' : 'Save Note'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* AI Quick Actions Modal */}
@@ -1123,6 +1141,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: theme.fontSize.lg * 1.8,
   },
+  bookmarkIndicator: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+  },
   noteIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1261,6 +1284,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.medium,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   modalOverlay: {
     flex: 1,
