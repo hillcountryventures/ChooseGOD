@@ -323,6 +323,11 @@ export function handleNotificationResponse(
       return { screen: 'Devotionals' };
     case 'reengagement':
       return { screen: 'Devotionals' };
+    // Wayfarer reading plan notifications
+    case 'wayfarer_reminder':
+    case 'wayfarer_streak':
+    case 'wayfarer_grace':
+      return { screen: 'Home' };
     default:
       return null;
   }
@@ -394,4 +399,105 @@ export function parseTimeString(timeString: string): { hours: number; minutes: n
  */
 export function formatTimeString(hours: number, minutes: number): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+}
+
+// =====================================================
+// WAYFARER READING PLAN NOTIFICATIONS
+// =====================================================
+
+/**
+ * Schedule a daily Wayfarer Bible reading reminder
+ * @param time - The time to send the reminder (hours and minutes)
+ * @returns The notification identifier
+ */
+export async function scheduleWayfarerReminder(
+  time: { hours: number; minutes: number }
+): Promise<string | null> {
+  try {
+    // Cancel any existing Wayfarer reminders
+    await cancelWayfarerReminders();
+
+    // Set up Android channel for Wayfarer if needed
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('wayfarer-reminders', {
+        name: 'Wayfarer Reading Reminders',
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: theme.colors.primary,
+        sound: 'default',
+      });
+    }
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Your daily walk awaits",
+        body: "Continue your journey through the Word. Your next chapter is ready.",
+        data: {
+          type: 'wayfarer_reminder',
+          screen: 'Home',
+        },
+        sound: 'default',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hours,
+        minute: time.minutes,
+      },
+    });
+
+    console.log('[Notifications] Wayfarer reminder scheduled for', time);
+    return identifier;
+  } catch (error) {
+    console.error('Error scheduling Wayfarer reminder:', error);
+    return null;
+  }
+}
+
+/**
+ * Cancel all Wayfarer reading reminders
+ */
+export async function cancelWayfarerReminders(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of scheduled) {
+    if (notification.content.data?.type === 'wayfarer_reminder') {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
+}
+
+/**
+ * Send an immediate Wayfarer streak celebration
+ */
+export async function sendWayfarerStreakNotification(streakCount: number): Promise<void> {
+  const messages = [
+    { title: `${streakCount} Day Reading Streak!`, body: "You're building a powerful habit. Keep going!" },
+    { title: `${streakCount} Days in the Word!`, body: "Consistency is transforming your heart." },
+    { title: `Day ${streakCount} Complete!`, body: "Each day in Scripture draws you closer to God." },
+  ];
+
+  const message = messages[streakCount % messages.length];
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: message.title,
+      body: message.body,
+      data: { type: 'wayfarer_streak', streakCount },
+    },
+    trigger: null, // Send immediately
+  });
+}
+
+/**
+ * Send a gentle reminder for users who missed days (Grace Path encouragement)
+ */
+export async function sendWayfarerGraceNotification(daysMissed: number): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Welcome back, friend",
+      body: `We've saved your place. Pick up where you left off, or let us summarize what you missed.`,
+      data: { type: 'wayfarer_grace', daysMissed },
+    },
+    trigger: null,
+  });
 }
