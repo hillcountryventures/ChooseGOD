@@ -10,7 +10,7 @@
  * 3. The Gentle Landing (3-3.5s) - Scripture dissolves as home content slides up
  */
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../lib/theme';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface DivineEntranceSplashProps {
   /** Called when the entrance animation completes and content should be revealed */
@@ -37,11 +37,41 @@ interface DivineEntranceSplashProps {
   maximumDisplayTime?: number;
 }
 
-// Scripture for the entrance
-const ENTRANCE_SCRIPTURE = {
-  text: "Thy word is a lamp unto my feet, and a light unto my path.",
-  reference: "Psalm 119:105",
-};
+// Rotating scriptures for the loading experience
+const LOADING_SCRIPTURES = [
+  {
+    text: "Thy word is a lamp unto my feet, and a light unto my path.",
+    reference: "Psalm 119:105",
+  },
+  {
+    text: "Be still, and know that I am God.",
+    reference: "Psalm 46:10",
+  },
+  {
+    text: "Trust in the Lord with all thine heart; and lean not unto thine own understanding.",
+    reference: "Proverbs 3:5",
+  },
+  {
+    text: "The Lord is my shepherd; I shall not want.",
+    reference: "Psalm 23:1",
+  },
+  {
+    text: "I can do all things through Christ which strengtheneth me.",
+    reference: "Philippians 4:13",
+  },
+  {
+    text: "For God so loved the world, that he gave his only begotten Son.",
+    reference: "John 3:16",
+  },
+  {
+    text: "Come unto me, all ye that labour and are heavy laden, and I will give you rest.",
+    reference: "Matthew 11:28",
+  },
+  {
+    text: "The Lord is my light and my salvation; whom shall I fear?",
+    reference: "Psalm 27:1",
+  },
+];
 
 export function DivineEntranceSplash({
   onAnimationComplete,
@@ -58,9 +88,16 @@ export function DivineEntranceSplash({
   const loadingTextOpacity = useRef(new Animated.Value(0)).current;
   const containerOpacity = useRef(new Animated.Value(1)).current;
 
+  // Rotating scripture state
+  const [currentScriptureIndex, setCurrentScriptureIndex] = useState(0);
+  const scriptureFadeAnim = useRef(new Animated.Value(1)).current;
+
   // Track if minimum time has passed
   const startTimeRef = useRef(Date.now());
   const hasCalledComplete = useRef(false);
+
+  // Get current scripture
+  const currentScripture = LOADING_SCRIPTURES[currentScriptureIndex];
 
   // Handle completion with minimum display time
   const handleComplete = useCallback(() => {
@@ -185,6 +222,34 @@ export function DivineEntranceSplash({
     }
   }, [isLoading, handleComplete]);
 
+  // Rotating scriptures effect - cycles through verses every 2.5 seconds while loading
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const rotationInterval = setInterval(() => {
+      // Fade out current scripture
+      Animated.timing(scriptureFadeAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        // Change to next scripture
+        setCurrentScriptureIndex((prev) => (prev + 1) % LOADING_SCRIPTURES.length);
+
+        // Fade in new scripture
+        Animated.timing(scriptureFadeAnim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 2500); // Rotate every 2.5 seconds
+
+    return () => clearInterval(rotationInterval);
+  }, [isLoading, scriptureFadeAnim]);
+
   // Safety timeout: Force completion after maximumDisplayTime to prevent indefinite hang
   // This is critical for Apple App Review - they will reject apps that appear "stuck"
   useEffect(() => {
@@ -241,7 +306,7 @@ export function DivineEntranceSplash({
           </View>
         </Animated.View>
 
-        {/* Scripture text */}
+        {/* Scripture text - rotates through verses while loading */}
         <Animated.View
           style={[
             styles.scriptureContainer,
@@ -251,12 +316,14 @@ export function DivineEntranceSplash({
             },
           ]}
         >
-          <Text style={styles.scriptureText}>
-            &ldquo;{ENTRANCE_SCRIPTURE.text}&rdquo;
-          </Text>
-          <Text style={styles.scriptureReference}>
-            — {ENTRANCE_SCRIPTURE.reference}
-          </Text>
+          <Animated.View style={{ opacity: scriptureFadeAnim }}>
+            <Text style={styles.scriptureText}>
+              &ldquo;{currentScripture.text}&rdquo;
+            </Text>
+            <Text style={styles.scriptureReference}>
+              — {currentScripture.reference}
+            </Text>
+          </Animated.View>
         </Animated.View>
 
         {/* Loading text */}
