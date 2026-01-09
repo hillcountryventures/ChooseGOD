@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme, NavigationContainerRef, LinkingOptions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +8,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Prevent the native splash screen from auto-hiding
+// This MUST be called before the component renders
+SplashScreen.preventAutoHideAsync();
 
 // Divine Entrance Splash
 import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
@@ -282,6 +287,8 @@ export default function App() {
   const hidePaywall = useSubscriptionStore((s) => s.hidePaywall);
   const isPaywallVisible = useIsPaywallVisible();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [splashComplete, setSplashComplete] = useState(false);
+  const [initTimedOut, setInitTimedOut] = useState(false);
 
   // Navigation ref for deep-linking from notifications
   const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
@@ -299,6 +306,17 @@ export default function App() {
       }
     }
     initializeApp();
+
+    // Safety timeout: If initialization takes too long, proceed anyway
+    // This prevents the app from appearing "stuck" to Apple reviewers
+    const timeoutId = setTimeout(() => {
+      if (!initialized) {
+        console.warn('[App] Initialization timeout reached, proceeding to app');
+        setInitTimedOut(true);
+      }
+    }, 10000); // 10 second max wait
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Set up notification listeners for deep-linking
@@ -381,15 +399,26 @@ export default function App() {
     checkOnboarding();
   }, [user]);
 
+  // Determine if we should show splash screen
+  // Show splash unless: initialization completed OR timeout reached OR splash animation completed
+  const shouldShowSplash = !splashComplete && !initTimedOut && (!initialized || (user && checkingOnboarding));
+
+  // Handle splash completion - allows app to proceed even if still loading in background
+  const handleSplashComplete = useCallback(() => {
+    setSplashComplete(true);
+  }, []);
+
   // Show Divine Entrance splash while initializing
   // This replaces the cold "Loading..." screen with a warm, spiritual transition
-  if (!initialized || (user && checkingOnboarding)) {
+  if (shouldShowSplash) {
     return (
       <SafeAreaProvider>
         <StatusBar style="light" />
         <DivineEntranceSplash
-          isLoading={true}
+          isLoading={!initialized || Boolean(user && checkingOnboarding)}
           minimumDisplayTime={2000}
+          maximumDisplayTime={8000}
+          onAnimationComplete={handleSplashComplete}
         />
       </SafeAreaProvider>
     );

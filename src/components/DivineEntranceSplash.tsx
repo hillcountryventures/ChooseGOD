@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../lib/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -32,6 +33,8 @@ interface DivineEntranceSplashProps {
   isLoading?: boolean;
   /** Minimum display time in ms before onAnimationComplete can fire (default: 2500) */
   minimumDisplayTime?: number;
+  /** Maximum display time in ms before forcing completion (default: 8000) - prevents indefinite hang */
+  maximumDisplayTime?: number;
 }
 
 // Scripture for the entrance
@@ -44,6 +47,7 @@ export function DivineEntranceSplash({
   onAnimationComplete,
   isLoading = true,
   minimumDisplayTime = 2500,
+  maximumDisplayTime = 8000,
 }: DivineEntranceSplashProps) {
   // Animation values
   const glowOpacity = useRef(new Animated.Value(0)).current;
@@ -80,6 +84,19 @@ export function DivineEntranceSplash({
       });
     }, remaining);
   }, [minimumDisplayTime, onAnimationComplete, containerOpacity]);
+
+  // Hide the native splash screen once our custom splash is mounted and ready
+  useEffect(() => {
+    // Small delay to ensure our component is fully rendered before hiding native splash
+    const timer = setTimeout(async () => {
+      try {
+        await SplashScreen.hideAsync();
+      } catch (e) {
+        // Splash screen may have already been hidden
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Phase 1: Emergence of Light
   useEffect(() => {
@@ -167,6 +184,19 @@ export function DivineEntranceSplash({
       handleComplete();
     }
   }, [isLoading, handleComplete]);
+
+  // Safety timeout: Force completion after maximumDisplayTime to prevent indefinite hang
+  // This is critical for Apple App Review - they will reject apps that appear "stuck"
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!hasCalledComplete.current) {
+        console.warn('[DivineEntranceSplash] Maximum display time reached, forcing completion');
+        handleComplete();
+      }
+    }, maximumDisplayTime);
+
+    return () => clearTimeout(timeoutId);
+  }, [maximumDisplayTime, handleComplete]);
 
   return (
     <Animated.View style={[styles.container, { opacity: containerOpacity }]}>
