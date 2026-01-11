@@ -216,13 +216,21 @@ function StreakBar() {
   const streak = Math.min(recentMoments.length, STREAK_LIMITS.weekDays);
   const today = new Date().getDay();
 
+  // Use dynamic greeting helper (same as main header)
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < GREETING_HOURS.morningEnd) return GREETINGS.morning;
+    if (hour < GREETING_HOURS.afternoonEnd) return GREETINGS.afternoon;
+    return GREETINGS.evening;
+  };
+
   return (
     <View style={styles.streakBar}>
       <View style={styles.streakHeader}>
         <View style={styles.streakTitleRow}>
           <Ionicons name="flame" size={18} color={theme.colors.accent} />
           <Text style={styles.streakTitle}>
-            {streak > 0 ? `${streak} day streak` : GREETINGS.morning}
+            {streak > 0 ? `${streak} day streak` : getGreeting()}
           </Text>
         </View>
       </View>
