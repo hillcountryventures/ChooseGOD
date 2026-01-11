@@ -41,6 +41,21 @@ interface WayfarerProgressCardProps {
 }
 
 // ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Calculate expected day based on start date
+ * Returns which day the user should be on if reading daily
+ */
+function calculateExpectedDay(startDate: Date, totalDays: number): number {
+  const today = new Date();
+  const start = new Date(startDate);
+  const elapsed = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  return Math.max(1, Math.min(elapsed, totalDays)); // Clamp between 1 and totalDays
+}
+
+// ============================================================================
 // Progress Bar Component - Visual "path" representation
 // ============================================================================
 
@@ -62,6 +77,46 @@ function ProgressPath({ progress, totalDays }: { progress: number; totalDays: nu
       </View>
     </View>
   );
+}
+
+// ============================================================================
+// Status Badge Component - Shows catch-up status
+// ============================================================================
+
+function StatusBadge({ currentDay, expectedDay }: { currentDay: number; expectedDay: number }) {
+  const daysBehind = expectedDay - currentDay;
+
+  if (daysBehind <= 0) {
+    // Caught up or ahead
+    return (
+      <View style={[styles.statusBadge, styles.statusBadgeCaughtUp]}>
+        <Ionicons name="checkmark-circle" size={14} color={theme.colors.success} />
+        <Text style={[styles.statusBadgeText, styles.statusBadgeTextSuccess]}>
+          Caught up!
+        </Text>
+      </View>
+    );
+  } else if (daysBehind === 1) {
+    // 1 day behind
+    return (
+      <View style={[styles.statusBadge, styles.statusBadgeWarning]}>
+        <Ionicons name="time-outline" size={14} color={theme.colors.accent} />
+        <Text style={[styles.statusBadgeText, styles.statusBadgeTextWarning]}>
+          1 day behind
+        </Text>
+      </View>
+    );
+  } else {
+    // 2+ days behind (should trigger intervention, but show status anyway)
+    return (
+      <View style={[styles.statusBadge, styles.statusBadgeBehind]}>
+        <Ionicons name="alert-circle-outline" size={14} color={theme.colors.error} />
+        <Text style={[styles.statusBadgeText, styles.statusBadgeTextError]}>
+          {daysBehind} days behind
+        </Text>
+      </View>
+    );
+  }
 }
 
 // ============================================================================
@@ -322,7 +377,7 @@ export default function WayfarerProgressCard({
         />
       ) : (
         <View style={styles.normalContent}>
-          {/* Today's Reading */}
+          {/* Today's Reading with Status Badge */}
           <View style={styles.todayReading}>
             <View style={styles.todayBadge}>
               <Text style={styles.todayBadgeText}>
@@ -333,6 +388,12 @@ export default function WayfarerProgressCard({
               {todaysReading?.displayTitle || 'Loading...'}
             </Text>
           </View>
+
+          {/* Status Badge - Shows if caught up or behind */}
+          <StatusBadge
+            currentDay={activeProgress.currentDay}
+            expectedDay={calculateExpectedDay(activeProgress.startDate, activeProgress.totalDays)}
+          />
 
           {/* Start Reading Button */}
           <TouchableOpacity
@@ -577,6 +638,46 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xs,
     color: theme.colors.textSecondary,
     marginTop: 2,
+  },
+
+  // Status Badge
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.full,
+    alignSelf: 'flex-start',
+    marginBottom: theme.spacing.md,
+  },
+  statusBadgeCaughtUp: {
+    backgroundColor: theme.colors.successAlpha[15],
+    borderWidth: 1,
+    borderColor: theme.colors.success + '30',
+  },
+  statusBadgeWarning: {
+    backgroundColor: theme.colors.accentAlpha[15],
+    borderWidth: 1,
+    borderColor: theme.colors.accent + '30',
+  },
+  statusBadgeBehind: {
+    backgroundColor: theme.colors.errorAlpha[15],
+    borderWidth: 1,
+    borderColor: theme.colors.error + '30',
+  },
+  statusBadgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  statusBadgeTextSuccess: {
+    color: theme.colors.success,
+  },
+  statusBadgeTextWarning: {
+    color: theme.colors.accent,
+  },
+  statusBadgeTextError: {
+    color: theme.colors.error,
   },
 
   // Empty State
