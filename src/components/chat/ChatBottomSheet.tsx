@@ -41,6 +41,7 @@ import {
   generateInitialMessage,
 } from './utils';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
+import { CHAT_MODE_LABELS, isPrayerMode as checkIsPrayerMode } from '../../constants/chatModes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -62,19 +63,7 @@ function getModeIcon(mode: ChatMode): keyof typeof Ionicons.glyphMap {
 }
 
 function getModeName(mode: ChatMode): string {
-  const names: Record<ChatMode, string> = {
-    auto: 'Ask',
-    devotional: 'Devotional',
-    prayer: 'Prayer',
-    lectio: 'Lectio Divina',
-    examen: 'Examen',
-    memory: 'Memory',
-    confession: 'Confession',
-    gratitude: 'Gratitude',
-    celebration: 'Celebrate',
-    journal: 'Journal',
-  };
-  return names[mode] || mode;
+  return CHAT_MODE_LABELS[mode] || 'Ask Anything';
 }
 
 export function ChatBottomSheet() {
@@ -673,7 +662,7 @@ export function ChatBottomSheet() {
     }
   }, [messages]);
 
-  const isPrayerMode = currentMode === 'prayer';
+  const isPrayerMode = checkIsPrayerMode(currentMode);
 
   const contextPrompt = generateContextPrompt(chatContext);
   const hasMessages = messages.length > 0;
@@ -703,7 +692,7 @@ export function ChatBottomSheet() {
             color={isPrayerMode ? theme.colors.prayer : theme.colors.primary}
           />
           <Text style={[styles.headerTitle, isPrayerMode && styles.headerTitlePrayer]}>
-            {isPrayerMode ? 'Prayer' : 'Ask'}
+            {getModeName(currentMode)}
           </Text>
           {/* Premium badge or free queries remaining */}
           {isPremium ? (

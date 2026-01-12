@@ -17,6 +17,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
@@ -294,6 +295,19 @@ export default function BibleScreen() {
       Alert.alert('Bookmarked!', `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} added to your bookmarks.`);
     }
     setSelectedVerse(null);
+  };
+
+  // Share verse as text
+  const handleShare = async () => {
+    if (!selectedVerse) return;
+
+    try {
+      const textContent = `"${selectedVerse.text}"\n\n— ${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} (${preferences.preferredTranslation})\n\nShared from ChooseGOD`;
+      await Share.share({ message: textContent });
+      setSelectedVerse(null);
+    } catch (error) {
+      console.error('Error sharing verse:', error);
+    }
   };
 
   // Open note editor for a new note
@@ -788,7 +802,7 @@ export default function BibleScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={20} color={theme.colors.primary} />
               <Text style={styles.actionButtonText}>Share</Text>
             </TouchableOpacity>

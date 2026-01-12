@@ -48,6 +48,7 @@ import { FREE_CHAT_MODES, PREMIUM_CHAT_MODES } from '../constants/subscription';
 import { streamCompanionResponse } from '../components/chat/utils';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { ScriptureSkeleton } from '../components/ScriptureSkeleton';
+import { CHAT_MODE_LABELS, CHAT_MODE_DESCRIPTIONS, isPrayerMode as checkIsPrayerMode } from '../constants/chatModes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type ChatHubRouteProp = RouteProp<RootStackParamList, 'ChatHub'>;
@@ -70,19 +71,7 @@ function getModeIcon(mode: ChatMode): keyof typeof Ionicons.glyphMap {
 }
 
 function getModeName(mode: ChatMode): string {
-  const names: Record<ChatMode, string> = {
-    auto: 'Ask',
-    devotional: 'Devotional',
-    prayer: 'Prayer',
-    lectio: 'Lectio Divina',
-    examen: 'Examen',
-    memory: 'Memory',
-    confession: 'Confession',
-    gratitude: 'Gratitude',
-    celebration: 'Celebrate',
-    journal: 'Journal',
-  };
-  return names[mode] || mode;
+  return CHAT_MODE_LABELS[mode] || 'Ask Anything';
 }
 
 // Seed Icon Component with animation
@@ -631,7 +620,7 @@ export default function ChatHubScreen() {
     setSelectedVerseRef(null);
   }, []);
 
-  const isPrayerMode = currentMode === 'prayer';
+  const isPrayerMode = checkIsPrayerMode(currentMode);
   const hasMessages = messages.length > 0;
 
   // Context chip for verse being discussed
@@ -672,13 +661,30 @@ export default function ChatHubScreen() {
                 color={isPrayerMode ? theme.colors.prayer : theme.colors.primary}
               />
               <Text style={[styles.headerTitle, isPrayerMode && styles.headerTitlePrayer]}>
-                {isPrayerMode ? 'Prayer' : 'Ask the Bible'}
+                {getModeName(currentMode)}
               </Text>
             </View>
             {ContextChip}
           </View>
 
           <View style={styles.headerRight}>
+            {/* Mode Selector Button */}
+            <TouchableOpacity
+              style={styles.modeSelectorButton}
+              onPress={() => setShowModeSelector(!showModeSelector)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessible={true}
+              accessibilityLabel="Choose conversation mode"
+              accessibilityHint="Opens menu to select spiritual practice mode"
+              accessibilityRole="button"
+            >
+              <Ionicons
+                name={showModeSelector ? 'sparkles' : 'sparkles-outline'}
+                size={20}
+                color={showModeSelector ? theme.colors.accent : theme.colors.textSecondary}
+              />
+            </TouchableOpacity>
+
             {/* Seed Tracker */}
             <SeedTracker
               seedsRemaining={seedsRemaining}
@@ -705,21 +711,41 @@ export default function ChatHubScreen() {
         {/* Mode Selector Panel */}
         {showModeSelector && (
           <View style={styles.modeSelectorPanel}>
-            <Text style={styles.modeSelectorTitle}>Spiritual Practices</Text>
+            <View style={styles.modeSelectorHeader}>
+              <Text style={styles.modeSelectorTitle}>Spiritual Practices</Text>
+              <TouchableOpacity
+                style={styles.modeSelectorCloseButton}
+                onPress={() => setShowModeSelector(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
             <View style={styles.modeSelectorGrid}>
               {FREE_CHAT_MODES.map((mode) => (
                 <TouchableOpacity
                   key={mode}
                   style={[styles.modeSelectorItem, currentMode === mode && styles.modeSelectorItemActive]}
                   onPress={() => handleModeSelect(mode)}
+                  accessible={true}
+                  accessibilityLabel={`${getModeName(mode)} mode: ${CHAT_MODE_DESCRIPTIONS[mode]}`}
+                  accessibilityRole="button"
                 >
-                  <Ionicons
-                    name={getModeIcon(mode)}
-                    size={20}
-                    color={currentMode === mode ? theme.colors.primary : theme.colors.textSecondary}
-                  />
+                  <View style={styles.modeSelectorItemHeader}>
+                    <Ionicons
+                      name={getModeIcon(mode)}
+                      size={24}
+                      color={currentMode === mode ? theme.colors.primary : theme.colors.textSecondary}
+                    />
+                    {currentMode === mode && (
+                      <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} style={styles.modeSelectorCheckmark} />
+                    )}
+                  </View>
                   <Text style={[styles.modeSelectorItemText, currentMode === mode && styles.modeSelectorItemTextActive]}>
                     {getModeName(mode)}
+                  </Text>
+                  <Text style={styles.modeSelectorItemDescription}>
+                    {CHAT_MODE_DESCRIPTIONS[mode]}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -732,25 +758,41 @@ export default function ChatHubScreen() {
                     !isPremium && styles.modeSelectorItemLocked,
                   ]}
                   onPress={() => handleModeSelect(mode)}
+                  accessible={true}
+                  accessibilityLabel={`${getModeName(mode)} mode (Premium): ${CHAT_MODE_DESCRIPTIONS[mode]}`}
+                  accessibilityRole="button"
                 >
-                  <View style={styles.modeSelectorItemIconRow}>
-                    <Ionicons
-                      name={getModeIcon(mode)}
-                      size={20}
-                      color={currentMode === mode ? theme.colors.accent : theme.colors.textSecondary}
-                    />
-                    {!isPremium && (
-                      <Ionicons name="lock-closed" size={10} color={theme.colors.accent} style={styles.modeSelectorLockIcon} />
+                  <View style={styles.modeSelectorItemHeader}>
+                    <View style={styles.modeSelectorItemIconRow}>
+                      <Ionicons
+                        name={getModeIcon(mode)}
+                        size={24}
+                        color={currentMode === mode ? theme.colors.accent : theme.colors.textSecondary}
+                      />
+                      {!isPremium && (
+                        <Ionicons name="lock-closed" size={12} color={theme.colors.accent} style={styles.modeSelectorLockIcon} />
+                      )}
+                    </View>
+                    {currentMode === mode && isPremium && (
+                      <Ionicons name="checkmark-circle" size={16} color={theme.colors.accent} style={styles.modeSelectorCheckmark} />
                     )}
                   </View>
+                  <View style={styles.modeSelectorItemTitleRow}>
+                    <Text style={[
+                      styles.modeSelectorItemText,
+                      currentMode === mode && styles.modeSelectorItemTextActive,
+                      !isPremium && styles.modeSelectorItemTextLocked,
+                    ]}>
+                      {getModeName(mode)}
+                    </Text>
+                    {!isPremium && <Text style={styles.modeSelectorProBadge}>PRO</Text>}
+                  </View>
                   <Text style={[
-                    styles.modeSelectorItemText,
-                    currentMode === mode && styles.modeSelectorItemTextActive,
-                    !isPremium && styles.modeSelectorItemTextLocked,
+                    styles.modeSelectorItemDescription,
+                    !isPremium && styles.modeSelectorItemDescriptionLocked,
                   ]}>
-                    {getModeName(mode)}
+                    {CHAT_MODE_DESCRIPTIONS[mode]}
                   </Text>
-                  {!isPremium && <Text style={styles.modeSelectorProBadge}>PRO</Text>}
                 </TouchableOpacity>
               ))}
             </View>
@@ -767,7 +809,7 @@ export default function ChatHubScreen() {
                 color={isPrayerMode ? theme.colors.prayer : theme.colors.textMuted}
               />
               <Text style={styles.emptyStateTitle}>
-                {isPrayerMode ? 'Prayer Mode' : 'Ask the Bible'}
+                {getModeName(currentMode)}
               </Text>
               <Text style={styles.emptyStateText}>
                 {isPrayerMode
@@ -983,6 +1025,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 18,
   },
+  modeSelectorButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
+  },
 
   // Seed Tracker
   seedTracker: {
@@ -1124,34 +1173,55 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
+  modeSelectorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
   modeSelectorTitle: {
     fontSize: theme.fontSize.sm,
     fontWeight: '600',
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.sm,
+  },
+  modeSelectorCloseButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
   },
   modeSelectorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
   modeSelectorItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.background,
-    minWidth: 72,
-    gap: 4,
+    width: '48%',
+    minHeight: 100,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   modeSelectorItemActive: {
     backgroundColor: theme.colors.primaryAlpha[15],
-    borderWidth: 1,
-    borderColor: theme.colors.primaryAlpha[20],
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary,
   },
   modeSelectorItemLocked: {
-    opacity: 0.8,
+    opacity: 0.85,
+  },
+  modeSelectorItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
   modeSelectorItemIconRow: {
     flexDirection: 'row',
@@ -1160,27 +1230,49 @@ const styles = StyleSheet.create({
   },
   modeSelectorLockIcon: {
     position: 'absolute',
-    top: -4,
-    right: -8,
+    top: -6,
+    right: -10,
+  },
+  modeSelectorCheckmark: {
+    marginLeft: 'auto',
+  },
+  modeSelectorItemTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 4,
   },
   modeSelectorItemText: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.text,
   },
   modeSelectorItemTextActive: {
     color: theme.colors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   modeSelectorItemTextLocked: {
+    color: theme.colors.textSecondary,
+  },
+  modeSelectorItemDescription: {
+    fontSize: theme.fontSize.xs,
+    lineHeight: 16,
     color: theme.colors.textMuted,
+    textAlign: 'left',
+  },
+  modeSelectorItemDescriptionLocked: {
+    color: theme.colors.textMuted,
+    opacity: 0.7,
   },
   modeSelectorProBadge: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '700',
     color: theme.colors.accent,
-    marginTop: 2,
+    backgroundColor: theme.colors.accentAlpha[20],
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
   },
 
   // Message List
