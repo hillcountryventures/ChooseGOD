@@ -207,7 +207,7 @@ function InsightsView({ moments }: { moments: SpiritualMoment[] }) {
   const { isPremium, showPaywall } = usePremiumStatus();
   const { generateInsight, isGenerating, error: insightError } = useGrowthInsights();
   const [cachedInsight, setCachedInsight] = useState<GrowthInsight | null>(null);
-  const { milestones, recentAchievements, totalAchieved, nextMilestone } = useMilestones(moments);
+  const { recentAchievements, totalAchieved, nextMilestone } = useMilestones(moments);
 
   // Calculate stats from moments
   const stats = useMemo(() => {
@@ -612,7 +612,7 @@ function InsightsView({ moments }: { moments: SpiritualMoment[] }) {
                 </View>
                 <Text style={styles.milestoneCardDescription}>{milestone.description}</Text>
                 <View style={styles.milestoneScripture}>
-                  <Text style={styles.milestoneScriptureText}>"{milestone.scripture}"</Text>
+                  <Text style={styles.milestoneScriptureText}>&ldquo;{milestone.scripture}&rdquo;</Text>
                   <Text style={styles.milestoneScriptureRef}>— {milestone.scriptureRef}</Text>
                 </View>
                 {milestone.achievedAt && (
@@ -631,7 +631,7 @@ function InsightsView({ moments }: { moments: SpiritualMoment[] }) {
           </View>
         ) : (
           <Text style={styles.noMilestonesText}>
-            Keep engaging with God's Word and your first milestone will appear here soon!
+            Keep engaging with God&apos;s Word and your first milestone will appear here soon!
           </Text>
         )}
       </View>
