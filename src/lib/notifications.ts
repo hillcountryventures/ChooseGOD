@@ -104,6 +104,101 @@ export async function savePushToken(userId: string, token: string): Promise<bool
 // =====================================================
 
 /**
+ * Cancel morning devotional reminders
+ */
+async function cancelMorningDevotional(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of scheduled) {
+    if (notification.content.data?.type === 'morning_devotional') {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
+}
+
+/**
+ * Cancel evening reflection reminders
+ */
+async function cancelEveningReflection(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of scheduled) {
+    if (notification.content.data?.type === 'evening_reflection') {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
+}
+
+/**
+ * Schedule a morning devotional reminder (7:00 AM)
+ * @param time - The time to send the reminder (hours and minutes)
+ * @returns The notification identifier
+ */
+export async function scheduleMorningDevotional(
+  time: { hours: number; minutes: number } = { hours: 7, minutes: 0 }
+): Promise<string | null> {
+  try {
+    // Cancel any existing morning devotional reminders
+    await cancelMorningDevotional();
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Good Morning',
+        body: 'Start your day with Scripture and reflection',
+        data: { type: 'morning_devotional' },
+        sound: 'default',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hours,
+        minute: time.minutes,
+      },
+    });
+
+    console.log('[Notifications] Morning devotional scheduled for', time);
+    return identifier;
+  } catch (error) {
+    console.error('Error scheduling morning devotional:', error);
+    return null;
+  }
+}
+
+/**
+ * Schedule an evening reflection reminder (9:00 PM)
+ * @param time - The time to send the reminder (hours and minutes)
+ * @returns The notification identifier
+ */
+export async function scheduleEveningReflection(
+  time: { hours: number; minutes: number } = { hours: 21, minutes: 0 }
+): Promise<string | null> {
+  try {
+    // Cancel any existing evening reflection reminders
+    await cancelEveningReflection();
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Evening Reflection',
+        body: 'Take a moment to reflect on your day with God',
+        data: { type: 'evening_reflection' },
+        sound: 'default',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hours,
+        minute: time.minutes,
+      },
+    });
+
+    console.log('[Notifications] Evening reflection scheduled for', time);
+    return identifier;
+  } catch (error) {
+    console.error('Error scheduling evening reflection:', error);
+    return null;
+  }
+}
+
+/**
+ * @deprecated Use scheduleMorningDevotional or scheduleEveningReflection instead
  * Schedule a daily devotional reminder
  * @param time - The time to send the reminder (hours and minutes)
  * @param seriesTitle - The title of the devotional series
@@ -214,6 +309,7 @@ export async function cancelDailyWisdomNotifications(): Promise<void> {
 }
 
 /**
+ * @deprecated Use cancelMorningDevotional or cancelEveningReflection instead
  * Cancel all devotional reminders
  */
 export async function cancelDevotionalReminders(): Promise<void> {
@@ -315,6 +411,10 @@ export function handleNotificationResponse(
         screen: (data.screen as string) || 'ChatHub',
         params: data.params as Record<string, unknown>,
       };
+    case 'morning_devotional':
+      return { screen: 'Devotionals' };
+    case 'evening_reflection':
+      return { screen: 'Home' };
     case 'devotional_reminder':
       return { screen: 'Devotionals' };
     case 'streak':
