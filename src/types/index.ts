@@ -205,7 +205,7 @@ export type Translation =
   // English (Public Domain & Modern)
   | 'KJV' | 'NIV' | 'ASV' | 'BBE' | 'WEB' | 'DARBY' | 'YLT'
   // Spanish
-  | 'RVR'
+  | 'RVR' | 'RVR1960'
   // Portuguese
   | 'PAA' | 'PACF'
   // German (Public Domain)
@@ -263,9 +263,9 @@ export const TRANSLATIONS: TranslationInfo[] = [
   {
     id: 'BBE',
     name: 'Bible in Basic English',
-    description: 'Simple vocabulary translation',
+    description: 'Simple vocabulary translation (partial)',
     language: 'English',
-    isAvailable: true,
+    isAvailable: false, // Only 6,675 verses - incomplete
   },
   {
     id: 'WEB',
@@ -292,8 +292,15 @@ export const TRANSLATIONS: TranslationInfo[] = [
   // ===== SPANISH =====
   {
     id: 'RVR',
-    name: 'Reina-Valera 1960',
+    name: 'Reina-Valera',
     description: 'Traducción clásica en español',
+    language: 'Español',
+    isAvailable: true,
+  },
+  {
+    id: 'RVR1960',
+    name: 'Reina-Valera 1960',
+    description: 'Revisión 1960 en español',
     language: 'Español',
     isAvailable: true,
   },
@@ -379,7 +386,7 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'الكتاب المقدس',
     description: 'Smith & Van Dyke',
     language: 'العربية',
-    isAvailable: true,
+    isAvailable: false, // Not yet seeded
   },
 
   // ===== GREEK =====
