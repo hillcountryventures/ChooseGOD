@@ -436,6 +436,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 28,
     fontStyle: 'italic',
+    flexWrap: 'wrap',
   },
   tapHint: {
     flexDirection: 'row',
@@ -469,6 +470,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
     lineHeight: 24,
+    flexWrap: 'wrap',
   },
   reflectionVerseLink: {
     color: theme.colors.primary,
@@ -497,6 +499,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 22,
     flex: 1,
+    flexWrap: 'wrap',
   },
   journalCard: {
     backgroundColor: theme.colors.card,
@@ -536,6 +539,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 24,
     fontStyle: 'italic',
+    flexWrap: 'wrap',
   },
   footer: {
     paddingHorizontal: theme.spacing.lg,
