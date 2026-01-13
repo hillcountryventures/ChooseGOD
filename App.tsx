@@ -372,12 +372,15 @@ export default function App() {
   }, []);
 
   // Schedule daily wisdom notification when user is authenticated
+  // Note: This is separate from morning devotional (7 AM) and provides AI-driven prompts at 8 AM
+  // Only schedules if user has notifications enabled
   useEffect(() => {
     async function setupDailyWisdom() {
       if (user && onboardingCompleted) {
         const hasPermission = await requestPermissions();
         if (hasPermission) {
-          // Schedule for 8:00 AM local time
+          // Schedule for 8:00 AM local time (1 hour after morning devotional at 7 AM)
+          // This gives users two touchpoints: structured devotional at 7 AM, AI chat prompt at 8 AM
           await scheduleDailyWisdomNotification({ hours: 8, minutes: 0 });
         }
       }
