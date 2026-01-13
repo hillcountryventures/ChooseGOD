@@ -202,8 +202,8 @@ export interface DailyVerse {
 // Bible translations
 // Use AVAILABLE_TRANSLATIONS to get only translations seeded in the database
 export type Translation =
-  // English (Public Domain)
-  | 'KJV' | 'ASV' | 'BBE' | 'WEB' | 'DARBY' | 'YLT'
+  // English (Public Domain & Modern)
+  | 'KJV' | 'NIV' | 'ASV' | 'BBE' | 'WEB' | 'DARBY' | 'YLT'
   // Spanish
   | 'RVR'
   // Portuguese
@@ -238,11 +238,18 @@ export interface TranslationInfo {
 }
 
 export const TRANSLATIONS: TranslationInfo[] = [
-  // ===== ENGLISH (Public Domain) =====
+  // ===== ENGLISH =====
   {
     id: 'KJV',
     name: 'King James Version',
     description: 'Classic, traditional English (1611)',
+    language: 'English',
+    isAvailable: true,
+  },
+  {
+    id: 'NIV',
+    name: 'New International Version',
+    description: 'Modern, readable English translation',
     language: 'English',
     isAvailable: true,
   },
@@ -720,6 +727,9 @@ export interface AppState {
   // Daily verse
   dailyVerse: DailyVerse | null;
 
+  // Offline verse cache (for remote areas/no data)
+  offlineVerses: Record<string, BibleVerseRow>;
+
   // User preferences
   preferences: UserPreferences;
 
@@ -741,6 +751,8 @@ export interface AppState {
   setDailyVerse: (verse: DailyVerse | null) => void;
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
   setPreferences: (prefs: Partial<UserPreferences>) => void;
+  cacheVerse: (verse: BibleVerseRow) => void;
+  getCachedVerse: (key: string) => BibleVerseRow | null;
   setIsQuerying: (isQuerying: boolean) => void;
   setCurrentMode: (mode: ChatMode) => void;
   setWitLevel: (level: WitLevel) => void;
