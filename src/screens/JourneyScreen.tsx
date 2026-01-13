@@ -135,7 +135,7 @@ function TimelineCard({ moment }: { moment: SpiritualMoment }) {
           <Text style={styles.timelineDate}>{formattedDate}</Text>
         </View>
 
-        <Text style={styles.timelineText} numberOfLines={4}>
+        <Text style={styles.timelineText}>
           {moment.content}
         </Text>
 
@@ -680,7 +680,7 @@ function InsightsView({ moments }: { moments: SpiritualMoment[] }) {
                 </Text>
                 <Ionicons name="arrow-forward" size={14} color={theme.colors.primary} />
               </View>
-              <Text style={styles.anchorVerseText} numberOfLines={2}>
+              <Text style={styles.anchorVerseText}>
                 {item.verse.text}
               </Text>
               <Text style={styles.anchorVerseCount}>
@@ -925,7 +925,7 @@ function GrowthView({ moments }: { moments: SpiritualMoment[] }) {
                 </Text>
                 <Ionicons name="arrow-forward" size={14} color={theme.colors.primary} />
               </View>
-              <Text style={styles.anchorVerseText} numberOfLines={2}>
+              <Text style={styles.anchorVerseText}>
                 {item.verse.text}
               </Text>
               <Text style={styles.anchorVerseCount}>
@@ -1493,6 +1493,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
     lineHeight: theme.fontSize.md * 1.5,
+    flexWrap: 'wrap',
   },
   themesRow: {
     flexDirection: 'row',
@@ -1689,6 +1690,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
     lineHeight: theme.fontSize.md * 1.5,
+    flexWrap: 'wrap',
   },
   sectionTitle: {
     fontSize: theme.fontSize.lg,
@@ -1768,6 +1770,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: theme.fontSize.sm * 1.4,
     marginBottom: theme.spacing.xs,
+    flexWrap: 'wrap',
   },
   anchorVerseCount: {
     fontSize: theme.fontSize.xs,
@@ -1855,6 +1858,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     fontStyle: 'italic',
+    flexWrap: 'wrap',
   },
   insightPrediction: {
     flexDirection: 'row',
@@ -1871,6 +1875,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
+    flexWrap: 'wrap',
   },
   insightEncouragement: {
     fontSize: theme.fontSize.sm,
@@ -1878,6 +1883,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.md,
     fontStyle: 'italic',
     lineHeight: theme.fontSize.sm * 1.5,
+    flexWrap: 'wrap',
   },
   insightError: {
     fontSize: theme.fontSize.sm,
@@ -2084,6 +2090,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
     lineHeight: theme.fontSize.sm * 1.5,
+    flexWrap: 'wrap',
   },
   dimensionTipLabel: {
     fontWeight: theme.fontWeight.semibold,
