@@ -27,8 +27,8 @@ import { Translation, AVAILABLE_TRANSLATIONS } from '../types';
 import { navigateToBibleReference } from '../lib/navigationHelpers';
 import {
   requestPermissions,
-  scheduleDevotionalReminder,
-  cancelDevotionalReminders,
+  scheduleMorningDevotional,
+  scheduleEveningReflection,
   areNotificationsEnabled,
 } from '../lib/notifications';
 import { updateUserProfile } from '../lib/supabase';
@@ -303,10 +303,8 @@ export default function SettingsScreen() {
         );
         return;
       }
-    } else {
-      // Cancel all notifications when disabled
-      await cancelDevotionalReminders();
     }
+    // Note: Don't cancel individual notifications here - let the specific toggles handle their own
     updatePreferences({ notificationsEnabled: enabled });
   }, [updatePreferences]);
 
@@ -331,10 +329,7 @@ export default function SettingsScreen() {
           updatePreferences({ notificationsEnabled: true });
         }
         // Schedule morning reminder at 7:00 AM
-        await scheduleDevotionalReminder({ hours: 7, minutes: 0 }, 'Morning Devotional');
-      } else {
-        // Cancel morning reminders
-        await cancelDevotionalReminders();
+        await scheduleMorningDevotional({ hours: 7, minutes: 0 });
       }
       updatePreferences({ dailyDevotional: enabled });
     } catch (error) {
@@ -357,7 +352,7 @@ export default function SettingsScreen() {
           if (!granted) {
             Alert.alert(
               'Enable Notifications',
-              'Please enable notifications to receive evening examen reminders.',
+              'Please enable notifications to receive evening reflection reminders.',
               [{ text: 'OK' }]
             );
             setIsSchedulingNotification(false);
@@ -366,11 +361,11 @@ export default function SettingsScreen() {
           updatePreferences({ notificationsEnabled: true });
         }
         // Schedule evening reminder at 9:00 PM
-        await scheduleDevotionalReminder({ hours: 21, minutes: 0 }, 'Evening Examen');
+        await scheduleEveningReflection({ hours: 21, minutes: 0 });
       }
       updatePreferences({ eveningExamen: enabled });
     } catch (error) {
-      console.error('Error toggling evening examen:', error);
+      console.error('Error toggling evening reflection:', error);
       Alert.alert('Error', 'Failed to update notification settings.');
     } finally {
       setIsSchedulingNotification(false);
