@@ -84,6 +84,7 @@ export type RootStackParamList = {
   VersePicker: {
     selectedVerses?: VerseSource[];
   };
+  SubscriptionDebug: undefined;
 };
 
 // Bottom Tab Navigator param list
