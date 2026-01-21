@@ -2,8 +2,98 @@
 // Unified Spiritual Companion - The heart of ChooseGOD
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import OpenAI from "https://esm.sh/openai@4";
+
+// =====================================================
+// Server-Side Subscription Verification
+// =====================================================
+
+interface SubscriptionStatus {
+  isPremium: boolean;
+  source: "database" | "revenuecat_api" | "client_claimed";
+  verified: boolean;
+}
+
+/**
+ * Verify user's premium status server-side
+ * Checks Supabase subscriptions table (synced via RevenueCat webhooks)
+ */
+async function verifySubscriptionStatus(
+  supabase: SupabaseClient,
+  userId: string,
+  clientClaimedPremium: boolean = false
+): Promise<SubscriptionStatus> {
+  try {
+    // Check Supabase subscriptions table (webhook-synced)
+    const { data: subscription, error } = await supabase
+      .from("subscriptions")
+      .select("is_active, expiration_date, status")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && subscription) {
+      const isActive = subscription.is_active === true;
+      const withinExpiration =
+        subscription.expiration_date &&
+        new Date(subscription.expiration_date) > new Date();
+
+      const isPremium = isActive || withinExpiration;
+
+      // Log discrepancy for fraud detection
+      if (clientClaimedPremium && !isPremium) {
+        console.warn(
+          `[Subscription] ANOMALY: Client claims premium but DB says ${subscription.status} for user ${userId}`
+        );
+        // Log to anomaly table
+        await supabase.from("chat_interactions").insert({
+          user_id: userId,
+          mode: "anomaly_detection",
+          is_premium: false,
+          has_bible_context: false,
+          response_length: 0,
+          created_at: new Date().toISOString(),
+        }).catch(() => {}); // Non-fatal
+      }
+
+      return {
+        isPremium,
+        source: "database",
+        verified: true,
+      };
+    }
+
+    // No subscription record - use database function as fallback
+    const { data: isPremiumResult } = await supabase.rpc(
+      "is_user_premium",
+      { check_user_id: userId }
+    ).catch(() => ({ data: null }));
+
+    if (isPremiumResult !== null) {
+      return {
+        isPremium: isPremiumResult,
+        source: "database",
+        verified: true,
+      };
+    }
+
+    // No record found - trust client for now (pre-webhook era users)
+    // This provides backwards compatibility
+    return {
+      isPremium: clientClaimedPremium,
+      source: "client_claimed",
+      verified: false,
+    };
+  } catch (error) {
+    console.error("[Subscription] Verification error:", error);
+    // On error, trust client to avoid breaking the app
+    return {
+      isPremium: clientClaimedPremium,
+      source: "client_claimed",
+      verified: false,
+    };
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1031,6 +1121,29 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const openai = new OpenAI({ apiKey: openaiKey });
 
+    // =====================================================
+    // Server-Side Premium Verification
+    // =====================================================
+    // Verify premium status server-side instead of trusting client
+    let verifiedPremiumStatus: SubscriptionStatus | null = null;
+    if (normalizedUserId && normalizedQuotaContext?.isPremium) {
+      verifiedPremiumStatus = await verifySubscriptionStatus(
+        supabase,
+        normalizedUserId,
+        normalizedQuotaContext.isPremium
+      );
+
+      // Override client-claimed premium if server verification fails
+      if (verifiedPremiumStatus.verified && !verifiedPremiumStatus.isPremium) {
+        console.log(`[Companion] Server override: User ${normalizedUserId} is NOT premium`);
+        // Update quota context to reflect server-verified status
+        if (normalizedQuotaContext) {
+          normalizedQuotaContext.isPremium = false;
+          normalizedQuotaContext.isFreeTier = true;
+        }
+      }
+    }
+
     // Gather user context (use default if no user_id)
     let userContext: UserContext;
     if (normalizedUserId) {
@@ -1174,7 +1287,29 @@ serve(async (req) => {
             const validation = validateScriptureFidelity(fullResponse, relevantVerses);
             if (!validation.isValid) {
               console.warn("[Scripture Fidelity Warning]", validation.warnings);
-              // Log to monitoring system if available
+            }
+
+            // Log chat interaction for usage analytics with fraud detection (streaming mode)
+            try {
+              const clientClaimedPremium = rawQuotaContext?.is_premium ?? rawQuotaContext?.isPremium ?? false;
+              await supabase.from("chat_interactions").insert({
+                user_id: normalizedUserId || null,
+                mode: normalizedMode,
+                wit_level: normalizedWitLevel,
+                is_premium: normalizedQuotaContext?.isPremium ?? false,
+                seeds_remaining: normalizedQuotaContext?.isPremium ? null : (normalizedQuotaContext?.seedsRemaining ?? null),
+                thread_id: threadId,
+                has_bible_context: !!normalizedBibleContext,
+                response_length: fullResponse.length,
+                // Fraud detection fields
+                client_claimed_premium: clientClaimedPremium,
+                server_verified_premium: verifiedPremiumStatus?.isPremium ?? null,
+                verification_source: verifiedPremiumStatus?.source ?? null,
+                verification_passed: verifiedPremiumStatus?.verified ?? null,
+                created_at: new Date().toISOString(),
+              });
+            } catch (logError) {
+              console.error("Failed to log chat interaction:", logError);
             }
 
             // Send completion event
@@ -1279,6 +1414,30 @@ serve(async (req) => {
           console.error("Failed to log validation warning:", logError);
         }
       }
+    }
+
+    // Log chat interaction for usage analytics with fraud detection fields
+    try {
+      const clientClaimedPremium = rawQuotaContext?.is_premium ?? rawQuotaContext?.isPremium ?? false;
+      await supabase.from("chat_interactions").insert({
+        user_id: normalizedUserId || null,
+        mode: normalizedMode,
+        wit_level: normalizedWitLevel,
+        is_premium: normalizedQuotaContext?.isPremium ?? false,
+        seeds_remaining: normalizedQuotaContext?.isPremium ? null : (normalizedQuotaContext?.seedsRemaining ?? null),
+        thread_id: threadId,
+        has_bible_context: !!normalizedBibleContext,
+        response_length: responseText.length,
+        // Fraud detection fields
+        client_claimed_premium: clientClaimedPremium,
+        server_verified_premium: verifiedPremiumStatus?.isPremium ?? null,
+        verification_source: verifiedPremiumStatus?.source ?? null,
+        verification_passed: verifiedPremiumStatus?.verified ?? null,
+        created_at: new Date().toISOString(),
+      });
+    } catch (logError) {
+      // Don't fail the request if logging fails
+      console.error("Failed to log chat interaction:", logError);
     }
 
     return new Response(
