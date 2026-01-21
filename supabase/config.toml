@@ -51,6 +51,9 @@ enable_confirmations = false
 [functions.query-bible]
 verify_jwt = false  # Allow anonymous access for now
 
+[functions.revenuecat-webhook]
+verify_jwt = false  # Webhook uses its own auth (Bearer token from RevenueCat)
+
 [functions.grace-path-summary]
 enabled = true
 verify_jwt = true
