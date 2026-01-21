@@ -34,6 +34,7 @@ import BibleScreen from './src/screens/BibleScreen';
 import JourneyScreen from './src/screens/JourneyScreen';
 // ChatScreen is now used in ChatBottomSheet, not as a tab
 import SettingsScreen from './src/screens/SettingsScreen';
+import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 import PrayersScreen from './src/screens/PrayersScreen';
 
@@ -478,6 +479,14 @@ export default function App() {
                   <RootStack.Screen
                     name="Settings"
                     component={SettingsScreen}
+                    options={{
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="SubscriptionDebug"
+                    component={SubscriptionDebugScreen}
                     options={{
                       presentation: 'modal',
                       animation: 'slide_from_bottom',
