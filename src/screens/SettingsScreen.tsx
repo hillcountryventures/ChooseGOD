@@ -16,6 +16,8 @@ import {
   Modal,
   Alert,
   Share,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/authStore';
+import { useSubscriptionStore, useIsPremium, useIsRestoring } from '../store/subscriptionStore';
 import { Translation, AVAILABLE_TRANSLATIONS } from '../types';
 import { navigateToBibleReference } from '../lib/navigationHelpers';
 import {
@@ -276,6 +279,12 @@ export default function SettingsScreen() {
   const isDeleting = useAuthStore((state) => state.isDeleting);
   const user = useAuthStore((state) => state.user);
 
+  // Subscription state
+  const isPremium = useIsPremium();
+  const isRestoring = useIsRestoring();
+  const restorePurchases = useSubscriptionStore((state) => state.restorePurchases);
+  const showPaywall = useSubscriptionStore((state) => state.showPaywall);
+
   const [showPhilosophy, setShowPhilosophy] = useState(false);
   const [isSchedulingNotification, setIsSchedulingNotification] = useState(false);
 
@@ -472,6 +481,22 @@ export default function SettingsScreen() {
     );
   };
 
+  // Handle restore purchases
+  const handleRestorePurchases = useCallback(async () => {
+    const result = await restorePurchases();
+    Alert.alert(
+      result.success ? 'Restored!' : 'No Subscription Found',
+      result.message,
+      [{ text: 'OK' }]
+    );
+  }, [restorePurchases]);
+
+  // Handle manage subscription
+  const handleManageSubscription = useCallback(() => {
+    // Deep link to App Store subscription management
+    Linking.openURL('https://apps.apple.com/account/subscriptions');
+  }, []);
+
   // Handle footer verse tap
   const handleFooterVersePress = () => {
     navigateToBibleReference(navigation, 'Psalm 119:105');
@@ -575,6 +600,43 @@ export default function SettingsScreen() {
           />
         </View>
 
+        {/* Subscription */}
+        <SectionHeader title="Subscription" />
+        <View style={styles.section}>
+          <SettingRow
+            icon="sparkles"
+            iconColor={theme.colors.accent}
+            label={isPremium ? "ChooseGOD Pro" : "Upgrade to Pro"}
+            description={isPremium ? "You have unlimited access" : "Unlock all features"}
+            onPress={isPremium ? undefined : showPaywall}
+            rightElement={isPremium ? (
+              <View style={styles.proBadge}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+            ) : undefined}
+          />
+          {isPremium && (
+            <SettingRow
+              icon="card-outline"
+              iconColor={theme.colors.textSecondary}
+              label="Manage Subscription"
+              description="View or cancel in App Store"
+              onPress={handleManageSubscription}
+            />
+          )}
+          <SettingRow
+            icon="refresh-outline"
+            iconColor={theme.colors.info}
+            label={isRestoring ? "Restoring..." : "Restore Purchases"}
+            description="Recover your subscription"
+            isLast
+            onPress={isRestoring ? undefined : handleRestorePurchases}
+            rightElement={isRestoring ? (
+              <ActivityIndicator size="small" color={theme.colors.accent} />
+            ) : undefined}
+          />
+        </View>
+
         {/* Account */}
         <SectionHeader title="Account" />
         <View style={styles.section}>
@@ -622,8 +684,15 @@ export default function SettingsScreen() {
             iconColor={theme.colors.error}
             label="Our Philosophy"
             description="We are not God, only helping others find HIM"
-            isLast
             onPress={() => setShowPhilosophy(true)}
+          />
+          <SettingRow
+            icon="bug-outline"
+            iconColor={theme.colors.textMuted}
+            label="Subscription Debug"
+            description="Troubleshoot subscription issues"
+            isLast
+            onPress={() => (navigation as any).navigate('SubscriptionDebug')}
           />
         </View>
 
@@ -959,5 +1028,19 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
     textAlign: 'center',
     marginTop: theme.spacing.sm,
+  },
+
+  // Subscription styles
+  proBadge: {
+    backgroundColor: theme.colors.accent,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+  },
+  proBadgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.textInverse,
+    letterSpacing: 0.5,
   },
 });
