@@ -81,6 +81,9 @@ export type RootStackParamList = {
     selectedVerses?: VerseSource[];
   };
   SubscriptionDebug: undefined;
+  CameraScreen: {
+    mode: 'scripture-scan';
+  };
 };
 
 // Bottom Tab Navigator param list

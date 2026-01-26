@@ -37,6 +37,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 import PrayersScreen from './src/screens/PrayersScreen';
+import CameraScreen from './src/screens/CameraScreen';
 
 // Journal Screens
 import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
@@ -495,6 +496,14 @@ export default function App() {
                   <RootStack.Screen
                     name="ChatHub"
                     component={ChatHubScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="CameraScreen"
+                    component={CameraScreen}
                     options={{
                       headerShown: false,
                       animation: 'slide_from_bottom',

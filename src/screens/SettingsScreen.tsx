@@ -34,7 +34,7 @@ import {
   scheduleEveningReflection,
   areNotificationsEnabled,
 } from '../lib/notifications';
-import { updateUserProfile } from '../lib/supabase';
+import { updateUserProfile, supabase } from '../lib/supabase';
 
 // ============================================================================
 // Setting Row Component
@@ -400,24 +400,51 @@ export default function SettingsScreen() {
     );
   };
 
-  // Handle export data
+  // Handle export data - Complete GDPR-compliant export
+  const [isExporting, setIsExporting] = useState(false);
+  
   const handleExportData = async () => {
-    const exportData = {
-      exportedAt: new Date().toISOString(),
-      preferences,
-      moments: recentMoments,
-      prayers: activePrayers,
-    };
+    Alert.alert(
+      'Export Your Data',
+      'This will download ALL your ChooseGOD data including prayers, journal entries, reading progress, and settings.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Export',
+          onPress: async () => {
+            setIsExporting(true);
+            try {
+              // Call the export-user-data edge function for complete export
+              const { data, error } = await supabase.functions.invoke('export-user-data');
 
-    try {
-      await Share.share({
-        message: JSON.stringify(exportData, null, 2),
-        title: 'ChooseGOD Data Export',
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      Alert.alert('Error', 'Failed to export data.');
-    }
+              if (error) {
+                throw new Error(error.message || 'Failed to export data');
+              }
+
+              if (!data) {
+                throw new Error('No data returned from export');
+              }
+
+              // Share the data (iOS/Android share sheet)
+              const timestamp = new Date().toISOString().split('T')[0];
+              await Share.share({
+                message: JSON.stringify(data, null, 2),
+                title: `ChooseGOD Data Export - ${timestamp}`,
+              });
+            } catch (err) {
+              console.error('[ExportData] Error:', err);
+              Alert.alert(
+                'Export Failed',
+                err instanceof Error ? err.message : 'Failed to export your data. Please try again.',
+                [{ text: 'OK' }]
+              );
+            } finally {
+              setIsExporting(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // Handle sign out
@@ -643,9 +670,9 @@ export default function SettingsScreen() {
           <SettingRow
             icon="download-outline"
             iconColor={theme.colors.success}
-            label="Export Data"
-            description="Download your spiritual journey"
-            onPress={handleExportData}
+            label={isExporting ? "Exporting..." : "Export Data"}
+            description="Download all your data (GDPR)"
+            onPress={isExporting ? undefined : handleExportData}
           />
           <SettingRow
             icon="trash-outline"
