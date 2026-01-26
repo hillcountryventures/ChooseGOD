@@ -19,7 +19,6 @@ import {
   UserReadingProgressRow,
   ReadingPlanProgressRow,
   TodaysReadingRow,
-  VerseReference,
 } from '../types/readingPlan';
 import { TABLES, RPC_FUNCTIONS } from '../constants';
 
@@ -81,6 +80,13 @@ interface ReadingPlanState {
   // Actions - Utility
   setWayfarerState: (state: Partial<WayfarerState>) => void;
   clearStore: () => void;
+
+  // Internal helpers
+  fetchMissedReadingTitles: (
+    planId: string,
+    startDay: number,
+    endDay: number
+  ) => Promise<string[]>;
 }
 
 // =====================================================
@@ -572,17 +578,6 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
     }
   )
 );
-
-// Add the fetchMissedReadingTitles to the interface (internal helper)
-declare module './readingPlanStore' {
-  interface ReadingPlanState {
-    fetchMissedReadingTitles: (
-      planId: string,
-      startDay: number,
-      endDay: number
-    ) => Promise<string[]>;
-  }
-}
 
 // =====================================================
 // SELECTORS

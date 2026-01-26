@@ -47,6 +47,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     // Ensure text wraps naturally without truncation
   },
+  paragraphText: {
+    lineHeight: 24, // 1.5x default for readability
+    flexWrap: 'wrap',
+  },
 });
 
 /**
@@ -66,13 +70,3 @@ export const AppParagraph = forwardRef<Text, AppTextProps>(
 );
 
 AppParagraph.displayName = 'AppParagraph';
-
-const paragraphStyles = StyleSheet.create({
-  paragraphText: {
-    lineHeight: 24, // 1.5x default for readability
-    flexWrap: 'wrap',
-  },
-});
-
-// Merge styles
-Object.assign(styles, paragraphStyles);

@@ -186,8 +186,9 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Quota context for free tier users
+// Quota context for seed tracking and premium status
 export interface QuotaContext {
+  isPremium?: boolean;
   isFreeTier: boolean;
   seedsRemaining: number;
   totalSeeds: number;

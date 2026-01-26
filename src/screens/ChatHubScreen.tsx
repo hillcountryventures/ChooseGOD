@@ -16,7 +16,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -164,7 +163,7 @@ function NoSeedsCard({ onUpgradePress }: { onUpgradePress: () => void }) {
     <View style={styles.noSeedsCard}>
       <View style={styles.noSeedsContent}>
         <Text style={styles.noSeedsEmoji}>🌱</Text>
-        <Text style={styles.noSeedsTitle}>You've planted all your seeds for today</Text>
+        <Text style={styles.noSeedsTitle}>You&apos;ve planted all your seeds for today</Text>
         <Text style={styles.noSeedsSubtitle}>
           Want to grow deeper? Unlock unlimited Bible study.
         </Text>
@@ -174,7 +173,7 @@ function NoSeedsCard({ onUpgradePress }: { onUpgradePress: () => void }) {
         </TouchableOpacity>
       </View>
       <View style={styles.growthVerseContainer}>
-        <Text style={styles.growthVerseText}>"{verse.text}"</Text>
+        <Text style={styles.growthVerseText}>&ldquo;{verse.text}&rdquo;</Text>
         <Text style={styles.growthVerseRef}>— {verse.ref}</Text>
       </View>
     </View>
@@ -225,8 +224,6 @@ export default function ChatHubScreen() {
     isOnLastSeed,
     hasSeeds,
     useSeed,
-    showFinalSeedInterstitial,
-    dismissFinalSeedInterstitial,
   } = useChatQuota();
 
   // Local state
@@ -377,8 +374,9 @@ export default function ChatHubScreen() {
       // Pro users get isPremium flag for enhanced "Golden Response" on every query
       // Free users get seed tracking info
       const quotaContext = isPremium
-        ? { isPremium: true }
+        ? { isPremium: true, isFreeTier: false, seedsRemaining: 999, totalSeeds: 999, isLastSeed: false }
         : {
+            isPremium: false,
             isFreeTier: true,
             seedsRemaining,
             totalSeeds,
@@ -420,6 +418,7 @@ export default function ChatHubScreen() {
             // This protects users from losing seeds on errors
             if (!isRetry) {
               const wasLastSeed = seedsRemaining === 1;
+              // eslint-disable-next-line react-hooks/rules-of-hooks -- useSeed is a function from useChatQuota, not a hook
               await useSeed();
 
               // If this was the final seed, show paywall after 2-second delay
