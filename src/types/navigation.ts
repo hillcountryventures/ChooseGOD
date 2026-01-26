@@ -84,6 +84,11 @@ export type RootStackParamList = {
   CameraScreen: {
     mode: 'scripture-scan';
   };
+  MemoryPractice: undefined;
+  LectioDivina: {
+    verseRef?: string;
+    verseText?: string;
+  };
 };
 
 // Bottom Tab Navigator param list

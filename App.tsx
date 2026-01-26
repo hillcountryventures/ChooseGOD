@@ -38,6 +38,8 @@ import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 import PrayersScreen from './src/screens/PrayersScreen';
 import CameraScreen from './src/screens/CameraScreen';
+import MemoryPracticeScreen from './src/screens/MemoryPracticeScreen';
+import LectioDivinaScreen from './src/screens/LectioDivinaScreen';
 
 // Journal Screens
 import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
@@ -504,6 +506,22 @@ export default function App() {
                   <RootStack.Screen
                     name="CameraScreen"
                     component={CameraScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="MemoryPractice"
+                    component={MemoryPracticeScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="LectioDivina"
+                    component={LectioDivinaScreen}
                     options={{
                       headerShown: false,
                       animation: 'slide_from_bottom',

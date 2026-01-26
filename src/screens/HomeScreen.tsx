@@ -396,7 +396,7 @@ function ContextualCard() {
       iconBg: theme.colors.accent,
       title: 'Memory Review',
       subtitle: `${memoryVersesDue.length} verse${memoryVersesDue.length > 1 ? 's' : ''} ready to review`,
-      onPress: () => openChatWithMode('memory'),
+      onPress: () => navigation.navigate('MemoryPractice'),
     };
   } else if (pendingObedienceSteps.length > 0) {
     card = {

@@ -30,6 +30,7 @@ import { navigateToBibleVerse } from '../lib/navigationHelpers';
 import { WEEK_DAYS } from '../constants/strings';
 import { PrayerEntryModal } from '../components/PrayerEntryModal';
 import { AnsweredPrayerModal } from '../components/AnsweredPrayerModal';
+import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -476,6 +477,7 @@ export default function PrayersScreen() {
   const [showPrayerEntry, setShowPrayerEntry] = useState(false);
   const [showAnsweredModal, setShowAnsweredModal] = useState(false);
   const [selectedPrayer, setSelectedPrayer] = useState<PrayerRequest | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const activePrayers = useStore((state) => state.activePrayers);
   const updatePrayer = useStore((state) => state.updatePrayer);
@@ -504,6 +506,8 @@ export default function PrayersScreen() {
     }
     setShowAnsweredModal(false);
     setSelectedPrayer(null);
+    // Show celebration overlay
+    setShowCelebration(true);
   };
 
   const handleAddPrayer = () => {
@@ -574,6 +578,18 @@ export default function PrayersScreen() {
           setSelectedPrayer(null);
         }}
         onConfirm={handleConfirmAnswered}
+      />
+
+      {/* Celebration Overlay */}
+      <CelebrationOverlay
+        visible={showCelebration}
+        onDismiss={() => setShowCelebration(false)}
+        title="Prayer Answered!"
+        subtitle="God is faithful!"
+        showScripture={true}
+        icon="trophy"
+        iconColor={theme.colors.success}
+        autoDismissMs={6000}
       />
     </SafeAreaView>
   );
