@@ -80,7 +80,12 @@ serve(async (req) => {
     console.log(`[Delete Account] Starting deletion for user: ${userId}`);
 
     // Delete user data from all tables (order matters for foreign keys)
-    const tablesToDelete = [
+    // Query schema to find all tables with user_id column for complete GDPR compliance
+    const { data: userTables, error: schemaError } = await supabaseAdmin
+      .rpc('get_tables_with_user_id');
+
+    // Fallback table list if schema query fails
+    const fallbackTables = [
       // Reading plan related
       "reading_session_logs",
       "skipped_sessions",
@@ -93,6 +98,7 @@ serve(async (req) => {
       // Journal and prayers
       "journal_entries",
       "prayer_requests",
+      "spiritual_moments",
 
       // Verses and chat
       "verse_highlights",
@@ -101,9 +107,17 @@ serve(async (req) => {
       "chat_messages",
       "chat_sessions",
 
+      // Memory verses
+      "memory_verses",
+
       // User profiles (last, as other tables may reference it)
       "user_profiles",
     ];
+
+    // Use dynamic table list if available, otherwise fallback
+    const tablesToDelete = schemaError || !userTables
+      ? fallbackTables
+      : userTables.map((t: { table_name: string }) => t.table_name);
 
     const deletionResults: Record<string, { success: boolean; error?: string }> = {};
 
