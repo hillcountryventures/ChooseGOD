@@ -52,3 +52,4 @@ supabase/.branches/
 
 # Marketing site (untracked)
 marketing-site/
+coverage/
