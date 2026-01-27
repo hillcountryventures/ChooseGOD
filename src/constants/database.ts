@@ -20,6 +20,10 @@ export const TABLES = {
   userReadingProgress: 'user_reading_progress',
   skippedSessions: 'skipped_sessions',
   readingSessionLogs: 'reading_session_logs',
+  // Prayer circles
+  prayerCircles: 'prayer_circles',
+  circleMembers: 'circle_members',
+  prayerRequests: 'prayer_requests',
 } as const;
 
 // Edge function names

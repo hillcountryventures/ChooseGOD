@@ -72,6 +72,7 @@ export const useStore = create<AppState>()(
       chatContext: defaultChatContext,
       chatSheetOpen: false,
       dailyVerse: null,
+      offlineVerses: {}, // Offline verse cache
       preferences: defaultPreferences,
       activePrayers: [],
       memoryVersesDue: [],
@@ -150,6 +151,20 @@ export const useStore = create<AppState>()(
         set((state) => ({
           preferences: { ...state.preferences, ...prefs },
         })),
+
+      // Offline verse caching actions
+      cacheVerse: (verse) =>
+        set((state) => ({
+          offlineVerses: {
+            ...state.offlineVerses,
+            [`${verse.book}-${verse.chapter}-${verse.verse}`]: verse,
+          },
+        })),
+
+      getCachedVerse: (key: string) => {
+        const state = (set as any).getState?.() || {};
+        return state.offlineVerses?.[key] || null;
+      },
 
       // Prayer actions
       setActivePrayers: (prayers: PrayerRequest[]) =>
@@ -252,6 +267,7 @@ export const useStore = create<AppState>()(
         currentDraft: state.currentDraft,
         recentMoments: state.recentMoments,
         activePrayers: state.activePrayers,
+        offlineVerses: state.offlineVerses, // Persist offline cache
         // Don't persist messages - start fresh each session
       }),
       onRehydrateStorage: () => (state, error) => {

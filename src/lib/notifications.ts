@@ -428,6 +428,14 @@ export function handleNotificationResponse(
     case 'wayfarer_streak':
     case 'wayfarer_grace':
       return { screen: 'Home' };
+    // Prayer Circle notifications
+    case 'prayer_circle':
+    case 'circle_new_prayer':
+    case 'circle_member_joined':
+      return {
+        screen: 'CircleDetail',
+        params: { circleId: data.circleId as string },
+      };
     default:
       return null;
   }
@@ -600,4 +608,98 @@ export async function sendWayfarerGraceNotification(daysMissed: number): Promise
     },
     trigger: null,
   });
+}
+
+// =====================================================
+// PRAYER CIRCLE NOTIFICATIONS
+// =====================================================
+
+/**
+ * Send a notification when someone prays for a user's prayer request
+ * This is called by the backend (via push) - client version for testing
+ */
+export async function sendPrayerCircleNotification(
+  prayerTitle: string,
+  prayerName: string,
+  circleId: string,
+  requestId: string
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: '🙏 Someone is praying for you',
+      body: `${prayerName} is lifting up "${prayerTitle}"`,
+      data: {
+        type: 'prayer_circle',
+        circleId,
+        requestId,
+        screen: 'CircleDetail',
+      },
+      sound: 'default',
+    },
+    trigger: null, // Send immediately
+  });
+}
+
+/**
+ * Send a notification when a new prayer is shared to a circle
+ */
+export async function sendNewCirclePrayerNotification(
+  authorName: string,
+  circleName: string,
+  circleId: string,
+  requestId: string
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: `New prayer request in ${circleName}`,
+      body: `${authorName} shared a prayer request. Join them in prayer.`,
+      data: {
+        type: 'circle_new_prayer',
+        circleId,
+        requestId,
+        screen: 'CircleDetail',
+      },
+      sound: 'default',
+    },
+    trigger: null,
+  });
+}
+
+/**
+ * Send a notification when someone joins a prayer circle
+ */
+export async function sendCircleJoinNotification(
+  memberName: string,
+  circleName: string,
+  circleId: string
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: `Welcome to ${circleName}!`,
+      body: `${memberName} has joined your prayer circle.`,
+      data: {
+        type: 'circle_member_joined',
+        circleId,
+        screen: 'CircleDetail',
+      },
+      sound: 'default',
+    },
+    trigger: null,
+  });
+}
+
+/**
+ * Set up Android notification channel for Prayer Circles
+ */
+export async function setupPrayerCircleChannel(): Promise<void> {
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('prayer-circles', {
+      name: 'Prayer Circle Updates',
+      description: 'Notifications when someone prays for you or shares in your circle',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: theme.colors.prayer,
+      sound: 'default',
+    });
+  }
 }

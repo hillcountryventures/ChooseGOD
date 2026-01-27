@@ -94,7 +94,7 @@ export async function fetchVerse(
 
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
-      .select('*')
+      .select('book, chapter, verse, text, translation')
       .eq('book', book)
       .eq('chapter', chapter)
       .eq('verse', verse)
@@ -138,7 +138,7 @@ export async function searchVerses(
 
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
-      .select('*')
+      .select('book, chapter, verse, text, translation')
       .eq('translation', translationLower)
       .ilike('text', `%${keyword}%`)
       .limit(limit);
@@ -175,7 +175,7 @@ export async function fetchChapter(
 
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
-      .select('*')
+      .select('book, chapter, verse, text, translation')
       .eq('book', book)
       .eq('chapter', chapter)
       .eq('translation', translationLower)
@@ -250,7 +250,7 @@ export async function fetchVerseParallel(
 
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
-      .select('*')
+      .select('book, chapter, verse, text, translation')
       .eq('book', book)
       .eq('chapter', chapter)
       .eq('verse', verse)
