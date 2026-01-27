@@ -89,7 +89,7 @@ export default function RecommendationsScreen() {
     if (selectedIds.size === 0) return;
 
     const selectedArray = Array.from(selectedIds);
-    navigation.navigate('NotificationSetup', {
+    navigation.navigate('AIDemo', {
       selectedSeriesIds: selectedArray,
     });
   };

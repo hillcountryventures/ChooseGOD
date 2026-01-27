@@ -21,7 +21,7 @@ type RouteProps = RouteProp<OnboardingStackParamList, 'NotificationSetup'>;
 export default function NotificationSetupScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
-  const { selectedSeriesIds } = route.params;
+  const { selectedSeriesIds = [] } = route.params || {};
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState(new Date(2024, 0, 1, 7, 0)); // 7:00 AM
