@@ -6,8 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal,
-  TextInput,
   Pressable,
   Animated,
   PanResponder,
@@ -15,8 +13,6 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,7 +20,7 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
-import { fetchChapter, getBookChapterCount } from '../lib/supabase';
+import { fetchChapter, getBookChapterCount, searchVerses } from '../lib/supabase';
 import { useStore } from '../store/useStore';
 import { useFontSize } from '../hooks/useFontSize';
 import {
@@ -38,65 +34,23 @@ import {
 } from '../types';
 import { SWIPE, TAP } from '../constants';
 import { HEADER } from '../constants/dimensions';
-import { BIBLE_BOOKS } from '../data/bible/books';
+import { CrossReferencesSheet } from '../components/CrossReferencesSheet';
+import {
+  SearchModal,
+  BookPickerModal,
+  ChapterPickerModal,
+  NoteEditorModal,
+  AIActionsModal,
+  HIGHLIGHT_COLORS,
+  AI_QUICK_ACTIONS,
+  getHighlightBg,
+  getVerseKey,
+  formatDate,
+} from '../components/bible';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
-
-const HIGHLIGHT_COLORS: { color: HighlightColor; hex: string }[] = [
-  { color: 'yellow', hex: '#FEF08A' },
-  { color: 'green', hex: '#BBF7D0' },
-  { color: 'blue', hex: '#BFDBFE' },
-  { color: 'pink', hex: '#FBCFE8' },
-  { color: 'purple', hex: '#DDD6FE' },
-  { color: 'orange', hex: '#FED7AA' },
-];
-
-// AI Quick Action options for verse context
-const AI_QUICK_ACTIONS = [
-  {
-    id: 'explain',
-    icon: 'book-outline' as const,
-    label: 'Explain this verse',
-    getPrompt: (ref: string, text: string) =>
-      `Explain ${ref} - "${text}" in simple terms. What is the main message?`,
-  },
-  {
-    id: 'context',
-    icon: 'time-outline' as const,
-    label: 'Historical context',
-    getPrompt: (ref: string, text: string) =>
-      `What is the historical and cultural context of ${ref}? Who wrote it, when, and to whom?`,
-  },
-  {
-    id: 'apply',
-    icon: 'bulb-outline' as const,
-    label: 'How to apply it',
-    getPrompt: (ref: string, text: string) =>
-      `How can I apply ${ref} - "${text}" to my life today? Give practical examples.`,
-  },
-  {
-    id: 'cross-ref',
-    icon: 'git-branch-outline' as const,
-    label: 'Cross-references',
-    getPrompt: (ref: string, text: string) =>
-      `What other Bible verses relate to ${ref}? Show me connections across Scripture.`,
-  },
-];
-
-// Format date for display
-const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-};
-
-// BIBLE_BOOKS is now imported from '../data/bible/books'
 
 interface VerseWithAnnotations extends VerseSource {
   highlight?: VerseHighlight;
@@ -136,6 +90,13 @@ export default function BibleScreen() {
   const [noteText, setNoteText] = useState('');
   const [editingNote, setEditingNote] = useState<VerseNote | null>(null);
   const [showAIMenu, setShowAIMenu] = useState(false);
+  const [showCrossRefs, setShowCrossRefs] = useState(false);
+  
+  // Search state
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<VerseSource[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Collapsible header animation
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -153,10 +114,6 @@ export default function BibleScreen() {
   // Scroll view ref for programmatic scrolling
   const scrollViewRef = useRef<ScrollView>(null);
   const verseLayoutsRef = useRef<Map<number, number>>(new Map());
-
-  // Generate verse key for annotations
-  const getVerseKey = (book: string, chapter: number, verse: number) =>
-    `${book}-${chapter}-${verse}`;
 
   // Load chapter
   const loadChapter = useCallback(async () => {
@@ -297,13 +254,21 @@ export default function BibleScreen() {
     setSelectedVerse(null);
   };
 
-  // Share verse as text
+  // Share verse with deep link
   const handleShare = async () => {
     if (!selectedVerse) return;
 
     try {
-      const textContent = `"${selectedVerse.text}"\n\n— ${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} (${preferences.preferredTranslation})\n\nShared from ChooseGOD`;
-      await Share.share({ message: textContent });
+      // Encode book name for URL (e.g., "1 John" -> "1%20John")
+      const encodedBook = encodeURIComponent(selectedVerse.book);
+      const deepLink = `https://choosegod.app/bible/${encodedBook}/${selectedVerse.chapter}/${selectedVerse.verse}`;
+      
+      const textContent = `"${selectedVerse.text}"\n\n— ${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} (${preferences.preferredTranslation})\n\n📖 Read in ChooseGOD: ${deepLink}`;
+      
+      await Share.share({ 
+        message: textContent,
+        url: deepLink, // iOS will use this for link preview
+      });
       setSelectedVerse(null);
     } catch (error) {
       console.error('Error sharing verse:', error);
@@ -316,6 +281,36 @@ export default function BibleScreen() {
     setEditingNote(null);
     setNoteText('');
     setShowNoteModal(true);
+  };
+
+  // Handle Bible search
+  const handleSearch = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const results = await searchVerses(query, preferences.preferredTranslation, 20);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [preferences.preferredTranslation]);
+
+  // Navigate to search result
+  const handleSearchResultPress = (verse: VerseSource) => {
+    setShowSearch(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    // Navigate to the verse
+    setCurrentBook(verse.book);
+    setCurrentChapter(verse.chapter);
+    setTargetVerse(verse.verse);
   };
 
   // Open note editor to edit an existing note
@@ -386,6 +381,15 @@ export default function BibleScreen() {
     setEditingNote(null);
   };
 
+  // Handle navigation to a cross-referenced verse
+  const handleCrossRefNavigate = (refBook: string, refChapter: number, refVerse: number) => {
+    setShowCrossRefs(false);
+    setSelectedVerse(null);
+    setCurrentBook(refBook);
+    setCurrentChapter(refChapter);
+    setTargetVerse(refVerse);
+  };
+
   // Handle AI quick action - navigates to ChatHubScreen with verse context
   const handleAIAction = (action: typeof AI_QUICK_ACTIONS[0]) => {
     if (!selectedVerse) return;
@@ -409,13 +413,6 @@ export default function BibleScreen() {
       },
       initialMessage: prompt,
     });
-  };
-
-  // Get highlight background color
-  const getHighlightBg = (color?: HighlightColor) => {
-    if (!color) return 'transparent';
-    const found = HIGHLIGHT_COLORS.find((c) => c.color === color);
-    return found ? found.hex + '60' : 'transparent';
   };
 
   // Handle scroll for collapsible header
@@ -597,6 +594,9 @@ export default function BibleScreen() {
             }}
             onLongPress={() => handleVerseLongPress(verse)}
             delayLongPress={300}
+            accessibilityLabel={`Verse ${verse.verse}: ${verse.text}${isBookmarked ? '. Bookmarked.' : ''}${verseNotes.length > 0 ? `. ${verseNotes.length} note${verseNotes.length > 1 ? 's' : ''}.` : ''}`}
+            accessibilityHint="Tap to select. Double-tap for AI explanation. Long press for options."
+            accessibilityRole="button"
           >
             <View
               style={[
@@ -607,12 +607,12 @@ export default function BibleScreen() {
               <Text style={styles.verseNumber}>{verse.verse}</Text>
               <Text style={[styles.verseText, { fontSize: fontSizes.lg, lineHeight: fontSizes.lg * 1.8 }]}>{verse.text}</Text>
               {isBookmarked && (
-                <View style={styles.bookmarkIndicator}>
+                <View style={styles.bookmarkIndicator} accessibilityElementsHidden>
                   <Ionicons name="bookmark" size={14} color={theme.colors.accent} />
                 </View>
               )}
               {verseNotes.length > 0 && (
-                <View style={styles.noteIndicator}>
+                <View style={styles.noteIndicator} accessibilityElementsHidden>
                   <Ionicons name="document-text" size={12} color={theme.colors.primary} />
                   {verseNotes.length > 1 && (
                     <Text style={styles.noteCount}>{verseNotes.length}</Text>
@@ -638,11 +638,23 @@ export default function BibleScreen() {
           },
         ]}
       >
-        {/* Chapter indicator - at top */}
+        {/* Chapter indicator and search - at top */}
         <View style={styles.chapterNav}>
-          <Text style={styles.chapterIndicator}>
+          <Text 
+            style={styles.chapterIndicator}
+            accessibilityLabel={`Chapter ${currentChapter} of ${totalChapters}`}
+          >
             {currentChapter} of {totalChapters}
           </Text>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => setShowSearch(true)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Search Bible"
+            accessibilityRole="button"
+          >
+            <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* Book/Chapter selectors - below navigation */}
@@ -652,6 +664,8 @@ export default function BibleScreen() {
             onPress={() => setShowBookPicker(true)}
             hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
             activeOpacity={0.7}
+            accessibilityLabel={`Current book: ${currentBook}. Tap to change.`}
+            accessibilityRole="button"
           >
             <Text style={styles.bookTitle}>{currentBook}</Text>
             <Ionicons name="chevron-down" size={18} color={theme.colors.textSecondary} />
@@ -662,6 +676,8 @@ export default function BibleScreen() {
             onPress={() => setShowChapterPicker(true)}
             hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
             activeOpacity={0.7}
+            accessibilityLabel={`Chapter ${currentChapter}. Tap to change.`}
+            accessibilityRole="button"
           >
             <Text style={styles.chapterTitle}>Chapter {currentChapter}</Text>
             <Ionicons name="chevron-down" size={14} color={theme.colors.textSecondary} />
@@ -762,17 +778,22 @@ export default function BibleScreen() {
           {/* Highlight colors */}
           <View style={styles.highlightRow}>
             <Text style={styles.actionLabel}>Highlight</Text>
-            <View style={styles.colorPicker}>
+            <View style={styles.colorPicker} accessibilityRole="radiogroup" accessibilityLabel="Highlight colors">
               {HIGHLIGHT_COLORS.map(({ color, hex }) => (
                 <TouchableOpacity
                   key={color}
                   style={[styles.colorDot, { backgroundColor: hex }]}
                   onPress={() => handleHighlight(color)}
+                  accessibilityLabel={`${color} highlight`}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: selectedVerse?.highlight?.color === color }}
                 />
               ))}
               <TouchableOpacity
                 style={styles.removeHighlight}
                 onPress={handleRemoveHighlight}
+                accessibilityLabel="Remove highlight"
+                accessibilityRole="button"
               >
                 <Ionicons name="close-circle" size={24} color={theme.colors.textMuted} />
               </TouchableOpacity>
@@ -780,29 +801,59 @@ export default function BibleScreen() {
           </View>
 
           {/* Actions */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleOpenNote}>
+          <View style={styles.actionButtons} accessibilityRole="toolbar">
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => setShowCrossRefs(true)}
+              accessibilityLabel="See related verses"
+              accessibilityRole="button"
+            >
+              <Ionicons name="git-network-outline" size={20} color={theme.colors.accent} />
+              <Text style={[styles.actionButtonText, { color: theme.colors.accent }]}>See Related</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={handleOpenNote}
+              accessibilityLabel="Add a note to this verse"
+              accessibilityRole="button"
+            >
               <Ionicons name="add-circle-outline" size={20} color={theme.colors.primary} />
               <Text style={styles.actionButtonText}>Add Note</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowAIMenu(true)}>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => setShowAIMenu(true)}
+              accessibilityLabel="Ask AI about this verse"
+              accessibilityRole="button"
+            >
               <Ionicons name="book-outline" size={20} color={theme.colors.primary} />
-              <Text style={styles.actionButtonText}>Ask the Bible</Text>
+              <Text style={styles.actionButtonText}>Ask AI</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={handleBookmark}>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={handleBookmark}
+              accessibilityLabel={selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? 'Remove bookmark' : 'Bookmark this verse'}
+              accessibilityRole="button"
+            >
               <Ionicons
                 name={selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? "bookmark" : "bookmark-outline"}
                 size={20}
                 color={theme.colors.primary}
               />
               <Text style={styles.actionButtonText}>
-                {selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? 'Bookmarked' : 'Bookmark'}
+                {selectedVerse && bookmarks.has(getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse)) ? 'Saved' : 'Save'}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={handleShare}
+              accessibilityLabel="Share this verse"
+              accessibilityRole="button"
+            >
               <Ionicons name="share-outline" size={20} color={theme.colors.primary} />
               <Text style={styles.actionButtonText}>Share</Text>
             </TouchableOpacity>
@@ -810,199 +861,75 @@ export default function BibleScreen() {
         </View>
       )}
 
-      {/* Book Picker Modal */}
-      <Modal visible={showBookPicker} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Book</Text>
-              <TouchableOpacity onPress={() => setShowBookPicker(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
+      {/* Search Modal */}
+      <SearchModal
+        visible={showSearch}
+        onClose={() => setShowSearch(false)}
+        searchQuery={searchQuery}
+        onSearchChange={(text) => {
+          setSearchQuery(text);
+          handleSearch(text);
+        }}
+        searchResults={searchResults}
+        isSearching={isSearching}
+        onResultPress={handleSearchResultPress}
+      />
 
-            <ScrollView style={styles.bookList}>
-              {Object.entries(BIBLE_BOOKS).map(([testament, books]) => (
-                <View key={testament}>
-                  <Text style={styles.testamentHeader}>{testament}</Text>
-                  <View style={styles.booksGrid}>
-                    {books.map((book) => (
-                      <TouchableOpacity
-                        key={book}
-                        style={[
-                          styles.bookItem,
-                          currentBook === book && styles.bookItemSelected,
-                        ]}
-                        onPress={() => {
-                          setCurrentBook(book);
-                          setCurrentChapter(1);
-                          setShowBookPicker(false);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.bookItemText,
-                            currentBook === book && styles.bookItemTextSelected,
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {book}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      {/* Book Picker Modal */}
+      <BookPickerModal
+        visible={showBookPicker}
+        onClose={() => setShowBookPicker(false)}
+        currentBook={currentBook}
+        onSelectBook={(book) => {
+          setCurrentBook(book);
+          setCurrentChapter(1);
+        }}
+      />
 
       {/* Chapter Picker Modal */}
-      <Modal visible={showChapterPicker} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Chapter</Text>
-              <TouchableOpacity onPress={() => setShowChapterPicker(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.chapterList}>
-              <View style={styles.chaptersGrid}>
-                {Array.from({ length: totalChapters }, (_, i) => i + 1).map((ch) => (
-                  <TouchableOpacity
-                    key={ch}
-                    style={[
-                      styles.chapterItem,
-                      currentChapter === ch && styles.chapterItemSelected,
-                    ]}
-                    onPress={() => {
-                      setCurrentChapter(ch);
-                      setShowChapterPicker(false);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.chapterItemText,
-                        currentChapter === ch && styles.chapterItemTextSelected,
-                      ]}
-                    >
-                      {ch}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      <ChapterPickerModal
+        visible={showChapterPicker}
+        onClose={() => setShowChapterPicker(false)}
+        currentChapter={currentChapter}
+        totalChapters={totalChapters}
+        onSelectChapter={setCurrentChapter}
+      />
 
       {/* Note Editor Modal */}
-      <Modal visible={showNoteModal} animationType="slide" transparent>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardAvoidingView}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.noteModalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  {editingNote ? 'Edit Note' : 'Add Note'}
-                </Text>
-                <TouchableOpacity onPress={() => {
-                  setShowNoteModal(false);
-                  setEditingNote(null);
-                }}>
-                  <Ionicons name="close" size={24} color={theme.colors.text} />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.noteVerseRef}>
-                {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
-              </Text>
-
-              <Text style={styles.noteVersePreview} numberOfLines={3}>
-                &quot;{selectedVerse?.text}&quot;
-              </Text>
-
-              {editingNote && (
-                <View style={styles.noteTimestamps}>
-                  <Text style={styles.timestampText}>
-                    Created: {formatDate(editingNote.createdAt)}
-                  </Text>
-                  {editingNote.updatedAt.getTime() !== editingNote.createdAt.getTime() && (
-                    <Text style={styles.timestampText}>
-                      Updated: {formatDate(editingNote.updatedAt)}
-                    </Text>
-                  )}
-                </View>
-              )}
-
-              <TextInput
-                style={styles.noteInput}
-                multiline
-                placeholder="Write your notes, thoughts, or reflections..."
-                placeholderTextColor={theme.colors.textMuted}
-                value={noteText}
-                onChangeText={setNoteText}
-                textAlignVertical="top"
-                autoFocus
-              />
-
-              <View style={styles.noteButtonRow}>
-                {editingNote && (
-                  <TouchableOpacity style={styles.deleteNoteButton} onPress={handleDeleteNote}>
-                    <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
-                    <Text style={styles.deleteNoteButtonText}>Delete</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={[styles.saveNoteButton, editingNote && styles.saveNoteButtonWithDelete]}
-                  onPress={handleSaveNote}
-                >
-                  <Text style={styles.saveNoteButtonText}>
-                    {editingNote ? 'Save Changes' : 'Save Note'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <NoteEditorModal
+        visible={showNoteModal}
+        onClose={() => {
+          setShowNoteModal(false);
+          setEditingNote(null);
+        }}
+        selectedVerse={selectedVerse}
+        noteText={noteText}
+        onNoteTextChange={setNoteText}
+        editingNote={editingNote}
+        onSave={handleSaveNote}
+        onDelete={handleDeleteNote}
+      />
 
       {/* AI Quick Actions Modal */}
-      <Modal visible={showAIMenu} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.aiMenuContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                Ask the Bible about {selectedVerse?.book} {selectedVerse?.chapter}:{selectedVerse?.verse}
-              </Text>
-              <TouchableOpacity onPress={() => setShowAIMenu(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
+      <AIActionsModal
+        visible={showAIMenu}
+        onClose={() => setShowAIMenu(false)}
+        selectedVerse={selectedVerse}
+        onActionPress={handleAIAction}
+      />
 
-            <View style={styles.aiActionsList}>
-              {AI_QUICK_ACTIONS.map((action) => (
-                <TouchableOpacity
-                  key={action.id}
-                  style={styles.aiActionItem}
-                  onPress={() => handleAIAction(action)}
-                >
-                  <View style={styles.aiActionIcon}>
-                    <Ionicons name={action.icon} size={24} color={theme.colors.primary} />
-                  </View>
-                  <Text style={styles.aiActionLabel}>{action.label}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Cross-References Sheet */}
+      {selectedVerse && (
+        <CrossReferencesSheet
+          visible={showCrossRefs}
+          onClose={() => setShowCrossRefs(false)}
+          book={selectedVerse.book}
+          chapter={selectedVerse.chapter}
+          verse={selectedVerse.verse}
+          verseText={selectedVerse.text}
+          onNavigate={handleCrossRefNavigate}
+        />
+      )}
     </View>
   );
 }
@@ -1065,9 +992,14 @@ const styles = StyleSheet.create({
   chapterNav: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingVertical: theme.spacing.sm,
-    gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+  },
+  searchButton: {
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surface,
   },
   navButton: {
     padding: theme.spacing.sm,
@@ -1317,6 +1249,85 @@ const styles = StyleSheet.create({
     borderTopRightRadius: theme.borderRadius.xl,
     padding: theme.spacing.lg,
     maxHeight: '70%',
+  },
+  searchModalContent: {
+    backgroundColor: theme.colors.background,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
+    maxHeight: '85%',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    paddingVertical: theme.spacing.sm,
+  },
+  searchResultsList: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.md,
+  },
+  searchLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  searchLoadingText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+  },
+  searchResultItem: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  searchResultRef: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  searchResultText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    lineHeight: 22,
+  },
+  searchEmptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xxl,
+  },
+  searchEmptyText: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+    marginTop: theme.spacing.md,
+  },
+  searchEmptySubtext: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xs,
+  },
+  searchHintText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    padding: theme.spacing.xl,
   },
   modalHeader: {
     flexDirection: 'row',
