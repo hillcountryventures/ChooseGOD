@@ -4,8 +4,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rtozduhxrfsksygsmwuj.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0b3pkdWh4cmZza3N5Z3Ntd3VqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzYyNTc5NCwiZXhwIjoyMDgzMjAxNzk0fQ.mQ8Q9EU9HIVUnuzWKoAwHVil-FJkZ0TYdQf-gVcIdxs';
+// Ensure environment variables are set
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in .env file');
+  process.exit(1);
+}
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 async function runMigration() {
   console.log('Running spiritual tables migration...\n');
@@ -40,7 +46,7 @@ async function runMigration() {
     console.log('');
     console.log('Please run the migration manually:');
     console.log('');
-    console.log('1. Go to: https://supabase.com/dashboard/project/rtozduhxrfsksygsmwuj/sql');
+    console.log('1. Go to your Supabase Dashboard SQL Editor');
     console.log('2. Copy the contents of: supabase/migrations/003_create_spiritual_tables.sql');
     console.log('3. Paste and run in the SQL Editor');
     console.log('');
@@ -120,7 +126,7 @@ async function main() {
   console.log('\n-----------------------------------');
   console.log('To create missing tables, run the SQL migration manually:');
   console.log('');
-  console.log('1. Go to: https://supabase.com/dashboard/project/rtozduhxrfsksygsmwuj/sql');
+  console.log('1. Go to your Supabase Dashboard SQL Editor');
   console.log('2. Copy the contents of: supabase/migrations/003_create_spiritual_tables.sql');
   console.log('3. Paste and run in the SQL Editor');
   console.log('-----------------------------------\n');

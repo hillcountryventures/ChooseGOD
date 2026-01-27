@@ -824,12 +824,26 @@ async function gatherUserContext(
   };
 }
 
-// Get relevant verses using vector similarity
+// Verse type from match_verses RPC
+interface MatchedVerse {
+  id: number;
+  book: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  translation: string;
+  similarity: number;
+  is_cross_ref?: boolean;
+  cross_ref_votes?: number;
+}
+
+// Get relevant verses using vector similarity with optional cross-references
 async function getRelevantVerses(
   supabase: ReturnType<typeof createClient>,
   openai: OpenAI,
   message: string,
-  translation: string
+  translation: string,
+  includeCrossRefs: boolean = false
 ): Promise<string> {
   try {
     // Generate embedding for the message
@@ -842,34 +856,63 @@ async function getRelevantVerses(
     // Search for similar verses
     // Enhanced: Increased match_count to 18 and raised threshold to 0.42 for higher-quality matches
     // This reduces weak matches that might tempt the model to extrapolate beyond Scripture
-    const { data: verses } = await supabase.rpc("match_verses", {
+    const { data: verses, error } = await supabase.rpc("match_verses", {
       query_embedding: queryEmbedding,
       match_count: 18,
       filter_translation: translation.toLowerCase(),
       similarity_threshold: 0.42,
+      include_cross_refs: includeCrossRefs,
+      cross_ref_limit: 3,  // Up to 3 cross-refs per primary match
+      min_votes: 2,        // Only include well-attested cross-refs
     });
+
+    if (error) {
+      console.error("Error calling match_verses:", error);
+      return "Error retrieving verses.";
+    }
 
     if (!verses || verses.length === 0) {
       return "No directly relevant verses found for this specific query. The model should inform the user that Scripture does not directly address this topic in the available verses.";
     }
 
-    // Safety check: If we have fewer than 4 high-quality matches, flag it
-    if (verses.length < 4) {
-      const verseText = verses
-        .map(
-          (v: { book: string; chapter: number; verse: number; text: string }) =>
-            `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`
-        )
+    // Separate primary matches from cross-references for formatted output
+    const typedVerses = verses as MatchedVerse[];
+    const primaryVerses = typedVerses.filter(v => !v.is_cross_ref);
+    const crossRefVerses = typedVerses.filter(v => v.is_cross_ref);
+
+    // Safety check: If we have fewer than 4 high-quality primary matches, flag it
+    if (primaryVerses.length < 4) {
+      const verseText = primaryVerses
+        .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`)
         .join("\n\n");
-      return `[LIMITED CONTEXT - Only ${verses.length} verse(s) strongly related to this query. Stay close to these specific texts.]\n\n${verseText}`;
+
+      let result = `[LIMITED CONTEXT - Only ${primaryVerses.length} verse(s) strongly related to this query. Stay close to these specific texts.]\n\n${verseText}`;
+
+      // Add cross-refs if available
+      if (crossRefVerses.length > 0) {
+        const crossRefText = crossRefVerses
+          .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}) [Cross-ref, votes: ${v.cross_ref_votes}]: "${v.text}"`)
+          .join("\n\n");
+        result += `\n\n--- Related Cross-References (from Treasury of Scripture Knowledge) ---\n\n${crossRefText}`;
+      }
+
+      return result;
     }
 
-    return verses
-      .map(
-        (v: { book: string; chapter: number; verse: number; text: string }) =>
-          `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`
-      )
+    // Build formatted output with primary matches
+    let result = primaryVerses
+      .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`)
       .join("\n\n");
+
+    // Add cross-references section if available
+    if (crossRefVerses.length > 0) {
+      const crossRefText = crossRefVerses
+        .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}) [Cross-ref, votes: ${v.cross_ref_votes}]: "${v.text}"`)
+        .join("\n\n");
+      result += `\n\n--- Related Cross-References (from Treasury of Scripture Knowledge) ---\nThese verses are connected to the primary passages above and may provide additional scriptural context.\n\n${crossRefText}`;
+    }
+
+    return result;
   } catch (error) {
     console.error("Error getting relevant verses:", error);
     return "Error retrieving verses.";
@@ -1084,6 +1127,9 @@ serve(async (req) => {
       // Quota context for free tier users
       quota_context,
       quotaContext, // Alternative casing for compatibility
+      // Cross-references for deeper study (premium feature)
+      include_cross_refs,
+      includeCrossRefs, // Alternative casing for compatibility
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
@@ -1102,6 +1148,8 @@ serve(async (req) => {
       totalSeeds: rawQuotaContext.total_seeds ?? rawQuotaContext.totalSeeds,
       isLastSeed: rawQuotaContext.is_last_seed ?? rawQuotaContext.isLastSeed ?? false,
     } : undefined;
+    // Cross-references: enabled by request or automatically for premium users
+    const normalizedIncludeCrossRefs = include_cross_refs ?? includeCrossRefs ?? false;
 
     if (!message || typeof message !== "string") {
       return new Response(
@@ -1169,12 +1217,14 @@ serve(async (req) => {
       prayerFocus: additionalContext.prayerFocus,
     } : undefined;
 
-    // Get relevant verses via RAG
+    // Get relevant verses via RAG (with cross-references for premium or explicit request)
+    const useCrossRefs = normalizedIncludeCrossRefs || (normalizedQuotaContext?.isPremium ?? false);
     const relevantVerses = await getRelevantVerses(
       supabase,
       openai,
       message,
-      userContext.preferredTranslation
+      userContext.preferredTranslation,
+      useCrossRefs
     );
 
     // Enhance message with Bible context if provided

@@ -32,7 +32,16 @@ serve(async (req) => {
   }
 
   try {
-    const { query, translation = "KJV", userId } = await req.json();
+    const {
+      query,
+      translation = "KJV",
+      userId,
+      include_cross_refs = false,
+      includeCrossRefs = false, // Alternative casing
+    } = await req.json();
+
+    // Normalize cross-refs flag
+    const useCrossRefs = include_cross_refs || includeCrossRefs;
 
     if (!query || typeof query !== "string") {
       return new Response(
@@ -63,13 +72,18 @@ serve(async (req) => {
     const queryEmbedding = embeddingResponse.data[0].embedding;
 
     // Step 2: Find relevant verses using vector similarity
+    // Enhanced: Increased match_count to 15 for richer context
+    // Optional: Include cross-references from Treasury of Scripture Knowledge
     const { data: verses, error: matchError } = await supabase.rpc(
       "match_verses",
       {
         query_embedding: queryEmbedding,
-        match_count: 12,
+        match_count: 15,
         filter_translation: normalizedTranslation,
-        similarity_threshold: 0.4,
+        similarity_threshold: 0.38, // Slightly lower for broader context
+        include_cross_refs: useCrossRefs,
+        cross_ref_limit: 3,
+        min_votes: 2,
       }
     );
 
@@ -90,19 +104,39 @@ serve(async (req) => {
     }
 
     // Step 4: Build context from retrieved verses
+    // Separate primary matches from cross-references if enabled
+    interface VerseResult {
+      book: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      is_cross_ref?: boolean;
+      cross_ref_votes?: number;
+    }
+
     let context = "";
     if (contextVerses.length > 0) {
-      context = contextVerses
+      const primaryVerses = contextVerses.filter((v: VerseResult) => !v.is_cross_ref);
+      const crossRefVerses = contextVerses.filter((v: VerseResult) => v.is_cross_ref);
+
+      // Build primary context
+      context = primaryVerses
         .map(
-          (v: {
-            book: string;
-            chapter: number;
-            verse: number;
-            text: string;
-          }) =>
+          (v: VerseResult) =>
             `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`
         )
         .join("\n\n");
+
+      // Add cross-references section if present
+      if (crossRefVerses.length > 0) {
+        const crossRefContext = crossRefVerses
+          .map(
+            (v: VerseResult) =>
+              `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}) [Cross-reference]: "${v.text}"`
+          )
+          .join("\n\n");
+        context += `\n\n--- Related Cross-References ---\n${crossRefContext}`;
+      }
     } else {
       context = "No directly relevant verses were found for this query.";
     }
@@ -124,7 +158,7 @@ serve(async (req) => {
     const response = completion.choices[0].message.content;
 
     // Step 6: Format sources for the frontend
-    const sources = contextVerses.slice(0, 5).map(
+    const sources = contextVerses.slice(0, 8).map(
       (v: {
         book: string;
         chapter: number;
@@ -132,6 +166,8 @@ serve(async (req) => {
         text: string;
         translation: string;
         similarity?: number;
+        is_cross_ref?: boolean;
+        cross_ref_votes?: number;
       }) => ({
         book: v.book,
         chapter: v.chapter,
@@ -139,6 +175,8 @@ serve(async (req) => {
         text: v.text,
         translation: v.translation?.toUpperCase() || translation.toUpperCase(),
         similarity: v.similarity,
+        isCrossRef: v.is_cross_ref || false,
+        crossRefVotes: v.cross_ref_votes,
       })
     );
 
