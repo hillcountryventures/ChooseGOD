@@ -18,7 +18,9 @@ export type OnboardingStackParamList = {
   Carousel: undefined;
   Quiz: undefined;
   Recommendations: { quizResponses: OnboardingResponses };
-  NotificationSetup: { selectedSeriesIds: string[] };
+  AIDemo: { selectedSeriesIds: string[] };
+  Paywall: { selectedSeriesIds: string[] };
+  NotificationSetup: { selectedSeriesIds?: string[] };
   EnrollConfirm: { seriesIds: string[]; primarySeriesId: string };
 };
 
@@ -37,6 +39,7 @@ export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: undefined;
   Settings: undefined;
+  Referral: undefined;
   Chat: {
     initialMessage?: string;
     conversationId?: string;
@@ -88,6 +91,11 @@ export type RootStackParamList = {
   LectioDivina: {
     verseRef?: string;
     verseText?: string;
+  };
+  JourneyInsights: undefined;
+  PrayerCircles: undefined;
+  CircleDetail: {
+    circleId: string;
   };
 };
 

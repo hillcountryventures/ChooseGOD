@@ -34,12 +34,17 @@ import BibleScreen from './src/screens/BibleScreen';
 import JourneyScreen from './src/screens/JourneyScreen';
 // ChatScreen is now used in ChatBottomSheet, not as a tab
 import SettingsScreen from './src/screens/SettingsScreen';
+import ReferralScreen from './src/screens/settings/ReferralScreen';
 import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 import PrayersScreen from './src/screens/PrayersScreen';
 import CameraScreen from './src/screens/CameraScreen';
 import MemoryPracticeScreen from './src/screens/MemoryPracticeScreen';
 import LectioDivinaScreen from './src/screens/LectioDivinaScreen';
+import JourneyInsightsScreen from './src/screens/JourneyInsightsScreen';
+
+// Prayer Circle Screens
+import { PrayerCirclesScreen, CircleDetailScreen } from './src/screens/circles';
 
 // Journal Screens
 import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
@@ -56,6 +61,8 @@ import WelcomeScreen from './src/screens/onboarding/WelcomeScreen';
 import OnboardingCarousel from './src/screens/onboarding/OnboardingCarousel';
 import PersonalizationQuiz from './src/screens/onboarding/PersonalizationQuiz';
 import RecommendationsScreen from './src/screens/onboarding/RecommendationsScreen';
+import AIDemoScreen from './src/screens/onboarding/AIDemoScreen';
+import PaywallScreen from './src/screens/onboarding/PaywallScreen';
 import NotificationSetupScreen from './src/screens/onboarding/NotificationSetupScreen';
 import EnrollmentConfirmScreen from './src/screens/onboarding/EnrollmentConfirmScreen';
 
@@ -122,8 +129,14 @@ const DevotionalStack = createNativeStackNavigator<DevotionalStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 // Deep linking configuration
+// Supports: choosegod://bible/Genesis/1/1, https://choosegod.app/bible/John/3/16
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.createURL('/'), 'choosegod://'],
+  prefixes: [
+    Linking.createURL('/'),
+    'choosegod://',
+    'https://choosegod.app',
+    'https://www.choosegod.app',
+  ],
   config: {
     screens: {
       Auth: {
@@ -134,7 +147,17 @@ const linking: LinkingOptions<RootStackParamList> = {
       Main: {
         screens: {
           Home: 'home',
-          Bible: 'bible',
+          Bible: {
+            path: 'bible/:book?/:chapter?/:verse?',
+            parse: {
+              book: (book: string) => decodeURIComponent(book),
+              chapter: (chapter: string) => parseInt(chapter, 10) || 1,
+              verse: (verse: string) => parseInt(verse, 10) || undefined,
+            },
+          },
+          Journey: 'journey',
+          Prayers: 'prayers',
+          Devotionals: 'devotionals',
         },
       },
     },
@@ -190,6 +213,8 @@ function OnboardingNavigator() {
       <OnboardingStack.Screen name="Carousel" component={OnboardingCarousel} />
       <OnboardingStack.Screen name="Quiz" component={PersonalizationQuiz} />
       <OnboardingStack.Screen name="Recommendations" component={RecommendationsScreen} />
+      <OnboardingStack.Screen name="AIDemo" component={AIDemoScreen} />
+      <OnboardingStack.Screen name="Paywall" component={PaywallScreen} />
       <OnboardingStack.Screen name="NotificationSetup" component={NotificationSetupScreen} />
       <OnboardingStack.Screen name="EnrollConfirm" component={EnrollmentConfirmScreen} />
     </OnboardingStack.Navigator>
@@ -488,6 +513,14 @@ export default function App() {
                     }}
                   />
                   <RootStack.Screen
+                    name="Referral"
+                    component={ReferralScreen}
+                    options={{
+                      presentation: 'card',
+                      animation: 'slide_from_right',
+                    }}
+                  />
+                  <RootStack.Screen
                     name="SubscriptionDebug"
                     component={SubscriptionDebugScreen}
                     options={{
@@ -525,6 +558,30 @@ export default function App() {
                     options={{
                       headerShown: false,
                       animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="JourneyInsights"
+                    component={JourneyInsightsScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="PrayerCircles"
+                    component={PrayerCirclesScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                    }}
+                  />
+                  <RootStack.Screen
+                    name="CircleDetail"
+                    component={CircleDetailScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
                     }}
                   />
                 </>
