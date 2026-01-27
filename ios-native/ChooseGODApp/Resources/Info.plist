@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Configuration -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>ChooseGOD</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    
+    <!-- iOS Configuration -->
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UILaunchScreen</key>
+    <dict>
+        <key>UIColorName</key>
+        <string>LaunchBackground</string>
+    </dict>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+    </array>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <!-- URL Schemes for Deep Linking -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.choosegod.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>choosegod</string>
+            </array>
+        </dict>
+    </array>
+    
+    <!-- Supabase Configuration -->
+    <!-- REPLACE THESE WITH YOUR ACTUAL VALUES -->
+    <key>SUPABASE_URL</key>
+    <string>https://rtozduhxrfsksygsmwuj.supabase.co</string>
+    <key>SUPABASE_ANON_KEY</key>
+    <string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0b3pkdWh4cmZza3N5Z3Ntd3VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MjU3OTQsImV4cCI6MjA4MzIwMTc5NH0.wDBmX1WiOHA7DBaZC8nzuO7MqmCa3TOi3aQ-YsdeC5I</string>
+    
+    <!-- Privacy Descriptions -->
+    <key>NSCameraUsageDescription</key>
+    <string>ChooseGOD uses the camera to scan Scripture passages.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>ChooseGOD accesses your photos to add images to journal entries.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>ChooseGOD uses the microphone for voice input and prayer recordings.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>ChooseGOD uses speech recognition for voice-to-text input.</string>
+    
+    <!-- Background Modes -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>audio</string>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+    
+    <!-- App Transport Security -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+    </dict>
+    
+    <!-- Status Bar -->
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleLightContent</string>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <true/>
+</dict>
+</plist>
