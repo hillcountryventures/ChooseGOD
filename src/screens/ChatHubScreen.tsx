@@ -169,7 +169,7 @@ function NoSeedsCard({ onUpgradePress }: { onUpgradePress: () => void }) {
         </Text>
         <TouchableOpacity style={styles.noSeedsButton} onPress={onUpgradePress}>
           <Ionicons name="sparkles" size={18} color="#fff" />
-          <Text style={styles.noSeedsButtonText}>Unlock Unlimited ($2.99/mo)</Text>
+          <Text style={styles.noSeedsButtonText}>Unlock Unlimited ($3.99/mo)</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.growthVerseContainer}>

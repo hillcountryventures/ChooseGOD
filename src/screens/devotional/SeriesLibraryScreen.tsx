@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   TextInput,
   Dimensions,
   RefreshControl,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -174,7 +174,7 @@ export default function SeriesLibraryScreen() {
 
         {/* Filters */}
         <View style={styles.filtersContainer}>
-          <FlatList
+          <FlashList
             data={FILTERS}
             keyExtractor={(item) => item.id}
             horizontal
@@ -202,13 +202,13 @@ export default function SeriesLibraryScreen() {
         </View>
 
         {/* Series Grid */}
-        <FlatList
+        <FlashList
           data={filteredSeries}
           keyExtractor={(item) => item.id}
           numColumns={2}
           contentContainerStyle={styles.gridContent}
-          columnWrapperStyle={styles.gridRow}
           showsVerticalScrollIndicator={false}
+          drawDistance={300}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

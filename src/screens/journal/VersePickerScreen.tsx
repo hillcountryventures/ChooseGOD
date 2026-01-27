@@ -17,10 +17,10 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  FlatList,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -232,11 +232,12 @@ export default function VersePickerScreen() {
         </View>
       ) : searchQuery.length >= 2 ? (
         searchResults.length > 0 ? (
-          <FlatList
+          <FlashList
             data={searchResults}
             keyExtractor={(item) =>
               `${item.book}-${item.chapter}-${item.verse}`
             }
+            drawDistance={300}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
@@ -423,9 +424,10 @@ export default function VersePickerScreen() {
           <Text style={styles.loadingText}>Loading chapter...</Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={chapterVerses}
           keyExtractor={(item) => `${item.book}-${item.chapter}-${item.verse}`}
+          drawDistance={300}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[

@@ -16,9 +16,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
   Dimensions,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -262,7 +262,7 @@ function TimelineView({
   }
 
   return (
-    <FlatList
+    <FlashList
       data={sortedPrayers}
       renderItem={({ item }) => (
         <PrayerTimelineCard prayer={item} onMarkAnswered={onMarkAnswered} />
@@ -270,6 +270,7 @@ function TimelineView({
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.timelineList}
       showsVerticalScrollIndicator={false}
+      drawDistance={300}
     />
   );
 }
@@ -473,6 +474,7 @@ function CalendarView({ prayers }: { prayers: PrayerRequest[] }) {
 // Main PrayersScreen
 // ============================================================================
 export default function PrayersScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
   const [showPrayerEntry, setShowPrayerEntry] = useState(false);
   const [showAnsweredModal, setShowAnsweredModal] = useState(false);
@@ -529,6 +531,13 @@ export default function PrayersScreen() {
               <Text style={styles.answeredBadgeText}>{answeredCount}</Text>
             </View>
           )}
+          <TouchableOpacity
+            style={styles.circlesButton}
+            onPress={() => navigation.navigate('PrayerCircles')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="people" size={20} color={theme.colors.primary} />
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.addButton}
             onPress={handleAddPrayer}
@@ -645,6 +654,14 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circlesButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.primaryAlpha[15],
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -48,6 +48,9 @@ import { useCommunityCount } from '../hooks/useCommunityCount';
 import { useScriptureScan } from '../hooks/useScriptureScan';
 import { useGreeting } from '../hooks/useGreeting';
 import { DailyFocusCarousel } from '../components/DailyFocusCarousel';
+import { ActiveStepsSection } from '../components/home/ActiveStepsSection';
+import { StreakMilestoneModal } from '../components/StreakMilestoneModal';
+import { useStreakMilestone } from '../hooks/useStreakMilestone';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -469,6 +472,11 @@ export default function HomeScreen() {
   // Get personalized first name (from profile or email)
   const firstName = getFirstName(profile?.displayName ?? null, user?.email ?? null);
 
+  // Streak milestone celebration
+  const recentMoments = useStore((state) => state.recentMoments);
+  const currentStreak = Math.min(recentMoments.length, 365); // Cap at 365 for milestone check
+  const { showMilestone, pendingMilestone, dismissMilestone } = useStreakMilestone(currentStreak);
+
   // Wayfarer handlers
   const handleStartReading = () => {
     if (todaysReading) {
@@ -671,6 +679,9 @@ export default function HomeScreen() {
         {/* Minimal Streak */}
         <StreakBar />
 
+        {/* Active Obedience Steps - "Be doers of the word" (James 1:22) */}
+        <ActiveStepsSection />
+
         {/* Contextual Action Card - One priority action */}
         <ContextualCard />
 
@@ -697,6 +708,13 @@ export default function HomeScreen() {
         summaryData={graceSummaryData}
         onContinueReading={handleGraceSummaryContinue}
         onClose={handleGraceSummaryClose}
+      />
+
+      {/* Streak Milestone Celebration */}
+      <StreakMilestoneModal
+        visible={showMilestone}
+        milestone={pendingMilestone}
+        onClose={dismissMilestone}
       />
     </SafeAreaView>
   );

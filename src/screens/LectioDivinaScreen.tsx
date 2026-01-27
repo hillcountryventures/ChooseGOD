@@ -23,6 +23,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Reanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -114,9 +120,17 @@ export default function LectioDivinaScreen() {
   const [isComplete, setIsComplete] = useState(false);
   const [responses, setResponses] = useState<Record<string, string>>({});
 
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  // Use Reanimated for progress bar (supports layout animation on UI thread)
+  const progressValue = useSharedValue(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Animated style for progress bar using Reanimated worklet
+  const progressBarStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progressValue.value * 100}%` as unknown as number,
+    };
+  });
 
   const step = STEPS[currentStep];
   const totalSteps = STEPS.length;
@@ -172,14 +186,13 @@ export default function LectioDivinaScreen() {
     };
   }, [isPaused, isComplete, currentStep, totalSteps, advanceToNextStep]);
 
-  // Animate progress
+  // Animate progress using Reanimated (runs on UI thread for 60fps)
   useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: (currentStep + 1) / totalSteps,
+    progressValue.value = withTiming((currentStep + 1) / totalSteps, {
       duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [currentStep, progressAnim, totalSteps]);
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+    });
+  }, [currentStep, totalSteps, progressValue]);
 
   const handleNextStep = () => {
     advanceToNextStep();
@@ -298,19 +311,9 @@ export default function LectioDivinaScreen() {
           <View style={styles.headerButton} />
         </View>
 
-        {/* Progress */}
+        {/* Progress - uses Reanimated for 60fps UI thread animation */}
         <View style={styles.progressContainer}>
-          <Animated.View
-            style={[
-              styles.progressBar,
-              {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-              },
-            ]}
-          />
+          <Reanimated.View style={[styles.progressBar, progressBarStyle]} />
         </View>
 
         {/* Step indicators */}
