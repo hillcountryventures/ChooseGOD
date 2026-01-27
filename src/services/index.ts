@@ -5,3 +5,4 @@
  */
 
 export * from './bibleBrain';
+export * from './audioTreasure';
