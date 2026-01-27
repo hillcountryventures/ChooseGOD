@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
+  Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,6 +29,7 @@ import {
 } from '../store/readingPlanStore';
 import { useAuthStore } from '../store/authStore';
 import { WAYFARER_COLORS } from '../types/readingPlan';
+import { useWayfarerMilestones } from '../hooks/useWayfarerMilestones';
 
 // ============================================================================
 // Types
@@ -47,10 +49,18 @@ interface WayfarerProgressCardProps {
 /**
  * Calculate expected day based on start date
  * Returns which day the user should be on if reading daily
+ *
+ * IMPORTANT: Normalizes dates to midnight to avoid time zone issues
  */
 function calculateExpectedDay(startDate: Date, totalDays: number): number {
+  // Normalize dates to midnight for accurate day calculation
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+
+  // Calculate elapsed days (Day 1 is the start date)
   const elapsed = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   return Math.max(1, Math.min(elapsed, totalDays)); // Clamp between 1 and totalDays
 }
@@ -246,9 +256,15 @@ export default function WayfarerProgressCard({
   const todaysReading = useTodaysReading();
   const wayfarerState = useWayfarerState();
 
+  // Get milestone data
+  const { nextMilestone, daysUntilNext, recentMilestone, isPowerUp } =
+    useWayfarerMilestones(activeProgress);
+
   // Pulse animation for intervention state
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const backgroundAnim = useRef(new Animated.Value(0)).current;
+  // Power-up pulse animation
+  const powerUpAnim = useRef(new Animated.Value(1)).current;
 
   // Fetch data on mount
   useEffect(() => {
@@ -296,6 +312,33 @@ export default function WayfarerProgressCard({
       }).start();
     }
   }, [wayfarerState.status, pulseAnim, backgroundAnim]);
+
+  // Power-up pulse animation (7+ day streak)
+  useEffect(() => {
+    if (isPowerUp) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(powerUpAnim, {
+            toValue: 1.05,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(powerUpAnim, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+
+      return () => pulse.stop();
+    } else {
+      powerUpAnim.setValue(1);
+    }
+  }, [isPowerUp, powerUpAnim]);
 
   // Loading state
   if (wayfarerState.status === 'loading') {
@@ -394,6 +437,48 @@ export default function WayfarerProgressCard({
             currentDay={activeProgress.currentDay}
             expectedDay={calculateExpectedDay(activeProgress.startDate, activeProgress.totalDays)}
           />
+
+          {/* Milestone Indicator */}
+          {nextMilestone && !isIntervention && (
+            <View style={styles.milestoneContainer}>
+              <Ionicons
+                name={nextMilestone.icon as any}
+                size={16}
+                color={theme.colors.accent}
+              />
+              <Text style={styles.milestoneText}>
+                Next: {nextMilestone.title}
+                {daysUntilNext && daysUntilNext > 0 && ` in ${daysUntilNext} days`}
+              </Text>
+            </View>
+          )}
+
+          {/* Recent Milestone Celebration */}
+          {recentMilestone && !isIntervention && (
+            <View style={styles.celebrationBanner}>
+              <Ionicons
+                name="trophy"
+                size={20}
+                color={theme.colors.success}
+              />
+              <Text style={styles.celebrationText}>
+                {recentMilestone.title} achieved! {recentMilestone.description}
+              </Text>
+            </View>
+          )}
+
+          {/* Power-Up Badge (7+ day streak) */}
+          {isPowerUp && !isIntervention && (
+            <Animated.View
+              style={[
+                styles.powerUpBadge,
+                { transform: [{ scale: powerUpAnim }] },
+              ]}
+            >
+              <Ionicons name="flame" size={16} color={theme.colors.accent} />
+              <Text style={styles.powerUpText}>Power Up! 7-Day Streak</Text>
+            </Animated.View>
+          )}
 
           {/* Start Reading Button */}
           <TouchableOpacity
@@ -720,5 +805,65 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
     color: '#fff',
+  },
+
+  // Milestone Indicator
+  milestoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.accentAlpha[10],
+    borderRadius: theme.borderRadius.md,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+  },
+  milestoneText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.accent,
+    fontWeight: theme.fontWeight.medium,
+  },
+
+  // Celebration Banner
+  celebrationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.successAlpha[15],
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.success + '30',
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  celebrationText: {
+    flex: 1,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.success,
+    fontWeight: theme.fontWeight.medium,
+  },
+
+  // Power-Up Badge
+  powerUpBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.accentAlpha[20],
+    borderRadius: theme.borderRadius.full,
+    borderWidth: 2,
+    borderColor: theme.colors.accent,
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+    ...theme.shadows.md,
+  },
+  powerUpText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.accent,
+    fontWeight: theme.fontWeight.bold,
   },
 });

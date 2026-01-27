@@ -284,7 +284,12 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity 
+            onPress={onClose} 
+            style={styles.closeButton}
+            accessibilityLabel="Close subscription options"
+            accessibilityRole="button"
+          >
             <Ionicons name="close" size={28} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
@@ -302,6 +307,31 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             <Text style={styles.subscriptionTitle}>ChooseGOD Pro</Text>
             <Text style={styles.headline}>{PAYWALL_CONTENT.headline}</Text>
             <Text style={styles.subheadline}>{PAYWALL_CONTENT.subheadline}</Text>
+          </View>
+
+          {/* Social Proof */}
+          <View style={styles.socialProof}>
+            <View style={styles.socialProofRow}>
+              <View style={styles.socialProofItem}>
+                <Ionicons name="people" size={20} color={theme.colors.accent} />
+                <Text style={styles.socialProofText}>{PAYWALL_CONTENT.socialProof.userCount}</Text>
+              </View>
+              <View style={styles.socialProofDivider} />
+              <View style={styles.socialProofItem}>
+                <Ionicons name="star" size={20} color={theme.colors.accent} />
+                <Text style={styles.socialProofText}>
+                  {PAYWALL_CONTENT.socialProof.rating} ({PAYWALL_CONTENT.socialProof.ratingCount} reviews)
+                </Text>
+              </View>
+            </View>
+            {/* Featured testimonial */}
+            <View style={styles.testimonial}>
+              <Ionicons name="chatbubble-outline" size={16} color={theme.colors.textMuted} />
+              <Text style={styles.testimonialText}>
+                &ldquo;{PAYWALL_CONTENT.socialProof.testimonials[0].text}&rdquo;
+              </Text>
+              <Text style={styles.testimonialAuthor}>— {PAYWALL_CONTENT.socialProof.testimonials[0].author}</Text>
+            </View>
           </View>
 
           {/* Features */}
@@ -349,6 +379,9 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
               onPress={handlePurchase}
               disabled={isPurchasing || !selectedPackage}
               activeOpacity={0.8}
+              accessibilityLabel={isPurchasing ? 'Processing purchase' : 'Start 7-day free trial'}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: isPurchasing || !selectedPackage }}
             >
               {isPurchasing ? (
                 <ActivityIndicator size="small" color={theme.colors.textInverse} />
@@ -363,6 +396,8 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             onPress={handleRestore}
             disabled={isRestoring}
             style={styles.restoreButton}
+            accessibilityLabel="Restore previous purchases"
+            accessibilityRole="button"
           >
             {isRestoring ? (
               <ActivityIndicator size="small" color={theme.colors.accent} />
@@ -458,6 +493,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 16,
+  },
+  socialProof: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  socialProofRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  socialProofItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  socialProofText: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+  },
+  socialProofDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: theme.colors.border,
+    marginHorizontal: 16,
+  },
+  testimonial: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  testimonialText: {
+    fontSize: 14,
+    color: theme.colors.text,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  testimonialAuthor: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    marginTop: 8,
   },
   features: {
     marginBottom: 32,
