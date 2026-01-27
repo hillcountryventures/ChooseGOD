@@ -181,6 +181,23 @@ export const PAYWALL_CONTENT = {
   subheadline:
     'Premium spiritual tools for deeper Bible study, guided practices, and personalized growth.',
 
+  // Social proof
+  socialProof: {
+    userCount: 'Join thousands of believers',
+    rating: '4.9',
+    ratingCount: '500+',
+    testimonials: [
+      {
+        text: 'Finally, an app that helps me understand Scripture, not just read it.',
+        author: 'Sarah M.',
+      },
+      {
+        text: 'The AI companion feels like talking to a wise pastor who knows the Bible deeply.',
+        author: 'James K.',
+      },
+    ],
+  },
+
   // Feature list for premium - organized by perceived value
   features: [
     {
