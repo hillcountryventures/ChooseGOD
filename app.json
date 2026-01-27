@@ -3,7 +3,7 @@
     "name": "ChooseGOD",
     "slug": "ChooseGOD",
     "scheme": "choosegod",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.choosegod.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSSpeechRecognitionUsageDescription": "Allow ChooseGOD to use speech recognition for hands-free questions and prayers.",
+        "NSMicrophoneUsageDescription": "Allow ChooseGOD to use the microphone for voice input."
       }
     },
     "android": {
@@ -27,7 +29,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.choosegod.app"
+      "package": "com.choosegod.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,6 +41,14 @@
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F0F0F",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
+        }
+      ],
       [
         "expo-speech-recognition",
         {
@@ -48,6 +61,12 @@
       "eas": {
         "projectId": "50d7d10e-37a3-49be-90cb-1f5f96ea070c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/50d7d10e-37a3-49be-90cb-1f5f96ea070c"
     }
   }
 }
