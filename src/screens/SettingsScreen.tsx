@@ -21,6 +21,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { useStore } from '../store/useStore';
@@ -267,8 +269,10 @@ function PhilosophyModal({
 // ============================================================================
 // Main Settings Screen
 // ============================================================================
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export default function SettingsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const preferences = useStore((state) => state.preferences);
   const updatePreferences = useStore((state) => state.updatePreferences);
   const clearMessages = useStore((state) => state.clearMessages);
@@ -661,6 +665,19 @@ export default function SettingsScreen() {
             rightElement={isRestoring ? (
               <ActivityIndicator size="small" color={theme.colors.accent} />
             ) : undefined}
+          />
+        </View>
+
+        {/* Share */}
+        <SectionHeader title="Share" />
+        <View style={styles.section}>
+          <SettingRow
+            icon="gift-outline"
+            iconColor={theme.colors.accent}
+            label="Invite Friends"
+            description="Give 7 days Pro, get 7 days free"
+            isLast
+            onPress={() => navigation.navigate('Referral')}
           />
         </View>
 
