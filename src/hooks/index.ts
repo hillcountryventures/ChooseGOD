@@ -1,3 +1,4 @@
+export { useTheme } from './useTheme';
 export { useBibleQuery } from './useBibleQuery';
 export { useCrossReferences } from './useCrossReferences';
 export { useDailyVerse } from './useDailyVerse';

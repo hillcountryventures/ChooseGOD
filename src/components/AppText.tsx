@@ -1,35 +1,53 @@
 /**
- * AppText - Reusable Text Component with Proper Wrapping
+ * AppText — Themed text component with variant system
  *
- * Fixes text truncation issues app-wide by ensuring proper text wrapping
- * and preventing ellipsis on content that should display fully.
+ * Variants: h1, h2, h3, body, bodySmall, caption, label
+ * Each auto-applies fontSize, fontWeight, color, lineHeight from theme.
  *
  * Usage:
- * - Use for any content text that should wrap naturally
- * - For verse text, devotional content, reflection questions, etc.
- * - Automatically prevents truncation with numberOfLines={0}
+ *   <AppText variant="h1">Title</AppText>
+ *   <AppText variant="caption" style={{ color: 'red' }}>Override</AppText>
  */
 
-import React, { forwardRef } from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import React, { forwardRef, useContext } from 'react';
+import { Text, TextProps, TextStyle, StyleSheet } from 'react-native';
+import { ThemeContext } from '../contexts/ThemeContext';
+
+export type TextVariant = 'h1' | 'h2' | 'h3' | 'body' | 'bodySmall' | 'caption' | 'label';
 
 interface AppTextProps extends TextProps {
+  /** Typographic variant (default: 'body') */
+  variant?: TextVariant;
   /** Allow limiting lines if needed (default: 0 = unlimited) */
   maxLines?: number;
   /** Enable/disable wrapping (default: true) */
   wrap?: boolean;
 }
 
+const variantStyles: Record<TextVariant, TextStyle> = {
+  h1: { fontSize: 28, fontWeight: '700', lineHeight: 34 },
+  h2: { fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  h3: { fontSize: 18, fontWeight: '600', lineHeight: 24 },
+  body: { fontSize: 16, fontWeight: '400', lineHeight: 22 },
+  bodySmall: { fontSize: 14, fontWeight: '400', lineHeight: 20 },
+  caption: { fontSize: 12, fontWeight: '400', lineHeight: 16 },
+  label: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: 0.5 },
+};
+
 /**
- * Enhanced Text component that prevents truncation by default
+ * Enhanced Text component with theme-aware variants
  */
 export const AppText = forwardRef<Text, AppTextProps>(
-  ({ style, maxLines = 0, wrap = true, numberOfLines, ...props }, ref) => {
+  ({ style, variant = 'body', maxLines = 0, wrap = true, numberOfLines, ...props }, ref) => {
+    const { theme } = useContext(ThemeContext);
+    const vStyle = variantStyles[variant];
+    const colorStyle: TextStyle = { color: theme.colors.text };
+
     return (
       <Text
         {...props}
         ref={ref}
-        style={[styles.baseText, wrap && styles.wrappedText, style]}
+        style={[colorStyle, vStyle, styles.baseText, wrap && styles.wrappedText, style]}
         numberOfLines={numberOfLines ?? maxLines}
         ellipsizeMode={maxLines > 0 ? 'tail' : undefined}
       />
@@ -40,22 +58,18 @@ export const AppText = forwardRef<Text, AppTextProps>(
 AppText.displayName = 'AppText';
 
 const styles = StyleSheet.create({
-  baseText: {
-    // Base text styles - can be overridden
-  },
+  baseText: {},
   wrappedText: {
     flexWrap: 'wrap',
-    // Ensure text wraps naturally without truncation
   },
   paragraphText: {
-    lineHeight: 24, // 1.5x default for readability
+    lineHeight: 24,
     flexWrap: 'wrap',
   },
 });
 
 /**
  * Paragraph component for long-form content
- * Pre-configured with optimal line height and spacing
  */
 export const AppParagraph = forwardRef<Text, AppTextProps>(
   ({ style, ...props }, ref) => {

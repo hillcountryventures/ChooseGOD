@@ -12,3 +12,4 @@ export * from './limits';
 export * from './timing';
 export * from './database';
 export * from './strings';
+export * from './theme';

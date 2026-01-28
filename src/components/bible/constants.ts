@@ -5,15 +5,17 @@
  */
 
 import { HighlightColor } from '../../types';
+import { darkTheme } from '../../constants/theme';
 
-// Highlight color options
+// Highlight color options — sourced from theme palette (single source of truth)
+const c = darkTheme.colors;
 export const HIGHLIGHT_COLORS: { color: HighlightColor; hex: string }[] = [
-  { color: 'yellow', hex: '#FEF08A' },
-  { color: 'green', hex: '#BBF7D0' },
-  { color: 'blue', hex: '#BFDBFE' },
-  { color: 'pink', hex: '#FBCFE8' },
-  { color: 'purple', hex: '#DDD6FE' },
-  { color: 'orange', hex: '#FED7AA' },
+  { color: 'yellow', hex: c.highlightYellow },
+  { color: 'green', hex: c.highlightGreen },
+  { color: 'blue', hex: c.highlightBlue },
+  { color: 'pink', hex: c.highlightPink },
+  { color: 'purple', hex: c.highlightPurple },
+  { color: 'orange', hex: c.highlightOrange },
 ];
 
 // AI Quick Action options for verse context
