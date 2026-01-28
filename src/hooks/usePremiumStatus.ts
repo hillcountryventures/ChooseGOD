@@ -142,7 +142,9 @@ export function usePremiumStatus(): PremiumStatus {
     isInitialized,
     error,
     canUseChat,
+    /** @deprecated Use useChatQuota().seedsRemaining instead */
     freeQueriesRemaining,
+    /** @deprecated Use useChatQuota().totalSeeds instead */
     freeQueriesTotal: FREE_CHAT_LIMIT,
     canUseChatMode,
     availableChatModes,
