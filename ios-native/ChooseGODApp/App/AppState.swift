@@ -30,7 +30,7 @@ final class AppState {
         authService: AuthServiceProtocol = SupabaseAuthService(),
         bibleService: BibleServiceProtocol = MockBibleService(),
         subscriptionService: SubscriptionServiceProtocol = RevenueCatService.shared,
-        notificationService: NotificationServiceProtocol = MockNotificationService()
+        notificationService: NotificationServiceProtocol = NotificationService.shared
     ) {
         self.authService = authService
         self.bibleService = bibleService
@@ -76,6 +76,14 @@ final class AppState {
             }
         } catch {
             handleError(error)
+        }
+    }
+    
+    /// Configure notifications after authentication
+    func setupNotifications() async {
+        let status = await NotificationService.shared.checkPermissionStatus()
+        if status == .authorized {
+            await NotificationService.shared.configureFromPreferences(preferences)
         }
     }
     

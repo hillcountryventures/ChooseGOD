@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Main gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="50%" style="stop-color:#5B21B6"/>
+      <stop offset="100%" style="stop-color:#4C1D95"/>
+    </linearGradient>
+    
+    <!-- Gold gradient for crown -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCD34D"/>
+      <stop offset="100%" style="stop-color:#F59E0B"/>
+    </linearGradient>
+    
+    <!-- Glass shimmer -->
+    <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.2"/>
+      <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.05"/>
+    </linearGradient>
+    
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Crown glow -->
+    <filter id="crownGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background rounded square -->
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bgGradient)"/>
+  
+  <!-- Glass shimmer overlay -->
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#shimmer)"/>
+  
+  <!-- Subtle corner highlight -->
+  <circle cx="200" cy="200" r="150" fill="#FFFFFF" fill-opacity="0.08" filter="url(#glow)"/>
+  
+  <!-- Crown -->
+  <g transform="translate(512, 340)" filter="url(#crownGlow)">
+    <!-- Crown shape -->
+    <path d="M-120,0 L-100,-80 L-50,-30 L0,-100 L50,-30 L100,-80 L120,0 L100,40 L-100,40 Z" 
+          fill="url(#goldGradient)" 
+          stroke="#FCD34D" 
+          stroke-width="4"/>
+    <!-- Crown jewels -->
+    <circle cx="0" cy="-70" r="12" fill="#FFFFFF" fill-opacity="0.9"/>
+    <circle cx="-60" cy="-45" r="8" fill="#FFFFFF" fill-opacity="0.7"/>
+    <circle cx="60" cy="-45" r="8" fill="#FFFFFF" fill-opacity="0.7"/>
+  </g>
+  
+  <!-- Cross -->
+  <g transform="translate(512, 580)">
+    <!-- Cross shadow -->
+    <rect x="-35" y="-120" width="70" height="280" rx="12" fill="#000000" fill-opacity="0.2" transform="translate(5,5)"/>
+    <rect x="-100" y="-35" width="200" height="70" rx="12" fill="#000000" fill-opacity="0.2" transform="translate(5,5)"/>
+    
+    <!-- Cross main -->
+    <rect x="-35" y="-120" width="70" height="280" rx="12" fill="#FFFFFF"/>
+    <rect x="-100" y="-35" width="200" height="70" rx="12" fill="#FFFFFF"/>
+    
+    <!-- Cross inner highlight -->
+    <rect x="-30" y="-115" width="60" height="270" rx="10" fill="#FFFFFF" fill-opacity="0.3"/>
+  </g>
+  
+  <!-- Border highlight -->
+  <rect x="4" y="4" width="1016" height="1016" rx="220" ry="220" 
+        fill="none" 
+        stroke="url(#shimmer)" 
+        stroke-width="2"/>
+</svg>

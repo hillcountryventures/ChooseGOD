@@ -25,6 +25,7 @@ enum Theme {
         static let text = Color(hex: "FFFFFF")
         static let textSecondary = Color(hex: "A3A3A3")
         static let textTertiary = Color(hex: "737373")
+        static let secondaryText = textSecondary  // Alias for convenience
         
         // Semantic
         static let success = Color(hex: "22C55E")

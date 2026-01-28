@@ -30,8 +30,8 @@ import { PAYWALL_CONTENT, REVENUECAT_PRODUCT_IDS } from '../constants/subscripti
 import { useSubscriptionStore } from '../store/subscriptionStore';
 
 // Legal URLs
-const PRIVACY_POLICY_URL = 'https://marketing-site-theta-rust.vercel.app/privacy.html';
-const TERMS_OF_USE_URL = 'https://marketing-site-theta-rust.vercel.app/index.html#terms';
+const PRIVACY_POLICY_URL = 'https://choosegod.app/privacy.html';
+const TERMS_OF_USE_URL = 'https://choosegod.app/#terms';
 
 // =====================================================
 // Types

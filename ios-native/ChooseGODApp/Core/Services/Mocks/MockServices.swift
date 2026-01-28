@@ -180,42 +180,4 @@ enum SubscriptionPackage: String {
     }
 }
 
-// MARK: - RevenueCat Service Placeholder
-
-final class RevenueCatService: SubscriptionServiceProtocol {
-    static let shared = RevenueCatService()
-    
-    var isPremium: Bool = false
-    var seedsRemaining: Int = 3
-    var seedsUsedToday: Int = 0
-    
-    func configure(userId: String?) async {
-        // Configure RevenueCat with API key
-        // Purchases.configure(withAPIKey: "your_revenuecat_key")
-    }
-    
-    func checkPremiumStatus() async -> Bool {
-        // Check entitlements
-        isPremium
-    }
-    
-    func purchase(package: SubscriptionPackage) async throws -> Bool {
-        // Implement RevenueCat purchase
-        true
-    }
-    
-    func restorePurchases() async throws -> Bool {
-        // Implement restore
-        true
-    }
-    
-    func useSeed() -> Bool {
-        if isPremium { return true }
-        if seedsRemaining > 0 {
-            seedsRemaining -= 1
-            seedsUsedToday += 1
-            return true
-        }
-        return false
-    }
-}
+// RevenueCatService is in Core/Services/RevenueCat/RevenueCatService.swift

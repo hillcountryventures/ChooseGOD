@@ -7,51 +7,223 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0564D6F56A355D5EC896A3DD /* MemoryVerse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */; };
 		05C998752DCDFD548B495C55 /* SupabaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */; };
+		05F588442C33E7C25BBD0F37 /* SupabasePrayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */; };
+		06EFFB87CBBF73B5656183B3 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */; };
 		092D81CF2FE1E059B175F817 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40184908AA63BDAA36FF55B7 /* AuthCoordinator.swift */; };
-		1804A65B746844605AFC9203 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C33DDB40691AEFFA03D0D713 /* Supabase */; };
+		0B0F09299A29676718C2FA37 /* SupabaseInsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */; };
+		0DC4E0CDA60ECB66726A60DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8510E51C673414997561A /* WelcomeView.swift */; };
+		0E5A628F6B066964B2BD5001 /* LectioDivinaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */; };
+		0F15648DFE144C8D70539F3F /* BibleAudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30295A0AA47E588B1D191CF /* BibleAudioService.swift */; };
+		0F450E562560BEE5FD520B9E /* VoiceInputButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91EC1529ADD939AF27275690 /* VoiceInputButton.swift */; };
+		1127E89E798C8D934CBB53FD /* AudioPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */; };
+		17D631C346BDC2DA4AED7C2A /* LectioViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */; };
+		180A6064A0584A3392C05D73 /* NotificationSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */; };
 		20740FE52758F679A12FF801 /* MockServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2DFA969A879D3363679D64 /* MockServices.swift */; };
+		231C3516566903585B36CB84 /* PrayerCirclesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */; };
+		256C2148D27D06E3D85E7B1D /* SourceVerseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA086B9E392679F615C1028 /* SourceVerseCard.swift */; };
+		25CA5EBC033E01B448EC8817 /* AddMemoryVerseSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */; };
+		271682A42618FA2D4B6E45C1 /* RevenueCatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60CCF8B5804C177008E7039 /* RevenueCatService.swift */; };
+		27C1623E1A85712D5890D546 /* SeriesDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */; };
+		2C171C17C24EE26CAA7917B3 /* CircleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0D2F42801462BC193929F0 /* CircleViewModel.swift */; };
+		2DE4DAD349CB288516CF262E /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751404A1AFFF501C68F138A0 /* Haptics.swift */; };
+		2DED7F4A7D99D2C51025DFE1 /* SeriesLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */; };
+		2E3652D38F2F35C15FEF283E /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */; };
+		2FD630540BE2644E3A59588E /* DevotionalCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */; };
+		3216B3FB0839726A5C120469 /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F14400814DEFCCA256D141B /* Animations.swift */; };
+		32B008D84B50E340598670F6 /* SupabaseDevotionalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */; };
+		3B5B0243386AEFDAE8B06068 /* MemoryVerseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */; };
+		415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CE639CB3F872386E608A6D /* NotificationService.swift */; };
+		41A9FF2B90390D6C180D4472 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */; };
+		4892D6CA1DDCA86FE361F2BA /* NoSeedsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */; };
+		48EE385549BFF5E08E46C42B /* ReferralService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F401146D99102F19E5E4F78 /* ReferralService.swift */; };
+		49FCDBC42902BD422AE30AE1 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */; };
+		4CC621D3477448F5D59DD0F7 /* ReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85AE0B29D90AC0DA0A372626 /* ReferralView.swift */; };
+		4DF3E1E5BCFB1CD1B9783680 /* JoinCircleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */; };
+		4FFD3561F1EF4FE0EE2F60EA /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8FCB5720506B6EAF0F8A2933 /* Supabase */; };
+		560B232E39299B5C0D2D96AB /* CreateCircleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */; };
+		573FCFD7F269FDE64B183453 /* JournalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5C6C5D4021205608C5924F /* JournalListView.swift */; };
 		5808E7C2336B231358484D4A /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4517E590D78084E0BB948BC4 /* AuthViewModel.swift */; };
+		596126D8149A1E56AE3A52FD /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */; };
+		5F42193E7D466EC15B087A27 /* MemoryPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */; };
 		5FF40C2A5909C31DFEF557B2 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7038CAC3C8C6D3D3C6B81 /* ForgotPasswordView.swift */; };
+		61D3C1AC286B4BF5D82BAC60 /* Prayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */; };
 		63304D9B06B762BD3479BAFA /* AuthServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D12F5A7E78BEF4C18B5A2D /* AuthServiceProtocol.swift */; };
+		646464E1096C4A1AF691689A /* InsightModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E82CF17867B6BDD94BFF556 /* InsightModels.swift */; };
+		65E2BE733BF35D7DA33A200E /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9029D26D8D40691B304F4290 /* RevenueCat */; };
+		6773EC3E4DC6E8BAFBFF91E4 /* SupabaseMemoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */; };
+		704CD9CF37E3DD33A897003F /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DABECBB1BD945620076615 /* Date+Extensions.swift */; };
+		70FED2DC09CDDD289AFFBD4E /* JournalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E44B55166194167D5280485 /* JournalViewModel.swift */; };
+		72F67EFBA8161D4FEEAADCBE /* AudioPlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */; };
+		737465CEE8F01630041BE78C /* MemoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */; };
+		73D897D6F59396E1C6E1BC1A /* PersonalizationQuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */; };
+		75D53545BB99DE4B5CB907AD /* DailyDevotionalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */; };
+		7905CA8AFDD274591CB1AC7F /* CircleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */; };
 		7A4977AEFF3A6D1D9E3D9D61 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB45A320E27E362B2FB40E2 /* SignUpView.swift */; };
 		7E12C160F383208800654BB6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC7931D430A30CA79458C4A /* Theme.swift */; };
+		7F80519250C11919FC245A11 /* Devotional.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D424E65CF113743EA26C5F /* Devotional.swift */; };
+		864D073AA540E17C31292B5D /* JourneyInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */; };
+		8CF564D2E3FCC31BEA4E51C3 /* ReflectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */; };
+		94004EA9313DBF4C275FF36B /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F10D9ED639D90319683280 /* ShimmerView.swift */; };
+		97DBF4D8D88A64174E1CB73B /* RecommendationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A937FE76E484179CE37871E5 /* RecommendationsView.swift */; };
+		A006AAAF2ABEB2C97C3B3A5B /* ChatQuotaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298077A766F8003184A0D7FC /* ChatQuotaManager.swift */; };
 		A03BFA89E9002825A7E9DFF2 /* ChooseGODApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81ECA782F1A1FB4734D277BC /* ChooseGODApp.swift */; };
+		A0E16CEBD40217B06C747424 /* CrossReferencesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */; };
+		A215DCFD1A9BE7BA82A487AF /* ChatContextBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D515656765EB40E8B27247 /* ChatContextBar.swift */; };
+		A27FFB398D49A35C9EFB6E7A /* InsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */; };
+		A6E51377A7C8F7F1DB12D009 /* GlassEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523B877627A2795C6EC4B295 /* GlassEffects.swift */; };
+		A90C5A30D68DB8D33906B1D6 /* LectioStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28729EAA1F5A4FC698779F64 /* LectioStepView.swift */; };
+		B10D9AC2C43D51DF4BCE4057 /* Bible.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6208C410F97E16CFE92E620 /* Bible.swift */; };
+		B88EAC3ADB6D864349F150DB /* AudioModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9029DFC682065CCEBFA8605C /* AudioModels.swift */; };
+		B9A50683553A484F6FF2768D /* SupabaseJournalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */; };
+		BC3A997CF90153195FF00D3A /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9324127082C2AAA4B3F76802 /* Accessibility.swift */; };
+		BD97B9FA40308A35066E499A /* PaywallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */; };
 		BDF226EEEFA5C1AEE7E9CE37 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357CB1662D9F60FF46440911 /* User.swift */; };
-		C64003046FDFC6C9DA069156 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9865C6D28009F9073AFF6D99 /* RevenueCat */; };
+		C361483A0689EA1CC3B434F4 /* SupabaseCrossRefService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */; };
+		C4EFAD1CEACC9993AF88593C /* OnboardingCoordinatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */; };
+		CE81174A43A3F974EFD5A158 /* PrayersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25CB69F39ACFDE00A919CF /* PrayersView.swift */; };
+		CF51D50315B88D1434C28AEE /* VoiceInputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C639AD976A467A875A2E94CF /* VoiceInputService.swift */; };
+		CFA750DE2BB5EE3B497851A4 /* JournalComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */; };
 		D0D5DBF2A636235780FAF06A /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580C02325CC5152AD28D7CF /* KeychainManager.swift */; };
+		D3C5080D89A5402900A89420 /* EnrollmentConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */; };
+		D688F9B389C4A7991E9D63D1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1579DE003299235117C7177 /* HomeView.swift */; };
+		D7D5D54A01BC5A51472CFD05 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */; };
+		DB547C4A7BE809C47CC7E2DF /* SupabaseBibleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */; };
+		E0E081AA5254C7CDD1A044A1 /* ScanResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6824EA911A83402E6EA06533 /* ScanResultView.swift */; };
+		E2B1B7BC653392BEF79FEE5A /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938ACD99279445859CDF2BEF /* ChatView.swift */; };
+		E30A90A0779FC0EE0C37B498 /* Journal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFD816912EDFF0922081830 /* Journal.swift */; };
 		E52367E3A9F2A89A0B0E3A43 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF05A8BBBA005203F0CEFA9 /* AppState.swift */; };
+		E6EC62CEC27013E75CA16AD1 /* JourneyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */; };
+		E7FA217F476ADA6120274A7F /* MilestonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */; };
+		E850A120B334998301F6A776 /* ScriptureScanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73513B413900E629014CD52B /* ScriptureScanService.swift */; };
+		EA3520BCFAF7361EA4915451 /* NotificationCategories.swift in Sources */ = {isa = PBXBuildFile; fileRef = B682FCB8175CFD34862B0673 /* NotificationCategories.swift */; };
+		EF23DD7F2FC69967079DAA87 /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */; };
+		F0D59185B385E44442E48EE7 /* SupabaseOnboardingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */; };
+		F27E6848DCC2B30D145B27C7 /* ScriptureScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */; };
+		F3F101268479793C572D582B /* BibleReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */; };
+		F8406FDCECE80BD5EEA7AF6F /* DevotionalHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414B97A385B8A429F191EF4E /* DevotionalHubView.swift */; };
 		F8EF89FF01DCE2873F27679F /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */; };
+		F9D5F19706C7DE02275050B0 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */; };
 		FB17387CAA23DC74E3EF9D0E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673CBF47C2CEB4F1955E0BC /* MainTabView.swift */; };
+		FB736D219F2AEE9778C39717 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E671A35ACE4890594409BFB /* ChatModels.swift */; };
 		FB9C3BF91185CE57F5E58F6F /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513BC8F210E916D14B93B339 /* LoginView.swift */; };
+		FC27428C7103E1B0EBE6BD2E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */; };
+		FD005896F21AE1268F6481C9 /* CompanionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9065D12448221C1D8F26416 /* CompanionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDevotionalService.swift; sourceTree = "<group>"; };
+		0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseOnboardingService.swift; sourceTree = "<group>"; };
+		0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prayer.swift; sourceTree = "<group>"; };
+		0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinCircleSheet.swift; sourceTree = "<group>"; };
+		11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalComposeView.swift; sourceTree = "<group>"; };
+		19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMemoryVerseSheet.swift; sourceTree = "<group>"; };
+		1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyView.swift; sourceTree = "<group>"; };
+		1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseCrossRefService.swift; sourceTree = "<group>"; };
 		1AE7038CAC3C8C6D3D3C6B81 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		1DF05A8BBBA005203F0CEFA9 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseInsightsService.swift; sourceTree = "<group>"; };
+		20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioViewModel.swift; sourceTree = "<group>"; };
+		28729EAA1F5A4FC698779F64 /* LectioStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioStepView.swift; sourceTree = "<group>"; };
+		298077A766F8003184A0D7FC /* ChatQuotaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatQuotaManager.swift; sourceTree = "<group>"; };
 		357CB1662D9F60FF46440911 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		3AD8510E51C673414997561A /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		40184908AA63BDAA36FF55B7 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
+		40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureScanView.swift; sourceTree = "<group>"; };
+		414B97A385B8A429F191EF4E /* DevotionalHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevotionalHubView.swift; sourceTree = "<group>"; };
+		42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleReaderView.swift; sourceTree = "<group>"; };
 		4517E590D78084E0BB948BC4 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryVerseListView.swift; sourceTree = "<group>"; };
 		49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
+		4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryViewModel.swift; sourceTree = "<group>"; };
+		4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		4DA086B9E392679F615C1028 /* SourceVerseCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVerseCard.swift; sourceTree = "<group>"; };
 		513BC8F210E916D14B93B339 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		523B877627A2795C6EC4B295 /* GlassEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffects.swift; sourceTree = "<group>"; };
+		5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
+		63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoSeedsView.swift; sourceTree = "<group>"; };
+		6824EA911A83402E6EA06533 /* ScanResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanResultView.swift; sourceTree = "<group>"; };
+		6CFD816912EDFF0922081830 /* Journal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journal.swift; sourceTree = "<group>"; };
 		6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthService.swift; sourceTree = "<group>"; };
+		6E82CF17867B6BDD94BFF556 /* InsightModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightModels.swift; sourceTree = "<group>"; };
+		70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerBar.swift; sourceTree = "<group>"; };
+		71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		73513B413900E629014CD52B /* ScriptureScanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureScanService.swift; sourceTree = "<group>"; };
+		747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinatorView.swift; sourceTree = "<group>"; };
+		751404A1AFFF501C68F138A0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		76D515656765EB40E8B27247 /* ChatContextBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextBar.swift; sourceTree = "<group>"; };
+		79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerManager.swift; sourceTree = "<group>"; };
+		7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryVerse.swift; sourceTree = "<group>"; };
+		7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		7E671A35ACE4890594409BFB /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
+		7F0D2F42801462BC193929F0 /* CircleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewModel.swift; sourceTree = "<group>"; };
+		7F14400814DEFCCA256D141B /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 		81ECA782F1A1FB4734D277BC /* ChooseGODApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseGODApp.swift; sourceTree = "<group>"; };
+		8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
+		85AE0B29D90AC0DA0A372626 /* ReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralView.swift; sourceTree = "<group>"; };
 		88D12F5A7E78BEF4C18B5A2D /* AuthServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthServiceProtocol.swift; sourceTree = "<group>"; };
+		8E25CB69F39ACFDE00A919CF /* PrayersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayersView.swift; sourceTree = "<group>"; };
+		9029DFC682065CCEBFA8605C /* AudioModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioModels.swift; sourceTree = "<group>"; };
+		90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationQuizView.swift; sourceTree = "<group>"; };
+		91EC1529ADD939AF27275690 /* VoiceInputButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputButton.swift; sourceTree = "<group>"; };
+		9324127082C2AAA4B3F76802 /* Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
+		938ACD99279445859CDF2BEF /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSetupView.swift; sourceTree = "<group>"; };
+		9E44B55166194167D5280485 /* JournalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalViewModel.swift; sourceTree = "<group>"; };
+		9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyDevotionalView.swift; sourceTree = "<group>"; };
+		9F401146D99102F19E5E4F78 /* ReferralService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralService.swift; sourceTree = "<group>"; };
+		A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerCirclesView.swift; sourceTree = "<group>"; };
+		A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPracticeView.swift; sourceTree = "<group>"; };
+		A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewModel.swift; sourceTree = "<group>"; };
 		A580C02325CC5152AD28D7CF /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		A937FE76E484179CE37871E5 /* RecommendationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationsView.swift; sourceTree = "<group>"; };
+		AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevotionalCompleteView.swift; sourceTree = "<group>"; };
+		AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestonesView.swift; sourceTree = "<group>"; };
 		AEB45A320E27E362B2FB40E2 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioDivinaView.swift; sourceTree = "<group>"; };
+		B0DABECBB1BD945620076615 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesLibraryView.swift; sourceTree = "<group>"; };
+		B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCircleSheet.swift; sourceTree = "<group>"; };
+		B682FCB8175CFD34862B0673 /* NotificationCategories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategories.swift; sourceTree = "<group>"; };
+		B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleDetailView.swift; sourceTree = "<group>"; };
+		BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossReferencesSheet.swift; sourceTree = "<group>"; };
+		BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseJournalService.swift; sourceTree = "<group>"; };
+		C1579DE003299235117C7177 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrollmentConfirmView.swift; sourceTree = "<group>"; };
+		C639AD976A467A875A2E94CF /* VoiceInputService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputService.swift; sourceTree = "<group>"; };
+		C9065D12448221C1D8F26416 /* CompanionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionService.swift; sourceTree = "<group>"; };
+		CB5C6C5D4021205608C5924F /* JournalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalListView.swift; sourceTree = "<group>"; };
+		CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBibleService.swift; sourceTree = "<group>"; };
+		D30295A0AA47E588B1D191CF /* BibleAudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleAudioService.swift; sourceTree = "<group>"; };
+		D5F10D9ED639D90319683280 /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
+		D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerService.swift; sourceTree = "<group>"; };
+		D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyInsightsView.swift; sourceTree = "<group>"; };
+		D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChooseGOD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC7931D430A30CA79458C4A /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		E6208C410F97E16CFE92E620 /* Bible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bible.swift; sourceTree = "<group>"; };
+		E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesDetailView.swift; sourceTree = "<group>"; };
+		E6CE639CB3F872386E608A6D /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		E7D424E65CF113743EA26C5F /* Devotional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devotional.swift; sourceTree = "<group>"; };
 		EC2DFA969A879D3363679D64 /* MockServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockServices.swift; sourceTree = "<group>"; };
+		EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionSheet.swift; sourceTree = "<group>"; };
+		EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F60CCF8B5804C177008E7039 /* RevenueCatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatService.swift; sourceTree = "<group>"; };
 		F673CBF47C2CEB4F1955E0BC /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseMemoryService.swift; sourceTree = "<group>"; };
+		FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		9200DABB6AABC7D6E7A6E6E9 /* Frameworks */ = {
+		E807115BA997E5C9082CFBBD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1804A65B746844605AFC9203 /* Supabase in Frameworks */,
-				C64003046FDFC6C9DA069156 /* RevenueCat in Frameworks */,
+				4FFD3561F1EF4FE0EE2F60EA /* Supabase in Frameworks */,
+				65E2BE733BF35D7DA33A200E /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,11 +239,65 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		0192D851671A0D7A539AD7CD /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				298077A766F8003184A0D7FC /* ChatQuotaManager.swift */,
+				C9065D12448221C1D8F26416 /* CompanionService.swift */,
+			);
+			path = AI;
+			sourceTree = "<group>";
+		};
 		021690EF3E5B3707B26E2C48 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C1579DE003299235117C7177 /* HomeView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		0C7E7635EBC48FCC6EFC7063 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				B682FCB8175CFD34862B0673 /* NotificationCategories.swift */,
+				E6CE639CB3F872386E608A6D /* NotificationService.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
+		0CDB03522526B354DD0F0B25 /* RevenueCat */ = {
+			isa = PBXGroup;
+			children = (
+				F60CCF8B5804C177008E7039 /* RevenueCatService.swift */,
+			);
+			path = RevenueCat;
+			sourceTree = "<group>";
+		};
+		1038EFC0E10A7AED9E23AD16 /* Journal */ = {
+			isa = PBXGroup;
+			children = (
+				24D5EE65D1AF13036D3D8891 /* ViewModels */,
+				1040D59D7A1BF63A73C7AC31 /* Views */,
+			);
+			path = Journal;
+			sourceTree = "<group>";
+		};
+		1040D59D7A1BF63A73C7AC31 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */,
+				8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */,
+				CB5C6C5D4021205608C5924F /* JournalListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		126EF78DB98A49B870161B12 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				B0AB533C81E9BC565D49A315 /* Views */,
+			);
+			path = Camera;
 			sourceTree = "<group>";
 		};
 		130A6EE5DD9608942F01E39E /* Core */ = {
@@ -93,6 +319,22 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		1A895A5651AF6264CAE1A75F /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				F5B4D3E2F4D7813DAA469FD8 /* Views */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		1E587C40C702A52B4D1BD0C9 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				9F401146D99102F19E5E4F78 /* ReferralService.swift */,
+			);
+			path = Referral;
+			sourceTree = "<group>";
+		};
 		1F5221618716F0AB1F6C8BD0 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
@@ -111,8 +353,18 @@
 		24790E954743CBFA02D66278 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B0DABECBB1BD945620076615 /* Date+Extensions.swift */,
+				FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		24D5EE65D1AF13036D3D8891 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				9E44B55166194167D5280485 /* JournalViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		2D1389D3A13133F94936DBB7 /* Features */ = {
@@ -120,11 +372,17 @@
 			children = (
 				614CADBB59E141D3217350E5 /* Auth */,
 				F7328A1D13B866DEE704A19F /* Bible */,
+				126EF78DB98A49B870161B12 /* Camera */,
 				DB199DFB4DB24804D507FAD2 /* Chat */,
+				1A895A5651AF6264CAE1A75F /* Common */,
 				3F0836BEFD7A3670EE980E44 /* Devotionals */,
 				5836CE6A1E50F8A5CD96F5FE /* Home */,
+				1038EFC0E10A7AED9E23AD16 /* Journal */,
 				B7A6F36D0BB4389B6E836C82 /* Journey */,
+				F53B08DAA7EB4B57CDB8E8B1 /* Lectio */,
+				5EF533FEF4ABF1BF0701DD72 /* Memory */,
 				0023DD39BFA7E1E843379B71 /* Onboarding */,
+				8E2E743DA39343AA20FE48BB /* Paywall */,
 				DE8FDFB60697543D75DF374A /* Prayers */,
 				FF3729F3DEC5A1B5426C559D /* Settings */,
 			);
@@ -141,6 +399,8 @@
 		2F84DC8DB523C5F9A47EB7ED /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				85AE0B29D90AC0DA0A372626 /* ReferralView.swift */,
+				EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -148,6 +408,10 @@
 		3035FF773CF58716F28C0AD2 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */,
+				42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */,
+				BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */,
+				EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -163,6 +427,7 @@
 		3DD69FD8DB6B0F3C1A2B76D9 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				7F0D2F42801462BC193929F0 /* CircleViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -179,6 +444,10 @@
 		3F8956B98A12AE1AC12A0386 /* Theme */ = {
 			isa = PBXGroup;
 			children = (
+				9324127082C2AAA4B3F76802 /* Accessibility.swift */,
+				7F14400814DEFCCA256D141B /* Animations.swift */,
+				523B877627A2795C6EC4B295 /* GlassEffects.swift */,
+				751404A1AFFF501C68F138A0 /* Haptics.swift */,
 				DDC7931D430A30CA79458C4A /* Theme.swift */,
 			);
 			path = Theme;
@@ -187,6 +456,7 @@
 		41AAB0F5B7987EEA4198A016 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -202,8 +472,36 @@
 		4928039BF23C9A91EFAB0DC7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				76D515656765EB40E8B27247 /* ChatContextBar.swift */,
+				938ACD99279445859CDF2BEF /* ChatView.swift */,
+				4DA086B9E392679F615C1028 /* SourceVerseCard.swift */,
+				91EC1529ADD939AF27275690 /* VoiceInputButton.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		4EF36821817FCA86D2BC2FB9 /* Speech */ = {
+			isa = PBXGroup;
+			children = (
+				C639AD976A467A875A2E94CF /* VoiceInputService.swift */,
+			);
+			path = Speech;
+			sourceTree = "<group>";
+		};
+		558B1BD4E9BDD0B04F8C42F8 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		57F0874DF3BF33FF4327FEDD /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		5836CE6A1E50F8A5CD96F5FE /* Home */ = {
@@ -213,6 +511,33 @@
 				021690EF3E5B3707B26E2C48 /* Views */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		5B379F40598E6C19D777C912 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */,
+				4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5EF533FEF4ABF1BF0701DD72 /* Memory */ = {
+			isa = PBXGroup;
+			children = (
+				B773973CCC58053B8B5868BA /* ViewModels */,
+				97AB8683139E89B9054DE363 /* Views */,
+			);
+			path = Memory;
+			sourceTree = "<group>";
+		};
+		5F6F9BC1586A5A7958250772 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */,
+				D30295A0AA47E588B1D191CF /* BibleAudioService.swift */,
+			);
+			path = Audio;
 			sourceTree = "<group>";
 		};
 		614CADBB59E141D3217350E5 /* Auth */ = {
@@ -243,9 +568,27 @@
 			path = Protocols;
 			sourceTree = "<group>";
 		};
+		7B620C36621DC5F519E038B2 /* Vision */ = {
+			isa = PBXGroup;
+			children = (
+				73513B413900E629014CD52B /* ScriptureScanService.swift */,
+			);
+			path = Vision;
+			sourceTree = "<group>";
+		};
+		8E2E743DA39343AA20FE48BB /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				57F0874DF3BF33FF4327FEDD /* ViewModels */,
+				5B379F40598E6C19D777C912 /* Views */,
+			);
+			path = Paywall;
+			sourceTree = "<group>";
+		};
 		8F871C1628F8C389EEA79FBC /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -253,8 +596,19 @@
 		91EB79AA81D5040D74A25358 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		97AB8683139E89B9054DE363 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */,
+				A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */,
+				49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		99BECD537428437E28DA3658 /* App */ = {
@@ -277,6 +631,23 @@
 			);
 			sourceTree = "<group>";
 		};
+		B0AB533C81E9BC565D49A315 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				6824EA911A83402E6EA06533 /* ScanResultView.swift */,
+				40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B773973CCC58053B8B5868BA /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		B7A6F36D0BB4389B6E836C82 /* Journey */ = {
 			isa = PBXGroup;
 			children = (
@@ -289,9 +660,16 @@
 		BC3687C136CE1DFA105F6228 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				0192D851671A0D7A539AD7CD /* AI */,
+				5F6F9BC1586A5A7958250772 /* Audio */,
 				1F5221618716F0AB1F6C8BD0 /* Mocks */,
+				0C7E7635EBC48FCC6EFC7063 /* Notifications */,
 				66AB92B56579822B41628A3A /* Protocols */,
+				1E587C40C702A52B4D1BD0C9 /* Referral */,
+				0CDB03522526B354DD0F0B25 /* RevenueCat */,
+				4EF36821817FCA86D2BC2FB9 /* Speech */,
 				F1470A83A5C653D8050B8723 /* Supabase */,
+				7B620C36621DC5F519E038B2 /* Vision */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -299,6 +677,11 @@
 		BE7992A4DE68EF7354FE2774 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */,
+				747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */,
+				90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */,
+				A937FE76E484179CE37871E5 /* RecommendationsView.swift */,
+				3AD8510E51C673414997561A /* WelcomeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -306,6 +689,10 @@
 		C6DD19B47D8553213F2BC920 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */,
+				1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */,
+				AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */,
+				7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -313,6 +700,11 @@
 		D911E61B057C4895ECBE54EE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */,
+				B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */,
+				0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */,
+				A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */,
+				8E25CB69F39ACFDE00A919CF /* PrayersView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -345,18 +737,62 @@
 		E15E992BAC3A36DF58B96AD5 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9029DFC682065CCEBFA8605C /* AudioModels.swift */,
+				E6208C410F97E16CFE92E620 /* Bible.swift */,
+				7E671A35ACE4890594409BFB /* ChatModels.swift */,
+				E7D424E65CF113743EA26C5F /* Devotional.swift */,
+				6E82CF17867B6BDD94BFF556 /* InsightModels.swift */,
+				6CFD816912EDFF0922081830 /* Journal.swift */,
+				7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */,
+				0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */,
 				357CB1662D9F60FF46440911 /* User.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		EFFE16071B7BC2F9C9CBFE54 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */,
+				28729EAA1F5A4FC698779F64 /* LectioStepView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		F1470A83A5C653D8050B8723 /* Supabase */ = {
 			isa = PBXGroup;
 			children = (
 				6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */,
+				CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */,
+				1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */,
+				0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */,
+				1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */,
+				BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */,
 				49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */,
+				FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */,
+				0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */,
+				D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */,
 			);
 			path = Supabase;
+			sourceTree = "<group>";
+		};
+		F53B08DAA7EB4B57CDB8E8B1 /* Lectio */ = {
+			isa = PBXGroup;
+			children = (
+				558B1BD4E9BDD0B04F8C42F8 /* ViewModels */,
+				EFFE16071B7BC2F9C9CBFE54 /* Views */,
+			);
+			path = Lectio;
+			sourceTree = "<group>";
+		};
+		F5B4D3E2F4D7813DAA469FD8 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */,
+				51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */,
+				D5F10D9ED639D90319683280 /* ShimmerView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		F7328A1D13B866DEE704A19F /* Bible */ = {
@@ -388,6 +824,12 @@
 		FF8B5FA7792E40813EC6A56E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */,
+				AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */,
+				414B97A385B8A429F191EF4E /* DevotionalHubView.swift */,
+				C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */,
+				E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */,
+				B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -400,7 +842,7 @@
 			buildConfigurationList = B3D98539567280F628EEF30E /* Build configuration list for PBXNativeTarget "ChooseGOD" */;
 			buildPhases = (
 				2CF6DE80006D6C8E00B3D30E /* Sources */,
-				9200DABB6AABC7D6E7A6E6E9 /* Frameworks */,
+				E807115BA997E5C9082CFBBD /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -408,8 +850,8 @@
 			);
 			name = ChooseGOD;
 			packageProductDependencies = (
-				C33DDB40691AEFFA03D0D713 /* Supabase */,
-				9865C6D28009F9073AFF6D99 /* RevenueCat */,
+				8FCB5720506B6EAF0F8A2933 /* Supabase */,
+				9029D26D8D40691B304F4290 /* RevenueCat */,
 			);
 			productName = ChooseGOD;
 			productReference = D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */;
@@ -440,11 +882,10 @@
 			mainGroup = 9A4844F8BAE636985A3BA241;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B372A0C8CE99D8A0C0D54425 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-				F17C185B0B8C7D6A3B0F301A /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = FED599ADFF0DA84DAF767F0E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -458,21 +899,107 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC3A997CF90153195FF00D3A /* Accessibility.swift in Sources */,
+				25CA5EBC033E01B448EC8817 /* AddMemoryVerseSheet.swift in Sources */,
+				3216B3FB0839726A5C120469 /* Animations.swift in Sources */,
 				E52367E3A9F2A89A0B0E3A43 /* AppState.swift in Sources */,
+				B88EAC3ADB6D864349F150DB /* AudioModels.swift in Sources */,
+				1127E89E798C8D934CBB53FD /* AudioPlayerBar.swift in Sources */,
+				72F67EFBA8161D4FEEAADCBE /* AudioPlayerManager.swift in Sources */,
 				092D81CF2FE1E059B175F817 /* AuthCoordinator.swift in Sources */,
 				63304D9B06B762BD3479BAFA /* AuthServiceProtocol.swift in Sources */,
 				5808E7C2336B231358484D4A /* AuthViewModel.swift in Sources */,
+				B10D9AC2C43D51DF4BCE4057 /* Bible.swift in Sources */,
+				0F15648DFE144C8D70539F3F /* BibleAudioService.swift in Sources */,
+				F3F101268479793C572D582B /* BibleReaderView.swift in Sources */,
+				A215DCFD1A9BE7BA82A487AF /* ChatContextBar.swift in Sources */,
+				FB736D219F2AEE9778C39717 /* ChatModels.swift in Sources */,
+				A006AAAF2ABEB2C97C3B3A5B /* ChatQuotaManager.swift in Sources */,
+				E2B1B7BC653392BEF79FEE5A /* ChatView.swift in Sources */,
+				596126D8149A1E56AE3A52FD /* ChatViewModel.swift in Sources */,
 				A03BFA89E9002825A7E9DFF2 /* ChooseGODApp.swift in Sources */,
+				7905CA8AFDD274591CB1AC7F /* CircleDetailView.swift in Sources */,
+				2C171C17C24EE26CAA7917B3 /* CircleViewModel.swift in Sources */,
+				FD005896F21AE1268F6481C9 /* CompanionService.swift in Sources */,
+				41A9FF2B90390D6C180D4472 /* ConfettiView.swift in Sources */,
+				560B232E39299B5C0D2D96AB /* CreateCircleSheet.swift in Sources */,
+				A0E16CEBD40217B06C747424 /* CrossReferencesSheet.swift in Sources */,
+				75D53545BB99DE4B5CB907AD /* DailyDevotionalView.swift in Sources */,
+				704CD9CF37E3DD33A897003F /* Date+Extensions.swift in Sources */,
+				7F80519250C11919FC245A11 /* Devotional.swift in Sources */,
+				2FD630540BE2644E3A59588E /* DevotionalCompleteView.swift in Sources */,
+				F8406FDCECE80BD5EEA7AF6F /* DevotionalHubView.swift in Sources */,
+				49FCDBC42902BD422AE30AE1 /* EmptyStateView.swift in Sources */,
+				D3C5080D89A5402900A89420 /* EnrollmentConfirmView.swift in Sources */,
 				5FF40C2A5909C31DFEF557B2 /* ForgotPasswordView.swift in Sources */,
+				A6E51377A7C8F7F1DB12D009 /* GlassEffects.swift in Sources */,
+				2DE4DAD349CB288516CF262E /* Haptics.swift in Sources */,
+				D688F9B389C4A7991E9D63D1 /* HomeView.swift in Sources */,
+				646464E1096C4A1AF691689A /* InsightModels.swift in Sources */,
+				A27FFB398D49A35C9EFB6E7A /* InsightsViewModel.swift in Sources */,
+				4DF3E1E5BCFB1CD1B9783680 /* JoinCircleSheet.swift in Sources */,
+				E30A90A0779FC0EE0C37B498 /* Journal.swift in Sources */,
+				CFA750DE2BB5EE3B497851A4 /* JournalComposeView.swift in Sources */,
+				EF23DD7F2FC69967079DAA87 /* JournalDetailView.swift in Sources */,
+				573FCFD7F269FDE64B183453 /* JournalListView.swift in Sources */,
+				70FED2DC09CDDD289AFFBD4E /* JournalViewModel.swift in Sources */,
+				864D073AA540E17C31292B5D /* JourneyInsightsView.swift in Sources */,
+				E6EC62CEC27013E75CA16AD1 /* JourneyView.swift in Sources */,
 				D0D5DBF2A636235780FAF06A /* KeychainManager.swift in Sources */,
+				0E5A628F6B066964B2BD5001 /* LectioDivinaView.swift in Sources */,
+				A90C5A30D68DB8D33906B1D6 /* LectioStepView.swift in Sources */,
+				17D631C346BDC2DA4AED7C2A /* LectioViewModel.swift in Sources */,
 				FB9C3BF91185CE57F5E58F6F /* LoginView.swift in Sources */,
 				FB17387CAA23DC74E3EF9D0E /* MainTabView.swift in Sources */,
+				5F42193E7D466EC15B087A27 /* MemoryPracticeView.swift in Sources */,
+				0564D6F56A355D5EC896A3DD /* MemoryVerse.swift in Sources */,
+				3B5B0243386AEFDAE8B06068 /* MemoryVerseListView.swift in Sources */,
+				737465CEE8F01630041BE78C /* MemoryViewModel.swift in Sources */,
+				E7FA217F476ADA6120274A7F /* MilestonesView.swift in Sources */,
 				20740FE52758F679A12FF801 /* MockServices.swift in Sources */,
+				4892D6CA1DDCA86FE361F2BA /* NoSeedsView.swift in Sources */,
+				EA3520BCFAF7361EA4915451 /* NotificationCategories.swift in Sources */,
+				415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */,
+				180A6064A0584A3392C05D73 /* NotificationSetupView.swift in Sources */,
+				C4EFAD1CEACC9993AF88593C /* OnboardingCoordinatorView.swift in Sources */,
+				06EFFB87CBBF73B5656183B3 /* OnboardingViewModel.swift in Sources */,
+				D7D5D54A01BC5A51472CFD05 /* PaywallView.swift in Sources */,
+				BD97B9FA40308A35066E499A /* PaywallViewModel.swift in Sources */,
+				73D897D6F59396E1C6E1BC1A /* PersonalizationQuizView.swift in Sources */,
+				61D3C1AC286B4BF5D82BAC60 /* Prayer.swift in Sources */,
+				231C3516566903585B36CB84 /* PrayerCirclesView.swift in Sources */,
+				CE81174A43A3F974EFD5A158 /* PrayersView.swift in Sources */,
+				97DBF4D8D88A64174E1CB73B /* RecommendationsView.swift in Sources */,
+				48EE385549BFF5E08E46C42B /* ReferralService.swift in Sources */,
+				4CC621D3477448F5D59DD0F7 /* ReferralView.swift in Sources */,
+				8CF564D2E3FCC31BEA4E51C3 /* ReflectionSheet.swift in Sources */,
+				271682A42618FA2D4B6E45C1 /* RevenueCatService.swift in Sources */,
+				E0E081AA5254C7CDD1A044A1 /* ScanResultView.swift in Sources */,
+				E850A120B334998301F6A776 /* ScriptureScanService.swift in Sources */,
+				F27E6848DCC2B30D145B27C7 /* ScriptureScanView.swift in Sources */,
+				27C1623E1A85712D5890D546 /* SeriesDetailView.swift in Sources */,
+				2DED7F4A7D99D2C51025DFE1 /* SeriesLibraryView.swift in Sources */,
+				FC27428C7103E1B0EBE6BD2E /* SettingsView.swift in Sources */,
+				94004EA9313DBF4C275FF36B /* ShimmerView.swift in Sources */,
 				7A4977AEFF3A6D1D9E3D9D61 /* SignUpView.swift in Sources */,
+				256C2148D27D06E3D85E7B1D /* SourceVerseCard.swift in Sources */,
 				05C998752DCDFD548B495C55 /* SupabaseAuthService.swift in Sources */,
+				DB547C4A7BE809C47CC7E2DF /* SupabaseBibleService.swift in Sources */,
+				C361483A0689EA1CC3B434F4 /* SupabaseCrossRefService.swift in Sources */,
+				32B008D84B50E340598670F6 /* SupabaseDevotionalService.swift in Sources */,
+				0B0F09299A29676718C2FA37 /* SupabaseInsightsService.swift in Sources */,
+				B9A50683553A484F6FF2768D /* SupabaseJournalService.swift in Sources */,
 				F8EF89FF01DCE2873F27679F /* SupabaseManager.swift in Sources */,
+				6773EC3E4DC6E8BAFBFF91E4 /* SupabaseMemoryService.swift in Sources */,
+				F0D59185B385E44442E48EE7 /* SupabaseOnboardingService.swift in Sources */,
+				05F588442C33E7C25BBD0F37 /* SupabasePrayerService.swift in Sources */,
 				7E12C160F383208800654BB6 /* Theme.swift in Sources */,
+				2E3652D38F2F35C15FEF283E /* TimelineView.swift in Sources */,
 				BDF226EEEFA5C1AEE7E9CE37 /* User.swift in Sources */,
+				F9D5F19706C7DE02275050B0 /* View+Extensions.swift in Sources */,
+				0F450E562560BEE5FD520B9E /* VoiceInputButton.swift in Sources */,
+				CF51D50315B88D1434C28AEE /* VoiceInputService.swift in Sources */,
+				0DC4E0CDA60ECB66726A60DE /* WelcomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -664,34 +1191,34 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B372A0C8CE99D8A0C0D54425 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase-community/supabase-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-		F17C185B0B8C7D6A3B0F301A /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.43.0;
+				minimumVersion = 4.44.2;
+			};
+		};
+		FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.40.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9865C6D28009F9073AFF6D99 /* RevenueCat */ = {
+		8FCB5720506B6EAF0F8A2933 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F17C185B0B8C7D6A3B0F301A /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		C33DDB40691AEFFA03D0D713 /* Supabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B372A0C8CE99D8A0C0D54425 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		9029D26D8D40691B304F4290 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

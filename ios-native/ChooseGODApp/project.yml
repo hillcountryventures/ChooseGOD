@@ -13,6 +13,14 @@ settings:
     SWIFT_VERSION: "5.9"
     CODE_SIGN_STYLE: Automatic
 
+packages:
+  Supabase:
+    url: https://github.com/supabase-community/supabase-swift
+    from: "2.40.0"
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios
+    from: "4.44.2"
+
 targets:
   ChooseGOD:
     type: application
@@ -23,6 +31,9 @@ targets:
       - path: Features
     resources:
       - path: Resources
+    dependencies:
+      - package: Supabase
+      - package: RevenueCat
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.choosegod.app

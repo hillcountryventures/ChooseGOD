@@ -33,8 +33,8 @@ import { useSubscriptionStore } from '../../store/subscriptionStore';
 import { useTrackScreen } from '../../hooks/useAnalytics';
 
 // Legal URLs
-const PRIVACY_POLICY_URL = 'https://marketing-site-theta-rust.vercel.app/privacy.html';
-const TERMS_OF_USE_URL = 'https://marketing-site-theta-rust.vercel.app/index.html#terms';
+const PRIVACY_POLICY_URL = 'https://choosegod.app/privacy.html';
+const TERMS_OF_USE_URL = 'https://choosegod.app/#terms';
 
 const { width } = Dimensions.get('window');
 
