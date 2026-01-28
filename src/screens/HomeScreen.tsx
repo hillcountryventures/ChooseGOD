@@ -51,6 +51,9 @@ import { DailyFocusCarousel } from '../components/DailyFocusCarousel';
 import { ActiveStepsSection } from '../components/home/ActiveStepsSection';
 import { StreakMilestoneModal } from '../components/StreakMilestoneModal';
 import { useStreakMilestone } from '../hooks/useStreakMilestone';
+import { useTrackScreen } from '../hooks/useAnalytics';
+import { ContinueReadingBanner } from '../components/home/ContinueReadingBanner';
+import { trackStreakDay } from '../services/analytics';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -239,6 +242,13 @@ function StreakBar() {
   // Calculate streak from recent moments
   const streak = Math.min(recentMoments.length, STREAK_LIMITS.weekDays);
   const today = new Date().getDay();
+
+  // Track streak day for retention funnel
+  useEffect(() => {
+    if (streak > 0) {
+      trackStreakDay(streak);
+    }
+  }, [streak]);
 
   return (
     <View style={styles.streakBar}>
@@ -449,6 +459,9 @@ export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore((state) => state.user);
   const { profile } = useUserProfile();
+
+  // Analytics
+  useTrackScreen('home');
 
   // Use centralized greeting hook
   const greeting = useGreeting();
@@ -663,6 +676,9 @@ export default function HomeScreen() {
             <Ionicons name="settings-outline" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
+
+        {/* Continue Reading Banner - shows last read position */}
+        <ContinueReadingBanner />
 
         {/* Daily Focus Carousel - Unified "path" experience (Proverbs 4:25) */}
         <DailyFocusCarousel>

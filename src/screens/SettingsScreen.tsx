@@ -714,6 +714,31 @@ export default function SettingsScreen() {
           />
         </View>
 
+        {/* Privacy & Legal */}
+        <SectionHeader title="Privacy & Legal" />
+        <View style={styles.section}>
+          <SettingRow
+            icon="shield-checkmark-outline"
+            iconColor={theme.colors.primary}
+            label="Privacy & Data"
+            description="Manage analytics and crash reporting"
+            onPress={() => (navigation as any).navigate('ConsentManagement')}
+          />
+          <SettingRow
+            icon="document-text-outline"
+            iconColor={theme.colors.textSecondary}
+            label="Privacy Policy"
+            onPress={() => Linking.openURL('https://choosegod.app/privacy')}
+          />
+          <SettingRow
+            icon="reader-outline"
+            iconColor={theme.colors.textSecondary}
+            label="Terms of Service"
+            isLast
+            onPress={() => Linking.openURL('https://choosegod.app/terms')}
+          />
+        </View>
+
         {/* About */}
         <SectionHeader title="About" />
         <View style={styles.section}>

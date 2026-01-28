@@ -21,6 +21,7 @@ import {
 } from '../../types';
 import { useDevotionalStore } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { allStarterPlans, ReadingPlanData } from '../../data/plans';
 
 const { width } = Dimensions.get('window');
 
@@ -208,6 +209,36 @@ export default function RecommendationsScreen() {
           <Text style={styles.introText}>
             Based on your answers, we think you'll love these devotional journeys. Select one or more to get started!
           </Text>
+
+          {/* Reading Plans — Start Here first */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📖 Reading Plans</Text>
+            <Text style={[styles.introText, { marginBottom: theme.spacing.md }]}>
+              Guided daily readings with reflections — perfect for building a habit.
+            </Text>
+            {allStarterPlans.map((plan, index) => (
+              <View key={plan.slug} style={[styles.readingPlanCard, index === 0 && styles.readingPlanCardHighlight]}>
+                {index === 0 && (
+                  <View style={styles.recommendedBadge}>
+                    <Ionicons name="star" size={12} color={theme.colors.primary} />
+                    <Text style={styles.recommendedBadgeText}>Recommended</Text>
+                  </View>
+                )}
+                <Text style={styles.readingPlanTitle}>{plan.title}</Text>
+                <Text style={styles.readingPlanDescription}>{plan.description}</Text>
+                <View style={styles.cardMeta}>
+                  <View style={styles.metaItem}>
+                    <Ionicons name="calendar-outline" size={14} color={theme.colors.textSecondary} />
+                    <Text style={[styles.metaText, { color: theme.colors.textSecondary }]}>{plan.totalDays} days</Text>
+                  </View>
+                  <View style={styles.metaItem}>
+                    <Ionicons name="sparkles-outline" size={14} color={theme.colors.textSecondary} />
+                    <Text style={[styles.metaText, { color: theme.colors.textSecondary }]}>{plan.difficulty}</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
 
           {/* Top Pick */}
           {topPick && (
@@ -436,6 +467,46 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
     lineHeight: 20,
     marginBottom: theme.spacing.sm,
+  },
+  readingPlanCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  readingPlanCardHighlight: {
+    borderColor: theme.colors.primary,
+    borderWidth: 2,
+  },
+  readingPlanTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  readingPlanDescription: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.primaryLight ?? 'rgba(99,102,241,0.1)',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.full,
+    gap: 4,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendedBadgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primary,
   },
   browseAllButton: {
     flexDirection: 'row',

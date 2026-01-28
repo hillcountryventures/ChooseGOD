@@ -21,6 +21,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { fetchChapter, getBookChapterCount, searchVerses } from '../lib/supabase';
+import { getCachedChapter, cacheChapter } from '../services/bibleCache';
+import { useOfflineStatus } from '../hooks/useOfflineStatus';
+import { useSyncQueue } from '../hooks/useSyncQueue';
+import { queueAction } from '../services/syncQueue';
 import { useStore } from '../store/useStore';
 import { useFontSize } from '../hooks/useFontSize';
 import {
@@ -47,6 +51,10 @@ import {
   getVerseKey,
   formatDate,
 } from '../components/bible';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { AskAboutPassage } from '../components/chat/AskAboutPassage';
+import { trackBibleRead, trackScreenView } from '../services/analytics';
+import { useReadingProgressStore } from '../store/readingProgressStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -66,6 +74,8 @@ export default function BibleScreen() {
   const insets = useSafeAreaInsets();
   const preferences = useStore((state) => state.preferences);
   const { sizes: fontSizes } = useFontSize();
+  const { isOffline } = useOfflineStatus();
+  const { pendingCount: _pendingSyncCount } = useSyncQueue();
 
   // Current reading position
   const [currentBook, setCurrentBook] = useState(route.params?.book || 'Proverbs');
@@ -115,15 +125,39 @@ export default function BibleScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const verseLayoutsRef = useRef<Map<number, number>>(new Map());
 
-  // Load chapter
+  // Load chapter — offline-first: try cache, then network, cache result
   const loadChapter = useCallback(async () => {
     setIsLoading(true);
+    const translation = preferences.preferredTranslation;
+
     try {
-      const chapterVerses = await fetchChapter(
-        currentBook,
-        currentChapter,
-        preferences.preferredTranslation
-      );
+      // 1. Try cache first
+      const cached = await getCachedChapter<VerseSource[]>(translation, currentBook, currentChapter);
+      let chapterVerses: VerseSource[] | null = null;
+
+      if (cached && cached.length > 0) {
+        chapterVerses = cached;
+      }
+
+      // 2. If online, fetch fresh data (even if cached, to stay up to date)
+      if (!isOffline) {
+        try {
+          const fresh = await fetchChapter(currentBook, currentChapter, translation);
+          if (fresh.length > 0) {
+            chapterVerses = fresh;
+            // Cache the fresh result
+            await cacheChapter(translation, currentBook, currentChapter, fresh);
+          }
+        } catch (networkErr) {
+          console.warn('[BibleScreen] Network fetch failed, using cache', networkErr);
+          // If we already have cached data, that's fine — fall through
+        }
+      }
+
+      // 3. If still nothing, show empty
+      if (!chapterVerses) {
+        chapterVerses = [];
+      }
 
       // Merge with annotations
       const versesWithAnnotations: VerseWithAnnotations[] = chapterVerses.map((v) => {
@@ -139,14 +173,16 @@ export default function BibleScreen() {
       setVerses(versesWithAnnotations);
 
       // Get total chapters for this book
-      const count = await getBookChapterCount(currentBook, preferences.preferredTranslation);
-      if (count > 0) setTotalChapters(count);
+      if (!isOffline) {
+        const count = await getBookChapterCount(currentBook, translation);
+        if (count > 0) setTotalChapters(count);
+      }
     } catch (error) {
       console.error('Error loading chapter:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [currentBook, currentChapter, preferences.preferredTranslation, highlights, notes, bookmarks]);
+  }, [currentBook, currentChapter, preferences.preferredTranslation, highlights, notes, bookmarks, isOffline]);
 
   // Update from route params
   useEffect(() => {
@@ -164,6 +200,14 @@ export default function BibleScreen() {
   // Load chapter when book/chapter changes
   useEffect(() => {
     loadChapter();
+    trackBibleRead(currentBook, currentChapter);
+    trackScreenView('Bible');
+    // Track reading progress for Continue Reading banner
+    useReadingProgressStore.getState().setLastRead(
+      currentBook,
+      currentChapter,
+      preferences.preferredTranslation
+    );
   }, [loadChapter]);
 
 
@@ -211,6 +255,16 @@ export default function BibleScreen() {
     };
 
     setHighlights(new Map(highlights.set(key, newHighlight)));
+    // Queue sync
+    queueAction('highlight_add', {
+      id: newHighlight.id,
+      user_id: newHighlight.userId,
+      book: newHighlight.book,
+      chapter: newHighlight.chapter,
+      verse: newHighlight.verse,
+      color: newHighlight.color,
+      created_at: newHighlight.createdAt.toISOString(),
+    });
     setSelectedVerse(null);
   };
 
@@ -219,9 +273,13 @@ export default function BibleScreen() {
     if (!selectedVerse) return;
 
     const key = getVerseKey(selectedVerse.book, selectedVerse.chapter, selectedVerse.verse);
+    const existing = highlights.get(key);
     const newHighlights = new Map(highlights);
     newHighlights.delete(key);
     setHighlights(newHighlights);
+    if (existing) {
+      queueAction('highlight_remove', { id: existing.id });
+    }
     setSelectedVerse(null);
   };
 
@@ -237,6 +295,7 @@ export default function BibleScreen() {
       const newBookmarks = new Map(bookmarks);
       newBookmarks.delete(key);
       setBookmarks(newBookmarks);
+      queueAction('bookmark_remove', { id: existingBookmark.id });
       Alert.alert('Bookmark Removed', `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} removed from bookmarks.`);
     } else {
       // Add bookmark
@@ -249,6 +308,14 @@ export default function BibleScreen() {
         createdAt: new Date(),
       };
       setBookmarks(new Map(bookmarks.set(key, newBookmark)));
+      queueAction('bookmark_add', {
+        id: newBookmark.id,
+        user_id: newBookmark.userId,
+        book: newBookmark.book,
+        chapter: newBookmark.chapter,
+        verse: newBookmark.verse,
+        created_at: newBookmark.createdAt.toISOString(),
+      });
       Alert.alert('Bookmarked!', `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse} added to your bookmarks.`);
     }
     setSelectedVerse(null);
@@ -340,6 +407,11 @@ export default function BibleScreen() {
           : n
       );
       setNotes(new Map(notes.set(key, updatedNotes)));
+      queueAction('note_update', {
+        id: editingNote.id,
+        content: noteText.trim(),
+        updated_at: new Date().toISOString(),
+      });
     } else {
       // Add new note
       const newNote: VerseNote = {
@@ -353,6 +425,16 @@ export default function BibleScreen() {
         updatedAt: new Date(),
       };
       setNotes(new Map(notes.set(key, [...existingNotes, newNote])));
+      queueAction('note_add', {
+        id: newNote.id,
+        user_id: newNote.userId,
+        book: newNote.book,
+        chapter: newNote.chapter,
+        verse: newNote.verse,
+        content: newNote.content,
+        created_at: newNote.createdAt.toISOString(),
+        updated_at: newNote.updatedAt.toISOString(),
+      });
     }
 
     setShowNoteModal(false);
@@ -375,6 +457,7 @@ export default function BibleScreen() {
       newNotes.delete(key);
       setNotes(newNotes);
     }
+    queueAction('note_delete', { id: editingNote.id });
 
     setShowNoteModal(false);
     setNoteText('');
@@ -693,6 +776,7 @@ export default function BibleScreen() {
           <Text style={styles.loadingText}>Loading chapter...</Text>
         </View>
       ) : (
+        <ErrorBoundary level="component" name="BibleVerseRenderer">
         <ScrollView
           ref={scrollViewRef}
           style={styles.versesContainer}
@@ -707,6 +791,7 @@ export default function BibleScreen() {
           {verses.map(renderVerse)}
           <View style={{ height: 100 }} />
         </ScrollView>
+        </ErrorBoundary>
       )}
 
       {/* Verse Action Bar (when verse selected) */}
@@ -859,6 +944,11 @@ export default function BibleScreen() {
             </TouchableOpacity>
           </View>
         </View>
+      )}
+
+      {/* Ask About Passage FAB */}
+      {!selectedVerse && !isLoading && verses.length > 0 && (
+        <AskAboutPassage book={currentBook} chapter={currentChapter} />
       )}
 
       {/* Search Modal */}
