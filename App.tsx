@@ -9,6 +9,15 @@ import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
+import { initSentry, Sentry } from './src/utils/sentry';
+import { ScreenErrorBoundary } from './src/components/ScreenErrorBoundary';
+import { initAnalytics } from './src/services/analytics';
+
+// Initialize Sentry before anything else
+initSentry();
+
+// Initialize PostHog analytics
+initAnalytics();
 
 // Prevent the native splash screen from auto-hiding
 // This MUST be called before the component renders
@@ -246,6 +255,13 @@ function DevotionalNavigator() {
 // TAB NAVIGATOR
 // =====================================================
 
+// Screen wrappers with error boundaries
+const SafeHomeScreen = (props: any) => <ScreenErrorBoundary name="HomeScreen"><HomeScreen {...props} /></ScreenErrorBoundary>;
+const SafeBibleScreen = (props: any) => <ScreenErrorBoundary name="BibleScreen"><BibleScreen {...props} /></ScreenErrorBoundary>;
+const SafeJourneyScreen = (props: any) => <ScreenErrorBoundary name="JourneyScreen"><JourneyScreen {...props} /></ScreenErrorBoundary>;
+const SafePrayersScreen = (props: any) => <ScreenErrorBoundary name="PrayersScreen"><PrayersScreen {...props} /></ScreenErrorBoundary>;
+const SafeDevotionalNavigator = (props: any) => <ScreenErrorBoundary name="DevotionalNavigator"><DevotionalNavigator {...props} /></ScreenErrorBoundary>;
+
 function TabNavigator() {
   return (
     <Tab.Navigator
@@ -283,23 +299,23 @@ function TabNavigator() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={SafeHomeScreen} />
       <Tab.Screen
         name="Devotionals"
-        component={DevotionalNavigator}
+        component={SafeDevotionalNavigator}
         options={{
           tabBarLabel: 'Devotionals',
         }}
       />
       <Tab.Screen
         name="Bible"
-        component={BibleScreen}
+        component={SafeBibleScreen}
         options={{
           tabBarLabel: '',
         }}
       />
-      <Tab.Screen name="Journey" component={JourneyScreen} />
-      <Tab.Screen name="Prayers" component={PrayersScreen} />
+      <Tab.Screen name="Journey" component={SafeJourneyScreen} />
+      <Tab.Screen name="Prayers" component={SafePrayersScreen} />
     </Tab.Navigator>
   );
 }
@@ -309,7 +325,7 @@ function TabNavigator() {
 // MAIN APP
 // =====================================================
 
-export default function App() {
+function App() {
   const { user, initialized, initialize } = useAuthStore();
   const { onboardingCompleted, checkOnboardingStatus } = useDevotionalStore();
   const initializeSubscription = useSubscriptionStore((s) => s.initialize);
@@ -628,3 +644,5 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+
+export default Sentry.wrap(App);

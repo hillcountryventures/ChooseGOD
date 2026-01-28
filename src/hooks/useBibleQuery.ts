@@ -2,14 +2,22 @@ import { useState, useCallback } from 'react';
 import { queryBible } from '../lib/supabase';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/authStore';
+import { useOfflineStatus } from './useOfflineStatus';
 import { RAGQueryResponse } from '../types';
+import { getCachedChapter, cacheChapter } from '../services/bibleCache';
+import { fetchWithRetry } from '../utils/fetchWithRetry';
+import { sanitizeSearchQuery } from '../utils/inputSanitizer';
 
 interface UseBibleQueryReturn {
   ask: (query: string) => Promise<RAGQueryResponse | null>;
   isLoading: boolean;
   error: string | null;
+  isOffline: boolean;
   clearError: () => void;
 }
+
+/** Cache key prefix for RAG query responses */
+const RAG_CACHE_TRANSLATION = '__rag__';
 
 export function useBibleQuery(): UseBibleQueryReturn {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +25,12 @@ export function useBibleQuery(): UseBibleQueryReturn {
 
   const { preferences, addMessage } = useStore();
   const user = useAuthStore((state) => state.user);
+  const { isOffline } = useOfflineStatus();
 
   const ask = useCallback(
-    async (query: string): Promise<RAGQueryResponse | null> => {
-      if (!query.trim()) {
+    async (rawQuery: string): Promise<RAGQueryResponse | null> => {
+      const query = sanitizeSearchQuery(rawQuery);
+      if (!query) {
         setError('Please enter a question');
         return null;
       }
@@ -37,10 +47,52 @@ export function useBibleQuery(): UseBibleQueryReturn {
       });
 
       try {
-        const response = await queryBible(
-          query,
+        // --- Offline-first: check cache ---
+        const cacheKey = query.trim().toLowerCase().replace(/\s+/g, '_').slice(0, 120);
+        const cached = await getCachedChapter<RAGQueryResponse>(
+          RAG_CACHE_TRANSLATION,
           preferences.preferredTranslation,
-          user?.id
+          // Abuse chapter param as a hash — use charCode sum for numeric key
+          cacheKey.split('').reduce((s, c) => s + c.charCodeAt(0), 0)
+        );
+
+        if (cached) {
+          // Serve from cache (works offline and online for repeat queries)
+          addMessage({
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: cached.response + (isOffline ? '\n\n_📴 Offline mode — showing cached response_' : ''),
+            sources: cached.sources,
+            timestamp: new Date(),
+          });
+          return cached;
+        }
+
+        // --- If offline and no cache, bail gracefully ---
+        if (isOffline) {
+          const offlineMsg = 'You\'re offline and this question hasn\'t been cached yet. Please try again when connected, or ask a question you\'ve asked before.';
+          setError(offlineMsg);
+          addMessage({
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: '📴 ' + offlineMsg,
+            timestamp: new Date(),
+          });
+          return null;
+        }
+
+        // --- Network fetch with retry ---
+        const response = await fetchWithRetry(
+          () => queryBible(query, preferences.preferredTranslation, user?.id),
+          { maxAttempts: 3, timeoutMs: 20000 }
+        );
+
+        // Cache the successful response
+        await cacheChapter(
+          RAG_CACHE_TRANSLATION,
+          preferences.preferredTranslation,
+          cacheKey.split('').reduce((s, c) => s + c.charCodeAt(0), 0),
+          response
         );
 
         // Add assistant response to chat
@@ -70,7 +122,7 @@ export function useBibleQuery(): UseBibleQueryReturn {
         setIsLoading(false);
       }
     },
-    [preferences.preferredTranslation, addMessage, user?.id]
+    [preferences.preferredTranslation, addMessage, user?.id, isOffline]
   );
 
   const clearError = useCallback(() => {
@@ -81,6 +133,7 @@ export function useBibleQuery(): UseBibleQueryReturn {
     ask,
     isLoading,
     error,
+    isOffline,
     clearError,
   };
 }

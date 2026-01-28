@@ -6,3 +6,4 @@
 
 export * from './bibleBrain';
 export * from './audioTreasure';
+export * from './bibleCache';
