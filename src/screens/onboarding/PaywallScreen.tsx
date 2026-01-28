@@ -30,6 +30,7 @@ import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
 import { PAYWALL_CONTENT, REVENUECAT_PRODUCT_IDS } from '../../constants/subscription';
 import { useSubscriptionStore } from '../../store/subscriptionStore';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 // Legal URLs
 const PRIVACY_POLICY_URL = 'https://marketing-site-theta-rust.vercel.app/privacy.html';
@@ -59,6 +60,9 @@ export default function PaywallScreen() {
   const refreshCustomerInfo = useSubscriptionStore((s) => s.refreshCustomerInfo);
   const isPremium = useSubscriptionStore((s) => s.isPremium);
 
+  // Track paywall impression
+  useTrackScreen('paywall');
+
   // State
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
@@ -66,6 +70,12 @@ export default function PaywallScreen() {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track paywall shown event
+  useEffect(() => {
+    const { trackPaywallShown } = require('../../services/analytics');
+    trackPaywallShown();
+  }, []);
 
   // Check if already subscribed and skip
   useEffect(() => {
@@ -142,10 +152,10 @@ export default function PaywallScreen() {
           navigateNext();
           break;
         case PURCHASES_ERROR_CODE.NETWORK_ERROR:
-          setError('Network error. Please check your connection.');
+          setError("We couldn't reach the store. Check your connection and try again.");
           break;
         default:
-          setError('Something went wrong. Please try again.');
+          setError("That didn't work — please try once more.");
           console.error('[PaywallScreen] Purchase error:', purchaseError);
       }
     } finally {

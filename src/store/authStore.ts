@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useStore } from './useStore';
 import { useReadingPlanStore } from './readingPlanStore';
 import { useDevotionalStore } from './devotionalStore';
+import { identifyUser, resetAnalytics } from '../services/analytics';
 
 interface DeleteAccountResult {
   success: boolean;
@@ -45,9 +46,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         initialized: true,
       });
 
-      // Link user to RevenueCat if already logged in
+      // Link user to RevenueCat + analytics if already logged in
       if (session?.user?.id) {
         useSubscriptionStore.getState().loginUser(session.user.id);
+        identifyUser(session.user.id, { email: session.user.email ?? '' });
       }
 
       // Listen for auth state changes
@@ -57,9 +59,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           user: session?.user ?? null,
         });
 
-        // Sync with RevenueCat
+        // Sync with RevenueCat + analytics
         if (session?.user?.id) {
           useSubscriptionStore.getState().loginUser(session.user.id);
+          identifyUser(session.user.id, { email: session.user.email ?? '' });
         }
       });
     } catch (error) {
@@ -81,6 +84,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   signOut: async () => {
     await auth.signOut();
     await useSubscriptionStore.getState().logoutUser();
+    resetAnalytics();
     set({ user: null, session: null });
   },
 

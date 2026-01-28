@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,6 +22,13 @@ type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Welco
 
 export default function WelcomeScreen() {
   const navigation = useNavigation<NavigationProp>();
+  useTrackScreen('onboarding_welcome');
+
+  // Track top-of-funnel onboarding event
+  React.useEffect(() => {
+    const { trackOnboardingStarted } = require('../../services/analytics');
+    trackOnboardingStarted();
+  }, []);
 
   return (
     <LinearGradient

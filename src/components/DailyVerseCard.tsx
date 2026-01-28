@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 import { useDailyVerse } from '../hooks/useDailyVerse';
+import { trackDailyVerseViewed } from '../services/analytics';
 
 interface DailyVerseCardProps {
   onPress?: () => void;
@@ -13,6 +14,7 @@ export function DailyVerseCard({ onPress }: DailyVerseCardProps) {
 
   useEffect(() => {
     fetchDailyVerse();
+    trackDailyVerseViewed();
   }, [fetchDailyVerse]);
 
   if (isLoading && !dailyVerse) {

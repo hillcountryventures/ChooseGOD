@@ -24,9 +24,14 @@ interface PrayerActivityChartProps {
 
 export function PrayerActivityChart({
   data,
-  averageMinutes = 12,
-  weeklyChange = 23,
+  averageMinutes: averageMinutesProp,
+  weeklyChange: weeklyChangeProp,
 }: PrayerActivityChartProps) {
+  // Compute real averages from data when props aren't provided
+  const totalMinutes = data.reduce((sum, d) => sum + d.prayerMinutes, 0);
+  const activeDays = data.filter(d => d.prayerMinutes > 0).length;
+  const averageMinutes = averageMinutesProp ?? (activeDays > 0 ? Math.round(totalMinutes / activeDays) : 0);
+  const weeklyChange = weeklyChangeProp ?? 0; // Real value should come from caller
   // Find max value for scaling
   const maxMinutes = Math.max(...data.map(d => d.prayerMinutes), 1);
 
