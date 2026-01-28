@@ -18,17 +18,25 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-// Export these for direct fetch usage (streaming)
-export const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-export const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+// Encapsulated credentials — not exported as bare constants
+const _supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const _supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Debug: Log Supabase configuration (remove in production)
 if (__DEV__) {
-  console.log('[Supabase] URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING');
-  console.log('[Supabase] Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'MISSING');
+  console.log('[Supabase] URL:', _supabaseUrl ? `${_supabaseUrl.substring(0, 30)}...` : 'MISSING');
+  console.log('[Supabase] Key:', _supabaseAnonKey ? `${_supabaseAnonKey.substring(0, 20)}...` : 'MISSING');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+/**
+ * Returns the Supabase project URL and anon key.
+ * Use this instead of importing raw constants — keeps credentials encapsulated.
+ */
+export function getSupabaseConfig(): { url: string; anonKey: string } {
+  return { url: _supabaseUrl, anonKey: _supabaseAnonKey };
+}
+
+export const supabase = createClient(_supabaseUrl, _supabaseAnonKey, {
   auth: {
     storage: ExpoSecureStoreAdapter,
     autoRefreshToken: true,

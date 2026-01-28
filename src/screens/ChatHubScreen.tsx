@@ -38,15 +38,17 @@ import { theme } from '../lib/theme';
 import { MessageBubble } from '../components/MessageBubble';
 import { VerseQuickView } from '../components/chat/VerseQuickView';
 import { ChatMessage, VerseSource, SuggestedAction, RootStackParamList, ChatMode, Translation } from '../types';
-import { supabaseUrl, supabaseAnonKey } from '../lib/supabase';
+import { getSupabaseConfig } from '../lib/supabase';
 import { CHAT_LIMITS } from '../constants/limits';
 import { ANIMATION_DELAY } from '../constants/animations';
+import { sanitizeChatMessage } from '../utils/inputSanitizer';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
 import { useChatQuota } from '../hooks/useChatQuota';
 import { FREE_CHAT_MODES, PREMIUM_CHAT_MODES } from '../constants/subscription';
 import { streamCompanionResponse } from '../components/chat/utils';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { ScriptureSkeleton } from '../components/ScriptureSkeleton';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { CHAT_MODE_LABELS, CHAT_MODE_DESCRIPTIONS, isPrayerMode as checkIsPrayerMode } from '../constants/chatModes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -298,8 +300,9 @@ export default function ChatHubScreen() {
     }
   }, [setIsQuerying]);
 
-  const handleSend = async (message: string, isRetry: boolean = false) => {
-    if (!message.trim()) return;
+  const handleSend = async (rawMessage: string, isRetry: boolean = false) => {
+    const message = sanitizeChatMessage(rawMessage);
+    if (!message) return;
 
     // Check network connectivity
     const netState = await NetInfo.fetch();
@@ -383,6 +386,7 @@ export default function ChatHubScreen() {
             isLastSeed: isOnLastSeed,
           };
 
+      const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseConfig();
       await streamCompanionResponse(
         supabaseUrl,
         supabaseAnonKey,
@@ -849,6 +853,7 @@ export default function ChatHubScreen() {
               </View>
             </View>
           ) : (
+            <ErrorBoundary level="component" name="ChatMessageList">
             <FlashList
               ref={flashListRef}
               data={messages}
@@ -873,6 +878,7 @@ export default function ChatHubScreen() {
                 ) : null
               }
             />
+            </ErrorBoundary>
           )}
         </View>
 

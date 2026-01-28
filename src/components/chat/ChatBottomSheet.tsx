@@ -29,11 +29,13 @@ import { useStore } from '../../store/useStore';
 import { theme } from '../../lib/theme';
 import { MessageBubble } from '../MessageBubble';
 import { ChatMessage, VerseSource, SuggestedAction, RootStackParamList } from '../../types';
-import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { getSupabaseConfig } from '../../lib/supabase';
 import { CHAT_LIMITS } from '../../constants/limits';
+import { sanitizeChatMessage } from '../../utils/inputSanitizer';
 import { ANIMATION_DURATION, ANIMATION_DELAY } from '../../constants/animations';
 import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
 import { FREE_CHAT_LIMIT, isPremiumChatMode, PREMIUM_CHAT_MODES, FREE_CHAT_MODES } from '../../constants/subscription';
+import { useChatQuota } from '../../hooks/useChatQuota';
 import type { ChatMode } from '../../types';
 import {
   streamCompanionResponse,
@@ -94,8 +96,10 @@ export function ChatBottomSheet() {
   const dailyVerse = useStore((s) => s.dailyVerse);
 
   // Premium status - check if user can use chat and modes
-  const { isPremium, canUseChat, canUseChatMode, freeQueriesRemaining, showPaywall } = usePremiumStatus();
+  const { isPremium, canUseChat, canUseChatMode, showPaywall } = usePremiumStatus();
   const { incrementUsage } = useChatUsageTracking();
+  // Use unified seeds quota (replaces legacy freeQueriesRemaining)
+  const { seedsRemaining, totalSeeds } = useChatQuota();
 
   // State for mode selector
   const [showModeSelector, setShowModeSelector] = useState(false);
@@ -247,8 +251,9 @@ export function ChatBottomSheet() {
     }
   }, [setIsQuerying]);
 
-  const handleSend = useCallback(async (message: string, isRetry: boolean = false) => {
-    if (!message.trim()) return;
+  const handleSend = useCallback(async (rawMessage: string, isRetry: boolean = false) => {
+    const message = sanitizeChatMessage(rawMessage);
+    if (!message) return;
 
     // Check network connectivity first
     const netState = await NetInfo.fetch();
@@ -319,6 +324,7 @@ export function ChatBottomSheet() {
       console.log('[ChatBottomSheet] Starting streaming response');
 
       // Use streaming API
+      const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseConfig();
       await streamCompanionResponse(
         supabaseUrl,
         supabaseAnonKey,
@@ -706,7 +712,7 @@ export function ChatBottomSheet() {
               onPress={showPaywall}
             >
               <Text style={styles.freeQueriesText}>
-                {freeQueriesRemaining}/{FREE_CHAT_LIMIT} free
+                {seedsRemaining}/{totalSeeds} 🌱
               </Text>
             </TouchableOpacity>
           )}
