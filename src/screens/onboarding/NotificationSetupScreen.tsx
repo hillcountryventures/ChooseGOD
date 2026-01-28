@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
+import { useNotifications } from '../../hooks/useNotifications';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'NotificationSetup'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'NotificationSetup'>;
@@ -23,9 +25,11 @@ export default function NotificationSetupScreen() {
   const route = useRoute<RouteProps>();
   const { selectedSeriesIds = [] } = route.params || {};
 
+  const { enable, disable } = useNotifications();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState(new Date(2024, 0, 1, 7, 0)); // 7:00 AM
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleTimeChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -37,12 +41,31 @@ export default function NotificationSetupScreen() {
   };
 
   const handleContinue = async () => {
-    // In a full implementation, we would:
-    // 1. Request notification permissions
-    // 2. Save the reminder time to user profile
-    // 3. Schedule the notifications
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-    // For now, just navigate to the enrollment confirmation
+    try {
+      if (notificationsEnabled) {
+        const hour = reminderTime.getHours();
+        const minute = reminderTime.getMinutes();
+        const granted = await enable(hour, minute);
+
+        if (!granted) {
+          Alert.alert(
+            'Notifications Disabled',
+            'Please enable notifications in your device settings to receive daily reminders.',
+            [{ text: 'Continue Anyway', style: 'default' }],
+          );
+        }
+      } else {
+        await disable();
+      }
+    } catch (e) {
+      console.warn('[NotificationSetup] Error:', e);
+    } finally {
+      setIsSubmitting(false);
+    }
+
     const primarySeriesId = selectedSeriesIds[0];
     navigation.navigate('EnrollConfirm', {
       seriesIds: selectedSeriesIds,

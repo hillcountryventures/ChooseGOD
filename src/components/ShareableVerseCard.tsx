@@ -28,6 +28,7 @@ import { theme } from '../lib/theme';
 import { VerseSource, Translation } from '../types';
 import { fetchVerseParallel } from '../lib/supabase';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
+import { generateVerseLink } from '../utils/deepLinks';
 
 // Default translations to compare (English versions available in DB)
 const COMPARE_TRANSLATIONS: Translation[] = ['KJV', 'ASV', 'BBE'];
@@ -150,9 +151,10 @@ export function ShareableVerseCard({
       // Check if sharing is available
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
-        // Fallback to text sharing
-        const textContent = `"${source.text}"\n\n— ${source.book} ${source.chapter}:${source.verse} (${source.translation.toUpperCase()})\n\nShared from ChooseGOD`;
-        await Share.share({ message: textContent });
+        // Fallback to text sharing with deep link
+        const verseLink = generateVerseLink(source.book, source.chapter, source.verse);
+        const textContent = `"${source.text}"\n\n— ${source.book} ${source.chapter}:${source.verse} (${source.translation.toUpperCase()})\n\n${verseLink}`;
+        await Share.share({ message: textContent, url: verseLink });
         return;
       }
 
@@ -175,10 +177,11 @@ export function ShareableVerseCard({
     } catch (error) {
       console.error('Error sharing verse card:', error);
 
-      // Fallback to text sharing
+      // Fallback to text sharing with deep link
       try {
-        const textContent = `"${source.text}"\n\n— ${source.book} ${source.chapter}:${source.verse} (${source.translation.toUpperCase()})\n\nShared from ChooseGOD`;
-        await Share.share({ message: textContent });
+        const verseLink = generateVerseLink(source.book, source.chapter, source.verse);
+        const textContent = `"${source.text}"\n\n— ${source.book} ${source.chapter}:${source.verse} (${source.translation.toUpperCase()})\n\n${verseLink}`;
+        await Share.share({ message: textContent, url: verseLink });
       } catch (fallbackError) {
         console.error('Fallback share failed:', fallbackError);
         Alert.alert('Share Failed', 'Unable to share this verse. Please try again.');
