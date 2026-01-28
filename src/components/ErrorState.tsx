@@ -32,8 +32,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Something went wrong',
-  message = 'Please try again or check your connection.',
+  title = 'Something unexpected happened',
+  message = "Don't worry — take a breath, and let's try that again.",
   icon = 'alert-circle-outline',
   iconColor = theme.colors.error,
   onRetry,
@@ -44,11 +44,11 @@ export function ErrorState({
 }: ErrorStateProps) {
   if (compact) {
     return (
-      <View style={styles.compactContainer}>
+      <View style={styles.compactContainer} testID="error-state-compact" accessibilityRole="alert" accessibilityLabel={message}>
         <Ionicons name={icon} size={20} color={iconColor} />
         <Text style={styles.compactMessage}>{message}</Text>
         {onRetry && (
-          <TouchableOpacity onPress={onRetry} style={styles.compactRetry}>
+          <TouchableOpacity onPress={onRetry} style={styles.compactRetry} testID="error-retry-compact" accessibilityRole="button" accessibilityLabel={retryText}>
             <Text style={styles.compactRetryText}>{retryText}</Text>
           </TouchableOpacity>
         )}
@@ -57,24 +57,24 @@ export function ErrorState({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="error-state" accessibilityRole="alert" accessibilityLabel={`${title}. ${message}`}>
       <View style={styles.iconContainer}>
         <Ionicons name={icon} size={64} color={iconColor} />
       </View>
       
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={styles.title} testID="error-state-title">{title}</Text>
+      <Text style={styles.message} testID="error-state-message">{message}</Text>
 
       <View style={styles.actions}>
         {onRetry && (
-          <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+          <TouchableOpacity style={styles.retryButton} onPress={onRetry} testID="error-retry-button" accessibilityRole="button" accessibilityLabel={retryText}>
             <Ionicons name="refresh" size={18} color="#fff" />
             <Text style={styles.retryButtonText}>{retryText}</Text>
           </TouchableOpacity>
         )}
         
         {onSecondaryAction && (
-          <TouchableOpacity style={styles.secondaryButton} onPress={onSecondaryAction}>
+          <TouchableOpacity style={styles.secondaryButton} onPress={onSecondaryAction} testID="error-secondary-button" accessibilityRole="button" accessibilityLabel={secondaryActionText}>
             <Text style={styles.secondaryButtonText}>{secondaryActionText}</Text>
           </TouchableOpacity>
         )}
@@ -95,30 +95,30 @@ export function ErrorState({
 // Preset configurations for common error types
 export const ErrorPresets = {
   network: {
-    title: 'Connection Issue',
-    message: 'Please check your internet connection and try again.',
+    title: "You're Offline",
+    message: "Check your connection and try again. He's still with you.\n\n\"Be still, and know that I am God.\" — Psalm 46:10",
     icon: 'cloud-offline-outline' as const,
   },
   server: {
-    title: 'Server Error',
-    message: 'Our servers are having trouble. Please try again in a moment.',
+    title: 'Give Us a Moment',
+    message: "Our servers need a second. Try again shortly — we'll be right back.",
     icon: 'server-outline' as const,
   },
   notFound: {
     title: 'Not Found',
-    message: "We couldn't find what you're looking for.",
+    message: "We couldn't find what you're looking for. Try a different search.",
     icon: 'search-outline' as const,
     iconColor: theme.colors.textMuted,
   },
   permission: {
     title: 'Permission Needed',
-    message: 'Please grant the required permissions to continue.',
+    message: 'Please grant the required permission so we can continue together.',
     icon: 'lock-closed-outline' as const,
     iconColor: theme.colors.warning,
   },
   empty: {
     title: 'Nothing Here Yet',
-    message: 'Start your journey by adding something!',
+    message: 'Your journey starts with a single step. Add something to begin!',
     icon: 'leaf-outline' as const,
     iconColor: theme.colors.primary,
   },

@@ -1,0 +1,17 @@
+appId: com.choosegod.app
+---
+- launchApp
+- tapOn:
+    id: "tab-bible"
+- tapOn: "Genesis"
+- tapOn: "1"
+- assertVisible:
+    id: "verse-text"
+- toggleAirplaneMode
+- back
+- back
+- tapOn: "Genesis"
+- tapOn: "1"
+- assertVisible:
+    id: "verse-text"
+- toggleAirplaneMode # restore connectivity

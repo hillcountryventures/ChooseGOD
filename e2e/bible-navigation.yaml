@@ -1,0 +1,14 @@
+appId: com.choosegod.app
+---
+- launchApp
+- tapOn:
+    id: "tab-bible"
+- assertVisible: "Bible"
+- tapOn: "Genesis"
+- tapOn: "1" # Chapter 1
+- assertVisible:
+    id: "verse-text"
+- scroll:
+    direction: LEFT
+- assertVisible:
+    id: "verse-text"
