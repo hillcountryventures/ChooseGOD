@@ -143,10 +143,10 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
           onClose();
           break;
         case PURCHASES_ERROR_CODE.NETWORK_ERROR:
-          setError('Network error. Please check your connection and try again.');
+          setError("We couldn't reach the store. Check your connection and try again.");
           break;
         default:
-          setError('Something went wrong. Please try again.');
+          setError("That didn't work — please try once more.");
           console.error('[Paywall] Purchase error:', purchaseError);
       }
     } finally {
@@ -176,7 +176,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
       }
     } catch (err) {
       console.error('[Paywall] Restore error:', err);
-      setError('Unable to restore purchases. Please try again.');
+      setError("We couldn't restore your purchases right now. Please try again.");
     } finally {
       setIsRestoring(false);
     }
@@ -316,13 +316,17 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
                 <Ionicons name="people" size={20} color={theme.colors.accent} />
                 <Text style={styles.socialProofText}>{PAYWALL_CONTENT.socialProof.userCount}</Text>
               </View>
-              <View style={styles.socialProofDivider} />
-              <View style={styles.socialProofItem}>
-                <Ionicons name="star" size={20} color={theme.colors.accent} />
-                <Text style={styles.socialProofText}>
-                  {PAYWALL_CONTENT.socialProof.rating} ({PAYWALL_CONTENT.socialProof.ratingCount} reviews)
-                </Text>
-              </View>
+              {PAYWALL_CONTENT.socialProof.rating && PAYWALL_CONTENT.socialProof.ratingCount && (
+                <>
+                  <View style={styles.socialProofDivider} />
+                  <View style={styles.socialProofItem}>
+                    <Ionicons name="star" size={20} color={theme.colors.accent} />
+                    <Text style={styles.socialProofText}>
+                      {PAYWALL_CONTENT.socialProof.rating} ({PAYWALL_CONTENT.socialProof.ratingCount} reviews)
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
             {/* Featured testimonial */}
             <View style={styles.testimonial}>

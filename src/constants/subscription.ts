@@ -175,17 +175,17 @@ export function getJournalInsightFeatures(isPremium: boolean) {
  */
 export const PAYWALL_CONTENT = {
   // Main headline
-  headline: 'Unlock Deeper Companionship',
+  headline: 'Go Deeper with God',
 
   // Subheadline
   subheadline:
-    'Premium spiritual tools for deeper Bible study, guided practices, and personalized growth.',
+    'Unlock premium spiritual tools — deeper Bible study, guided practices, and personalized growth.',
 
   // Social proof
   socialProof: {
-    userCount: 'Join thousands of believers',
-    rating: '4.9',
-    ratingCount: '500+',
+    userCount: 'Join believers going deeper',
+    rating: null, // Only show when real App Store data is available
+    ratingCount: null,
     testimonials: [
       {
         text: 'Finally, an app that helps me understand Scripture, not just read it.',

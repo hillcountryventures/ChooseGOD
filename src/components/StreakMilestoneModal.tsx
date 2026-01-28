@@ -34,6 +34,16 @@ export interface StreakMilestone {
 // Milestone definitions
 export const STREAK_MILESTONES: StreakMilestone[] = [
   {
+    days: 3,
+    title: 'Three Days In!',
+    description: "You're building a rhythm with God. Small steps, big faithfulness.",
+    icon: 'leaf',
+    scripture: 'The Lord directs the steps of the godly. He delights in every detail of their lives.',
+    scriptureRef: 'Psalm 37:23 (NLT)',
+    gradient: ['#34D399', '#10B981'],
+    badge: '🌱',
+  },
+  {
     days: 7,
     title: 'One Week Strong!',
     description: 'You\'ve spent 7 consecutive days in God\'s Word. This is the foundation of a lifelong habit.',
