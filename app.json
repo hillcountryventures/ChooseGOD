@@ -16,6 +16,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.choosegod.app",
+      "associatedDomains": [
+        "applinks:choosegod.app"
+      ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSSpeechRecognitionUsageDescription": "Allow ChooseGOD to use speech recognition for hands-free questions and prayers.",
@@ -32,6 +35,30 @@
       "package": "com.choosegod.app",
       "permissions": [
         "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "choosegod.app",
+              "pathPrefix": "/verse"
+            },
+            {
+              "scheme": "https",
+              "host": "choosegod.app",
+              "pathPrefix": "/refer"
+            },
+            {
+              "scheme": "https",
+              "host": "choosegod.app",
+              "pathPrefix": "/invite"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
@@ -54,6 +81,15 @@
         {
           "microphonePermission": "Allow ChooseGOD to use the microphone for voice input.",
           "speechRecognitionPermission": "Allow ChooseGOD to use speech recognition for hands-free questions and prayers."
+        }
+      ],
+      [
+        "@sentry/react-native",
+        {
+          "url": "https://sentry.io/",
+          "organization": "choosegod",
+          "project": "choosegod-react-native",
+          "dsn": "https://PLACEHOLDER@o0.ingest.sentry.io/0"
         }
       ]
     ],
