@@ -36,7 +36,7 @@ import { useTrackScreen } from '../../hooks/useAnalytics';
 const PRIVACY_POLICY_URL = 'https://choosegod.app/privacy.html';
 const TERMS_OF_USE_URL = 'https://choosegod.app/#terms';
 
-const { width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Paywall'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'Paywall'>;

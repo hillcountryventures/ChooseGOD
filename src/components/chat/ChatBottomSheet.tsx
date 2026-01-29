@@ -96,8 +96,8 @@ export function ChatBottomSheet() {
   // Local state
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationMessage, setCelebrationMessage] = useState('');
+  const [showCelebration, _setShowCelebration] = useState(false);
+  const [celebrationMessage, _setCelebrationMessage] = useState('');
 
   // Voice input
   const {

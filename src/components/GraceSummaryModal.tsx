@@ -85,7 +85,7 @@ function parseSummary(summary: string): ParsedSection[] {
 
 function SectionCard({
   section,
-  index,
+  index: _index,
   animValue,
 }: {
   section: ParsedSection;

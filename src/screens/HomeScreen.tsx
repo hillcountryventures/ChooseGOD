@@ -398,7 +398,7 @@ function ContextualCard() {
     onPress: () => void;
   } | null = null;
 
-  const openChatWithMode = (mode: ChatMode) => {
+  const _openChatWithMode = (mode: ChatMode) => {
     openChatHub(navigation, { contextMode: mode });
   };
 

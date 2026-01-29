@@ -462,7 +462,7 @@ export function setupNotificationListeners(
 
   const responseSubscription = Notifications.addNotificationResponseReceivedListener(
     (response) => {
-      const navData = handleNotificationResponse(response);
+      const _navData = handleNotificationResponse(response);
       onNotificationResponse?.(response);
       // Navigation would be handled by the calling component
     }

@@ -12,6 +12,7 @@ const DANGEROUS_PATTERNS = /(<\s*script[^>]*>|<\/script>|javascript:|on\w+\s*=|u
 const HTML_TAG = /<[^>]*>/g;
 
 /** Control characters (except newline/tab for chat) */
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
 /**

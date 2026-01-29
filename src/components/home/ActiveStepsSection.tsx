@@ -93,7 +93,7 @@ export function ActiveStepsSection({ onNavigateToJourney }: ActiveStepsSectionPr
 
   // Handle step press (for details/editing)
   const handleStepPress = useCallback(
-    (step: ObedienceStep) => {
+    (_step: ObedienceStep) => {
       // Navigate to Journey screen for now
       // Could navigate to a detail screen in the future
       navigation.navigate('Journey');

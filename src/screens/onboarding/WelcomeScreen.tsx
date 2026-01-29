@@ -16,7 +16,7 @@ import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
 import { useTrackScreen } from '../../hooks/useAnalytics';
 
-const { width, height } = Dimensions.get('window');
+const { width, height: _height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Welcome'>;
 
@@ -43,6 +43,7 @@ export default function WelcomeScreen() {
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               source={require('../../../assets/icon.png')}
                
               style={styles.logo}

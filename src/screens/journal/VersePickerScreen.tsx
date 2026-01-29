@@ -542,7 +542,7 @@ export default function VersePickerScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.selectedScrollContent}
           >
-            {selectedVerses.map((verse, index) => (
+            {selectedVerses.map((verse, _index) => (
               <View
                 key={`selected-${verse.book}-${verse.chapter}-${verse.verse}`}
                 style={styles.selectedChip}

@@ -24,7 +24,7 @@ type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Enrol
 type RouteProps = RouteProp<OnboardingStackParamList, 'EnrollConfirm'>;
 
 export default function EnrollmentConfirmScreen() {
-  const navigation = useNavigation<NavigationProp>();
+  const _navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { seriesIds, primarySeriesId } = route.params;
   const { user } = useAuthStore();

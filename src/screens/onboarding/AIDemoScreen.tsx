@@ -39,7 +39,7 @@ export default function AIDemoScreen() {
   const { selectedSeriesIds } = route.params;
   
   const [phase, setPhase] = useState<'intro' | 'demo' | 'try'>('intro');
-  const [userQuestion, setUserQuestion] = useState('');
+  const [_userQuestion, _setUserQuestion] = useState('');
   const [showingResponse, setShowingResponse] = useState(false);
   const [typedResponse, setTypedResponse] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;

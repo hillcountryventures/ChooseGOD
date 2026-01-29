@@ -40,7 +40,7 @@ const FILTERS: { id: FilterType; label: string }[] = [
 
 export default function SeriesLibraryScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { fetchAllSeries, seriesLoading } = useDevotionalStore();
+  const { fetchAllSeries, seriesLoading: _seriesLoading } = useDevotionalStore();
   const allSeries = useAllSeries();
   const enrollments = useEnrollments();
 

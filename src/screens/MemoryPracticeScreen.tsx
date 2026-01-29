@@ -27,7 +27,7 @@ import { theme } from '../lib/theme';
 import { useMemoryVerses, ReviewRating } from '../hooks/useMemoryVerses';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
-const { width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get('window');
 
 // Generate first-letter hints: "For God so loved" → "F___ G__ s_ l____"
 function generateHint(text: string): string {

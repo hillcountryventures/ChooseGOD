@@ -40,7 +40,7 @@ import { useStore } from '../store/useStore';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 
-const { width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get('window');
 
 type RouteProps = RouteProp<RootStackParamList, 'LectioDivina'>;
 

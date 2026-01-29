@@ -54,7 +54,7 @@ export default function BibleScreen() {
     searchResults,
     isSearching,
     fontSizes,
-    preferences,
+    preferences: _preferences,
     headerTranslateY,
     scrollViewRef,
   } = reader;
@@ -170,7 +170,7 @@ export default function BibleScreen() {
           onBookmark={reader.handleBookmark}
           onOpenNote={reader.handleOpenNote}
           onEditNote={reader.handleEditNote}
-          onAIAction={(prompt) => {
+          onAIAction={(_prompt) => {
             reader.setShowAIMenu(false);
             reader.setSelectedVerse(null);
             // Navigate handled by the action bar's onAIAction

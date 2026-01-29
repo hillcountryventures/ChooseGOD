@@ -72,7 +72,7 @@ export default function JournalComposeScreen() {
   const addMoment = useStore((state) => state.addMoment);
   const currentDraft = useStore((state) => state.currentDraft);
   const setCurrentDraft = useStore((state) => state.setCurrentDraft);
-  const updateDraft = useStore((state) => state.updateDraft);
+  const _updateDraft = useStore((state) => state.updateDraft);
   const clearDraft = useStore((state) => state.clearDraft);
   const savedDrafts = useStore((state) => state.savedDrafts);
   const dailyPrompts = useStore((state) => state.dailyPrompts);

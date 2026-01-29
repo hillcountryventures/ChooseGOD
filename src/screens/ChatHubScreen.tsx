@@ -32,7 +32,6 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { SeedTracker, FinalSeedBanner, NoSeedsCard } from '../components/chat/SeedComponents';
 import { ChatModeSelector, getModeName } from '../components/chat/ChatModeSelector';
 import { ChatEmptyState } from '../components/chat/ChatEmptyState';
-import { isPrayerMode as checkIsPrayerMode } from '../constants/chatModes';
 import { useChatHub } from '../hooks/useChatHub';
 
 export default function ChatHubScreen() {

@@ -157,7 +157,7 @@ function segmentText(text: string, references: DetectedReference[]): TextSegment
 function renderMarkdownSegment(
   content: string,
   index: number,
-  baseStyle?: TextStyle
+  _baseStyle?: TextStyle
 ): React.ReactNode {
   const mdSegments = parseMarkdown(content);
 

@@ -18,7 +18,7 @@ import {
 } from '../../types';
 import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore';
 
-const { width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'DevotionalComplete'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'DevotionalComplete'>;
@@ -37,10 +37,10 @@ export default function DevotionalCompleteScreen() {
   const route = useRoute<RouteProps>();
   const { seriesId, dayNumber, seriesTitle } = route.params;
 
-  const { fetchSeriesById } = useDevotionalStore();
+  const { fetchSeriesById: _fetchSeriesById } = useDevotionalStore();
   const enrollments = useEnrollments();
 
-  const [showConfetti, setShowConfetti] = useState(true);
+  const [showConfetti, _setShowConfetti] = useState(true);
   const [encouragement] = useState(() => ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]);
 
   const enrollment = enrollments.find((e) => e.seriesId === seriesId);

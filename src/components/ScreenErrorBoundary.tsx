@@ -19,7 +19,7 @@ interface ScreenErrorBoundaryProps {
  * Inner fallback that has access to navigation hooks.
  * (Can't use hooks inside a class component's render.)
  */
-function ScreenFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+function ScreenFallback({ error: _error, resetError }: { error: Error; resetError: () => void }) {
   const navigation = useNavigation();
 
   const goHome = useCallback(() => {

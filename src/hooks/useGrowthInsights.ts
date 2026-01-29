@@ -131,7 +131,7 @@ Format your response as JSON:
             growthPrediction: parsed.growthPrediction,
             encouragement: parsed.encouragement,
           };
-        } catch (parseError) {
+        } catch (_parseError) {
           // If JSON parsing fails, use the raw response
           return {
             summary: data.response.substring(0, 300),

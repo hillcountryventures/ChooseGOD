@@ -89,7 +89,7 @@ export default function PersonalizationQuiz() {
     }
   };
 
-  const renderOption = (option: QuizOption, index: number) => {
+  const renderOption = (option: QuizOption, _index: number) => {
     const isSelected = responses[question.field] === option.value;
 
     return (

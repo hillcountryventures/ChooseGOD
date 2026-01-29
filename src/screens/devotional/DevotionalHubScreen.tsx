@@ -107,7 +107,7 @@ export default function DevotionalHubScreen() {
     ? Math.min(7, Math.max(1, enrollments[0]?.completedDays.length || 0))
     : 0;
 
-  const greeting = () => {
+  const _greeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';

@@ -278,8 +278,8 @@ export default function SettingsScreen() {
   const preferences = useStore((state) => state.preferences);
   const updatePreferences = useStore((state) => state.updatePreferences);
   const clearMessages = useStore((state) => state.clearMessages);
-  const recentMoments = useStore((state) => state.recentMoments);
-  const activePrayers = useStore((state) => state.activePrayers);
+  const _recentMoments = useStore((state) => state.recentMoments);
+  const _activePrayers = useStore((state) => state.activePrayers);
   const signOut = useAuthStore((state) => state.signOut);
   const deleteAccount = useAuthStore((state) => state.deleteAccount);
   const isDeleting = useAuthStore((state) => state.isDeleting);

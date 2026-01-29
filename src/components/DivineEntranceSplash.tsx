@@ -128,7 +128,7 @@ export function DivineEntranceSplash({
     const timer = setTimeout(async () => {
       try {
         await SplashScreen.hideAsync();
-      } catch (e) {
+      } catch (_e) {
         // Splash screen may have already been hidden
       }
     }, 100);

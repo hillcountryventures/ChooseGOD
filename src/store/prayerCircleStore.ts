@@ -442,7 +442,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
       // PRAYER ACTIONS
       // =====================================================
 
-      fetchCirclePrayers: async (circleId: string, userId: string) => {
+      fetchCirclePrayers: async (circleId: string, _userId: string) => {
         set({ requestsLoading: true });
 
         try {

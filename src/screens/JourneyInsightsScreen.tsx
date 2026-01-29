@@ -86,7 +86,7 @@ function BibleBooksGrid({ books }: BibleBooksGridProps) {
         </TouchableOpacity>
       </View>
       <View style={styles.booksGrid}>
-        {books.map((book, index) => (
+        {books.map((book, _index) => (
           <View
             key={book.book}
             style={[
@@ -202,7 +202,7 @@ function MilestonesCarousel({ milestones }: MilestonesCarouselProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.milestonesScroll}
       >
-        {milestones.map((milestone, index) => (
+        {milestones.map((milestone, _index) => (
           <View
             key={milestone.id}
             style={[

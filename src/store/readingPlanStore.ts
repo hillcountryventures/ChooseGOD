@@ -369,7 +369,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
       // WAYFARER ADAPTIVE ACTIONS
       // =====================================================
 
-      checkWayfarerStatus: async (userId: string) => {
+      checkWayfarerStatus: async (_userId: string) => {
         set((state) => ({
           wayfarerState: { ...state.wayfarerState, status: 'loading' },
         }));

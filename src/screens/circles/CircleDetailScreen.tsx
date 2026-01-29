@@ -87,7 +87,7 @@ export default function CircleDetailScreen() {
   const {
     fetchCircleById,
     fetchCirclePrayers,
-    fetchCircleMembers,
+    fetchCircleMembers: _fetchCircleMembers,
     leaveCircle,
     deleteCircle,
     markPraying,
