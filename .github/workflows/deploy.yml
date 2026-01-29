@@ -1,8 +1,9 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:  # Manual trigger only until EXPO_TOKEN is configured
+  # push:
+  #   branches: [main]
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -32,4 +33,4 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build & Submit
-        run: eas build --platform all --profile production --auto-submit --non-interactive
+        run: eas build --platform ios --profile production --auto-submit --non-interactive
