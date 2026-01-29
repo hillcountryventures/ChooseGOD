@@ -200,7 +200,7 @@ export const ONBOARDING_SLIDES = {
       'Track your prayers, journal your thoughts, and see how God is working in your life.',
   },
   ai: {
-    title: 'AI-Powered Guidance',
+    title: 'Scripture-Powered Guidance',
     description:
       'Get personalized Scripture insights and spiritual guidance whenever you need it.',
   },

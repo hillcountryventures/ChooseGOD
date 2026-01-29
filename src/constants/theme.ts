@@ -56,28 +56,28 @@ export interface Theme {
 export const darkTheme: Theme = {
   dark: true,
   colors: {
-    background: '#0F0F0F',
-    surface: '#1A1A1A',
-    surfaceElevated: '#242424',
-    card: '#1E1E1E',
+    background: '#0e1126',
+    surface: '#161a33',
+    surfaceElevated: '#1e2340',
+    card: '#1a1e38',
 
-    text: '#FFFFFF',
-    textSecondary: '#A0A0A0',
-    textMuted: '#666666',
-    textInverse: '#0F0F0F',
+    text: '#faf8f2',
+    textSecondary: '#a0a5b8',
+    textMuted: '#5a6080',
+    textInverse: '#0e1126',
 
-    primary: '#6C63FF',
-    primaryLight: '#8B83FF',
-    primaryDark: '#4A42DB',
-    accent: '#FFD700',
+    primary: '#d4a828',
+    primaryLight: '#e0bc4a',
+    primaryDark: '#8b7425',
+    accent: '#faf8f2',
 
     success: '#4ADE80',
     warning: '#FBBF24',
     error: '#F87171',
     info: '#60A5FA',
 
-    border: '#2A2A2A',
-    divider: '#222222',
+    border: '#252a45',
+    divider: '#1f2440',
 
     highlightYellow: '#FEF08A',
     highlightGreen: '#BBF7D0',
@@ -95,20 +95,20 @@ export const darkTheme: Theme = {
 export const lightTheme: Theme = {
   dark: false,
   colors: {
-    background: '#F8F8FA',
+    background: '#faf8f2',
     surface: '#FFFFFF',
     surfaceElevated: '#FFFFFF',
     card: '#FFFFFF',
 
-    text: '#1A1A1A',
-    textSecondary: '#5A5A5A',
+    text: '#0e1126',
+    textSecondary: '#3a3f55',
     textMuted: '#9A9A9A',
     textInverse: '#FFFFFF',
 
-    primary: '#6C63FF',
-    primaryLight: '#8B83FF',
-    primaryDark: '#4A42DB',
-    accent: '#F59E0B',
+    primary: '#8b7425',
+    primaryLight: '#d4a828',
+    primaryDark: '#6b5a1e',
+    accent: '#0e1126',
 
     success: '#22C55E',
     warning: '#EAB308',

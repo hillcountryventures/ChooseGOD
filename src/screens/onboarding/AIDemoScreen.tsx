@@ -115,7 +115,7 @@ export default function AIDemoScreen() {
               </LinearGradient>
             </View>
 
-            <Text style={styles.title}>Meet Your AI Companion</Text>
+            <Text style={styles.title}>Meet Your Study Companion</Text>
             <Text style={styles.subtitle}>
               Ask any question about faith, life, or Scripture — and get personalized,
               Bible-grounded guidance instantly.
@@ -164,7 +164,7 @@ export default function AIDemoScreen() {
                 <Ionicons name="sparkles" size={20} color={theme.colors.accent} />
               </View>
               <View>
-                <Text style={styles.headerTitle}>AI Companion</Text>
+                <Text style={styles.headerTitle}>Study Companion</Text>
                 <Text style={styles.headerSubtitle}>Bible study assistant</Text>
               </View>
             </View>
@@ -189,7 +189,7 @@ export default function AIDemoScreen() {
               <Animated.View style={[styles.aiBubble, { opacity: fadeAnim }]}>
                 <View style={styles.aiHeader}>
                   <Ionicons name="sparkles" size={14} color={theme.colors.accent} />
-                  <Text style={styles.aiLabel}>AI Companion</Text>
+                  <Text style={styles.aiLabel}>Study Companion</Text>
                 </View>
                 <Text style={styles.aiBubbleText}>{typedResponse}</Text>
                 {typedResponse.length >= DEMO_RESPONSE.length && (
