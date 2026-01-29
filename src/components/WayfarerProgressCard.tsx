@@ -249,7 +249,7 @@ export default function WayfarerProgressCard({
   const {
     fetchUserProgress,
     fetchTodaysReading,
-    checkWayfarerStatus,
+    checkWayfarerStatus: _checkWayfarerStatus,
   } = useReadingPlanStore();
 
   const activeProgress = useActiveProgress();

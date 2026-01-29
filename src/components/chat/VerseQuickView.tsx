@@ -90,7 +90,7 @@ export function VerseQuickView({
 }: VerseQuickViewProps) {
   const navigation = useNavigation<NavigationProp>();
   const preferences = useStore((s) => s.preferences);
-  const { hasSeeds, seedsRemaining } = useChatQuota();
+  const { hasSeeds, seedsRemaining: _seedsRemaining } = useChatQuota();
   const { showPaywall } = usePremiumStatus();
 
   const [verseText, setVerseText] = useState<string | null>(null);

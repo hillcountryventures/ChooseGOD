@@ -35,7 +35,7 @@ import {
   VerseBookmark,
 } from '../types';
 import { HEADER } from '../constants/dimensions';
-import { HIGHLIGHT_COLORS, AI_QUICK_ACTIONS, getVerseKey } from '../components/bible';
+import { AI_QUICK_ACTIONS, getVerseKey } from '../components/bible';
 import { VerseWithAnnotations } from '../components/bible/VerseRow';
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;

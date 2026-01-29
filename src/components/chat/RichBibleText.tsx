@@ -22,7 +22,7 @@ import { theme } from '../../lib/theme';
 const BIBLE_REF_REGEX = /\b((?:[1-3]\s+)?(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|(?:[1-2]\s+)?Samuel|(?:[1-2]\s+)?Kings|(?:[1-2]\s+)?Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|Ecclesiastes|Song\s+of\s+Solomon|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|(?:[1-2]\s+)?Corinthians|Galatians|Ephesians|Philippians|Colossians|(?:[1-2]\s+)?Thessalonians|(?:[1-2]\s+)?Timothy|Titus|Philemon|Hebrews|James|(?:[1-2]\s+)?Peter|(?:[1-3]\s+)?John|Jude|Revelation))\s+(\d+)(?::(\d+)(?:-(\d+))?)?/gi;
 
 // Simplified version for common cases
-const SIMPLE_REF_REGEX = /\b([1-3]?\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(\d+):(\d+)(?:-(\d+))?\b/g;
+const _SIMPLE_REF_REGEX = /\b([1-3]?\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(\d+):(\d+)(?:-(\d+))?\b/g;
 
 interface ParsedReference {
   fullMatch: string;

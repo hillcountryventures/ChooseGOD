@@ -112,7 +112,6 @@ function formatDisplayTitle(
 function generateSummaryPrompt(
   refs: { book: string; startChapter: number; endChapter: number }[]
 ): string {
-  const books = refs.map((r) => r.book).join(', ');
   return `Provide a concise spiritual summary of ${formatDisplayTitle(refs)}. Highlight key themes, God's character revealed, and practical application for daily life.`;
 }
 

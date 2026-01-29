@@ -6,13 +6,14 @@
  * - ChatMessageList: messages, empty state, reflection prompts
  * - ChatInputArea: text input, voice, send button
  * - ChatModeSelector: spiritual practice mode picker
+ * - ChatContextBanner: context-aware prompt banner
+ * - VoiceListeningBanner: voice recording indicator
+ * - CelebrationOverlay: animated celebration popup
  */
 import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
-  TouchableOpacity,
   Keyboard,
   Animated,
   Platform,
@@ -21,11 +22,9 @@ import {
 } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
-  BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import { FlashListRef } from '@shopify/flash-list';
 import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import * as Sharing from 'expo-sharing';
@@ -39,7 +38,6 @@ import { ChatMessage, VerseSource, SuggestedAction, RootStackParamList } from '.
 import { getSupabaseConfig } from '../../lib/supabase';
 import { CHAT_LIMITS } from '../../constants/limits';
 import { sanitizeChatMessage } from '../../utils/inputSanitizer';
-import { ANIMATION_DELAY } from '../../constants/animations';
 import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
 import { useChatQuota } from '../../hooks/useChatQuota';
 import type { ChatMode } from '../../types';
@@ -50,12 +48,16 @@ import {
 } from './utils';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
 import { isPrayerMode as checkIsPrayerMode } from '../../constants/chatModes';
+import { modeWelcomes } from './modeWelcomes';
 
 // Sub-components
 import { ChatHeader } from './ChatHeader';
 import { ChatInputArea } from './ChatInputArea';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatModeSelector } from './ChatModeSelector';
+import { ChatContextBanner } from './ChatContextBanner';
+import { VoiceListeningBanner } from './VoiceListeningBanner';
+import { CelebrationOverlay } from './CelebrationOverlay';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -133,7 +135,7 @@ export function ChatBottomSheet() {
 
   useEffect(() => {
     if (messages.length > 0) {
-      setTimeout(() => flashListRef.current?.scrollToEnd({ animated: true }), ANIMATION_DELAY.scroll);
+      setTimeout(() => flashListRef.current?.scrollToEnd({ animated: true }), 100);
     }
   }, [messages]);
 
@@ -164,7 +166,7 @@ export function ChatBottomSheet() {
   }, []);
 
   const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
+    (props: Record<string, unknown>) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={-1}
@@ -296,20 +298,26 @@ export function ChatBottomSheet() {
 
   // ==================== SECONDARY HANDLERS ====================
 
-  const handleContextPromptTap = () => {
+  const handleContextPromptTap = useCallback(() => {
     const initialMessage = generateInitialMessage(chatContext);
     if (initialMessage) {
       setInputText(initialMessage);
       (inputRef.current as unknown as { focus: () => void })?.focus();
     }
-  };
+  }, [chatContext]);
 
-  const getLastAssistantContext = () => {
+  const handleDailyVerseTap = useCallback(() => {
+    if (dailyVerse) {
+      handleSend(`Help me reflect on today's verse: ${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`);
+    }
+  }, [dailyVerse, handleSend]);
+
+  const getLastAssistantContext = useCallback(() => {
     const last = messages.filter(m => m.role === 'assistant').pop();
     return { sources: last?.sources || [], content: last?.content || '' };
-  };
+  }, [messages]);
 
-  const handleJournalPress = () => {
+  const handleJournalPress = useCallback(() => {
     setChatSheetOpen(false);
     const { sources, content } = getLastAssistantContext();
     const firstSource = sources[0];
@@ -321,9 +329,9 @@ export function ChatBottomSheet() {
       } : undefined,
       source: { type: 'ai_prompt' },
     });
-  };
+  }, [setChatSheetOpen, getLastAssistantContext, navigation]);
 
-  const handlePrayPress = () => {
+  const handlePrayPress = useCallback(() => {
     setChatSheetOpen(false);
     const { sources } = getLastAssistantContext();
     const firstSource = sources[0];
@@ -335,11 +343,11 @@ export function ChatBottomSheet() {
       } : undefined,
       source: { type: 'ai_prompt' },
     });
-  };
+  }, [setChatSheetOpen, getLastAssistantContext, navigation]);
 
-  const handleVersePress = (_verse: VerseSource) => {
+  const handleVersePress = useCallback((_verse: VerseSource) => {
     // TODO: navigate to verse
-  };
+  }, []);
 
   const handleSuggestedActionPress = useCallback((action: SuggestedAction) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -356,51 +364,6 @@ export function ChatBottomSheet() {
     setShowModeSelector(false);
 
     if (messages.length === 0) {
-      const modeWelcomes: Partial<Record<ChatMode, { content: string; actions: SuggestedAction[] }>> = {
-        prayer: {
-          content: "I\u2019m here to guide you in prayer. You can share what\u2019s on your heart, ask for Scripture to pray over a situation, or let me lead you through ACTS prayer (Adoration, Confession, Thanksgiving, Supplication).\n\nWhat would you like to bring before the Lord today?",
-          actions: [
-            { label: 'ACTS Prayer', prompt: 'Guide me through ACTS prayer', icon: 'list-outline' },
-            { label: 'Scripture to pray', prompt: 'Give me a Scripture to pray over my situation', icon: 'book-outline' },
-            { label: 'Pray for peace', prompt: 'Help me pray for peace in my anxious heart', icon: 'heart-outline' },
-          ],
-        },
-        lectio: {
-          content: "Welcome to Lectio Divina, an ancient practice of prayerful Scripture reading. I\u2019ll guide you through four movements: Reading, Meditation, Prayer, and Contemplation.\n\nWould you like to begin, or do you have a specific passage in mind?",
-          actions: [
-            { label: 'Begin Lectio', prompt: 'Guide me through Lectio Divina', icon: 'book-outline' },
-            { label: 'Choose passage', prompt: 'I have a specific passage I want to pray with', icon: 'search-outline' },
-          ],
-        },
-        examen: {
-          content: "Welcome to the Evening Examen, a practice of reflecting on your day with God. I\u2019ll help you notice where God was present and where you might have missed Him.\n\nAre you ready to begin?",
-          actions: [
-            { label: 'Begin Examen', prompt: 'Guide me through the Evening Examen', icon: 'moon-outline' },
-            { label: 'Quick reflection', prompt: 'Help me with a quick end-of-day reflection', icon: 'time-outline' },
-          ],
-        },
-        memory: {
-          content: "Scripture memory mode activated! I can help you memorize verses using techniques like first-letter prompts, story associations, and spaced repetition.\n\nWhat verse would you like to work on?",
-          actions: [
-            { label: 'Add new verse', prompt: 'I want to memorize a new verse', icon: 'add-outline' },
-            { label: 'Review verses', prompt: 'Quiz me on my memory verses', icon: 'school-outline' },
-          ],
-        },
-        confession: {
-          content: "This is a safe space for heart examination. As Psalm 139:23-24 says, \u201CSearch me, O God, and know my heart.\u201D\n\nTake a moment. What\u2019s weighing on your heart?",
-          actions: [
-            { label: 'Heart check', prompt: 'Help me examine my heart with Psalm 139', icon: 'heart-outline' },
-            { label: 'Confess', prompt: 'I need to confess something to God', icon: 'chatbubble-outline' },
-          ],
-        },
-        gratitude: {
-          content: "Let\u2019s focus on gratitude! \u201CIn everything give thanks\u201D (1 Thessalonians 5:18).\n\nWhat blessings\u2014big or small\u2014are you noticing today?",
-          actions: [
-            { label: 'Share blessing', prompt: "I want to share something I'm grateful for", icon: 'gift-outline' },
-            { label: 'Help me notice', prompt: 'Help me recognize blessings I might be overlooking', icon: 'eye-outline' },
-          ],
-        },
-      };
       const welcome = modeWelcomes[mode];
       if (welcome) {
         addMessage({
@@ -493,37 +456,14 @@ export function ChatBottomSheet() {
         />
       )}
 
-      {/* Context Banner */}
-      {chatContext.screenType === 'home' && dailyVerse ? (
-        <TouchableOpacity
-          style={styles.dailyVerseBanner}
-          onPress={() => handleSend(`Help me reflect on today's verse: ${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.dailyVerseHeader}>
-            <Ionicons name="sunny" size={16} color={theme.colors.accent} />
-            <Text style={styles.dailyVerseLabel}>{"Today\u2019s Verse"}</Text>
-          </View>
-          <Text style={styles.dailyVerseText} numberOfLines={2}>
-            {`\u201C${dailyVerse.verse.text}\u201D`}
-          </Text>
-          <Text style={styles.dailyVerseRef}>
-            {`\u2014 ${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`}
-          </Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.contextBanner} onPress={handleContextPromptTap} activeOpacity={0.7}>
-          <Ionicons
-            name={chatContext.screenType === 'bible' ? 'book' : isPrayerMode ? 'hand-left' : 'sparkles'}
-            size={16}
-            color={isPrayerMode ? theme.colors.prayer : theme.colors.primary}
-          />
-          <Text style={styles.contextText} numberOfLines={1}>
-            {isPrayerMode ? "Share what\u2019s on your heart..." : contextPrompt}
-          </Text>
-          <Ionicons name="arrow-forward" size={14} color={theme.colors.textMuted} />
-        </TouchableOpacity>
-      )}
+      <ChatContextBanner
+        screenType={chatContext.screenType || ''}
+        dailyVerse={dailyVerse}
+        isPrayerMode={isPrayerMode}
+        contextPrompt={contextPrompt}
+        onDailyVerseTap={handleDailyVerseTap}
+        onContextPromptTap={handleContextPromptTap}
+      />
 
       <ChatMessageList
         flashListRef={flashListRef}
@@ -540,16 +480,7 @@ export function ChatBottomSheet() {
         onPrayPress={handlePrayPress}
       />
 
-      {/* Voice listening indicator */}
-      {isListening && (
-        <View style={styles.listeningBanner}>
-          <View style={styles.listeningDot} />
-          <Text style={styles.listeningText}>Listening...</Text>
-          <TouchableOpacity onPress={cancelListening} style={styles.cancelListening}>
-            <Ionicons name="close" size={16} color={theme.colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {isListening && <VoiceListeningBanner onCancel={cancelListening} />}
 
       <ChatInputArea
         inputRef={inputRef}
@@ -565,22 +496,8 @@ export function ChatBottomSheet() {
         bottomInset={insets.bottom}
       />
 
-      {/* Celebration overlay */}
       {showCelebration && (
-        <Animated.View
-          style={[
-            styles.celebrationOverlay,
-            {
-              opacity: celebrationAnim,
-              transform: [{
-                scale: celebrationAnim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }),
-              }],
-            },
-          ]}
-        >
-          <Text style={styles.celebrationEmoji}>{'\uD83C\uDF89'}</Text>
-          <Text style={styles.celebrationText}>{celebrationMessage}</Text>
-        </Animated.View>
+        <CelebrationOverlay message={celebrationMessage} animValue={celebrationAnim} />
       )}
     </BottomSheet>
   );
@@ -595,100 +512,5 @@ const styles = StyleSheet.create({
   handleIndicator: {
     backgroundColor: theme.colors.border,
     width: 40,
-  },
-  contextBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    marginHorizontal: theme.spacing.md,
-    marginVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.lg,
-    gap: theme.spacing.sm,
-  },
-  dailyVerseBanner: {
-    marginHorizontal: theme.spacing.md,
-    marginVertical: theme.spacing.sm,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.accentAlpha[10],
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.accentAlpha[20],
-  },
-  dailyVerseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.xs,
-  },
-  dailyVerseLabel: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  dailyVerseText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
-    fontStyle: 'italic',
-    lineHeight: theme.fontSize.md * 1.5,
-    marginBottom: theme.spacing.xs,
-  },
-  dailyVerseRef: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-    fontWeight: theme.fontWeight.medium,
-  },
-  contextText: {
-    flex: 1,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  listeningBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.errorAlpha[20],
-    gap: theme.spacing.sm,
-  },
-  listeningDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.error,
-  },
-  listeningText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.error,
-    fontWeight: theme.fontWeight.medium,
-    flex: 1,
-  },
-  cancelListening: {
-    padding: theme.spacing.xs,
-  },
-  celebrationOverlay: {
-    position: 'absolute',
-    top: '30%',
-    left: theme.spacing.lg,
-    right: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.xl,
-    alignItems: 'center',
-    ...theme.shadows.lg,
-  },
-  celebrationEmoji: {
-    fontSize: 48,
-    marginBottom: theme.spacing.md,
-  },
-  celebrationText: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: '600',
-    color: theme.colors.text,
-    textAlign: 'center',
   },
 });
