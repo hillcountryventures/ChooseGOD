@@ -69,6 +69,8 @@ export function ChatInput({
           returnKeyType="send"
           onSubmitEditing={handleSend}
           editable={!isLoading}
+          accessibilityLabel="Message input"
+          accessibilityHint="Type your question about Scripture"
         />
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           {isLoading && onStop ? (
@@ -78,6 +80,8 @@ export function ChatInput({
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               activeOpacity={0.8}
+              accessibilityLabel="Stop generating"
+              accessibilityRole="button"
             >
               <Ionicons name="stop" size={20} color={theme.colors.text} />
             </TouchableOpacity>
@@ -89,6 +93,9 @@ export function ChatInput({
               onPressOut={handlePressOut}
               disabled={!canSend}
               activeOpacity={0.8}
+              accessibilityLabel={isLoading ? 'Sending message' : 'Send message'}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSend }}
             >
               {isLoading ? (
                 <ActivityIndicator size="small" color={theme.colors.text} />

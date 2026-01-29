@@ -48,12 +48,6 @@ export default function SeriesDetailScreen() {
   const existingEnrollment = enrollments.find((e) => e.seriesId === seriesId);
   const isEnrolled = !!existingEnrollment;
 
-  useEffect(() => {
-    if (!routeSeries) {
-      loadSeries();
-    }
-  }, [seriesId]);
-
   const loadSeries = async () => {
     setLoading(true);
     const data = await fetchSeriesById(seriesId);
@@ -62,6 +56,12 @@ export default function SeriesDetailScreen() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!routeSeries) {
+      loadSeries();
+    }
+  }, [seriesId]);
 
   const handleEnroll = async () => {
     if (!user || !series) return;
@@ -162,7 +162,7 @@ export default function SeriesDetailScreen() {
           <View style={styles.progressCard}>
             <View style={styles.progressHeader}>
               <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
-              <Text style={styles.progressTitle}>You're Enrolled</Text>
+              <Text style={styles.progressTitle}>{"You're Enrolled"}</Text>
             </View>
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBar}>
@@ -199,7 +199,7 @@ export default function SeriesDetailScreen() {
 
         {/* What You'll Learn */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What You'll Experience</Text>
+          <Text style={styles.sectionTitle}>{"What You'll Experience"}</Text>
           <View style={styles.featuresList}>
             {[
               { icon: 'book-outline', text: 'Daily Scripture readings' },

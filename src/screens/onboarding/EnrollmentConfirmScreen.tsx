@@ -9,7 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute, RouteProp, CommonActions, useNavigation } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import {
@@ -41,6 +41,7 @@ export default function EnrollmentConfirmScreen() {
   const [primarySeries, setPrimarySeries] = useState<DevotionalSeries | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
+   
   useEffect(() => {
     // Find the primary series
     const series = allSeries.find((s) => s.id === primarySeriesId);
@@ -133,9 +134,9 @@ export default function EnrollmentConfirmScreen() {
           </View>
 
           {/* Celebration Text */}
-          <Text style={styles.celebrationText}>You're All Set!</Text>
+          <Text style={styles.celebrationText}>{"You're All Set!"}</Text>
           <Text style={styles.enrolledText}>
-            You're enrolled in{' '}
+            {"You're enrolled in"}{' '}
             <Text style={styles.seriesName}>
               {primarySeries?.title || 'your devotional journey'}
             </Text>

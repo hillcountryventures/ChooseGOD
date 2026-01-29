@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing, DimensionValue } from 'react-native';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { theme } from '../lib/theme';
 
 interface CardSkeletonProps {

@@ -6,16 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Share,
-  ActivityIndicator,
-  ScrollView,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share, ActivityIndicator, ScrollView } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -260,7 +251,7 @@ export default function ReferralScreen() {
         <View style={styles.scriptureCard}>
           <Ionicons name="book-outline" size={16} color={theme.colors.textMuted} />
           <Text style={styles.scriptureText}>
-            "A generous person will prosper; whoever refreshes others will be refreshed."
+            {"\u201CA generous person will prosper; whoever refreshes others will be refreshed.\u201D"}
           </Text>
           <Text style={styles.scriptureRef}>— Proverbs 11:25</Text>
         </View>

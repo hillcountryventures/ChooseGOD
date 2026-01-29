@@ -6,7 +6,7 @@
  * nourishing way that encourages continued reading.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -57,7 +57,7 @@ function parseSummary(summary: string): ParsedSection[] {
   const sections: ParsedSection[] = [];
 
   // Match markdown-style headers: **Title** or ## Title
-  const sectionRegex = /(?:\*\*([^*]+)\*\*|##\s*([^\n]+))\s*\n([\s\S]*?)(?=(?:\*\*[^*]+\*\*|##\s*[^\n]+|\Z))/g;
+  const sectionRegex = /(?:\*\*([^*]+)\*\*|##\s*([^\n]+))\s*\n([\s\S]*?)(?=(?:\*\*[^*]+\*\*|##\s*[^\n]+|$))/g;
 
   let match;
   while ((match = sectionRegex.exec(summary)) !== null) {

@@ -28,10 +28,6 @@ export function AgeGateModal({ onVerified }: AgeGateModalProps) {
   const [visible, setVisible] = useState(false);
   const [blocked, setBlocked] = useState(false);
 
-  useEffect(() => {
-    checkAgeVerification();
-  }, []);
-
   const checkAgeVerification = async () => {
     try {
       const [verified, isBlocked] = await Promise.all([
@@ -51,6 +47,10 @@ export function AgeGateModal({ onVerified }: AgeGateModalProps) {
       setVisible(true);
     }
   };
+
+  useEffect(() => {
+    checkAgeVerification();
+  }, []);
 
   const handleYes = async () => {
     try {

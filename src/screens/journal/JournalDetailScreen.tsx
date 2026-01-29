@@ -25,7 +25,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
 import { useStore } from '../../store/useStore';
-import { RootStackParamList, SpiritualMoment, JournalMedia } from '../../types';
+import { RootStackParamList } from '../../types';
 import { navigateToBibleVerse } from '../../lib/navigationHelpers';
 import { MediaPreviewList } from '../../components/journal/MediaPreview';
 import VoiceNotePlayer from '../../components/journal/VoiceNotePlayer';
@@ -240,7 +240,7 @@ export default function JournalDetailScreen() {
                 </View>
                 {verse.text && (
                   <Text style={styles.verseText} numberOfLines={3}>
-                    "{verse.text}"
+                    {`\u201C${verse.text}\u201D`}
                   </Text>
                 )}
               </TouchableOpacity>

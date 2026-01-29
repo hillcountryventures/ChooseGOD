@@ -54,6 +54,9 @@ function TabButton({
       style={[styles.tabButton, active && styles.tabButtonActive]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
     >
       <Text style={[styles.tabButtonText, active && styles.tabButtonTextActive]}>
         {label}
@@ -253,6 +256,8 @@ function TimelineView({
           style={styles.emptyButton}
           onPress={onAddPrayer}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Start praying, add your first prayer"
         >
           <Ionicons name="add" size={20} color={theme.colors.text} />
           <Text style={styles.emptyButtonText}>Start Praying</Text>

@@ -91,7 +91,7 @@ export function DrawNearBanner({ verse, onPress }: DrawNearBannerProps) {
           </View>
 
           {/* Verse Text */}
-          <Text style={styles.verseText}>"{todaysVerse.text}"</Text>
+          <Text style={styles.verseText}>{`\u201C${todaysVerse.text}\u201D`}</Text>
 
           {/* Reference */}
           <View style={styles.referenceRow}>

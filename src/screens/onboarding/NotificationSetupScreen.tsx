@@ -140,7 +140,7 @@ export default function NotificationSetupScreen() {
               <View style={styles.toggleText}>
                 <Text style={styles.toggleTitle}>Daily Reminders</Text>
                 <Text style={styles.toggleDescription}>
-                  We'll remind you at your preferred time
+                  {"We'll remind you at your preferred time"}
                 </Text>
               </View>
             </View>
@@ -207,7 +207,7 @@ export default function NotificationSetupScreen() {
               </View>
               <Text style={styles.previewTitle}>Your devotional is ready</Text>
               <Text style={styles.previewBody}>
-                Continue your journey with today's reading on peace and trust.
+                {"Continue your journey with today's reading on peace and trust."}
               </Text>
             </View>
           )}

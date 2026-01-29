@@ -22,17 +22,17 @@ import {
 
 export function useAnalytics() {
   return {
-    trackOnboardingStarted: useCallback(trackOnboardingStarted, []),
-    trackOnboardingCompleted: useCallback(trackOnboardingCompleted, []),
-    trackFirstChat: useCallback(trackFirstChat, []),
-    trackPaywallShown: useCallback(trackPaywallShown, []),
-    trackSubscriptionStarted: useCallback(trackSubscriptionStarted, []),
-    trackScreenView: useCallback(trackScreenView, []),
-    trackVerseShared: useCallback(trackVerseShared, []),
-    trackStreakDay: useCallback(trackStreakDay, []),
-    trackEvent: useCallback(trackEvent, []),
-    identifyUser: useCallback(identifyUser, []),
-    resetAnalytics: useCallback(resetAnalytics, []),
+    trackOnboardingStarted: useCallback(() => trackOnboardingStarted(), []),
+    trackOnboardingCompleted: useCallback(() => trackOnboardingCompleted(), []),
+    trackFirstChat: useCallback(() => trackFirstChat(), []),
+    trackPaywallShown: useCallback(() => trackPaywallShown(), []),
+    trackSubscriptionStarted: useCallback(() => trackSubscriptionStarted(), []),
+    trackScreenView: useCallback((name: string) => trackScreenView(name), []),
+    trackVerseShared: useCallback(() => trackVerseShared(), []),
+    trackStreakDay: useCallback((count: number) => trackStreakDay(count), []),
+    trackEvent: useCallback((name: string, props?: Record<string, string | number | boolean>) => trackEvent(name, props), []),
+    identifyUser: useCallback((userId: string) => identifyUser(userId), []),
+    resetAnalytics: useCallback(() => resetAnalytics(), []),
   };
 }
 

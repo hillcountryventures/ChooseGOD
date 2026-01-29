@@ -11,13 +11,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { TABLES } from '../constants/database';
-import {
-  TimelineItem,
-  SpiritualMoment,
-  MomentType,
-  GrowthInsight,
-  VerseSource,
-} from '../types';
+import { TimelineItem, MomentType, VerseSource } from '../types';
 
 // =====================================================
 // TYPES

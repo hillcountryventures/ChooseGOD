@@ -21,6 +21,7 @@ import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
 import { AuthStackParamList } from '../../types/navigation';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Logo = require('../../../assets/logo.png');
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -96,6 +97,8 @@ export default function LoginScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
+                  accessibilityLabel="Email address"
+                  accessibilityHint="Enter your email to sign in"
                 />
               </View>
               {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -118,10 +121,14 @@ export default function LoginScreen() {
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
+                  accessibilityLabel="Password"
+                  accessibilityHint="Enter your password to sign in"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeButton}
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityRole="button"
                 >
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
@@ -136,6 +143,8 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={() => navigation.navigate('ForgotPassword')}
               style={styles.forgotPassword}
+              accessibilityLabel="Forgot password"
+              accessibilityRole="link"
             >
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </TouchableOpacity>
@@ -144,6 +153,9 @@ export default function LoginScreen() {
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLogin}
               disabled={loading}
+              accessibilityLabel="Sign in"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading }}
             >
               {loading ? (
                 <ActivityIndicator color={theme.colors.text} />
@@ -154,8 +166,8 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <Text style={styles.footerText}>{"Don't have an account? "}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')} accessibilityLabel="Sign up" accessibilityRole="link">
               <Text style={styles.footerLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>

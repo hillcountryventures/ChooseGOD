@@ -84,7 +84,7 @@ export function ErrorState({
       <View style={styles.scriptureContainer}>
         <Ionicons name="book-outline" size={14} color={theme.colors.textMuted} />
         <Text style={styles.scriptureText}>
-          "Cast all your anxiety on him because he cares for you."
+          {"\u201CCast all your anxiety on him because he cares for you.\u201D"}
         </Text>
         <Text style={styles.scriptureRef}>— 1 Peter 5:7</Text>
       </View>

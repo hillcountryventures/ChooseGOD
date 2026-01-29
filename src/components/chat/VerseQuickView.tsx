@@ -11,15 +11,7 @@
  */
 
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Share,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share, Platform } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
@@ -35,7 +27,7 @@ import { fetchVerse } from '../../lib/supabase';
 import { useStore } from '../../store/useStore';
 import { useChatQuota } from '../../hooks/useChatQuota';
 import { usePremiumStatus } from '../../hooks/usePremiumStatus';
-import { RootStackParamList, Translation } from '../../types';
+import { RootStackParamList } from '../../types';
 import { openChatHub, openJournalCompose } from '../../lib/navigationHelpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -287,7 +279,7 @@ export function VerseQuickView({
           ) : error ? (
             <Text style={styles.errorText}>{error}</Text>
           ) : (
-            <Text style={styles.verseText}>"{verseText}"</Text>
+            <Text style={styles.verseText}>{`\u201C${verseText}\u201D`}</Text>
           )}
         </View>
 

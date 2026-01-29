@@ -32,9 +32,8 @@ import { BottomTabParamList, RootStackParamList, ChatMode } from '../types';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { navigateToBibleVerse, navigateToProverbsOfDay, openJournalCompose, openChatHub } from '../lib/navigationHelpers';
-import { GREETING_HOURS } from '../constants/timing';
 import { STREAK_LIMITS, BIBLE_LIMITS } from '../constants/limits';
-import { WEEK_DAYS, GREETINGS, BIBLE_DEFAULTS } from '../constants/strings';
+import { WEEK_DAYS, BIBLE_DEFAULTS } from '../constants/strings';
 import { useChatQuota } from '../hooks/useChatQuota';
 import { useUserProfile, getFirstName } from '../hooks/useUserProfile';
 import { useAuthStore } from '../store/authStore';
@@ -160,7 +159,7 @@ function HeroVerseCard() {
         </View>
 
         {/* Tappable verse text */}
-        <TouchableOpacity onPress={handleVersePress} activeOpacity={0.8}>
+        <TouchableOpacity onPress={handleVersePress} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Daily verse: tap to open in Bible">
           <Text style={styles.heroVerseText}>&quot;{dailyVerse.verse.text}&quot;</Text>
         </TouchableOpacity>
 
@@ -185,15 +184,15 @@ function HeroVerseCard() {
         )}
 
         <View style={styles.heroActions}>
-          <TouchableOpacity style={styles.heroActionBtn} onPress={handleAskAboutVerse}>
+          <TouchableOpacity style={styles.heroActionBtn} onPress={handleAskAboutVerse} accessibilityRole="button" accessibilityLabel="Ask about this verse">
             <Ionicons name="chatbubble-outline" size={16} color={theme.colors.primary} />
             <Text style={styles.heroActionText}>Ask</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.heroActionBtn} onPress={handleReflect}>
+          <TouchableOpacity style={styles.heroActionBtn} onPress={handleReflect} accessibilityRole="button" accessibilityLabel="Write a reflection">
             <Ionicons name="pencil-outline" size={16} color={theme.colors.primary} />
             <Text style={styles.heroActionText}>Reflect</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.heroActionBtn} onPress={handleShare}>
+          <TouchableOpacity style={styles.heroActionBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel="Share this verse">
             <Ionicons name="share-outline" size={16} color={theme.colors.primary} />
             <Text style={styles.heroActionText}>Share</Text>
           </TouchableOpacity>

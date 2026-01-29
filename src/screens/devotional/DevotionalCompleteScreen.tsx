@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -41,17 +41,11 @@ export default function DevotionalCompleteScreen() {
   const enrollments = useEnrollments();
 
   const [showConfetti, setShowConfetti] = useState(true);
-  const [encouragement, setEncouragement] = useState('');
+  const [encouragement] = useState(() => ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]);
 
   const enrollment = enrollments.find((e) => e.seriesId === seriesId);
   const totalDays = enrollment?.series?.totalDays || 0;
   const isSeriesComplete = dayNumber >= totalDays;
-
-  useEffect(() => {
-    // Pick a random encouragement
-    const randomIndex = Math.floor(Math.random() * ENCOURAGEMENTS.length);
-    setEncouragement(ENCOURAGEMENTS[randomIndex]);
-  }, []);
 
   const handleContinue = () => {
     if (isSeriesComplete) {
@@ -184,7 +178,7 @@ export default function DevotionalCompleteScreen() {
             <View style={styles.completeMessage}>
               <Ionicons name="heart" size={24} color={theme.colors.prayer} />
               <Text style={styles.completeText}>
-                You've completed this devotional journey. May God continue to bless your walk with Him!
+                {"You've completed this devotional journey. May God continue to bless your walk with Him!"}
               </Text>
             </View>
           )}

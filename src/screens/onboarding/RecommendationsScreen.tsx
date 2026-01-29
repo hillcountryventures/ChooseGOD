@@ -21,7 +21,7 @@ import {
 } from '../../types';
 import { useDevotionalStore } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
-import { allStarterPlans, ReadingPlanData } from '../../data/plans';
+import { allStarterPlans } from '../../data/plans';
 
 const { width } = Dimensions.get('window');
 
@@ -207,7 +207,7 @@ export default function RecommendationsScreen() {
         >
           {/* Intro Text */}
           <Text style={styles.introText}>
-            Based on your answers, we think you'll love these devotional journeys. Select one or more to get started!
+            {"Based on your answers, we think you'll love these devotional journeys. Select one or more to get started!"}
           </Text>
 
           {/* Reading Plans — Start Here first */}

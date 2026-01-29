@@ -1,16 +1,12 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme, NavigationContainerRef, LinkingOptions } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
 import { initSentry, Sentry } from './src/utils/sentry';
-import { ScreenErrorBoundary } from './src/components/ScreenErrorBoundary';
 import { initAnalytics } from './src/services/analytics';
 
 // Initialize Sentry before anything else
@@ -20,444 +16,55 @@ initSentry();
 initAnalytics();
 
 // Prevent the native splash screen from auto-hiding
-// This MUST be called before the component renders
 SplashScreen.preventAutoHideAsync();
 
-// Divine Entrance Splash
-import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
+// Navigation
+import { AuthNavigator, OnboardingNavigator, TabNavigator, DarkTheme, linking } from './src/navigation';
 
-// Chat Components
+// Components
+import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
 import { PaywallModal } from './src/components/PaywallModal';
+
+// Screens (root-level modals/stacks)
 import ChatHubScreen from './src/screens/ChatHubScreen';
-
-// Auth Store
-import { useAuthStore } from './src/store/authStore';
-import { supabase } from './src/lib/supabase';
-import { useDevotionalStore } from './src/store/devotionalStore';
-import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
-
-// Main Screens
-import HomeScreen from './src/screens/HomeScreen';
-import BibleScreen from './src/screens/BibleScreen';
-import JourneyScreen from './src/screens/JourneyScreen';
-// ChatScreen is now used in ChatBottomSheet, not as a tab
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReferralScreen from './src/screens/settings/ReferralScreen';
 import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
-import PrayersScreen from './src/screens/PrayersScreen';
 import CameraScreen from './src/screens/CameraScreen';
 import MemoryPracticeScreen from './src/screens/MemoryPracticeScreen';
 import LectioDivinaScreen from './src/screens/LectioDivinaScreen';
 import JourneyInsightsScreen from './src/screens/JourneyInsightsScreen';
-
-// Prayer Circle Screens
 import { PrayerCirclesScreen, CircleDetailScreen } from './src/screens/circles';
-
-// Journal Screens
 import JournalComposeScreen from './src/screens/journal/JournalComposeScreen';
 import JournalDetailScreen from './src/screens/journal/JournalDetailScreen';
 import VersePickerScreen from './src/screens/journal/VersePickerScreen';
 
-// Auth Screens
-import LoginScreen from './src/screens/auth/LoginScreen';
-import SignUpScreen from './src/screens/auth/SignUpScreen';
-import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
-
-// Onboarding Screens
-import WelcomeScreen from './src/screens/onboarding/WelcomeScreen';
-import OnboardingCarousel from './src/screens/onboarding/OnboardingCarousel';
-import PersonalizationQuiz from './src/screens/onboarding/PersonalizationQuiz';
-import RecommendationsScreen from './src/screens/onboarding/RecommendationsScreen';
-import AIDemoScreen from './src/screens/onboarding/AIDemoScreen';
-import PaywallScreen from './src/screens/onboarding/PaywallScreen';
-import NotificationSetupScreen from './src/screens/onboarding/NotificationSetupScreen';
-import EnrollmentConfirmScreen from './src/screens/onboarding/EnrollmentConfirmScreen';
-
-// Devotional Screens
-import DevotionalHubScreen from './src/screens/devotional/DevotionalHubScreen';
-import SeriesLibraryScreen from './src/screens/devotional/SeriesLibraryScreen';
-import SeriesDetailScreen from './src/screens/devotional/SeriesDetailScreen';
-import DailyDevotionalScreen from './src/screens/devotional/DailyDevotionalScreen';
-import DevotionalCompleteScreen from './src/screens/devotional/DevotionalCompleteScreen';
+// Stores & hooks
+import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
+import { useAppInitialization } from './src/hooks/useAppInitialization';
 
 // Types
-import {
-  BottomTabParamList,
-  RootStackParamList,
-  AuthStackParamList,
-  OnboardingStackParamList,
-  DevotionalStackParamList,
-} from './src/types';
-
-// Notifications
-import {
-  setupNotificationListeners,
-  handleNotificationResponse,
-  scheduleDailyWisdomNotification,
-  requestPermissions,
-} from './src/lib/notifications';
-
-// =====================================================
-// THEME & COLORS
-// =====================================================
-
-const colors = {
-  background: '#0F0F0F',
-  card: '#1A1A1A',
-  text: '#ffffff',
-  border: '#333333',
-  primary: '#6366F1',
-  accent: '#F59E0B',
-  textMuted: '#737373',
-};
-
-const DarkTheme = {
-  ...DefaultTheme,
-  dark: true,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: colors.primary,
-    background: colors.background,
-    card: colors.card,
-    text: colors.text,
-    border: colors.border,
-    notification: colors.accent,
-  },
-};
-
-// =====================================================
-// NAVIGATORS
-// =====================================================
+import { RootStackParamList } from './src/types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-const AuthStack = createNativeStackNavigator<AuthStackParamList>();
-const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
-const DevotionalStack = createNativeStackNavigator<DevotionalStackParamList>();
-const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-// Deep linking configuration
-// Supports: choosegod://bible/Genesis/1/1, https://choosegod.app/bible/John/3/16
-const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [
-    Linking.createURL('/'),
-    'choosegod://',
-    'https://choosegod.app',
-    'https://www.choosegod.app',
-  ],
-  config: {
-    screens: {
-      Auth: {
-        screens: {
-          Login: 'login',
-        },
-      },
-      Main: {
-        screens: {
-          Home: 'home',
-          Bible: {
-            path: 'bible/:book?/:chapter?/:verse?',
-            parse: {
-              book: (book: string) => decodeURIComponent(book),
-              chapter: (chapter: string) => parseInt(chapter, 10) || 1,
-              verse: (verse: string) => parseInt(verse, 10) || undefined,
-            },
-          },
-          Journey: 'journey',
-          Prayers: 'prayers',
-          Devotionals: 'devotionals',
-        },
-      },
-    },
-  },
-};
-
-// =====================================================
-// TAB ICONS
-// =====================================================
-
-type IconName = keyof typeof Ionicons.glyphMap;
-
-const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
-  Home: { active: 'home', inactive: 'home-outline' },
-  Devotionals: { active: 'heart', inactive: 'heart-outline' },
-  Bible: { active: 'book', inactive: 'book-outline' },
-  Journey: { active: 'trending-up', inactive: 'trending-up-outline' },
-  Prayers: { active: 'hand-left', inactive: 'hand-left-outline' },
-};
-
-// =====================================================
-// AUTH NAVIGATOR
-// =====================================================
-
-function AuthNavigator() {
-  return (
-    <AuthStack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: 'slide_from_right',
-      }}
-    >
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="SignUp" component={SignUpScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-    </AuthStack.Navigator>
-  );
-}
-
-// =====================================================
-// ONBOARDING NAVIGATOR
-// =====================================================
-
-function OnboardingNavigator() {
-  return (
-    <OnboardingStack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: 'slide_from_right',
-      }}
-    >
-      <OnboardingStack.Screen name="Welcome" component={WelcomeScreen} />
-      <OnboardingStack.Screen name="Carousel" component={OnboardingCarousel} />
-      <OnboardingStack.Screen name="Quiz" component={PersonalizationQuiz} />
-      <OnboardingStack.Screen name="Recommendations" component={RecommendationsScreen} />
-      <OnboardingStack.Screen name="AIDemo" component={AIDemoScreen} />
-      <OnboardingStack.Screen name="Paywall" component={PaywallScreen} />
-      <OnboardingStack.Screen name="NotificationSetup" component={NotificationSetupScreen} />
-      <OnboardingStack.Screen name="EnrollConfirm" component={EnrollmentConfirmScreen} />
-    </OnboardingStack.Navigator>
-  );
-}
-
-// =====================================================
-// DEVOTIONAL NAVIGATOR (nested in Devotionals tab)
-// =====================================================
-
-function DevotionalNavigator() {
-  return (
-    <DevotionalStack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: 'slide_from_right',
-      }}
-    >
-      <DevotionalStack.Screen name="DevotionalHub" component={DevotionalHubScreen} />
-      <DevotionalStack.Screen name="SeriesLibrary" component={SeriesLibraryScreen} />
-      <DevotionalStack.Screen name="SeriesDetail" component={SeriesDetailScreen} />
-      <DevotionalStack.Screen name="DailyDevotional" component={DailyDevotionalScreen} />
-      <DevotionalStack.Screen name="DevotionalComplete" component={DevotionalCompleteScreen} />
-    </DevotionalStack.Navigator>
-  );
-}
-
-// =====================================================
-// TAB NAVIGATOR
-// =====================================================
-
-// Screen wrappers with error boundaries
-const SafeHomeScreen = (props: any) => <ScreenErrorBoundary name="HomeScreen"><HomeScreen {...props} /></ScreenErrorBoundary>;
-const SafeBibleScreen = (props: any) => <ScreenErrorBoundary name="BibleScreen"><BibleScreen {...props} /></ScreenErrorBoundary>;
-const SafeJourneyScreen = (props: any) => <ScreenErrorBoundary name="JourneyScreen"><JourneyScreen {...props} /></ScreenErrorBoundary>;
-const SafePrayersScreen = (props: any) => <ScreenErrorBoundary name="PrayersScreen"><PrayersScreen {...props} /></ScreenErrorBoundary>;
-const SafeDevotionalNavigator = (props: any) => <ScreenErrorBoundary name="DevotionalNavigator"><DevotionalNavigator {...props} /></ScreenErrorBoundary>;
-
-function TabNavigator() {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 65,
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-        },
-        tabBarIcon: ({ focused, color }) => {
-          const icons = TAB_ICONS[route.name];
-          if (!icons) return null;
-          const iconName = focused ? icons.active : icons.inactive;
-
-          // Special styling for center Bible tab (purple highlight)
-          if (route.name === 'Bible') {
-            return (
-              <View style={styles.centerTab}>
-                <Ionicons name={iconName} size={28} color="#fff" />
-              </View>
-            );
-          }
-
-          return <Ionicons name={iconName} size={22} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={SafeHomeScreen} />
-      <Tab.Screen
-        name="Devotionals"
-        component={SafeDevotionalNavigator}
-        options={{
-          tabBarLabel: 'Devotionals',
-        }}
-      />
-      <Tab.Screen
-        name="Bible"
-        component={SafeBibleScreen}
-        options={{
-          tabBarLabel: '',
-        }}
-      />
-      <Tab.Screen name="Journey" component={SafeJourneyScreen} />
-      <Tab.Screen name="Prayers" component={SafePrayersScreen} />
-    </Tab.Navigator>
-  );
-}
-
-
-// =====================================================
-// MAIN APP
-// =====================================================
 
 function App() {
-  const { user, initialized, initialize } = useAuthStore();
-  const { onboardingCompleted, checkOnboardingStatus } = useDevotionalStore();
-  const initializeSubscription = useSubscriptionStore((s) => s.initialize);
+  const {
+    user,
+    onboardingCompleted,
+    shouldShowSplash,
+    handleSplashComplete,
+    checkingOnboarding,
+    initialized,
+    navigationRef,
+  } = useAppInitialization();
+
   const hidePaywall = useSubscriptionStore((s) => s.hidePaywall);
   const isPaywallVisible = useIsPaywallVisible();
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [splashComplete, setSplashComplete] = useState(false);
-  const [initTimedOut, setInitTimedOut] = useState(false);
-
-  // Navigation ref for deep-linking from notifications
-  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
-
-  // Initialize RevenueCat first, then auth (auth may call RevenueCat methods)
-  useEffect(() => {
-    async function initializeApp() {
-      try {
-        // Initialize RevenueCat first so it's ready when auth tries to call loginUser
-        await initializeSubscription();
-        // Then initialize auth (which may call subscriptionStore.loginUser)
-        await initialize();
-      } catch (error) {
-        console.error('[App] Initialization error:', error);
-      }
-    }
-    initializeApp();
-
-    // Safety timeout: If initialization takes too long, proceed anyway
-    // This prevents the app from appearing "stuck" to Apple reviewers
-    const timeoutId = setTimeout(() => {
-      if (!initialized) {
-        console.warn('[App] Initialization timeout reached, proceeding to app');
-        setInitTimedOut(true);
-      }
-    }, 10000); // 10 second max wait
-
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  // Set up notification listeners for deep-linking
-  useEffect(() => {
-    // Handle notification taps (deep-link to ChatHub, etc.)
-    const cleanup = setupNotificationListeners(
-      undefined, // onNotificationReceived - handled by default
-      (response) => {
-        const navData = handleNotificationResponse(response);
-        if (navData && navigationRef.current) {
-          // Navigate to the specified screen with params
-          // Small delay to ensure navigation is ready
-          setTimeout(() => {
-            // Use type assertion for dynamic navigation from notifications
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (navigationRef.current as any)?.navigate(navData.screen, navData.params);
-          }, 100);
-        }
-      }
-    );
-
-    return cleanup;
-  }, []);
-
-  // Handle deep links for Supabase auth (email confirmation, password reset)
-  useEffect(() => {
-    const handleDeepLink = async (event: { url: string }) => {
-      const url = event.url;
-      if (url.includes('access_token') || url.includes('refresh_token')) {
-        // Extract tokens from URL and set session
-        const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-
-        if (accessToken && refreshToken) {
-          await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-        }
-      }
-    };
-
-    // Handle deep link when app is opened from closed state
-    Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink({ url });
-    });
-
-    // Handle deep link when app is already open
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-
-    return () => subscription.remove();
-  }, []);
-
-  // Schedule daily wisdom notification when user is authenticated
-  // Note: This is separate from morning devotional (7 AM) and provides AI-driven prompts at 8 AM
-  // Only schedules if user has notifications enabled
-  useEffect(() => {
-    async function setupDailyWisdom() {
-      if (user && onboardingCompleted) {
-        const hasPermission = await requestPermissions();
-        if (hasPermission) {
-          // Schedule for 8:00 AM local time (1 hour after morning devotional at 7 AM)
-          // This gives users two touchpoints: structured devotional at 7 AM, AI chat prompt at 8 AM
-          await scheduleDailyWisdomNotification({ hours: 8, minutes: 0 });
-        }
-      }
-    }
-    setupDailyWisdom();
-  }, [user, onboardingCompleted]);
-
-  // Check onboarding status when user changes
-  useEffect(() => {
-    async function checkOnboarding() {
-      if (user) {
-        setCheckingOnboarding(true);
-        await checkOnboardingStatus(user.id);
-        setCheckingOnboarding(false);
-      } else {
-        setCheckingOnboarding(false);
-      }
-    }
-    checkOnboarding();
-  }, [user]);
-
-  // Determine if we should show splash screen
-  // Show splash unless: initialization completed OR timeout reached OR splash animation completed
-  const shouldShowSplash = !splashComplete && !initTimedOut && (!initialized || (user && checkingOnboarding));
-
-  // Handle splash completion - allows app to proceed even if still loading in background
-  const handleSplashComplete = useCallback(() => {
-    setSplashComplete(true);
-  }, []);
 
   // Show Divine Entrance splash while initializing
-  // This replaces the cold "Loading..." screen with a warm, spiritual transition
   if (shouldShowSplash) {
     return (
       <SafeAreaProvider>
@@ -480,138 +87,34 @@ function App() {
           <View style={styles.gestureRoot}>
             <RootStack.Navigator screenOptions={{ headerShown: false }}>
               {!user ? (
-                // Not authenticated - show auth flow
                 <RootStack.Screen name="Auth" component={AuthNavigator} />
               ) : !onboardingCompleted ? (
-                // Authenticated but hasn't completed onboarding
                 <RootStack.Screen name="Onboarding" component={OnboardingNavigator} />
               ) : (
-                // Fully authenticated and onboarded
                 <>
                   <RootStack.Screen name="Main" component={TabNavigator} />
-                  <RootStack.Screen
-                    name="ReflectionModal"
-                    component={ReflectionModal}
-                    options={{
-                      presentation: 'modal',
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="JournalCompose"
-                    component={JournalComposeScreen}
-                    options={{
-                      presentation: 'modal',
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="JournalDetail"
-                    component={JournalDetailScreen}
-                    options={{
-                      animation: 'slide_from_right',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="VersePicker"
-                    component={VersePickerScreen}
-                    options={{
-                      presentation: 'modal',
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="Settings"
-                    component={SettingsScreen}
-                    options={{
-                      presentation: 'modal',
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="Referral"
-                    component={ReferralScreen}
-                    options={{
-                      presentation: 'card',
-                      animation: 'slide_from_right',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="SubscriptionDebug"
-                    component={SubscriptionDebugScreen}
-                    options={{
-                      presentation: 'modal',
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="ChatHub"
-                    component={ChatHubScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="CameraScreen"
-                    component={CameraScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="MemoryPractice"
-                    component={MemoryPracticeScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="LectioDivina"
-                    component={LectioDivinaScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="JourneyInsights"
-                    component={JourneyInsightsScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_right',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="PrayerCircles"
-                    component={PrayerCirclesScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_right',
-                    }}
-                  />
-                  <RootStack.Screen
-                    name="CircleDetail"
-                    component={CircleDetailScreen}
-                    options={{
-                      headerShown: false,
-                      animation: 'slide_from_right',
-                    }}
-                  />
+                  <RootStack.Screen name="ReflectionModal" component={ReflectionModal} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JournalCompose" component={JournalComposeScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JournalDetail" component={JournalDetailScreen} options={{ animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="VersePicker" component={VersePickerScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="Settings" component={SettingsScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="Referral" component={ReferralScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="SubscriptionDebug" component={SubscriptionDebugScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="ChatHub" component={ChatHubScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="MemoryPractice" component={MemoryPracticeScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="LectioDivina" component={LectioDivinaScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JourneyInsights" component={JourneyInsightsScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="PrayerCircles" component={PrayerCirclesScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="CircleDetail" component={CircleDetailScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
                 </>
               )}
             </RootStack.Navigator>
 
-            {/* Chat Bottom Sheet & Paywall - only visible when authenticated and onboarded */}
             {user && onboardingCompleted && (
               <>
                 <ChatBottomSheet />
-                <PaywallModal
-                  visible={isPaywallVisible}
-                  onClose={hidePaywall}
-                />
+                <PaywallModal visible={isPaywallVisible} onClose={hidePaywall} />
               </>
             )}
           </View>
@@ -621,27 +124,9 @@ function App() {
   );
 }
 
-// =====================================================
-// STYLES
-// =====================================================
-
 const styles = StyleSheet.create({
   gestureRoot: {
     flex: 1,
-  },
-  centerTab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
 });
 

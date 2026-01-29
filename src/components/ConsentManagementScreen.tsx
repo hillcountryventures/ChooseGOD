@@ -60,6 +60,7 @@ export default function ConsentManagementScreen() {
       await AsyncStorage.setItem(CONSENT_ANALYTICS_KEY, String(value));
       // Dynamically import to avoid hard crashes if PostHog isn't configured
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const posthog = require('posthog-react-native');
         if (value) {
           posthog.default?.optIn?.();
@@ -79,6 +80,7 @@ export default function ConsentManagementScreen() {
     try {
       await AsyncStorage.setItem(CONSENT_CRASH_KEY, String(value));
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const Sentry = require('@sentry/react-native');
         if (value) {
           Sentry.init({ enabled: true });

@@ -54,12 +54,6 @@ export default function DevotionalHubScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [progress, setProgress] = useState<EnrollmentProgress[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
   const loadData = async () => {
     if (!user) return;
     await fetchEnrollments(user.id);
@@ -72,6 +66,12 @@ export default function DevotionalHubScreen() {
     await loadData();
     setRefreshing(false);
   };
+
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
   const handleContinueDevotional = () => {
     if (primaryEnrollment) {

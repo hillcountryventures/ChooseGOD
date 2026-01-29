@@ -71,6 +71,8 @@ export default function ForgotPasswordScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
@@ -81,7 +83,7 @@ export default function ForgotPasswordScreen() {
             </View>
             <Text style={styles.title}>Reset Password</Text>
             <Text style={styles.subtitle}>
-              Enter your email address and we'll send you a link to reset your password.
+              {"Enter your email address and we'll send you a link to reset your password."}
             </Text>
           </View>
 
@@ -104,6 +106,8 @@ export default function ForgotPasswordScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
+                  accessibilityLabel="Email address"
+                  accessibilityHint="Enter your email to receive a password reset link"
                 />
               </View>
               {error && <Text style={styles.errorText}>{error}</Text>}
@@ -113,6 +117,9 @@ export default function ForgotPasswordScreen() {
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleResetPassword}
               disabled={loading}
+              accessibilityLabel="Send reset link"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading }}
             >
               {loading ? (
                 <ActivityIndicator color={theme.colors.text} />
@@ -124,7 +131,7 @@ export default function ForgotPasswordScreen() {
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Remember your password? </Text>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.goBack()} accessibilityLabel="Sign in" accessibilityRole="link">
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>

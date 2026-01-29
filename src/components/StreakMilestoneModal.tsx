@@ -214,7 +214,7 @@ export function StreakMilestoneModal({ visible, milestone, onClose }: StreakMile
             {/* Scripture */}
             <View style={styles.scriptureContainer}>
               <Ionicons name="book-outline" size={16} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.scripture}>"{milestone.scripture}"</Text>
+              <Text style={styles.scripture}>{`\u201C${milestone.scripture}\u201D`}</Text>
               <Text style={styles.scriptureRef}>— {milestone.scriptureRef}</Text>
             </View>
 

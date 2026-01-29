@@ -21,6 +21,7 @@ import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
 import { AuthStackParamList } from '../../types/navigation';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Logo = require('../../../assets/logo.png');
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
@@ -102,6 +103,8 @@ export default function SignUpScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
@@ -130,6 +133,7 @@ export default function SignUpScreen() {
                     onChangeText={setFirstName}
                     autoCapitalize="words"
                     autoComplete="given-name"
+                    accessibilityLabel="First name"
                   />
                 </View>
                 {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
@@ -152,6 +156,7 @@ export default function SignUpScreen() {
                     onChangeText={setLastName}
                     autoCapitalize="words"
                     autoComplete="family-name"
+                    accessibilityLabel="Last name"
                   />
                 </View>
               </View>
@@ -175,6 +180,7 @@ export default function SignUpScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
+                  accessibilityLabel="Email address"
                 />
               </View>
               {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -197,10 +203,13 @@ export default function SignUpScreen() {
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
+                  accessibilityLabel="Password"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeButton}
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityRole="button"
                 >
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
@@ -229,6 +238,7 @@ export default function SignUpScreen() {
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
+                  accessibilityLabel="Confirm password"
                 />
               </View>
               {errors.confirmPassword && (
@@ -240,6 +250,9 @@ export default function SignUpScreen() {
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleSignUp}
               disabled={loading}
+              accessibilityLabel="Create account"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading }}
             >
               {loading ? (
                 <ActivityIndicator color={theme.colors.text} />
@@ -251,7 +264,7 @@ export default function SignUpScreen() {
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')} accessibilityLabel="Sign in" accessibilityRole="link">
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>

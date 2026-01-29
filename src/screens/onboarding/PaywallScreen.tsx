@@ -73,6 +73,7 @@ export default function PaywallScreen() {
 
   // Track paywall shown event
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { trackPaywallShown } = require('../../services/analytics');
     trackPaywallShown();
   }, []);

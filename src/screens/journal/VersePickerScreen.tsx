@@ -260,7 +260,7 @@ export default function VersePickerScreen() {
                     )}
                   </View>
                   <Text style={styles.verseText} numberOfLines={3}>
-                    "{item.text}"
+                    {`\u201C${item.text}\u201D`}
                   </Text>
                 </View>
               </TouchableOpacity>

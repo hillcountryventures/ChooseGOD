@@ -68,6 +68,8 @@ function SettingRow({
       onPress={onPress}
       disabled={!onPress}
       activeOpacity={onPress ? 0.7 : 1}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}${description ? `, ${description}` : ''}${value ? `, ${value}` : ''}`}
     >
       <View style={styles.settingLeft}>
         <View style={[styles.settingIconBg, { backgroundColor: iconColor + '20' }]}>

@@ -14,13 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
-import {
-  DevotionalStackParamList,
-  DevotionalDay,
-  DevotionalSeries,
-  getSeriesGradient,
-  BottomTabParamList,
-} from '../../types';
+import { DevotionalStackParamList, DevotionalDay, DevotionalSeries, getSeriesGradient } from '../../types';
 import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
@@ -168,7 +162,7 @@ export default function DailyDevotionalScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Loading today's devotional...</Text>
+        <Text style={styles.loadingText}>{"Loading today's devotional..."}</Text>
       </View>
     );
   }
@@ -187,6 +181,8 @@ export default function DailyDevotionalScreen() {
             <TouchableOpacity
               onPress={() => navigation.goBack()}
               style={styles.backButton}
+              accessibilityLabel="Go back"
+              accessibilityRole="button"
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
@@ -215,7 +211,7 @@ export default function DailyDevotionalScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="book-outline" size={20} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Today's Scripture</Text>
+            <Text style={styles.sectionTitle}>{"Today's Scripture"}</Text>
           </View>
           <View style={styles.scriptureCard}>
             {currentDay?.scriptureRefs[0] && (
@@ -288,6 +284,8 @@ export default function DailyDevotionalScreen() {
                 multiline
                 value={reflectionInput}
                 onChangeText={setReflectionInput}
+                accessibilityLabel="Journal entry"
+                accessibilityHint="Write your reflection thoughts"
               />
             </View>
           </View>
@@ -320,6 +318,9 @@ export default function DailyDevotionalScreen() {
             onPress={handleComplete}
             disabled={completing}
             activeOpacity={0.8}
+            accessibilityLabel="Mark day complete"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: completing }}
           >
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryDark]}

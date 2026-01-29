@@ -412,7 +412,7 @@ export default function JournalComposeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton} accessibilityLabel="Close journal" accessibilityRole="button">
             <Ionicons name="close" size={24} color={theme.colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Journal</Text>
@@ -502,6 +502,8 @@ export default function JournalComposeScreen() {
             onChangeText={setContent}
             textAlignVertical="top"
             autoFocus={!showPrompts}
+            accessibilityLabel="Journal entry"
+            accessibilityHint="Write what's on your heart"
           />
 
           {/* Linked Verses */}
@@ -575,14 +577,14 @@ export default function JournalComposeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.mediaButtons}
           >
-            <TouchableOpacity style={styles.mediaButton} onPress={handleAddPhoto}>
+            <TouchableOpacity style={styles.mediaButton} onPress={handleAddPhoto} accessibilityLabel="Add photo" accessibilityRole="button">
               <View style={styles.mediaButtonIcon}>
                 <Ionicons name="camera-outline" size={20} color={theme.colors.primary} />
               </View>
               <Text style={styles.mediaButtonLabel}>Photo</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.mediaButton} onPress={handleAddVoice}>
+            <TouchableOpacity style={styles.mediaButton} onPress={handleAddVoice} accessibilityLabel="Add voice recording" accessibilityRole="button">
               <View style={styles.mediaButtonIcon}>
                 <Ionicons name="mic-outline" size={20} color={theme.colors.primary} />
               </View>

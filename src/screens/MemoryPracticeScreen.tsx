@@ -25,7 +25,6 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../lib/theme';
 import { useMemoryVerses, ReviewRating } from '../hooks/useMemoryVerses';
-import { MemoryVerse } from '../types';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
 const { width } = Dimensions.get('window');

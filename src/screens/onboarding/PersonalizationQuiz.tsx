@@ -8,19 +8,12 @@ import {
   Animated,
   ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
-import {
-  OnboardingStackParamList,
-  OnboardingResponses,
-  ONBOARDING_QUIZ,
-  QuizQuestion,
-  QuizOption,
-} from '../../types';
+import { OnboardingStackParamList, OnboardingResponses, ONBOARDING_QUIZ, QuizOption } from '../../types';
 
 const { width } = Dimensions.get('window');
 

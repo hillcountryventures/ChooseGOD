@@ -12,8 +12,8 @@ import PostHog from 'posthog-react-native';
 // CONFIGURATION
 // =====================================================
 
-const POSTHOG_API_KEY = 'phc_REPLACE_WITH_YOUR_POSTHOG_PROJECT_KEY';
-const POSTHOG_HOST = 'https://us.i.posthog.com'; // or https://eu.i.posthog.com
+const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY || '';
+const POSTHOG_HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
 
 let posthog: PostHog | null = null;
 let initialized = false;

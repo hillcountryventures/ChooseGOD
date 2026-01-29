@@ -1,10 +1,4 @@
-import {
-  TRANSLATIONS,
-  AVAILABLE_TRANSLATIONS,
-  getTranslationsByLanguage,
-  type Translation,
-  type BibleVerse,
-} from '../../types/domain/bible';
+import { TRANSLATIONS, AVAILABLE_TRANSLATIONS, getTranslationsByLanguage, type BibleVerse } from '../../types/domain/bible';
 
 describe('Bible Types', () => {
   describe('TRANSLATIONS', () => {

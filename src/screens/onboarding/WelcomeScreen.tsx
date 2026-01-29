@@ -26,6 +26,7 @@ export default function WelcomeScreen() {
 
   // Track top-of-funnel onboarding event
   React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { trackOnboardingStarted } = require('../../services/analytics');
     trackOnboardingStarted();
   }, []);
@@ -43,6 +44,7 @@ export default function WelcomeScreen() {
           <View style={styles.logoContainer}>
             <Image
               source={require('../../../assets/icon.png')}
+               
               style={styles.logo}
               resizeMode="contain"
             />
@@ -68,6 +70,8 @@ export default function WelcomeScreen() {
               style={styles.primaryButton}
               onPress={() => navigation.navigate('Carousel')}
               activeOpacity={0.8}
+              accessibilityLabel="Get started"
+              accessibilityRole="button"
             >
               <LinearGradient
                 colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -87,6 +91,8 @@ export default function WelcomeScreen() {
                 navigation.getParent()?.goBack();
               }}
               activeOpacity={0.7}
+              accessibilityLabel="I already have an account"
+              accessibilityRole="button"
             >
               <Text style={styles.secondaryButtonText}>
                 I already have an account
@@ -98,7 +104,7 @@ export default function WelcomeScreen() {
         {/* Bottom Quote */}
         <View style={styles.quoteContainer}>
           <Text style={styles.quoteText}>
-            "Draw near to God, and he will draw near to you."
+            {"\u201CDraw near to God, and he will draw near to you.\u201D"}
           </Text>
           <Text style={styles.quoteReference}>— James 4:8</Text>
         </View>

@@ -14,11 +14,6 @@ export function useStreakMilestone(currentStreak: number) {
   const [pendingMilestone, setPendingMilestone] = useState<StreakMilestone | null>(null);
   const [showMilestone, setShowMilestone] = useState(false);
 
-  // Check for new milestone when streak changes
-  useEffect(() => {
-    checkForMilestone(currentStreak);
-  }, [currentStreak]);
-
   const checkForMilestone = async (streak: number) => {
     const milestone = getMilestoneForStreak(streak);
     if (!milestone) return;
@@ -41,6 +36,11 @@ export function useStreakMilestone(currentStreak: number) {
       console.error('Error checking milestone:', error);
     }
   };
+
+  // Check for new milestone when streak changes
+  useEffect(() => {
+    checkForMilestone(currentStreak);
+  }, [currentStreak]);
 
   const dismissMilestone = useCallback(() => {
     setShowMilestone(false);

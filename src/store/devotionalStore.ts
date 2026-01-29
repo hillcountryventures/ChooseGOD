@@ -2,21 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
-import {
-  DevotionalSeries,
-  DevotionalDay,
-  UserSeriesEnrollment,
-  OnboardingResponses,
-  EnrollmentProgress,
-  toDevotionalSeries,
-  toDevotionalDay,
-  toUserSeriesEnrollment,
-  toOnboardingResponses,
-  DevotionalSeriesRow,
-  DevotionalDayRow,
-  UserSeriesEnrollmentRow,
-  OnboardingResponsesRow,
-} from '../types/devotional';
+import { DevotionalSeries, DevotionalDay, UserSeriesEnrollment, OnboardingResponses, EnrollmentProgress, toDevotionalSeries, toDevotionalDay, toUserSeriesEnrollment, DevotionalSeriesRow, DevotionalDayRow, UserSeriesEnrollmentRow } from '../types/devotional';
 
 // =====================================================
 // STORE INTERFACE

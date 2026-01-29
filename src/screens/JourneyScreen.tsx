@@ -52,6 +52,9 @@ function TabButton({
       style={[styles.tabButton, active && styles.tabButtonActive]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
     >
       <Text style={[styles.tabButtonText, active && styles.tabButtonTextActive]}>
         {label}
@@ -156,7 +159,7 @@ export default function JourneyScreen() {
               </>
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.newJournalButton} onPress={handleNewJournal}>
+          <TouchableOpacity style={styles.newJournalButton} onPress={handleNewJournal} accessibilityRole="button" accessibilityLabel="New journal entry">
             <Ionicons name="add" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>

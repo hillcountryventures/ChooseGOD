@@ -1,4 +1,61 @@
+// Polyfill setImmediate/clearImmediate for jsdom environment
+global.setImmediate = global.setImmediate || ((fn, ...args) => setTimeout(fn, 0, ...args));
+global.clearImmediate = global.clearImmediate || ((id) => clearTimeout(id));
+
 import '@testing-library/jest-native/extend-expect';
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  return {
+    SafeAreaView: ({ children, ...props }) => React.createElement('View', props, children),
+    SafeAreaProvider: ({ children }) => children,
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 375, height: 812 }),
+  };
+});
+
+// Mock expo-linear-gradient
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  return {
+    LinearGradient: ({ children, ...props }) => React.createElement('View', props, children),
+  };
+});
+
+// Mock expo-device
+jest.mock('expo-device', () => ({
+  isDevice: true,
+  modelName: 'Test',
+}));
+
+// Mock expo-modules-core
+jest.mock('expo-modules-core', () => ({
+  EventEmitter: jest.fn(() => ({
+    addListener: jest.fn(),
+    removeAllListeners: jest.fn(),
+    emit: jest.fn(),
+  })),
+  NativeModulesProxy: {},
+  requireNativeModule: jest.fn(() => ({})),
+  requireOptionalNativeModule: jest.fn(() => null),
+}));
+
+// Mock @expo/vector-icons
+jest.mock('@expo/vector-icons', () => {
+  const React = require('react');
+  const mockIcon = (name) => {
+    const component = (props) => React.createElement('Text', props, props.name);
+    component.displayName = name;
+    return component;
+  };
+  return new Proxy({}, {
+    get: (_, prop) => {
+      if (prop === '__esModule') return true;
+      return mockIcon(String(prop));
+    },
+  });
+});
 
 // Mock expo modules
 jest.mock('expo-font', () => ({

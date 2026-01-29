@@ -8,17 +8,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -218,7 +208,7 @@ export default function AIDemoScreen() {
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
               </TouchableOpacity>
               <Text style={styles.footnote}>
-                You'll have unlimited access to ask questions after setup
+                {"You'll have unlimited access to ask questions after setup"}
               </Text>
             </View>
           )}

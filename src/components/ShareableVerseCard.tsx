@@ -209,7 +209,7 @@ export function ShareableVerseCard({
           >
             {/* Decorative elements */}
             <View style={styles.decorativeCornerTL}>
-              <Text style={styles.decorativeQuote}>"</Text>
+              <Text style={styles.decorativeQuote}>{"\u201C"}</Text>
             </View>
 
             {/* Verse text */}
@@ -245,7 +245,7 @@ export function ShareableVerseCard({
 
             {/* Decorative bottom corner */}
             <View style={styles.decorativeCornerBR}>
-              <Text style={styles.decorativeQuote}>"</Text>
+              <Text style={styles.decorativeQuote}>{"\u201C"}</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>

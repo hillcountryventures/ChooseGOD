@@ -32,7 +32,7 @@ export function useChatQuota() {
   }, [checkAndResetDaily]);
 
   // Use a seed (called when user sends a message)
-  const useSeed = useCallback(async (): Promise<boolean> => {
+  const consumeSeed = useCallback(async (): Promise<boolean> => {
     // Premium users don't use seeds
     if (isPremium) {
       return true;
@@ -81,7 +81,7 @@ export function useChatQuota() {
     isPremium,
 
     // Actions
-    useSeed,
+    consumeSeed,
     canSendMessage,
     dismissFinalSeedInterstitial,
     getSeedMessage,

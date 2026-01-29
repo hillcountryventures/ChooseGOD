@@ -325,10 +325,10 @@ export default function SubscriptionDebugScreen() {
         {/* Help text */}
         <View style={styles.helpContainer}>
           <Text style={styles.helpText}>
-            If you're experiencing subscription issues, try the following:
+            {"If you're experiencing subscription issues, try the following:"}
           </Text>
           <Text style={styles.helpItem}>1. Pull down to refresh status</Text>
-          <Text style={styles.helpItem}>2. Tap "Restore Purchases" if you've previously subscribed</Text>
+          <Text style={styles.helpItem}>{"2. Tap \u201CRestore Purchases\u201D if you've previously subscribed"}</Text>
           <Text style={styles.helpItem}>3. Check your App Store subscription settings</Text>
           <Text style={styles.helpItem}>4. Export and share debug info with support</Text>
         </View>

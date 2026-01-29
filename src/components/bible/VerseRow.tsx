@@ -6,18 +6,10 @@
  */
 
 import React, { useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Animated,
-  PanResponder,
-  GestureResponderHandlers,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, PanResponder } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
-import { HighlightColor, VerseBookmark, VerseHighlight, VerseNote, VerseSource } from '../../types';
+import { VerseBookmark, VerseHighlight, VerseNote, VerseSource } from '../../types';
 import { getHighlightBg } from './constants';
 import { SWIPE, TAP } from '../../constants';
 
@@ -136,6 +128,10 @@ export function VerseRow({
           onPress={handlePress}
           onLongPress={onLongPress}
           delayLongPress={300}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Verse ${verse.verse}. ${verse.text}${isBookmarked ? '. Bookmarked' : ''}${hasNotes ? `. ${verse.notes!.length} note${verse.notes!.length > 1 ? 's' : ''}` : ''}`}
+          accessibilityHint="Tap to select, double tap to bookmark, long press for options, swipe left to highlight"
         >
           <View
             style={[
