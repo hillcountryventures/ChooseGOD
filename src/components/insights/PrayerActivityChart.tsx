@@ -5,16 +5,11 @@
  * Uses React Native Animated API for smooth bar growth animations.
  */
 
-import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../lib/theme';
-import type { DailyActivity } from '../../hooks/useJourneyInsights';
+import React, { useEffect, useRef, useMemo } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../lib/theme";
+import type { DailyActivity } from "../../hooks/useJourneyInsights";
 
 interface PrayerActivityChartProps {
   data: DailyActivity[];
@@ -29,11 +24,13 @@ export function PrayerActivityChart({
 }: PrayerActivityChartProps) {
   // Compute real averages from data when props aren't provided
   const totalMinutes = data.reduce((sum, d) => sum + d.prayerMinutes, 0);
-  const activeDays = data.filter(d => d.prayerMinutes > 0).length;
-  const averageMinutes = averageMinutesProp ?? (activeDays > 0 ? Math.round(totalMinutes / activeDays) : 0);
+  const activeDays = data.filter((d) => d.prayerMinutes > 0).length;
+  const averageMinutes =
+    averageMinutesProp ??
+    (activeDays > 0 ? Math.round(totalMinutes / activeDays) : 0);
   const weeklyChange = weeklyChangeProp ?? 0; // Real value should come from caller
   // Find max value for scaling
-  const maxMinutes = Math.max(...data.map(d => d.prayerMinutes), 1);
+  const maxMinutes = Math.max(...data.map((d) => d.prayerMinutes), 1);
 
   return (
     <View style={styles.container}>
@@ -62,14 +59,8 @@ export function PrayerActivityChart({
           <Text style={styles.avgText}>Avg: {averageMinutes} min/day</Text>
         </View>
         <View style={styles.footerRight}>
-          <Ionicons
-            name="trending-up"
-            size={14}
-            color={theme.colors.success}
-          />
-          <Text style={styles.changeText}>
-            +{weeklyChange}% vs last week
-          </Text>
+          <Ionicons name="trending-up" size={14} color={theme.colors.success} />
+          <Text style={styles.changeText}>+{weeklyChange}% vs last week</Text>
         </View>
       </View>
     </View>
@@ -83,8 +74,8 @@ interface AnimatedBarProps {
 }
 
 function AnimatedBar({ day, maxMinutes, index }: AnimatedBarProps) {
-  const heightAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const heightAnim = useMemo(() => new Animated.Value(0), []);
+  const opacityAnim = useMemo(() => new Animated.Value(0), []);
 
   const percentage = day.prayerMinutes / maxMinutes;
   const isToday = index === 6;
@@ -113,13 +104,13 @@ function AnimatedBar({ day, maxMinutes, index }: AnimatedBarProps) {
   }, [percentage, index]);
 
   // Determine bar opacity based on activity
-  const barOpacity = hasPrayer 
-    ? 0.3 + (percentage * 0.7) // 30% to 100% opacity based on amount
+  const barOpacity = hasPrayer
+    ? 0.3 + percentage * 0.7 // 30% to 100% opacity based on amount
     : 0.1;
 
   const animatedHeight = heightAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
+    outputRange: ["0%", "100%"],
   });
 
   return (
@@ -131,7 +122,9 @@ function AnimatedBar({ day, maxMinutes, index }: AnimatedBarProps) {
             {
               height: animatedHeight,
               opacity: barOpacity,
-              backgroundColor: isToday ? theme.colors.accent : theme.colors.accent,
+              backgroundColor: isToday
+                ? theme.colors.accent
+                : theme.colors.accent,
             },
           ]}
         />
@@ -154,14 +147,14 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accentAlpha[10],
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
   },
   title: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   subtitle: {
@@ -169,23 +162,23 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   chartContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
     height: 120,
     paddingHorizontal: theme.spacing.xs,
   },
   barColumn: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   barWrapper: {
-    width: '70%',
-    height: '100%',
-    justifyContent: 'flex-end',
+    width: "70%",
+    height: "100%",
+    justifyContent: "flex-end",
   },
   bar: {
-    width: '100%',
+    width: "100%",
     borderTopLeftRadius: theme.borderRadius.md,
     borderTopRightRadius: theme.borderRadius.md,
     minHeight: 4,
@@ -197,20 +190,20 @@ const styles = StyleSheet.create({
   },
   dayLabelToday: {
     color: theme.colors.text,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: theme.spacing.md,
     paddingTop: theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: theme.colors.accentAlpha[15],
   },
   footerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   avgIcon: {
@@ -221,8 +214,8 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   footerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   changeText: {

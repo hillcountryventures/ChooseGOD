@@ -5,16 +5,11 @@
  * Shows what spiritual themes the user has been exploring.
  */
 
-import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../../lib/theme';
-import type { TopicEngagement } from '../../hooks/useJourneyInsights';
+import React, { useEffect, useRef, useMemo } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../../lib/theme";
+import type { TopicEngagement } from "../../hooks/useJourneyInsights";
 
 interface TopicsExploredProps {
   data: TopicEngagement[];
@@ -53,8 +48,8 @@ interface TopicRowProps {
 }
 
 function TopicRow({ topic, index }: TopicRowProps) {
-  const widthAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const widthAnim = useMemo(() => new Animated.Value(0), []);
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     // Stagger animation
@@ -80,7 +75,7 @@ function TopicRow({ topic, index }: TopicRowProps) {
 
   const animatedWidth = widthAnim.interpolate({
     inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
+    outputRange: ["0%", "100%"],
   });
 
   // Create gradient colors based on topic color
@@ -91,7 +86,9 @@ function TopicRow({ topic, index }: TopicRowProps) {
 
   return (
     <Animated.View style={[styles.topicRow, { opacity: fadeAnim }]}>
-      <View style={[styles.iconContainer, { backgroundColor: `${topic.color}20` }]}>
+      <View
+        style={[styles.iconContainer, { backgroundColor: `${topic.color}20` }]}
+      >
         <Text style={styles.emoji}>{topic.emoji}</Text>
       </View>
       <View style={styles.topicContent}>
@@ -101,10 +98,7 @@ function TopicRow({ topic, index }: TopicRowProps) {
         </View>
         <View style={styles.progressBackground}>
           <Animated.View
-            style={[
-              styles.progressBarWrapper,
-              { width: animatedWidth },
-            ]}
+            style={[styles.progressBarWrapper, { width: animatedWidth }]}
           >
             <LinearGradient
               colors={getGradientColors(topic.color)}
@@ -131,7 +125,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
@@ -139,16 +133,16 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   topicRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: theme.borderRadius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emoji: {
     fontSize: 18,
@@ -157,14 +151,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topicHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 6,
   },
   topicLabel: {
     fontSize: theme.fontSize.sm,
-    fontWeight: '500',
+    fontWeight: "500",
     color: theme.colors.text,
   },
   chatCount: {
@@ -175,19 +169,19 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.full,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressBarWrapper: {
-    height: '100%',
+    height: "100%",
     borderRadius: theme.borderRadius.full,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressBar: {
     flex: 1,
     borderRadius: theme.borderRadius.full,
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xl,
   },
   emptyEmoji: {
@@ -197,7 +191,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

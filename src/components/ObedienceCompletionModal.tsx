@@ -7,7 +7,13 @@
  * "Well done, good and faithful servant!" - Matthew 25:21
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -20,39 +26,39 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../lib/theme';
-import { ObedienceStep } from '../types';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { theme } from "../lib/theme";
+import { ObedienceStep } from "../types";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 // Encouraging scriptures for obedience
 const OBEDIENCE_SCRIPTURES = [
   {
-    text: 'Well done, good and faithful servant! You have been faithful with a few things; I will put you in charge of many things.',
-    ref: 'Matthew 25:21',
+    text: "Well done, good and faithful servant! You have been faithful with a few things; I will put you in charge of many things.",
+    ref: "Matthew 25:21",
   },
   {
-    text: 'If you love me, keep my commands.',
-    ref: 'John 14:15',
+    text: "If you love me, keep my commands.",
+    ref: "John 14:15",
   },
   {
-    text: 'But be doers of the word, and not hearers only, deceiving yourselves.',
-    ref: 'James 1:22',
+    text: "But be doers of the word, and not hearers only, deceiving yourselves.",
+    ref: "James 1:22",
   },
   {
-    text: 'Blessed rather are those who hear the word of God and obey it.',
-    ref: 'Luke 11:28',
+    text: "Blessed rather are those who hear the word of God and obey it.",
+    ref: "Luke 11:28",
   },
   {
-    text: 'And whatever you do, whether in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through him.',
-    ref: 'Colossians 3:17',
+    text: "And whatever you do, whether in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through him.",
+    ref: "Colossians 3:17",
   },
   {
-    text: 'Therefore everyone who hears these words of mine and puts them into practice is like a wise man who built his house on the rock.',
-    ref: 'Matthew 7:24',
+    text: "Therefore everyone who hears these words of mine and puts them into practice is like a wise man who built his house on the rock.",
+    ref: "Matthew 7:24",
   },
 ];
 
@@ -69,31 +75,31 @@ export function ObedienceCompletionModal({
   onDismiss,
   onSaveReflection,
 }: ObedienceCompletionModalProps) {
-  const [reflection, setReflection] = useState('');
+  const [reflection, setReflection] = useState("");
   const [showInput, setShowInput] = useState(false);
 
   // Animation refs
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
+  const scaleAnim = useMemo(() => new Animated.Value(0.8), []);
   const confettiAnims = useRef(
     [...Array(20)].map(() => ({
       translateY: new Animated.Value(-50),
       translateX: new Animated.Value(0),
       rotate: new Animated.Value(0),
       opacity: new Animated.Value(1),
-    }))
+    })),
   ).current;
 
   // Random scripture
   const [scriptureIndex] = useState(() =>
-    Math.floor(Math.random() * OBEDIENCE_SCRIPTURES.length)
+    Math.floor(Math.random() * OBEDIENCE_SCRIPTURES.length),
   );
   const scripture = OBEDIENCE_SCRIPTURES[scriptureIndex];
 
   // Reset state when modal opens
   useEffect(() => {
     if (visible) {
-      setReflection('');
+      setReflection("");
       setShowInput(false);
     }
   }, [visible]);
@@ -196,8 +202,8 @@ export function ObedienceCompletionModal({
     theme.colors.success,
     theme.colors.accent,
     theme.colors.primary,
-    '#FFD700', // Gold
-    '#22D3EE', // Cyan
+    "#FFD700", // Gold
+    "#22D3EE", // Cyan
   ];
 
   return (
@@ -225,7 +231,7 @@ export function ObedienceCompletionModal({
                   {
                     rotate: anim.rotate.interpolate({
                       inputRange: [0, 360],
-                      outputRange: ['0deg', '360deg'],
+                      outputRange: ["0deg", "360deg"],
                     }),
                   },
                 ],
@@ -235,7 +241,7 @@ export function ObedienceCompletionModal({
         ))}
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           <ScrollView
@@ -244,14 +250,15 @@ export function ObedienceCompletionModal({
           >
             {/* Content Card */}
             <Animated.View
-              style={[
-                styles.card,
-                { transform: [{ scale: scaleAnim }] },
-              ]}
+              style={[styles.card, { transform: [{ scale: scaleAnim }] }]}
             >
               {/* Success Icon */}
               <View style={styles.iconContainer}>
-                <Ionicons name="checkmark-circle" size={64} color={theme.colors.success} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={64}
+                  color={theme.colors.success}
+                />
               </View>
 
               {/* Title */}
@@ -260,13 +267,17 @@ export function ObedienceCompletionModal({
 
               {/* What was completed */}
               <View style={styles.completedBox}>
-                <Text style={styles.completedLabel}>You followed through on:</Text>
+                <Text style={styles.completedLabel}>
+                  You followed through on:
+                </Text>
                 <Text style={styles.completedText}>{step.commitment}</Text>
               </View>
 
               {/* Scripture */}
               <View style={styles.scriptureContainer}>
-                <Text style={styles.scriptureText}>&ldquo;{scripture.text}&rdquo;</Text>
+                <Text style={styles.scriptureText}>
+                  &ldquo;{scripture.text}&rdquo;
+                </Text>
                 <Text style={styles.scriptureRef}>— {scripture.ref}</Text>
               </View>
 
@@ -331,11 +342,7 @@ export function ObedienceCompletionModal({
                     onPress={handleDismiss}
                   >
                     <Text style={styles.continueText}>Continue</Text>
-                    <Ionicons
-                      name="arrow-forward"
-                      size={18}
-                      color="#fff"
-                    />
+                    <Ionicons name="arrow-forward" size={18} color="#fff" />
                   </TouchableOpacity>
                 )}
               </View>
@@ -350,19 +357,19 @@ export function ObedienceCompletionModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.lg,
   },
   confetti: {
-    position: 'absolute',
+    position: "absolute",
     width: 10,
     height: 10,
     borderRadius: 2,
@@ -371,9 +378,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: 28,
     padding: theme.spacing.xl,
-    alignItems: 'center',
+    alignItems: "center",
     maxWidth: width * 0.9,
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -382,25 +389,25 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.xs,
   },
   subtitle: {
     fontSize: 18,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
   },
   completedBox: {
     backgroundColor: theme.colors.successAlpha[15],
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    width: '100%',
+    width: "100%",
     marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: theme.colors.success + '30',
+    borderColor: theme.colors.success + "30",
   },
   completedLabel: {
     fontSize: theme.fontSize.sm,
@@ -417,26 +424,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
-    width: '100%',
+    width: "100%",
     marginBottom: theme.spacing.lg,
   },
   scriptureText: {
     fontSize: theme.fontSize.md,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: theme.fontSize.md * 1.6,
     marginBottom: theme.spacing.sm,
   },
   scriptureRef: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    textAlign: 'center',
-    fontWeight: '600',
+    textAlign: "center",
+    fontWeight: "600",
   },
   addReflectionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     paddingVertical: theme.spacing.md,
     marginBottom: theme.spacing.md,
@@ -447,7 +454,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   reflectionSection: {
-    width: '100%',
+    width: "100%",
     marginBottom: theme.spacing.md,
   },
   reflectionLabel: {
@@ -466,15 +473,15 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.md,
-    width: '100%',
+    width: "100%",
   },
   continueButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.success,
     paddingVertical: theme.spacing.md,
@@ -483,12 +490,12 @@ const styles = StyleSheet.create({
   continueText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: "#fff",
   },
   skipButton: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
@@ -500,19 +507,19 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
   },
   saveButtonDisabled: {
-    backgroundColor: theme.colors.primary + '50',
+    backgroundColor: theme.colors.primary + "50",
   },
   saveText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: "#fff",
   },
 });
 

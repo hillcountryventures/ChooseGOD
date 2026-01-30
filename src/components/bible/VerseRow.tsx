@@ -1,17 +1,29 @@
 /**
  * VerseRow - Individual verse display component
- * 
+ *
  * Handles verse rendering with highlighting, notes indicator,
  * bookmark indicator, and swipe gestures.
  */
 
-import React, { useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, PanResponder } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../lib/theme';
-import { VerseBookmark, VerseHighlight, VerseNote, VerseSource } from '../../types';
-import { getHighlightBg } from './constants';
-import { SWIPE, TAP } from '../../constants';
+import React, { useRef, useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Animated,
+  PanResponder,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../lib/theme";
+import {
+  VerseBookmark,
+  VerseHighlight,
+  VerseNote,
+  VerseSource,
+} from "../../types";
+import { getHighlightBg } from "./constants";
+import { SWIPE, TAP } from "../../constants";
 
 export interface VerseWithAnnotations extends VerseSource {
   highlight?: VerseHighlight;
@@ -42,7 +54,7 @@ export function VerseRow({
   onLayout,
   onSwipeHighlight,
 }: VerseRowProps) {
-  const swipeX = useRef(new Animated.Value(0)).current;
+  const swipeX = useMemo(() => new Animated.Value(0), []);
   const lastTap = useRef<number>(0);
   const isSwiping = useRef(false);
 
@@ -88,7 +100,7 @@ export function VerseRow({
           isSwiping.current = false;
         });
       },
-    })
+    }),
   ).current;
 
   const handlePress = () => {
@@ -130,7 +142,7 @@ export function VerseRow({
           delayLongPress={300}
           accessible={true}
           accessibilityRole="button"
-          accessibilityLabel={`Verse ${verse.verse}. ${verse.text}${isBookmarked ? '. Bookmarked' : ''}${hasNotes ? `. ${verse.notes!.length} note${verse.notes!.length > 1 ? 's' : ''}` : ''}`}
+          accessibilityLabel={`Verse ${verse.verse}. ${verse.text}${isBookmarked ? ". Bookmarked" : ""}${hasNotes ? `. ${verse.notes!.length} note${verse.notes!.length > 1 ? "s" : ""}` : ""}`}
           accessibilityHint="Tap to select, double tap to bookmark, long press for options, swipe left to highlight"
         >
           <View
@@ -140,17 +152,30 @@ export function VerseRow({
             ]}
           >
             <Text style={styles.verseNumber}>{verse.verse}</Text>
-            <Text style={[styles.verseText, { fontSize, lineHeight: fontSize * 1.8 }]}>
+            <Text
+              style={[
+                styles.verseText,
+                { fontSize, lineHeight: fontSize * 1.8 },
+              ]}
+            >
               {verse.text}
             </Text>
             {isBookmarked && (
               <View style={styles.bookmarkIndicator}>
-                <Ionicons name="bookmark" size={14} color={theme.colors.accent} />
+                <Ionicons
+                  name="bookmark"
+                  size={14}
+                  color={theme.colors.accent}
+                />
               </View>
             )}
             {hasNotes && (
               <View style={styles.noteIndicator}>
-                <Ionicons name="document-text" size={12} color={theme.colors.primary} />
+                <Ionicons
+                  name="document-text"
+                  size={12}
+                  color={theme.colors.primary}
+                />
                 {verse.notes!.length > 1 && (
                   <Text style={styles.noteCount}>{verse.notes!.length}</Text>
                 )}
@@ -165,17 +190,17 @@ export function VerseRow({
 
 const styles = StyleSheet.create({
   verseWrapper: {
-    position: 'relative',
+    position: "relative",
     marginBottom: theme.spacing.xs,
   },
   swipeIndicator: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: 100,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingLeft: theme.spacing.md,
     gap: theme.spacing.xs,
   },
@@ -196,10 +221,10 @@ const styles = StyleSheet.create({
     borderLeftColor: theme.colors.accent,
   },
   verseTextContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
-    position: 'relative',
+    position: "relative",
   },
   verseNumber: {
     fontSize: theme.fontSize.sm,
@@ -213,16 +238,16 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   bookmarkIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: theme.spacing.xs,
     right: theme.spacing.sm,
   },
   noteIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: theme.spacing.xs,
     right: theme.spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
   },
   noteCount: {

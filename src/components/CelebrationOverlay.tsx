@@ -1,6 +1,6 @@
 /**
  * CelebrationOverlay - Reusable celebration animation with confetti
- * 
+ *
  * Used for:
  * - Answered prayers
  * - Memory verse milestones
@@ -8,7 +8,13 @@
  * - Obedience steps completed
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -16,20 +22,38 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../lib/theme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../lib/theme";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 // Scriptures about God's faithfulness for answered prayers
 const FAITHFULNESS_SCRIPTURES = [
-  { text: 'The LORD is faithful to all his promises and loving toward all he has made.', ref: 'Psalm 145:13' },
-  { text: 'Give thanks to the LORD, for he is good; his love endures forever.', ref: '1 Chronicles 16:34' },
-  { text: 'The LORD has done great things for us, and we are filled with joy.', ref: 'Psalm 126:3' },
-  { text: 'This is the confidence we have in approaching God: that if we ask anything according to his will, he hears us.', ref: '1 John 5:14' },
-  { text: 'Delight yourself in the LORD, and he will give you the desires of your heart.', ref: 'Psalm 37:4' },
-  { text: 'The prayer of a righteous person is powerful and effective.', ref: 'James 5:16' },
+  {
+    text: "The LORD is faithful to all his promises and loving toward all he has made.",
+    ref: "Psalm 145:13",
+  },
+  {
+    text: "Give thanks to the LORD, for he is good; his love endures forever.",
+    ref: "1 Chronicles 16:34",
+  },
+  {
+    text: "The LORD has done great things for us, and we are filled with joy.",
+    ref: "Psalm 126:3",
+  },
+  {
+    text: "This is the confidence we have in approaching God: that if we ask anything according to his will, he hears us.",
+    ref: "1 John 5:14",
+  },
+  {
+    text: "Delight yourself in the LORD, and he will give you the desires of your heart.",
+    ref: "Psalm 37:4",
+  },
+  {
+    text: "The prayer of a righteous person is powerful and effective.",
+    ref: "James 5:16",
+  },
 ];
 
 interface CelebrationOverlayProps {
@@ -46,27 +70,27 @@ interface CelebrationOverlayProps {
 export function CelebrationOverlay({
   visible,
   onDismiss,
-  title = 'Prayer Answered!',
+  title = "Prayer Answered!",
   subtitle = "God is faithful!",
   showScripture = true,
-  icon = 'trophy',
+  icon = "trophy",
   iconColor = theme.colors.success,
   autoDismissMs = 5000,
 }: CelebrationOverlayProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
+  const scaleAnim = useMemo(() => new Animated.Value(0.8), []);
   const confettiAnims = useRef(
     [...Array(20)].map(() => ({
       translateY: new Animated.Value(-50),
       translateX: new Animated.Value(0),
       rotate: new Animated.Value(0),
       opacity: new Animated.Value(1),
-    }))
+    })),
   ).current;
 
   // Random scripture - stable for component lifetime
-  const [scriptureIndex] = useState(() => 
-    Math.floor(Math.random() * FAITHFULNESS_SCRIPTURES.length)
+  const [scriptureIndex] = useState(() =>
+    Math.floor(Math.random() * FAITHFULNESS_SCRIPTURES.length),
   );
   const scripture = FAITHFULNESS_SCRIPTURES[scriptureIndex];
 
@@ -102,7 +126,7 @@ export function CelebrationOverlay({
         const delay = i * 50;
         const seed = i * 0.1; // Deterministic variation per piece
         const targetX = (seed - 0.5) * width * 1.5 * (i % 2 === 0 ? 1 : -1);
-        const targetY = height * 0.7 + (i * 10);
+        const targetY = height * 0.7 + i * 10;
 
         Animated.sequence([
           Animated.delay(delay),
@@ -152,7 +176,14 @@ export function CelebrationOverlay({
         anim.opacity.setValue(1);
       });
     }
-  }, [visible, autoDismissMs, handleDismiss, fadeAnim, scaleAnim, confettiAnims]);
+  }, [
+    visible,
+    autoDismissMs,
+    handleDismiss,
+    fadeAnim,
+    scaleAnim,
+    confettiAnims,
+  ]);
 
   if (!visible) return null;
 
@@ -161,7 +192,7 @@ export function CelebrationOverlay({
     theme.colors.accent,
     theme.colors.primary,
     theme.colors.prayer,
-    '#FFD700', // Gold
+    "#FFD700", // Gold
   ];
 
   return (
@@ -187,7 +218,7 @@ export function CelebrationOverlay({
                   {
                     rotate: anim.rotate.interpolate({
                       inputRange: [0, 360],
-                      outputRange: ['0deg', '360deg'],
+                      outputRange: ["0deg", "360deg"],
                     }),
                   },
                 ],
@@ -206,7 +237,12 @@ export function CelebrationOverlay({
           ]}
         >
           {/* Icon */}
-          <View style={[styles.iconContainer, { backgroundColor: `${iconColor}20` }]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: `${iconColor}20` },
+            ]}
+          >
             <Ionicons name={icon} size={48} color={iconColor} />
           </View>
 
@@ -217,7 +253,9 @@ export function CelebrationOverlay({
           {/* Scripture */}
           {showScripture && (
             <View style={styles.scriptureContainer}>
-              <Text style={styles.scriptureText}>&quot;{scripture.text}&quot;</Text>
+              <Text style={styles.scriptureText}>
+                &quot;{scripture.text}&quot;
+              </Text>
               <Text style={styles.scriptureRef}>— {scripture.ref}</Text>
             </View>
           )}
@@ -233,19 +271,19 @@ export function CelebrationOverlay({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 1000,
   },
   touchable: {
     flex: 1,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   confetti: {
-    position: 'absolute',
+    position: "absolute",
     width: 10,
     height: 10,
     borderRadius: 2,
@@ -254,7 +292,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: 24,
     padding: 32,
-    alignItems: 'center',
+    alignItems: "center",
     maxWidth: width * 0.85,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -263,21 +301,21 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 18,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   scriptureContainer: {
@@ -288,17 +326,17 @@ const styles = StyleSheet.create({
   },
   scriptureText: {
     fontSize: 16,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: 8,
   },
   scriptureRef: {
     fontSize: 14,
     color: theme.colors.primary,
-    textAlign: 'center',
-    fontWeight: '600',
+    textAlign: "center",
+    fontWeight: "600",
   },
   dismissHint: {
     fontSize: 14,

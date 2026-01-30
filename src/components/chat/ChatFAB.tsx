@@ -1,22 +1,17 @@
-import React, { useRef } from 'react';
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Animated,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useStore } from '../../store/useStore';
-import { theme } from '../../lib/theme';
-import { TAB_BAR } from '../../constants/dimensions';
+import React, { useRef, useMemo } from "react";
+import { StyleSheet, TouchableOpacity, View, Animated } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useStore } from "../../store/useStore";
+import { theme } from "../../lib/theme";
+import { TAB_BAR } from "../../constants/dimensions";
 
 export function ChatFAB() {
   const insets = useSafeAreaInsets();
   const setChatSheetOpen = useStore((s) => s.setChatSheetOpen);
   const chatContext = useStore((s) => s.chatContext);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useMemo(() => new Animated.Value(1), []);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -39,7 +34,8 @@ export function ChatFAB() {
   };
 
   const bottomPosition = TAB_BAR.height + insets.bottom + 16;
-  const hasContext = chatContext.screenType === 'bible' && chatContext.bibleContext;
+  const hasContext =
+    chatContext.screenType === "bible" && chatContext.bibleContext;
 
   return (
     <Animated.View
@@ -68,7 +64,7 @@ export function ChatFAB() {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     zIndex: 1000,
   },
@@ -87,11 +83,11 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   contextDot: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     width: 14,

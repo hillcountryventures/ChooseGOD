@@ -8,7 +8,7 @@
  * - Duration display
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   TouchableOpacity,
@@ -16,12 +16,12 @@ import {
   Text,
   Animated,
   Alert,
-} from 'react-native';
-import { Audio } from 'expo-av';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../lib/theme';
-import { JournalMedia } from '../../types';
-import { logger } from '../../utils/logger';
+} from "react-native";
+import { Audio } from "expo-av";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../lib/theme";
+import { JournalMedia } from "../../types";
+import { logger } from "../../utils/logger";
 
 interface VoiceNoteRecorderProps {
   onRecordingComplete: (media: JournalMedia) => void;
@@ -36,7 +36,7 @@ export default function VoiceNoteRecorder({
   const [duration, setDuration] = useState(0);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useMemo(() => new Animated.Value(1), []);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Pulse animation
@@ -54,7 +54,7 @@ export default function VoiceNoteRecorder({
             duration: 500,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseAnim.setValue(1);
@@ -83,10 +83,10 @@ export default function VoiceNoteRecorder({
   const startRecording = async () => {
     try {
       const permission = await Audio.requestPermissionsAsync();
-      if (permission.status !== 'granted') {
+      if (permission.status !== "granted") {
         Alert.alert(
-          'Permission Required',
-          'Please enable microphone access to record voice notes.'
+          "Permission Required",
+          "Please enable microphone access to record voice notes.",
         );
         return;
       }
@@ -97,15 +97,15 @@ export default function VoiceNoteRecorder({
       });
 
       const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
       );
 
       setRecording(newRecording);
       setIsRecording(true);
       setDuration(0);
     } catch (error) {
-      logger.error('Failed to start recording:', error);
-      Alert.alert('Error', 'Failed to start recording. Please try again.');
+      logger.error("Failed to start recording:", error);
+      Alert.alert("Error", "Failed to start recording. Please try again.");
     }
   };
 
@@ -122,7 +122,7 @@ export default function VoiceNoteRecorder({
       if (uri) {
         const media: JournalMedia = {
           id: `voice-${Date.now()}`,
-          type: 'voice',
+          type: "voice",
           uri,
           duration: Math.floor((status.durationMillis || 0) / 1000),
           createdAt: new Date(),
@@ -133,8 +133,8 @@ export default function VoiceNoteRecorder({
 
       setRecording(null);
     } catch (error) {
-      logger.error('Failed to stop recording:', error);
-      Alert.alert('Error', 'Failed to save recording. Please try again.');
+      logger.error("Failed to stop recording:", error);
+      Alert.alert("Error", "Failed to save recording. Please try again.");
     }
   };
 
@@ -149,14 +149,14 @@ export default function VoiceNoteRecorder({
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>
-          {isRecording ? 'Recording...' : 'Tap to Record'}
+          {isRecording ? "Recording..." : "Tap to Record"}
         </Text>
 
         <Animated.View
@@ -168,7 +168,7 @@ export default function VoiceNoteRecorder({
         >
           <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
             <Ionicons
-              name={isRecording ? 'stop' : 'mic'}
+              name={isRecording ? "stop" : "mic"}
               size={32}
               color="#fff"
             />
@@ -190,12 +190,12 @@ export default function VoiceNoteRecorder({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: theme.colors.background,
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     gap: theme.spacing.lg,
   },
   title: {
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   cancelButton: {
     paddingVertical: theme.spacing.sm,

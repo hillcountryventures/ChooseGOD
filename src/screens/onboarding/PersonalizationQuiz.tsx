@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,25 +7,33 @@ import {
   Dimensions,
   Animated,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { theme } from '../../lib/theme';
-import { OnboardingStackParamList, OnboardingResponses, ONBOARDING_QUIZ, QuizOption } from '../../types';
-import { useTrackScreen } from '../../hooks/useAnalytics';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { theme } from "../../lib/theme";
+import {
+  OnboardingStackParamList,
+  OnboardingResponses,
+  ONBOARDING_QUIZ,
+  QuizOption,
+} from "../../types";
+import { useTrackScreen } from "../../hooks/useAnalytics";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Quiz'>;
+type NavigationProp = NativeStackNavigationProp<
+  OnboardingStackParamList,
+  "Quiz"
+>;
 
 export default function PersonalizationQuiz() {
-  useTrackScreen('onboarding_personalization');
+  useTrackScreen("onboarding_personalization");
   const navigation = useNavigation<NavigationProp>();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<OnboardingResponses>({});
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useMemo(() => new Animated.Value(0), []);
 
   const question = ONBOARDING_QUIZ[currentQuestion];
   const totalQuestions = ONBOARDING_QUIZ.length;
@@ -56,7 +64,9 @@ export default function PersonalizationQuiz() {
         });
       } else {
         // All questions answered, navigate to recommendations
-        navigation.navigate('Recommendations', { quizResponses: { ...responses, [field]: option.value } });
+        navigation.navigate("Recommendations", {
+          quizResponses: { ...responses, [field]: option.value },
+        });
       }
     }, 200);
   };
@@ -86,7 +96,7 @@ export default function PersonalizationQuiz() {
       if (currentQuestion < totalQuestions - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        navigation.navigate('Recommendations', { quizResponses: responses });
+        navigation.navigate("Recommendations", { quizResponses: responses });
       }
     }
   };
@@ -101,15 +111,12 @@ export default function PersonalizationQuiz() {
         onPress={() => handleSelectOption(option)}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={`${option.label}${option.description ? ': ' + option.description : ''}`}
+        accessibilityLabel={`${option.label}${option.description ? ": " + option.description : ""}`}
         accessibilityState={{ selected: isSelected }}
       >
         {option.icon && (
           <View
-            style={[
-              styles.optionIcon,
-              isSelected && styles.optionIconSelected,
-            ]}
+            style={[styles.optionIcon, isSelected && styles.optionIconSelected]}
           >
             <Ionicons
               name={option.icon as keyof typeof Ionicons.glyphMap}
@@ -120,7 +127,10 @@ export default function PersonalizationQuiz() {
         )}
         <View style={styles.optionContent}>
           <Text
-            style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}
+            style={[
+              styles.optionLabel,
+              isSelected && styles.optionLabelSelected,
+            ]}
           >
             {option.label}
           </Text>
@@ -144,7 +154,12 @@ export default function PersonalizationQuiz() {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
           <View style={styles.progressContainer}>
@@ -158,7 +173,12 @@ export default function PersonalizationQuiz() {
             </Text>
           </View>
           {!question.isRequired && (
-            <TouchableOpacity onPress={handleSkip} style={styles.skipButton} accessibilityRole="button" accessibilityLabel="Skip this question">
+            <TouchableOpacity
+              onPress={handleSkip}
+              style={styles.skipButton}
+              accessibilityRole="button"
+              accessibilityLabel="Skip this question"
+            >
               <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
           )}
@@ -178,7 +198,9 @@ export default function PersonalizationQuiz() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.optionsContent}
           >
-            {question.options.map((option, index) => renderOption(option, index))}
+            {question.options.map((option, index) =>
+              renderOption(option, index),
+            )}
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
@@ -195,8 +217,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.md,
@@ -206,17 +228,17 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   progressBar: {
-    width: '100%',
+    width: "100%",
     height: 4,
     backgroundColor: theme.colors.border,
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     backgroundColor: theme.colors.primary,
     borderRadius: 2,
   },
@@ -252,13 +274,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: "transparent",
     gap: theme.spacing.md,
   },
   optionCardSelected: {
@@ -270,8 +292,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     backgroundColor: `${theme.colors.primary}20`,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   optionIconSelected: {
     backgroundColor: theme.colors.primary,

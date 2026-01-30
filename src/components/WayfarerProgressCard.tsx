@@ -8,7 +8,7 @@
  * Intervention State: Warm amber background with Grace/Patient path options
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,19 +17,19 @@ import {
   Animated,
   ActivityIndicator,
   Easing,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../lib/theme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../lib/theme";
 import {
   useReadingPlanStore,
   useActiveProgress,
   useTodaysReading,
   useWayfarerState,
-} from '../store/readingPlanStore';
-import { useAuthStore } from '../store/authStore';
-import { WAYFARER_COLORS } from '../types/readingPlan';
-import { useWayfarerMilestones } from '../hooks/useWayfarerMilestones';
+} from "../store/readingPlanStore";
+import { useAuthStore } from "../store/authStore";
+import { WAYFARER_COLORS } from "../types/readingPlan";
+import { useWayfarerMilestones } from "../hooks/useWayfarerMilestones";
 
 // ============================================================================
 // Types
@@ -61,7 +61,8 @@ function calculateExpectedDay(startDate: Date, totalDays: number): number {
   start.setHours(0, 0, 0, 0);
 
   // Calculate elapsed days (Day 1 is the start date)
-  const elapsed = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const elapsed =
+    Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   return Math.max(1, Math.min(elapsed, totalDays)); // Clamp between 1 and totalDays
 }
 
@@ -69,7 +70,13 @@ function calculateExpectedDay(startDate: Date, totalDays: number): number {
 // Progress Bar Component - Visual "path" representation
 // ============================================================================
 
-function ProgressPath({ progress, totalDays }: { progress: number; totalDays: number }) {
+function ProgressPath({
+  progress,
+  totalDays,
+}: {
+  progress: number;
+  totalDays: number;
+}) {
   const percentage = Math.min((progress / totalDays) * 100, 100);
 
   return (
@@ -77,9 +84,9 @@ function ProgressPath({ progress, totalDays }: { progress: number; totalDays: nu
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${percentage}%` }]} />
         {/* Milestone markers */}
-        <View style={[styles.progressMarker, { left: '25%' }]} />
-        <View style={[styles.progressMarker, { left: '50%' }]} />
-        <View style={[styles.progressMarker, { left: '75%' }]} />
+        <View style={[styles.progressMarker, { left: "25%" }]} />
+        <View style={[styles.progressMarker, { left: "50%" }]} />
+        <View style={[styles.progressMarker, { left: "75%" }]} />
       </View>
       <View style={styles.progressLabels}>
         <Text style={styles.progressLabelText}>Day {progress}</Text>
@@ -93,14 +100,24 @@ function ProgressPath({ progress, totalDays }: { progress: number; totalDays: nu
 // Status Badge Component - Shows catch-up status
 // ============================================================================
 
-function StatusBadge({ currentDay, expectedDay }: { currentDay: number; expectedDay: number }) {
+function StatusBadge({
+  currentDay,
+  expectedDay,
+}: {
+  currentDay: number;
+  expectedDay: number;
+}) {
   const daysBehind = expectedDay - currentDay;
 
   if (daysBehind <= 0) {
     // Caught up or ahead
     return (
       <View style={[styles.statusBadge, styles.statusBadgeCaughtUp]}>
-        <Ionicons name="checkmark-circle" size={14} color={theme.colors.success} />
+        <Ionicons
+          name="checkmark-circle"
+          size={14}
+          color={theme.colors.success}
+        />
         <Text style={[styles.statusBadgeText, styles.statusBadgeTextSuccess]}>
           Caught up!
         </Text>
@@ -120,7 +137,11 @@ function StatusBadge({ currentDay, expectedDay }: { currentDay: number; expected
     // 2+ days behind (should trigger intervention, but show status anyway)
     return (
       <View style={[styles.statusBadge, styles.statusBadgeBehind]}>
-        <Ionicons name="alert-circle-outline" size={14} color={theme.colors.error} />
+        <Ionicons
+          name="alert-circle-outline"
+          size={14}
+          color={theme.colors.error}
+        />
         <Text style={[styles.statusBadgeText, styles.statusBadgeTextError]}>
           {daysBehind} days behind
         </Text>
@@ -149,14 +170,14 @@ function InterventionOptions({
       <View style={styles.interventionHeader}>
         <Ionicons name="heart" size={20} color={theme.colors.accent} />
         <Text style={styles.interventionTitle}>
-          Welcome back! You missed {daysMissed} day{daysMissed > 1 ? 's' : ''}
+          Welcome back! You missed {daysMissed} day{daysMissed > 1 ? "s" : ""}
         </Text>
       </View>
 
       {missedTitles.length > 0 && (
         <Text style={styles.interventionMissed} numberOfLines={2}>
-          Missed: {missedTitles.slice(0, 2).join(', ')}
-          {missedTitles.length > 2 ? ` + ${missedTitles.length - 2} more` : ''}
+          Missed: {missedTitles.slice(0, 2).join(", ")}
+          {missedTitles.length > 2 ? ` + ${missedTitles.length - 2} more` : ""}
         </Text>
       )}
 
@@ -174,7 +195,12 @@ function InterventionOptions({
             <Ionicons name="sparkles" size={18} color={theme.colors.success} />
           </View>
           <View style={styles.interventionBtnContent}>
-            <Text style={[styles.interventionBtnTitle, { color: theme.colors.success }]}>
+            <Text
+              style={[
+                styles.interventionBtnTitle,
+                { color: theme.colors.success },
+              ]}
+            >
               Grace Path
             </Text>
             <Text style={styles.interventionBtnSubtitle}>
@@ -192,7 +218,12 @@ function InterventionOptions({
             <Ionicons name="calendar" size={18} color={theme.colors.primary} />
           </View>
           <View style={styles.interventionBtnContent}>
-            <Text style={[styles.interventionBtnTitle, { color: theme.colors.primary }]}>
+            <Text
+              style={[
+                styles.interventionBtnTitle,
+                { color: theme.colors.primary },
+              ]}
+            >
               Patient Path
             </Text>
             <Text style={styles.interventionBtnSubtitle}>
@@ -261,10 +292,10 @@ export default function WayfarerProgressCard({
     useWayfarerMilestones(activeProgress);
 
   // Pulse animation for intervention state
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const backgroundAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useMemo(() => new Animated.Value(1), []);
+  const backgroundAnim = useMemo(() => new Animated.Value(0), []);
   // Power-up pulse animation
-  const powerUpAnim = useRef(new Animated.Value(1)).current;
+  const powerUpAnim = useMemo(() => new Animated.Value(1), []);
 
   // Fetch data on mount
   useEffect(() => {
@@ -276,7 +307,7 @@ export default function WayfarerProgressCard({
 
   // Animate when entering intervention state
   useEffect(() => {
-    if (wayfarerState.status === 'intervention') {
+    if (wayfarerState.status === "intervention") {
       // Start pulse animation
       const pulse = Animated.loop(
         Animated.sequence([
@@ -290,7 +321,7 @@ export default function WayfarerProgressCard({
             duration: 2000,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       pulse.start();
 
@@ -330,7 +361,7 @@ export default function WayfarerProgressCard({
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       pulse.start();
 
@@ -341,7 +372,7 @@ export default function WayfarerProgressCard({
   }, [isPowerUp, powerUpAnim]);
 
   // Loading state
-  if (wayfarerState.status === 'loading') {
+  if (wayfarerState.status === "loading") {
     return (
       <View style={styles.card}>
         <View style={styles.loadingContainer}>
@@ -357,7 +388,7 @@ export default function WayfarerProgressCard({
     return <EmptyState onEnrollPress={onEnrollPress} />;
   }
 
-  const isIntervention = wayfarerState.status === 'intervention';
+  const isIntervention = wayfarerState.status === "intervention";
 
   // Interpolate background color
   const backgroundColor = backgroundAnim.interpolate({
@@ -384,16 +415,23 @@ export default function WayfarerProgressCard({
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.iconBadge, isIntervention && styles.iconBadgeIntervention]}>
+          <View
+            style={[
+              styles.iconBadge,
+              isIntervention && styles.iconBadgeIntervention,
+            ]}
+          >
             <Ionicons
-              name={isIntervention ? 'heart' : 'compass'}
+              name={isIntervention ? "heart" : "compass"}
               size={16}
-              color={isIntervention ? theme.colors.accent : theme.colors.primary}
+              color={
+                isIntervention ? theme.colors.accent : theme.colors.primary
+              }
             />
           </View>
           <View>
             <Text style={styles.headerTitle}>
-              {isIntervention ? 'Your Journey Awaits' : 'Wayfarer Bible'}
+              {isIntervention ? "Your Journey Awaits" : "Wayfarer Bible"}
             </Text>
             <Text style={styles.headerSubtitle}>{activeProgress.planName}</Text>
           </View>
@@ -428,14 +466,17 @@ export default function WayfarerProgressCard({
               </Text>
             </View>
             <Text style={styles.todayTitle}>
-              {todaysReading?.displayTitle || 'Loading...'}
+              {todaysReading?.displayTitle || "Loading..."}
             </Text>
           </View>
 
           {/* Status Badge - Shows if caught up or behind */}
           <StatusBadge
             currentDay={activeProgress.currentDay}
-            expectedDay={calculateExpectedDay(activeProgress.startDate, activeProgress.totalDays)}
+            expectedDay={calculateExpectedDay(
+              activeProgress.startDate,
+              activeProgress.totalDays,
+            )}
           />
 
           {/* Milestone Indicator */}
@@ -448,7 +489,9 @@ export default function WayfarerProgressCard({
               />
               <Text style={styles.milestoneText}>
                 Next: {nextMilestone.title}
-                {daysUntilNext && daysUntilNext > 0 && ` in ${daysUntilNext} days`}
+                {daysUntilNext &&
+                  daysUntilNext > 0 &&
+                  ` in ${daysUntilNext} days`}
               </Text>
             </View>
           )}
@@ -456,11 +499,7 @@ export default function WayfarerProgressCard({
           {/* Recent Milestone Celebration */}
           {recentMilestone && !isIntervention && (
             <View style={styles.celebrationBanner}>
-              <Ionicons
-                name="trophy"
-                size={20}
-                color={theme.colors.success}
-              />
+              <Ionicons name="trophy" size={20} color={theme.colors.success} />
               <Text style={styles.celebrationText}>
                 {recentMilestone.title} achieved! {recentMilestone.description}
               </Text>
@@ -487,7 +526,12 @@ export default function WayfarerProgressCard({
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[theme.colors.primary, theme.colors.primaryLight] as [string, string]}
+              colors={
+                [theme.colors.primary, theme.colors.primaryLight] as [
+                  string,
+                  string,
+                ]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.startButtonGradient}
@@ -520,9 +564,9 @@ const styles = StyleSheet.create({
 
   // Loading
   loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.lg,
     gap: theme.spacing.sm,
   },
@@ -533,14 +577,14 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   iconBadge: {
@@ -548,8 +592,8 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: theme.colors.primaryAlpha[20],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconBadgeIntervention: {
     backgroundColor: theme.colors.accentAlpha[20],
@@ -565,8 +609,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 4,
@@ -587,16 +631,16 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: theme.colors.backgroundSecondary,
     borderRadius: 3,
-    overflow: 'visible',
-    position: 'relative',
+    overflow: "visible",
+    position: "relative",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     backgroundColor: theme.colors.primary,
     borderRadius: 3,
   },
   progressMarker: {
-    position: 'absolute',
+    position: "absolute",
     top: -2,
     width: 4,
     height: 10,
@@ -605,8 +649,8 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -2 }],
   },
   progressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: theme.spacing.xs,
   },
   progressLabelText: {
@@ -617,8 +661,8 @@ const styles = StyleSheet.create({
   // Normal Content
   normalContent: {},
   todayReading: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.md,
   },
@@ -644,19 +688,19 @@ const styles = StyleSheet.create({
   // Start Button
   startButton: {
     borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   startButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.sm,
   },
   startButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: "#fff",
   },
 
   // Intervention Container
@@ -664,8 +708,8 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.sm,
   },
   interventionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.xs,
   },
@@ -678,7 +722,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
     marginBottom: theme.spacing.sm,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   interventionPrompt: {
     fontSize: theme.fontSize.sm,
@@ -689,8 +733,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   interventionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
@@ -698,19 +742,19 @@ const styles = StyleSheet.create({
   },
   gracePathBtn: {
     backgroundColor: theme.colors.successAlpha[20],
-    borderColor: theme.colors.success + '40',
+    borderColor: theme.colors.success + "40",
   },
   patientPathBtn: {
     backgroundColor: theme.colors.primaryAlpha[15],
-    borderColor: theme.colors.primary + '40',
+    borderColor: theme.colors.primary + "40",
   },
   interventionBtnIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(255,255,255,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   interventionBtnContent: {
     flex: 1,
@@ -727,29 +771,29 @@ const styles = StyleSheet.create({
 
   // Status Badge
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 6,
     borderRadius: theme.borderRadius.full,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginBottom: theme.spacing.md,
   },
   statusBadgeCaughtUp: {
     backgroundColor: theme.colors.successAlpha[15],
     borderWidth: 1,
-    borderColor: theme.colors.success + '30',
+    borderColor: theme.colors.success + "30",
   },
   statusBadgeWarning: {
     backgroundColor: theme.colors.accentAlpha[15],
     borderWidth: 1,
-    borderColor: theme.colors.accent + '30',
+    borderColor: theme.colors.accent + "30",
   },
   statusBadgeBehind: {
     backgroundColor: theme.colors.errorAlpha[15],
     borderWidth: 1,
-    borderColor: theme.colors.error + '30',
+    borderColor: theme.colors.error + "30",
   },
   statusBadgeText: {
     fontSize: theme.fontSize.xs,
@@ -767,7 +811,7 @@ const styles = StyleSheet.create({
 
   // Empty State
   emptyStateContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.md,
   },
   emptyIconContainer: {
@@ -775,8 +819,8 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     backgroundColor: theme.colors.backgroundSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
   },
   emptyTitle: {
@@ -788,13 +832,13 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
   },
   enrollButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.xl,
@@ -804,13 +848,13 @@ const styles = StyleSheet.create({
   enrollButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: "#fff",
   },
 
   // Milestone Indicator
   milestoneContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
@@ -827,14 +871,14 @@ const styles = StyleSheet.create({
 
   // Celebration Banner
   celebrationBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     padding: theme.spacing.md,
     backgroundColor: theme.colors.successAlpha[15],
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.success + '30',
+    borderColor: theme.colors.success + "30",
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
   },
@@ -847,8 +891,8 @@ const styles = StyleSheet.create({
 
   // Power-Up Badge
   powerUpBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
@@ -856,7 +900,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.full,
     borderWidth: 2,
     borderColor: theme.colors.accent,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
     ...theme.shadows.md,

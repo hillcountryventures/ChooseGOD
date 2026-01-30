@@ -5,25 +5,20 @@
  * Shows score, trend, and mini stats for prayer days, verses read, and steps taken.
  */
 
-import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../lib/theme';
-import type { SpiritualHealthScore } from '../../hooks/useJourneyInsights';
+import React, { useEffect, useRef, useMemo } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../lib/theme";
+import type { SpiritualHealthScore } from "../../hooks/useJourneyInsights";
 
 interface SpiritualScoreCardProps {
   data: SpiritualHealthScore;
 }
 
 export function SpiritualScoreCard({ data }: SpiritualScoreCardProps) {
-  const scoreAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scoreAnim = useMemo(() => new Animated.Value(0), []);
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     // Animate score counting up
@@ -44,14 +39,18 @@ export function SpiritualScoreCard({ data }: SpiritualScoreCardProps) {
   const animatedScore = scoreAnim.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 100],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const isPositiveChange = data.change >= 0;
 
   return (
     <LinearGradient
-      colors={[theme.colors.backgroundTertiary, theme.colors.backgroundSecondary, theme.colors.backgroundTertiary]}
+      colors={[
+        theme.colors.backgroundTertiary,
+        theme.colors.backgroundSecondary,
+        theme.colors.backgroundTertiary,
+      ]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -71,14 +70,31 @@ export function SpiritualScoreCard({ data }: SpiritualScoreCardProps) {
             </View>
           </View>
 
-          <View style={[styles.trendBadge, isPositiveChange ? styles.trendPositive : styles.trendNegative]}>
+          <View
+            style={[
+              styles.trendBadge,
+              isPositiveChange ? styles.trendPositive : styles.trendNegative,
+            ]}
+          >
             <Ionicons
-              name={isPositiveChange ? 'trending-up' : 'trending-down'}
+              name={isPositiveChange ? "trending-up" : "trending-down"}
               size={14}
-              color={isPositiveChange ? theme.colors.success : theme.colors.error}
+              color={
+                isPositiveChange ? theme.colors.success : theme.colors.error
+              }
             />
-            <Text style={[styles.trendText, { color: isPositiveChange ? theme.colors.success : theme.colors.error }]}>
-              {isPositiveChange ? '+' : ''}{data.change}%
+            <Text
+              style={[
+                styles.trendText,
+                {
+                  color: isPositiveChange
+                    ? theme.colors.success
+                    : theme.colors.error,
+                },
+              ]}
+            >
+              {isPositiveChange ? "+" : ""}
+              {data.change}%
             </Text>
           </View>
         </View>
@@ -107,7 +123,11 @@ export function SpiritualScoreCard({ data }: SpiritualScoreCardProps) {
 }
 
 // Animated score display component
-function AnimatedScore({ value }: { value: Animated.AnimatedInterpolation<number> }) {
+function AnimatedScore({
+  value,
+}: {
+  value: Animated.AnimatedInterpolation<number>;
+}) {
   const [displayValue, setDisplayValue] = React.useState(0);
 
   useEffect(() => {
@@ -126,11 +146,11 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     marginHorizontal: theme.spacing.md,
     marginTop: theme.spacing.md,
-    overflow: 'hidden',
-    position: 'relative',
+    overflow: "hidden",
+    position: "relative",
   },
   glowTopRight: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     width: 120,
@@ -140,7 +160,7 @@ const styles = StyleSheet.create({
     transform: [{ translateX: 30 }, { translateY: -30 }],
   },
   glowBottomLeft: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     width: 100,
@@ -150,13 +170,13 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -30 }, { translateY: 30 }],
   },
   content: {
-    position: 'relative',
+    position: "relative",
     zIndex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: theme.spacing.md,
   },
   label: {
@@ -166,12 +186,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+    flexDirection: "row",
+    alignItems: "baseline",
   },
   scoreValue: {
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
     letterSpacing: -1,
   },
@@ -181,8 +201,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   trendBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
@@ -197,7 +217,7 @@ const styles = StyleSheet.create({
   },
   trendText: {
     fontSize: theme.fontSize.xs,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   message: {
     fontSize: theme.fontSize.sm,
@@ -206,14 +226,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   statsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderTopWidth: 1,
     borderTopColor: theme.colors.accentAlpha[20],
     paddingTop: theme.spacing.md,
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statBorder: {
     borderLeftWidth: 1,
@@ -223,7 +243,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: theme.fontSize.xl,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.accent,
     marginBottom: 2,
   },

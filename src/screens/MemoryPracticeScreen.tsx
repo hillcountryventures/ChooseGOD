@@ -1,6 +1,6 @@
 /**
  * MemoryPracticeScreen - Flashcard-style verse memorization
- * 
+ *
  * Features:
  * - Show verse reference, tap to reveal text
  * - First-letter hints for partial recall
@@ -9,7 +9,7 @@
  * - Celebration on completion
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -18,31 +18,31 @@ import {
   Animated,
   Dimensions,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../lib/theme';
-import { useMemoryVerses, ReviewRating } from '../hooks/useMemoryVerses';
-import { CelebrationOverlay } from '../components/CelebrationOverlay';
-import { useTrackScreen } from '../hooks/useAnalytics';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../lib/theme";
+import { useMemoryVerses, ReviewRating } from "../hooks/useMemoryVerses";
+import { CelebrationOverlay } from "../components/CelebrationOverlay";
+import { useTrackScreen } from "../hooks/useAnalytics";
 
-const { width: _width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get("window");
 
 // Generate first-letter hints: "For God so loved" → "F___ G__ s_ l____"
 function generateHint(text: string): string {
   return text
-    .split(' ')
+    .split(" ")
     .map((word) => {
       if (word.length <= 2) return word;
-      return word[0] + '_'.repeat(word.length - 1);
+      return word[0] + "_".repeat(word.length - 1);
     })
-    .join(' ');
+    .join(" ");
 }
 
 export default function MemoryPracticeScreen() {
-  useTrackScreen('memory_practice');
+  useTrackScreen("memory_practice");
   const navigation = useNavigation();
   const { dueVerses, reviewVerse, isLoading } = useMemoryVerses();
 
@@ -52,8 +52,8 @@ export default function MemoryPracticeScreen() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [reviewedCount, setReviewedCount] = useState(0);
 
-  const flipAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const flipAnim = useMemo(() => new Animated.Value(0), []);
+  const progressAnim = useMemo(() => new Animated.Value(0), []);
 
   const currentVerse = dueVerses[currentIndex];
   const totalDue = dueVerses.length;
@@ -119,10 +119,14 @@ export default function MemoryPracticeScreen() {
         </View>
 
         <View style={styles.emptyContainer}>
-          <Ionicons name="checkmark-circle" size={80} color={theme.colors.success} />
+          <Ionicons
+            name="checkmark-circle"
+            size={80}
+            color={theme.colors.success}
+          />
           <Text style={styles.emptyTitle}>All Caught Up!</Text>
           <Text style={styles.emptyText}>
-            No verses are due for review right now.{'\n'}
+            No verses are due for review right now.{"\n"}
             Add verses from the Bible screen to start memorizing.
           </Text>
           <TouchableOpacity style={styles.emptyButton} onPress={handleClose}>
@@ -141,9 +145,13 @@ export default function MemoryPracticeScreen() {
           <Ionicons name="trophy" size={80} color={theme.colors.accent} />
           <Text style={styles.completionTitle}>Session Complete!</Text>
           <Text style={styles.completionText}>
-            You reviewed {reviewedCount} verse{reviewedCount !== 1 ? 's' : ''} today.
+            You reviewed {reviewedCount} verse{reviewedCount !== 1 ? "s" : ""}{" "}
+            today.
           </Text>
-          <TouchableOpacity style={styles.completionButton} onPress={handleClose}>
+          <TouchableOpacity
+            style={styles.completionButton}
+            onPress={handleClose}
+          >
             <Text style={styles.completionButtonText}>Finish</Text>
           </TouchableOpacity>
         </View>
@@ -183,7 +191,7 @@ export default function MemoryPracticeScreen() {
             {
               width: progressAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: ['0%', '100%'],
+                outputRange: ["0%", "100%"],
               }),
             },
           ]}
@@ -192,7 +200,9 @@ export default function MemoryPracticeScreen() {
 
       {/* Flashcard */}
       <View style={styles.cardContainer}>
-        <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
+        <Animated.View
+          style={[styles.card, { transform: [{ scale: cardScale }] }]}
+        >
           <LinearGradient
             colors={[theme.colors.card, theme.colors.surface]}
             style={styles.cardGradient}
@@ -205,23 +215,36 @@ export default function MemoryPracticeScreen() {
 
             {/* Translation badge */}
             <View style={styles.translationBadge}>
-              <Text style={styles.translationText}>{currentVerse.translation.toUpperCase()}</Text>
+              <Text style={styles.translationText}>
+                {currentVerse.translation.toUpperCase()}
+              </Text>
             </View>
 
             {/* Content Area */}
-            <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.contentScroll}
+              showsVerticalScrollIndicator={false}
+            >
               {!isRevealed ? (
                 // Question side
                 <View style={styles.questionContainer}>
                   {showHint ? (
                     <>
                       <Text style={styles.hintLabel}>First-letter hint:</Text>
-                      <Text style={styles.hintText}>{generateHint(currentVerse.text)}</Text>
+                      <Text style={styles.hintText}>
+                        {generateHint(currentVerse.text)}
+                      </Text>
                     </>
                   ) : (
                     <>
-                      <Ionicons name="help-circle" size={48} color={theme.colors.textMuted} />
-                      <Text style={styles.questionText}>Can you recall this verse?</Text>
+                      <Ionicons
+                        name="help-circle"
+                        size={48}
+                        color={theme.colors.textMuted}
+                      />
+                      <Text style={styles.questionText}>
+                        Can you recall this verse?
+                      </Text>
                     </>
                   )}
 
@@ -231,7 +254,11 @@ export default function MemoryPracticeScreen() {
                       style={styles.hintButton}
                       onPress={() => setShowHint(true)}
                     >
-                      <Ionicons name="bulb-outline" size={18} color={theme.colors.accent} />
+                      <Ionicons
+                        name="bulb-outline"
+                        size={18}
+                        color={theme.colors.accent}
+                      />
                       <Text style={styles.hintButtonText}>Show hint</Text>
                     </TouchableOpacity>
                   )}
@@ -240,11 +267,13 @@ export default function MemoryPracticeScreen() {
                 // Answer side
                 <View style={styles.answerContainer}>
                   <Text style={styles.verseText}>{currentVerse.text}</Text>
-                  
+
                   {currentVerse.mnemonic && (
                     <View style={styles.mnemonicContainer}>
                       <Text style={styles.mnemonicLabel}>Memory aid:</Text>
-                      <Text style={styles.mnemonicText}>{currentVerse.mnemonic}</Text>
+                      <Text style={styles.mnemonicText}>
+                        {currentVerse.mnemonic}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -253,9 +282,14 @@ export default function MemoryPracticeScreen() {
 
             {/* Review count */}
             <View style={styles.reviewInfo}>
-              <Ionicons name="refresh" size={14} color={theme.colors.textMuted} />
+              <Ionicons
+                name="refresh"
+                size={14}
+                color={theme.colors.textMuted}
+              />
               <Text style={styles.reviewInfoText}>
-                Reviewed {currentVerse.reviewCount} time{currentVerse.reviewCount !== 1 ? 's' : ''}
+                Reviewed {currentVerse.reviewCount} time
+                {currentVerse.reviewCount !== 1 ? "s" : ""}
               </Text>
             </View>
           </LinearGradient>
@@ -275,19 +309,35 @@ export default function MemoryPracticeScreen() {
             <View style={styles.ratingButtons}>
               <TouchableOpacity
                 style={[styles.ratingButton, styles.ratingAgain]}
-                onPress={() => handleRate('again')}
+                onPress={() => handleRate("again")}
               >
-                <Ionicons name="close-circle" size={24} color={theme.colors.error} />
-                <Text style={[styles.ratingText, { color: theme.colors.error }]}>Again</Text>
+                <Ionicons
+                  name="close-circle"
+                  size={24}
+                  color={theme.colors.error}
+                />
+                <Text
+                  style={[styles.ratingText, { color: theme.colors.error }]}
+                >
+                  Again
+                </Text>
                 <Text style={styles.ratingHint}>1 day</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.ratingButton, styles.ratingHard]}
-                onPress={() => handleRate('hard')}
+                onPress={() => handleRate("hard")}
               >
-                <Ionicons name="alert-circle" size={24} color={theme.colors.warning} />
-                <Text style={[styles.ratingText, { color: theme.colors.warning }]}>Hard</Text>
+                <Ionicons
+                  name="alert-circle"
+                  size={24}
+                  color={theme.colors.warning}
+                />
+                <Text
+                  style={[styles.ratingText, { color: theme.colors.warning }]}
+                >
+                  Hard
+                </Text>
                 <Text style={styles.ratingHint}>
                   {Math.round(currentVerse.intervalDays * 1.2)}d
                 </Text>
@@ -295,21 +345,36 @@ export default function MemoryPracticeScreen() {
 
               <TouchableOpacity
                 style={[styles.ratingButton, styles.ratingGood]}
-                onPress={() => handleRate('good')}
+                onPress={() => handleRate("good")}
               >
-                <Ionicons name="checkmark-circle" size={24} color={theme.colors.success} />
-                <Text style={[styles.ratingText, { color: theme.colors.success }]}>Good</Text>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={theme.colors.success}
+                />
+                <Text
+                  style={[styles.ratingText, { color: theme.colors.success }]}
+                >
+                  Good
+                </Text>
                 <Text style={styles.ratingHint}>
-                  {Math.round(currentVerse.intervalDays * currentVerse.easeFactor)}d
+                  {Math.round(
+                    currentVerse.intervalDays * currentVerse.easeFactor,
+                  )}
+                  d
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.ratingButton, styles.ratingEasy]}
-                onPress={() => handleRate('easy')}
+                onPress={() => handleRate("easy")}
               >
                 <Ionicons name="star" size={24} color={theme.colors.primary} />
-                <Text style={[styles.ratingText, { color: theme.colors.primary }]}>Easy</Text>
+                <Text
+                  style={[styles.ratingText, { color: theme.colors.primary }]}
+                >
+                  Easy
+                </Text>
                 <Text style={styles.ratingHint}>
                   {Math.round(currentVerse.intervalDays * 2.5)}d
                 </Text>
@@ -324,7 +389,7 @@ export default function MemoryPracticeScreen() {
         visible={showCelebration}
         onDismiss={handleCelebrationDismiss}
         title="Well Done!"
-        subtitle={`${reviewedCount} verse${reviewedCount !== 1 ? 's' : ''} reviewed`}
+        subtitle={`${reviewedCount} verse${reviewedCount !== 1 ? "s" : ""} reviewed`}
         showScripture={false}
         icon="school"
         iconColor={theme.colors.primary}
@@ -340,50 +405,50 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   closeButton: {
     width: 44,
     height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   headerCount: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: theme.colors.textSecondary,
     minWidth: 44,
-    textAlign: 'right',
+    textAlign: "right",
   },
   progressContainer: {
     height: 4,
     backgroundColor: theme.colors.surface,
     marginHorizontal: 16,
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressBar: {
-    height: '100%',
+    height: "100%",
     backgroundColor: theme.colors.primary,
     borderRadius: 2,
   },
   cardContainer: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   card: {
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: theme.colors.background,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -395,18 +460,18 @@ const styles = StyleSheet.create({
     minHeight: 300,
   },
   referenceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 8,
   },
   referenceText: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
   },
   translationBadge: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     backgroundColor: theme.colors.primaryAlpha[20],
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -415,7 +480,7 @@ const styles = StyleSheet.create({
   },
   translationText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.primary,
   },
   contentScroll: {
@@ -423,15 +488,15 @@ const styles = StyleSheet.create({
     minHeight: 150,
   },
   questionContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 20,
   },
   questionText: {
     fontSize: 18,
     color: theme.colors.textSecondary,
     marginTop: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   hintLabel: {
     fontSize: 14,
@@ -441,13 +506,13 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 18,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 28,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   hintButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginTop: 24,
     paddingVertical: 8,
@@ -458,7 +523,7 @@ const styles = StyleSheet.create({
   hintButtonText: {
     fontSize: 14,
     color: theme.colors.accent,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   answerContainer: {
     paddingVertical: 10,
@@ -467,7 +532,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: theme.colors.text,
     lineHeight: 32,
-    textAlign: 'center',
+    textAlign: "center",
   },
   mnemonicContainer: {
     marginTop: 20,
@@ -483,12 +548,12 @@ const styles = StyleSheet.create({
   mnemonicText: {
     fontSize: 14,
     color: theme.colors.textSecondary,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   reviewInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     marginTop: 16,
     paddingTop: 16,
@@ -504,9 +569,9 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   revealButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 10,
     backgroundColor: theme.colors.primary,
     paddingVertical: 16,
@@ -514,11 +579,11 @@ const styles = StyleSheet.create({
   },
   revealButtonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   ratingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   ratingLabel: {
     fontSize: 14,
@@ -526,12 +591,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ratingButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   ratingButton: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderRadius: 12,
@@ -543,7 +608,7 @@ const styles = StyleSheet.create({
   ratingEasy: {},
   ratingText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 4,
   },
   ratingHint: {
@@ -554,13 +619,13 @@ const styles = StyleSheet.create({
   // Empty state
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 40,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
     marginTop: 20,
     marginBottom: 12,
@@ -568,7 +633,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: 32,
   },
@@ -580,19 +645,19 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   // Completion state
   completionContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 40,
   },
   completionTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
     marginTop: 20,
     marginBottom: 12,
@@ -600,7 +665,7 @@ const styles = StyleSheet.create({
   completionText: {
     fontSize: 18,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 32,
   },
   completionButton: {
@@ -611,7 +676,7 @@ const styles = StyleSheet.create({
   },
   completionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
 });

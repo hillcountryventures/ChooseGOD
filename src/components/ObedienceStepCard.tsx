@@ -5,18 +5,18 @@
  * This component surfaces actionable steps that emerged from Scripture.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Animated,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../lib/theme';
-import { ObedienceStep } from '../types';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { theme } from "../lib/theme";
+import { ObedienceStep } from "../types";
 
 // Time helper
 function getRelativeTime(date: Date): string {
@@ -24,14 +24,16 @@ function getRelativeTime(date: Date): string {
   const diffMs = now.getTime() - new Date(date).getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 14) return "1 week ago";
   return `${Math.floor(diffDays / 7)} weeks ago`;
 }
 
-function getDueStatus(dueDate?: Date): { text: string; urgent: boolean } | null {
+function getDueStatus(
+  dueDate?: Date,
+): { text: string; urgent: boolean } | null {
   if (!dueDate) return null;
 
   const now = new Date();
@@ -39,9 +41,9 @@ function getDueStatus(dueDate?: Date): { text: string; urgent: boolean } | null 
   const diffMs = due.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return { text: 'Overdue', urgent: true };
-  if (diffDays === 0) return { text: 'Due today', urgent: true };
-  if (diffDays === 1) return { text: 'Due tomorrow', urgent: true };
+  if (diffDays < 0) return { text: "Overdue", urgent: true };
+  if (diffDays === 0) return { text: "Due today", urgent: true };
+  if (diffDays === 1) return { text: "Due tomorrow", urgent: true };
   if (diffDays < 7) return { text: `${diffDays} days left`, urgent: false };
   return { text: `${Math.ceil(diffDays / 7)} weeks left`, urgent: false };
 }
@@ -59,7 +61,7 @@ export function ObedienceStepCard({
   onPress,
   compact = false,
 }: ObedienceStepCardProps) {
-  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const scaleAnim = React.useMemo(() => new Animated.Value(1), []);
 
   const handleComplete = useCallback(async () => {
     // Haptic feedback
@@ -172,9 +174,15 @@ export function ObedienceStepCard({
                   ]}
                 >
                   <Ionicons
-                    name={dueStatus.urgent ? 'alert-circle' : 'calendar-outline'}
+                    name={
+                      dueStatus.urgent ? "alert-circle" : "calendar-outline"
+                    }
                     size={12}
-                    color={dueStatus.urgent ? theme.colors.error : theme.colors.textMuted}
+                    color={
+                      dueStatus.urgent
+                        ? theme.colors.error
+                        : theme.colors.textMuted
+                    }
                   />
                   <Text
                     style={[
@@ -237,7 +245,7 @@ export function CompletedStepCard({
 
   const completedAt = step.completedAt
     ? getRelativeTime(step.completedAt)
-    : 'Recently';
+    : "Recently";
 
   return (
     <TouchableOpacity
@@ -283,11 +291,11 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.xl,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...theme.shadows.sm,
   },
   cardContent: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: theme.spacing.md,
     gap: theme.spacing.md,
   },
@@ -300,14 +308,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: theme.colors.success,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: theme.colors.success + '40',
+    backgroundColor: theme.colors.success + "40",
   },
   textContent: {
     flex: 1,
@@ -320,13 +328,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   metaRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.sm,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   metaBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     backgroundColor: theme.colors.backgroundSecondary,
     paddingHorizontal: theme.spacing.sm,
@@ -344,17 +352,17 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
   },
   cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
   addNoteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   addNoteText: {
@@ -362,8 +370,8 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     backgroundColor: theme.colors.successAlpha[15],
     paddingHorizontal: theme.spacing.md,
@@ -378,8 +386,8 @@ const styles = StyleSheet.create({
 
   // Compact Card
   compactCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
@@ -397,14 +405,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
     borderColor: theme.colors.success,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxInner: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: theme.colors.success + '40',
+    backgroundColor: theme.colors.success + "40",
   },
   compactContent: {
     flex: 1,
@@ -431,21 +439,21 @@ const styles = StyleSheet.create({
   },
   celebrationCard: {
     backgroundColor: theme.colors.successAlpha[15],
-    borderColor: theme.colors.success + '30',
+    borderColor: theme.colors.success + "30",
     opacity: 1,
   },
   celebrationBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: theme.spacing.sm,
     right: theme.spacing.sm,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 2,
   },
   celebrationEmoji: {
     fontSize: 14,
   },
   completedContent: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.md,
   },
   completedCheckmark: {
@@ -453,23 +461,23 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     backgroundColor: theme.colors.success,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   completedText: {
     flex: 1,
   },
   completedTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   completedCommitment: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
     color: theme.colors.textMuted,
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
     flex: 1,
   },
   completedBadge: {
@@ -484,7 +492,7 @@ const styles = StyleSheet.create({
   },
   reflectionText: {
     fontSize: theme.fontSize.sm,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     color: theme.colors.success,
     marginTop: theme.spacing.xs,
     lineHeight: theme.fontSize.sm * 1.4,

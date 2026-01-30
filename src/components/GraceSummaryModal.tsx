@@ -6,7 +6,7 @@
  * nourishing way that encourages continued reading.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,13 +17,13 @@ import {
   Animated,
   ActivityIndicator,
   Dimensions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { theme } from '../lib/theme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import { theme } from "../lib/theme";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // ============================================================================
 // Types
@@ -57,12 +57,13 @@ function parseSummary(summary: string): ParsedSection[] {
   const sections: ParsedSection[] = [];
 
   // Match markdown-style headers: **Title** or ## Title
-  const sectionRegex = /(?:\*\*([^*]+)\*\*|##\s*([^\n]+))\s*\n([\s\S]*?)(?=(?:\*\*[^*]+\*\*|##\s*[^\n]+|$))/g;
+  const sectionRegex =
+    /(?:\*\*([^*]+)\*\*|##\s*([^\n]+))\s*\n([\s\S]*?)(?=(?:\*\*[^*]+\*\*|##\s*[^\n]+|$))/g;
 
   let match;
   while ((match = sectionRegex.exec(summary)) !== null) {
-    const title = (match[1] || match[2] || '').trim();
-    const content = (match[3] || '').trim();
+    const title = (match[1] || match[2] || "").trim();
+    const content = (match[3] || "").trim();
     if (title && content) {
       sections.push({ title, content });
     }
@@ -71,7 +72,7 @@ function parseSummary(summary: string): ParsedSection[] {
   // If no sections found, treat the whole summary as one section
   if (sections.length === 0 && summary.trim()) {
     sections.push({
-      title: 'Summary',
+      title: "Summary",
       content: summary.trim(),
     });
   }
@@ -93,13 +94,13 @@ function SectionCard({
   animValue: Animated.Value;
 }) {
   const icons: { [key: string]: keyof typeof Ionicons.glyphMap } = {
-    'The Story So Far': 'book',
-    "God's Character Revealed": 'heart',
-    'A Word for Your Journey': 'sunny',
-    'Summary': 'document-text',
+    "The Story So Far": "book",
+    "God's Character Revealed": "heart",
+    "A Word for Your Journey": "sunny",
+    Summary: "document-text",
   };
 
-  const iconName = icons[section.title] || 'document-text';
+  const iconName = icons[section.title] || "document-text";
 
   const translateY = animValue.interpolate({
     inputRange: [0, 1],
@@ -137,7 +138,7 @@ function SectionCard({
 // ============================================================================
 
 function LoadingState() {
-  const pulseAnim = useRef(new Animated.Value(0.3)).current;
+  const pulseAnim = useMemo(() => new Animated.Value(0.3), []);
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -152,7 +153,7 @@ function LoadingState() {
           duration: 1200,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     pulse.start();
     return () => pulse.stop();
@@ -230,8 +231,8 @@ export default function GraceSummaryModal({
   onContinueReading,
   onClose,
 }: GraceSummaryModalProps) {
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const contentAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useMemo(() => new Animated.Value(0), []);
+  const contentAnim = useMemo(() => new Animated.Value(0), []);
 
   // Animate modal entrance
   useEffect(() => {
@@ -271,14 +272,13 @@ export default function GraceSummaryModal({
     >
       <BlurView intensity={20} style={styles.overlay} tint="dark">
         <Animated.View
-          style={[
-            styles.modalContainer,
-            { transform: [{ translateY }] },
-          ]}
+          style={[styles.modalContainer, { transform: [{ translateY }] }]}
         >
           {/* Header with gradient */}
           <LinearGradient
-            colors={[theme.colors.accent + '30', 'transparent'] as [string, string]}
+            colors={
+              [theme.colors.accent + "30", "transparent"] as [string, string]
+            }
             style={styles.headerGradient}
           >
             <View style={styles.header}>
@@ -292,12 +292,17 @@ export default function GraceSummaryModal({
 
               <View style={styles.headerContent}>
                 <View style={styles.headerIcon}>
-                  <Ionicons name="sparkles" size={24} color={theme.colors.accent} />
+                  <Ionicons
+                    name="sparkles"
+                    size={24}
+                    color={theme.colors.accent}
+                  />
                 </View>
                 <Text style={styles.headerTitle}>Grace Path</Text>
                 {summaryData && (
                   <Text style={styles.headerSubtitle}>
-                    {summaryData.daysCovered} day{summaryData.daysCovered > 1 ? 's' : ''} covered
+                    {summaryData.daysCovered} day
+                    {summaryData.daysCovered > 1 ? "s" : ""} covered
                   </Text>
                 )}
               </View>
@@ -325,7 +330,7 @@ export default function GraceSummaryModal({
                       color={theme.colors.textSecondary}
                     />
                     <Text style={styles.chaptersText}>
-                      {summaryData.chaptersCovered.slice(0, 3).join(', ')}
+                      {summaryData.chaptersCovered.slice(0, 3).join(", ")}
                       {summaryData.chaptersCovered.length > 3 &&
                         ` +${summaryData.chaptersCovered.length - 3} more`}
                     </Text>
@@ -344,10 +349,7 @@ export default function GraceSummaryModal({
 
                 {/* Encouragement footer */}
                 <Animated.View
-                  style={[
-                    styles.encouragementCard,
-                    { opacity: contentAnim },
-                  ]}
+                  style={[styles.encouragementCard, { opacity: contentAnim }]}
                 >
                   <Ionicons
                     name="heart"
@@ -355,7 +357,8 @@ export default function GraceSummaryModal({
                     color={theme.colors.success}
                   />
                   <Text style={styles.encouragementText}>
-                    You&apos;re all caught up! Continue your journey with today&apos;s reading.
+                    You&apos;re all caught up! Continue your journey with
+                    today&apos;s reading.
                   </Text>
                 </Animated.View>
               </>
@@ -371,7 +374,7 @@ export default function GraceSummaryModal({
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={[theme.colors.success, '#16A34A'] as [string, string]}
+                  colors={[theme.colors.success, "#16A34A"] as [string, string]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.continueButtonGradient}
@@ -397,7 +400,7 @@ export default function GraceSummaryModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContainer: {
     flex: 1,
@@ -405,7 +408,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderTopLeftRadius: theme.borderRadius.xl,
     borderTopRightRadius: theme.borderRadius.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 
   // Header
@@ -417,19 +420,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     right: theme.spacing.lg,
     top: 0,
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: theme.colors.backgroundSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 10,
   },
   headerContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: theme.spacing.lg,
   },
   headerIcon: {
@@ -437,8 +440,8 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: theme.colors.accentAlpha[20],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: theme.spacing.sm,
   },
   headerTitle: {
@@ -463,15 +466,15 @@ const styles = StyleSheet.create({
 
   // Chapters badge
   chaptersBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.backgroundSecondary,
     borderRadius: theme.borderRadius.full,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: theme.spacing.lg,
   },
   chaptersText: {
@@ -489,8 +492,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.md,
   },
@@ -499,8 +502,8 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: theme.colors.accentAlpha[15],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: theme.fontSize.md,
@@ -516,8 +519,8 @@ const styles = StyleSheet.create({
 
   // Encouragement card
   encouragementCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     padding: theme.spacing.md,
     backgroundColor: theme.colors.successAlpha[20],
@@ -533,7 +536,7 @@ const styles = StyleSheet.create({
 
   // Footer
   footer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -545,24 +548,24 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   continueButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.sm,
   },
   continueButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: "#fff",
   },
 
   // Loading state
   loadingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xxl,
   },
   loadingIcon: {
@@ -577,7 +580,7 @@ const styles = StyleSheet.create({
   loadingSubtitle: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.lg,
   },
@@ -587,7 +590,7 @@ const styles = StyleSheet.create({
 
   // Error state
   errorContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xxl,
   },
   errorIcon: {
@@ -602,12 +605,12 @@ const styles = StyleSheet.create({
   errorMessage: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.lg,
   },
   errorActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.md,
   },
   retryButton: {
@@ -619,7 +622,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: "#fff",
   },
   dismissButton: {
     paddingVertical: theme.spacing.sm,

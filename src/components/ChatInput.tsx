@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from "react";
 import {
   View,
   TextInput,
@@ -7,9 +7,9 @@ import {
   Keyboard,
   Animated,
   ActivityIndicator,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../lib/theme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../lib/theme";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -22,17 +22,17 @@ export function ChatInput({
   onSend,
   onStop,
   isLoading = false,
-  placeholder = 'Ask about Scripture...',
+  placeholder = "Ask about Scripture...",
 }: ChatInputProps) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const inputRef = useRef<TextInput>(null);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useMemo(() => new Animated.Value(1), []);
 
   const handleSend = () => {
     const trimmedMessage = message.trim();
     if (trimmedMessage && !isLoading) {
       onSend(trimmedMessage);
-      setMessage('');
+      setMessage("");
       Keyboard.dismiss();
     }
   };
@@ -93,7 +93,9 @@ export function ChatInput({
               onPressOut={handlePressOut}
               disabled={!canSend}
               activeOpacity={0.8}
-              accessibilityLabel={isLoading ? 'Sending message' : 'Send message'}
+              accessibilityLabel={
+                isLoading ? "Sending message" : "Send message"
+              }
               accessibilityRole="button"
               accessibilityState={{ disabled: !canSend }}
             >
@@ -123,8 +125,8 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.border,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     backgroundColor: theme.colors.inputBackground,
     borderRadius: theme.borderRadius.xl,
     borderWidth: 1,
@@ -146,8 +148,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.backgroundTertiary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 2,
   },
   sendButtonActive: {

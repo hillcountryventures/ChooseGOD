@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,17 @@ import {
   Animated,
   Dimensions,
   Pressable,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../lib/theme';
-import { useCrossReferences, CrossReference, GroupedCrossReferences } from '../hooks/useCrossReferences';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { theme } from "../lib/theme";
+import {
+  useCrossReferences,
+  CrossReference,
+  GroupedCrossReferences,
+} from "../hooks/useCrossReferences";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface CrossReferencesSheetProps {
   visible: boolean;
@@ -32,7 +36,7 @@ interface CrossReferencesSheetProps {
 
 /**
  * A bottom sheet that reveals connected Scripture passages
- * 
+ *
  * Design Philosophy:
  * - Make connections feel like discovery, not academic study
  * - Group by book to show the breadth of connections
@@ -48,17 +52,18 @@ export function CrossReferencesSheet({
   onNavigate,
 }: CrossReferencesSheetProps) {
   const insets = useSafeAreaInsets();
-  const { fetchByReference, groupedRefs, isLoading, error, clear } = useCrossReferences();
-  
+  const { fetchByReference, groupedRefs, isLoading, error, clear } =
+    useCrossReferences();
+
   // Animation for slide-up
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const slideAnim = useMemo(() => new Animated.Value(SCREEN_HEIGHT), []);
+  const backdropOpacity = useMemo(() => new Animated.Value(0), []);
 
   // Fetch cross-references when sheet opens
   useEffect(() => {
     if (visible) {
       fetchByReference(book, chapter, verse, 15);
-      
+
       // Animate in
       Animated.parallel([
         Animated.spring(slideAnim, {
@@ -115,18 +120,18 @@ export function CrossReferencesSheet({
    * Get a connection type label based on direction and votes
    */
   const getConnectionLabel = (ref: CrossReference): string => {
-    if (ref.votes >= 3) return 'Strong connection';
-    if (ref.direction === 'to') return 'Referenced';
-    return 'Related';
+    if (ref.votes >= 3) return "Strong connection";
+    if (ref.direction === "to") return "Referenced";
+    return "Related";
   };
 
   /**
    * Get icon for connection strength
    */
   const getConnectionIcon = (ref: CrossReference): string => {
-    if (ref.votes >= 3) return 'link';
-    if (ref.votes >= 2) return 'git-branch';
-    return 'arrow-forward';
+    if (ref.votes >= 3) return "link";
+    if (ref.votes >= 2) return "git-branch";
+    return "arrow-forward";
   };
 
   const renderReferenceCard = (ref: CrossReference) => (
@@ -141,7 +146,9 @@ export function CrossReferencesSheet({
       <View style={styles.referenceHeader}>
         <View style={styles.referenceRefContainer}>
           <Ionicons
-            name={getConnectionIcon(ref) as 'link' | 'git-branch' | 'arrow-forward'}
+            name={
+              getConnectionIcon(ref) as "link" | "git-branch" | "arrow-forward"
+            }
             size={14}
             color={theme.colors.primary}
             style={styles.connectionIcon}
@@ -157,7 +164,11 @@ export function CrossReferencesSheet({
       </Text>
       <View style={styles.tapHint}>
         <Text style={styles.tapHintText}>Tap to explore</Text>
-        <Ionicons name="chevron-forward" size={12} color={theme.colors.textMuted} />
+        <Ionicons
+          name="chevron-forward"
+          size={12}
+          color={theme.colors.textMuted}
+        />
       </View>
     </Pressable>
   );
@@ -172,15 +183,17 @@ export function CrossReferencesSheet({
           opacity: slideAnim.interpolate({
             inputRange: [0, SCREEN_HEIGHT * 0.3],
             outputRange: [1, 0],
-            extrapolate: 'clamp',
+            extrapolate: "clamp",
           }),
-          transform: [{
-            translateY: slideAnim.interpolate({
-              inputRange: [0, SCREEN_HEIGHT * 0.5],
-              outputRange: [0, 20 + index * 10],
-              extrapolate: 'clamp',
-            }),
-          }],
+          transform: [
+            {
+              translateY: slideAnim.interpolate({
+                inputRange: [0, SCREEN_HEIGHT * 0.5],
+                outputRange: [0, 20 + index * 10],
+                extrapolate: "clamp",
+              }),
+            },
+          ],
         },
       ]}
     >
@@ -188,7 +201,8 @@ export function CrossReferencesSheet({
         <Ionicons name="book" size={16} color={theme.colors.accent} />
         <Text style={styles.bookName}>{group.book}</Text>
         <Text style={styles.refCount}>
-          {group.references.length} {group.references.length === 1 ? 'verse' : 'verses'}
+          {group.references.length}{" "}
+          {group.references.length === 1 ? "verse" : "verses"}
         </Text>
       </View>
       {group.references.map(renderReferenceCard)}
@@ -224,7 +238,11 @@ export function CrossReferencesSheet({
     if (groupedRefs.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Ionicons name="git-network" size={48} color={theme.colors.textMuted} />
+          <Ionicons
+            name="git-network"
+            size={48}
+            color={theme.colors.textMuted}
+          />
           <Text style={styles.emptyTitle}>No cross-references found</Text>
           <Text style={styles.emptySubtitle}>
             This verse may not have recorded connections in our database yet.
@@ -233,15 +251,19 @@ export function CrossReferencesSheet({
       );
     }
 
-    const totalRefs = groupedRefs.reduce((sum, g) => sum + g.references.length, 0);
+    const totalRefs = groupedRefs.reduce(
+      (sum, g) => sum + g.references.length,
+      0,
+    );
 
     return (
       <>
         <View style={styles.discoveryBanner}>
           <Ionicons name="sparkles" size={20} color={theme.colors.accent} />
           <Text style={styles.discoveryText}>
-            {totalRefs} connected {totalRefs === 1 ? 'passage' : 'passages'} across{' '}
-            {groupedRefs.length} {groupedRefs.length === 1 ? 'book' : 'books'}
+            {totalRefs} connected {totalRefs === 1 ? "passage" : "passages"}{" "}
+            across {groupedRefs.length}{" "}
+            {groupedRefs.length === 1 ? "book" : "books"}
           </Text>
         </View>
         <ScrollView
@@ -257,11 +279,16 @@ export function CrossReferencesSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+    >
       <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
       </Animated.View>
-      
+
       <Animated.View
         style={[
           styles.sheet,
@@ -280,7 +307,11 @@ export function CrossReferencesSheet({
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <View style={styles.headerIcon}>
-              <Ionicons name="git-network" size={24} color={theme.colors.primary} />
+              <Ionicons
+                name="git-network"
+                size={24}
+                color={theme.colors.primary}
+              />
             </View>
             <View style={styles.headerText}>
               <Text style={styles.title}>Connected Scripture</Text>
@@ -314,10 +345,10 @@ export function CrossReferencesSheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
   sheet: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -327,7 +358,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: theme.borderRadius.xl,
   },
   handleContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.sm,
   },
   handle: {
@@ -337,17 +368,17 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   headerIcon: {
@@ -355,8 +386,8 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: theme.colors.primaryAlpha[15],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: theme.spacing.md,
   },
   headerText: {
@@ -385,13 +416,13 @@ const styles = StyleSheet.create({
   sourceText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     lineHeight: theme.fontSize.md * 1.5,
   },
   discoveryBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.sm,
   },
@@ -401,8 +432,8 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.xxl,
     gap: theme.spacing.md,
   },
@@ -411,8 +442,8 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.xxl,
     paddingHorizontal: theme.spacing.xl,
     gap: theme.spacing.sm,
@@ -421,12 +452,12 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptySubtitle: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: theme.fontSize.md * 1.5,
   },
   retryButton: {
@@ -439,7 +470,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
-    color: '#fff',
+    color: "#fff",
   },
   refsScrollView: {
     flex: 1,
@@ -451,8 +482,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   bookHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
   },
@@ -479,14 +510,14 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
   },
   referenceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: theme.spacing.sm,
   },
   referenceRefContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   connectionIcon: {
     marginRight: theme.spacing.xs,
@@ -514,9 +545,9 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   tapHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     gap: theme.spacing.xs,
   },
   tapHintText: {

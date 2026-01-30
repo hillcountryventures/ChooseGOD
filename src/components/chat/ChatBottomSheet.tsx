@@ -10,7 +10,13 @@
  * - VoiceListeningBanner: voice recording indicator
  * - CelebrationOverlay: animated celebration popup
  */
-import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -19,45 +25,54 @@ import {
   Platform,
   Share,
   Alert,
-} from 'react-native';
+} from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
-} from '@gorhom/bottom-sheet';
-import { FlashListRef } from '@shopify/flash-list';
-import { BlurView } from 'expo-blur';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
-import * as Sharing from 'expo-sharing';
-import { captureRef } from 'react-native-view-shot';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import NetInfo from '@react-native-community/netinfo';
-import { useStore } from '../../store/useStore';
-import { theme } from '../../lib/theme';
-import { ChatMessage, VerseSource, SuggestedAction, RootStackParamList } from '../../types';
-import { getSupabaseConfig } from '../../lib/supabase';
-import { CHAT_LIMITS } from '../../constants/limits';
-import { sanitizeChatMessage } from '../../utils/inputSanitizer';
-import { usePremiumStatus, useChatUsageTracking } from '../../hooks/usePremiumStatus';
-import { useChatQuota } from '../../hooks/useChatQuota';
-import type { ChatMode } from '../../types';
+  BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
+import { FlashListRef } from "@shopify/flash-list";
+import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import * as Sharing from "expo-sharing";
+import { captureRef } from "react-native-view-shot";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import NetInfo from "@react-native-community/netinfo";
+import { useStore } from "../../store/useStore";
+import { theme } from "../../lib/theme";
+import {
+  ChatMessage,
+  VerseSource,
+  SuggestedAction,
+  RootStackParamList,
+} from "../../types";
+import { getSupabaseConfig } from "../../lib/supabase";
+import { CHAT_LIMITS } from "../../constants/limits";
+import { sanitizeChatMessage } from "../../utils/inputSanitizer";
+import {
+  usePremiumStatus,
+  useChatUsageTracking,
+} from "../../hooks/usePremiumStatus";
+import { useChatQuota } from "../../hooks/useChatQuota";
+import type { ChatMode } from "../../types";
 import {
   streamCompanionResponse,
   generateContextPrompt,
   generateInitialMessage,
-} from './utils';
-import { useVoiceInput } from '../../hooks/useVoiceInput';
-import { isPrayerMode as checkIsPrayerMode } from '../../constants/chatModes';
-import { modeWelcomes } from './modeWelcomes';
+} from "./utils";
+import { useVoiceInput } from "../../hooks/useVoiceInput";
+import { isPrayerMode as checkIsPrayerMode } from "../../constants/chatModes";
+import { modeWelcomes } from "./modeWelcomes";
 
 // Sub-components
-import { ChatHeader } from './ChatHeader';
-import { ChatInputArea } from './ChatInputArea';
-import { ChatMessageList } from './ChatMessageList';
-import { ChatModeSelector } from './ChatModeSelector';
-import { ChatContextBanner } from './ChatContextBanner';
-import { VoiceListeningBanner } from './VoiceListeningBanner';
-import { CelebrationOverlay } from './CelebrationOverlay';
+import { ChatHeader } from "./ChatHeader";
+import { ChatInputArea } from "./ChatInputArea";
+import { ChatMessageList } from "./ChatMessageList";
+import { ChatModeSelector } from "./ChatModeSelector";
+import { ChatContextBanner } from "./ChatContextBanner";
+import { VoiceListeningBanner } from "./VoiceListeningBanner";
+import { CelebrationOverlay } from "./CelebrationOverlay";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -67,10 +82,12 @@ export function ChatBottomSheet() {
   const flashListRef = useRef<FlashListRef<ChatMessage>>(null);
   const inputRef = useRef<React.ElementRef<typeof View>>(null);
   const viewShotRef = useRef<View>(null);
-  const celebrationAnim = useRef(new Animated.Value(0)).current;
+  const celebrationAnim = useMemo(() => new Animated.Value(0), []);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isClosingRef = useRef(false);
-  const handleSendRef = useRef<(message: string, isRetry?: boolean) => void>(() => {});
+  const handleSendRef = useRef<(message: string, isRetry?: boolean) => void>(
+    () => {},
+  );
   const insets = useSafeAreaInsets();
 
   // Store state
@@ -89,15 +106,16 @@ export function ChatBottomSheet() {
   const dailyVerse = useStore((s) => s.dailyVerse);
 
   // Premium
-  const { isPremium, canUseChat, canUseChatMode, showPaywall } = usePremiumStatus();
+  const { isPremium, canUseChat, canUseChatMode, showPaywall } =
+    usePremiumStatus();
   const { incrementUsage } = useChatUsageTracking();
   const { seedsRemaining, totalSeeds } = useChatQuota();
 
   // Local state
   const [showModeSelector, setShowModeSelector] = useState(false);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [showCelebration, _setShowCelebration] = useState(false);
-  const [celebrationMessage, _setCelebrationMessage] = useState('');
+  const [celebrationMessage, _setCelebrationMessage] = useState("");
 
   // Voice input
   const {
@@ -113,7 +131,7 @@ export function ChatBottomSheet() {
     onPartialResult: (partial) => setInputText(partial),
   });
 
-  const snapPoints = useMemo(() => ['50%', '94%'], []);
+  const snapPoints = useMemo(() => ["50%", "94%"], []);
   const isPrayerMode = checkIsPrayerMode(currentMode);
   const hasMessages = messages.length > 0;
 
@@ -122,7 +140,10 @@ export function ChatBottomSheet() {
   useEffect(() => {
     if (chatSheetOpen) {
       bottomSheetRef.current?.snapToIndex(0);
-      setTimeout(() => (inputRef.current as unknown as { focus: () => void })?.focus(), 300);
+      setTimeout(
+        () => (inputRef.current as unknown as { focus: () => void })?.focus(),
+        300,
+      );
       if (chatContext.pendingMessage) {
         const msg = chatContext.pendingMessage;
         setChatContext({ pendingMessage: undefined });
@@ -135,13 +156,16 @@ export function ChatBottomSheet() {
 
   useEffect(() => {
     if (messages.length > 0) {
-      setTimeout(() => flashListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(
+        () => flashListRef.current?.scrollToEnd({ animated: true }),
+        100,
+      );
     }
   }, [messages]);
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
-    const sub = Keyboard.addListener('keyboardDidShow', () => {
+    if (Platform.OS !== "ios") return;
+    const sub = Keyboard.addListener("keyboardDidShow", () => {
       setTimeout(() => bottomSheetRef.current?.snapToIndex(1), 100);
     });
     return () => sub.remove();
@@ -149,24 +173,30 @@ export function ChatBottomSheet() {
 
   // ==================== HANDLERS ====================
 
-  const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
-      setChatSheetOpen(false);
-      Keyboard.dismiss();
-      isClosingRef.current = false;
-    }
-  }, [setChatSheetOpen]);
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        setChatSheetOpen(false);
+        Keyboard.dismiss();
+        isClosingRef.current = false;
+      }
+    },
+    [setChatSheetOpen],
+  );
 
   const handleClose = useCallback(() => {
     if (isClosingRef.current) return;
     isClosingRef.current = true;
     Keyboard.dismiss();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeout(() => bottomSheetRef.current?.close(), Platform.OS === 'ios' ? 50 : 0);
+    setTimeout(
+      () => bottomSheetRef.current?.close(),
+      Platform.OS === "ios" ? 50 : 0,
+    );
   }, []);
 
   const renderBackdrop = useCallback(
-    (props: Record<string, unknown>) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={-1}
@@ -177,7 +207,7 @@ export function ChatBottomSheet() {
         <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
       </BottomSheetBackdrop>
     ),
-    []
+    [],
   );
 
   const handleStop = useCallback(() => {
@@ -188,113 +218,166 @@ export function ChatBottomSheet() {
     }
   }, [setIsQuerying]);
 
-  const handleSend = useCallback(async (rawMessage: string, isRetry = false) => {
-    const message = sanitizeChatMessage(rawMessage);
-    if (!message) return;
+  const handleSend = useCallback(
+    async (rawMessage: string, isRetry = false) => {
+      const message = sanitizeChatMessage(rawMessage);
+      if (!message) return;
 
-    const netState = await NetInfo.fetch();
-    if (!netState.isConnected) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('No Connection', 'Please check your internet connection and try again.', [{ text: 'OK' }]);
-      return;
-    }
-
-    if (!isRetry && !canUseChat) { showPaywall(); return; }
-
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
-    setInputText('');
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: message,
-      timestamp: new Date(),
-      mode: currentMode,
-    };
-    addMessage(userMessage);
-    setIsQuerying(true);
-    bottomSheetRef.current?.snapToIndex(1);
-
-    const assistantMessageId = (Date.now() + 1).toString();
-    addMessage({
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      mode: currentMode,
-    });
-
-    try {
-      const history = messages.slice(-CHAT_LIMITS.historyMessages).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-      const bibleContext = chatContext.screenType === 'bible' ? chatContext.bibleContext : undefined;
-      const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseConfig();
-
-      await streamCompanionResponse(
-        supabaseUrl,
-        supabaseAnonKey,
-        { userId: null, message, conversationHistory: history, contextMode: currentMode, bibleContext },
-        {
-          onMeta: ({ sources, suggestedActions }) => {
-            updateMessage(assistantMessageId, { sources: sources as VerseSource[], suggestedActions });
-          },
-          onContent: (_chunk, fullContent) => {
-            updateMessage(assistantMessageId, { content: fullContent });
-          },
-          onDone: (fullResponse) => {
-            updateMessage(assistantMessageId, { content: fullResponse });
-            if (!isRetry) incrementUsage();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            setIsQuerying(false);
-            abortControllerRef.current = null;
-          },
-          onError: (errorMsg) => {
-            updateMessage(assistantMessageId, {
-              content: `I\u2019m having trouble connecting right now. ${errorMsg}\n\nTap "Try again" below to retry.`,
-              suggestedActions: [{ label: 'Try again', prompt: message, icon: 'refresh-outline' }],
-            });
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            setIsQuerying(false);
-            abortControllerRef.current = null;
-          },
-          onRetry: (_attempt) => {
-            updateMessage(assistantMessageId, { content: 'Warming up... just a moment.' });
-          },
-        },
-        abortControllerRef.current?.signal
-      );
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        updateMessage(assistantMessageId, { content: 'Cancelled.' });
-        setIsQuerying(false);
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert(
+          "No Connection",
+          "Please check your internet connection and try again.",
+          [{ text: "OK" }],
+        );
         return;
       }
-      if (error instanceof Error && error.name === 'TimeoutError') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
+      if (!isRetry && !canUseChat) {
+        showPaywall();
+        return;
+      }
+
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+      setInputText("");
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: message,
+        timestamp: new Date(),
+        mode: currentMode,
+      };
+      addMessage(userMessage);
+      setIsQuerying(true);
+      bottomSheetRef.current?.snapToIndex(1);
+
+      const assistantMessageId = (Date.now() + 1).toString();
+      addMessage({
+        id: assistantMessageId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+        mode: currentMode,
+      });
+
+      try {
+        const history = messages
+          .slice(-CHAT_LIMITS.historyMessages)
+          .map((m) => ({
+            role: m.role,
+            content: m.content,
+          }));
+        const bibleContext =
+          chatContext.screenType === "bible"
+            ? chatContext.bibleContext
+            : undefined;
+        const { url: supabaseUrl, anonKey: supabaseAnonKey } =
+          getSupabaseConfig();
+
+        await streamCompanionResponse(
+          supabaseUrl,
+          supabaseAnonKey,
+          {
+            userId: null,
+            message,
+            conversationHistory: history,
+            contextMode: currentMode,
+            bibleContext,
+          },
+          {
+            onMeta: ({ sources, suggestedActions }) => {
+              updateMessage(assistantMessageId, {
+                sources: sources as VerseSource[],
+                suggestedActions,
+              });
+            },
+            onContent: (_chunk, fullContent) => {
+              updateMessage(assistantMessageId, { content: fullContent });
+            },
+            onDone: (fullResponse) => {
+              updateMessage(assistantMessageId, { content: fullResponse });
+              if (!isRetry) incrementUsage();
+              Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success,
+              );
+              setIsQuerying(false);
+              abortControllerRef.current = null;
+            },
+            onError: (errorMsg) => {
+              updateMessage(assistantMessageId, {
+                content: `I\u2019m having trouble connecting right now. ${errorMsg}\n\nTap "Try again" below to retry.`,
+                suggestedActions: [
+                  {
+                    label: "Try again",
+                    prompt: message,
+                    icon: "refresh-outline",
+                  },
+                ],
+              });
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              setIsQuerying(false);
+              abortControllerRef.current = null;
+            },
+            onRetry: (_attempt) => {
+              updateMessage(assistantMessageId, {
+                content: "Warming up... just a moment.",
+              });
+            },
+          },
+          abortControllerRef.current?.signal,
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          updateMessage(assistantMessageId, { content: "Cancelled." });
+          setIsQuerying(false);
+          return;
+        }
+        if (error instanceof Error && error.name === "TimeoutError") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          updateMessage(assistantMessageId, {
+            content:
+              "The companion is still warming up \u2014 this sometimes happens after periods of inactivity. Tap below to try again; it usually works on the second attempt.",
+            suggestedActions: [
+              { label: "Try again", prompt: message, icon: "refresh-outline" },
+            ],
+          });
+          setIsQuerying(false);
+          abortControllerRef.current = null;
+          return;
+        }
+        const errorDetails =
+          error instanceof Error ? error.message : String(error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         updateMessage(assistantMessageId, {
-          content: 'The companion is still warming up \u2014 this sometimes happens after periods of inactivity. Tap below to try again; it usually works on the second attempt.',
-          suggestedActions: [{ label: 'Try again', prompt: message, icon: 'refresh-outline' }],
+          content: `I\u2019m having trouble connecting right now. ${errorDetails}\n\nTap "Try again" below to retry.`,
+          suggestedActions: [
+            { label: "Try again", prompt: message, icon: "refresh-outline" },
+          ],
         });
         setIsQuerying(false);
         abortControllerRef.current = null;
-        return;
       }
-      const errorDetails = error instanceof Error ? error.message : String(error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      updateMessage(assistantMessageId, {
-        content: `I\u2019m having trouble connecting right now. ${errorDetails}\n\nTap "Try again" below to retry.`,
-        suggestedActions: [{ label: 'Try again', prompt: message, icon: 'refresh-outline' }],
-      });
-      setIsQuerying(false);
-      abortControllerRef.current = null;
-    }
-  }, [canUseChat, showPaywall, currentMode, addMessage, setIsQuerying, messages, chatContext, updateMessage, incrementUsage]);
+    },
+    [
+      canUseChat,
+      showPaywall,
+      currentMode,
+      addMessage,
+      setIsQuerying,
+      messages,
+      chatContext,
+      updateMessage,
+      incrementUsage,
+    ],
+  );
 
-  useEffect(() => { handleSendRef.current = handleSend; }, [handleSend]);
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [handleSend]);
 
   // ==================== SECONDARY HANDLERS ====================
 
@@ -308,26 +391,33 @@ export function ChatBottomSheet() {
 
   const handleDailyVerseTap = useCallback(() => {
     if (dailyVerse) {
-      handleSend(`Help me reflect on today's verse: ${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`);
+      handleSend(
+        `Help me reflect on today's verse: ${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`,
+      );
     }
   }, [dailyVerse, handleSend]);
 
   const getLastAssistantContext = useCallback(() => {
-    const last = messages.filter(m => m.role === 'assistant').pop();
-    return { sources: last?.sources || [], content: last?.content || '' };
+    const last = messages.filter((m) => m.role === "assistant").pop();
+    return { sources: last?.sources || [], content: last?.content || "" };
   }, [messages]);
 
   const handleJournalPress = useCallback(() => {
     setChatSheetOpen(false);
     const { sources, content } = getLastAssistantContext();
     const firstSource = sources[0];
-    navigation.navigate('JournalCompose', {
-      initialPrompt: content ? 'Reflection:\n\n' : '',
-      initialVerse: firstSource ? {
-        book: firstSource.book, chapter: firstSource.chapter,
-        verse: firstSource.verse, text: firstSource.text, translation: firstSource.translation,
-      } : undefined,
-      source: { type: 'ai_prompt' },
+    navigation.navigate("JournalCompose", {
+      initialPrompt: content ? "Reflection:\n\n" : "",
+      initialVerse: firstSource
+        ? {
+            book: firstSource.book,
+            chapter: firstSource.chapter,
+            verse: firstSource.verse,
+            text: firstSource.text,
+            translation: firstSource.translation,
+          }
+        : undefined,
+      source: { type: "ai_prompt" },
     });
   }, [setChatSheetOpen, getLastAssistantContext, navigation]);
 
@@ -335,13 +425,18 @@ export function ChatBottomSheet() {
     setChatSheetOpen(false);
     const { sources } = getLastAssistantContext();
     const firstSource = sources[0];
-    navigation.navigate('JournalCompose', {
-      initialPrompt: 'Dear Lord,\n\n',
-      initialVerse: firstSource ? {
-        book: firstSource.book, chapter: firstSource.chapter,
-        verse: firstSource.verse, text: firstSource.text, translation: firstSource.translation,
-      } : undefined,
-      source: { type: 'ai_prompt' },
+    navigation.navigate("JournalCompose", {
+      initialPrompt: "Dear Lord,\n\n",
+      initialVerse: firstSource
+        ? {
+            book: firstSource.book,
+            chapter: firstSource.chapter,
+            verse: firstSource.verse,
+            text: firstSource.text,
+            translation: firstSource.translation,
+          }
+        : undefined,
+      source: { type: "ai_prompt" },
     });
   }, [setChatSheetOpen, getLastAssistantContext, navigation]);
 
@@ -349,42 +444,56 @@ export function ChatBottomSheet() {
     // TODO: navigate to verse
   }, []);
 
-  const handleSuggestedActionPress = useCallback((action: SuggestedAction) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const isRetryAction = action.label.toLowerCase() === 'try again' || action.icon === 'refresh-outline';
-    const isPrayerAction = action.label.toLowerCase().includes('pray') || action.prompt.toLowerCase().includes('pray');
-    if (isPrayerAction && currentMode !== 'prayer') setCurrentMode('prayer');
-    handleSend(action.prompt, isRetryAction);
-  }, [handleSend, currentMode, setCurrentMode]);
+  const handleSuggestedActionPress = useCallback(
+    (action: SuggestedAction) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const isRetryAction =
+        action.label.toLowerCase() === "try again" ||
+        action.icon === "refresh-outline";
+      const isPrayerAction =
+        action.label.toLowerCase().includes("pray") ||
+        action.prompt.toLowerCase().includes("pray");
+      if (isPrayerAction && currentMode !== "prayer") setCurrentMode("prayer");
+      handleSend(action.prompt, isRetryAction);
+    },
+    [handleSend, currentMode, setCurrentMode],
+  );
 
-  const handleModeSelect = useCallback((mode: ChatMode) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (!canUseChatMode(mode)) { showPaywall(); setShowModeSelector(false); return; }
-    setCurrentMode(mode);
-    setShowModeSelector(false);
-
-    if (messages.length === 0) {
-      const welcome = modeWelcomes[mode];
-      if (welcome) {
-        addMessage({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: welcome.content,
-          timestamp: new Date(),
-          mode,
-          suggestedActions: welcome.actions,
-        });
+  const handleModeSelect = useCallback(
+    (mode: ChatMode) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (!canUseChatMode(mode)) {
+        showPaywall();
+        setShowModeSelector(false);
+        return;
       }
-    }
-  }, [canUseChatMode, showPaywall, setCurrentMode, messages.length, addMessage]);
+      setCurrentMode(mode);
+      setShowModeSelector(false);
+
+      if (messages.length === 0) {
+        const welcome = modeWelcomes[mode];
+        if (welcome) {
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: welcome.content,
+            timestamp: new Date(),
+            mode,
+            suggestedActions: welcome.actions,
+          });
+        }
+      }
+    },
+    [canUseChatMode, showPaywall, setCurrentMode, messages.length, addMessage],
+  );
 
   const handlePrayerModeToggle = useCallback(() => {
-    handleModeSelect(currentMode === 'prayer' ? 'auto' : 'prayer');
+    handleModeSelect(currentMode === "prayer" ? "auto" : "prayer");
   }, [currentMode, handleModeSelect]);
 
   const handleModeSelectorToggle = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setShowModeSelector(prev => !prev);
+    setShowModeSelector((prev) => !prev);
   }, []);
 
   const handleShareConversation = useCallback(async () => {
@@ -392,23 +501,36 @@ export function ChatBottomSheet() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       if (viewShotRef.current) {
-        const uri = await captureRef(viewShotRef, { format: 'png', quality: 1 });
-        if (uri && await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share this Scripture conversation' });
+        const uri = await captureRef(viewShotRef, {
+          format: "png",
+          quality: 1,
+        });
+        if (uri && (await Sharing.isAvailableAsync())) {
+          await Sharing.shareAsync(uri, {
+            mimeType: "image/png",
+            dialogTitle: "Share this Scripture conversation",
+          });
           return;
         }
       }
-    } catch (_e) { /* fall through to text share */ }
-    try {
-      const text = messages.map((m) => {
-        const role = m.role === 'user' ? 'You' : 'Companion';
-        let t = `${role}: ${m.content}`;
-        if (m.sources?.length) t += `\n\uD83D\uDCD6 ${m.sources.map(s => `${s.book} ${s.chapter}:${s.verse}`).join(', ')}`;
-        return t;
-      }).join('\n\n---\n\n');
-      await Share.share({ message: `${text}\n\n\u271D\uFE0F Shared from ChooseGOD` });
     } catch (_e) {
-      Alert.alert('Share Failed', 'Unable to share this conversation.');
+      /* fall through to text share */
+    }
+    try {
+      const text = messages
+        .map((m) => {
+          const role = m.role === "user" ? "You" : "Companion";
+          let t = `${role}: ${m.content}`;
+          if (m.sources?.length)
+            t += `\n\uD83D\uDCD6 ${m.sources.map((s) => `${s.book} ${s.chapter}:${s.verse}`).join(", ")}`;
+          return t;
+        })
+        .join("\n\n---\n\n");
+      await Share.share({
+        message: `${text}\n\n\u271D\uFE0F Shared from ChooseGOD`,
+      });
+    } catch (_e) {
+      Alert.alert("Share Failed", "Unable to share this conversation.");
     }
   }, [messages]);
 
@@ -426,7 +548,7 @@ export function ChatBottomSheet() {
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
+      keyboardBehavior={Platform.OS === "ios" ? "extend" : "interactive"}
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       enableHandlePanningGesture
@@ -457,7 +579,7 @@ export function ChatBottomSheet() {
       )}
 
       <ChatContextBanner
-        screenType={chatContext.screenType || ''}
+        screenType={chatContext.screenType || ""}
         dailyVerse={dailyVerse}
         isPrayerMode={isPrayerMode}
         contextPrompt={contextPrompt}
@@ -473,7 +595,7 @@ export function ChatBottomSheet() {
         isPrayerMode={isPrayerMode}
         hasMessages={hasMessages}
         hasDailyVerse={!!dailyVerse}
-        screenType={chatContext.screenType || ''}
+        screenType={chatContext.screenType || ""}
         onVersePress={handleVersePress}
         onActionPress={handleSuggestedActionPress}
         onJournalPress={handleJournalPress}
@@ -497,7 +619,10 @@ export function ChatBottomSheet() {
       />
 
       {showCelebration && (
-        <CelebrationOverlay message={celebrationMessage} animValue={celebrationAnim} />
+        <CelebrationOverlay
+          message={celebrationMessage}
+          animValue={celebrationAnim}
+        />
       )}
     </BottomSheet>
   );

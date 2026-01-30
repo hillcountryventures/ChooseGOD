@@ -10,7 +10,13 @@
  * 3. The Gentle Landing (3-3.5s) - Scripture dissolves as home content slides up
  */
 
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -18,14 +24,14 @@ import {
   Animated,
   Easing,
   Dimensions,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import * as SplashScreen from 'expo-splash-screen';
-import { theme } from '../lib/theme';
-import { logger } from '../utils/logger';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import * as SplashScreen from "expo-splash-screen";
+import { theme } from "../lib/theme";
+import { logger } from "../utils/logger";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 interface DivineEntranceSplashProps {
   /** Called when the entrance animation completes and content should be revealed */
@@ -81,17 +87,17 @@ export function DivineEntranceSplash({
   maximumDisplayTime = 8000,
 }: DivineEntranceSplashProps) {
   // Animation values
-  const glowOpacity = useRef(new Animated.Value(0)).current;
-  const glowScale = useRef(new Animated.Value(0.3)).current;
-  const scriptureOpacity = useRef(new Animated.Value(0)).current;
-  const scriptureTranslateY = useRef(new Animated.Value(20)).current;
-  const seedPulse = useRef(new Animated.Value(1)).current;
-  const loadingTextOpacity = useRef(new Animated.Value(0)).current;
-  const containerOpacity = useRef(new Animated.Value(1)).current;
+  const glowOpacity = useMemo(() => new Animated.Value(0), []);
+  const glowScale = useMemo(() => new Animated.Value(0.3), []);
+  const scriptureOpacity = useMemo(() => new Animated.Value(0), []);
+  const scriptureTranslateY = useMemo(() => new Animated.Value(20), []);
+  const seedPulse = useMemo(() => new Animated.Value(1), []);
+  const loadingTextOpacity = useMemo(() => new Animated.Value(0), []);
+  const containerOpacity = useMemo(() => new Animated.Value(1), []);
 
   // Rotating scripture state
   const [currentScriptureIndex, setCurrentScriptureIndex] = useState(0);
-  const scriptureFadeAnim = useRef(new Animated.Value(1)).current;
+  const scriptureFadeAnim = useMemo(() => new Animated.Value(1), []);
 
   // Track if minimum time has passed
   const startTimeRef = useRef(Date.now());
@@ -206,7 +212,7 @@ export function DivineEntranceSplash({
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     pulseAnimation.start();
 
@@ -236,7 +242,9 @@ export function DivineEntranceSplash({
         useNativeDriver: true,
       }).start(() => {
         // Change to next scripture
-        setCurrentScriptureIndex((prev) => (prev + 1) % LOADING_SCRIPTURES.length);
+        setCurrentScriptureIndex(
+          (prev) => (prev + 1) % LOADING_SCRIPTURES.length,
+        );
 
         // Fade in new scripture
         Animated.timing(scriptureFadeAnim, {
@@ -256,7 +264,9 @@ export function DivineEntranceSplash({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!hasCalledComplete.current) {
-        logger.warn('[DivineEntranceSplash] Maximum display time reached, forcing completion');
+        logger.warn(
+          "[DivineEntranceSplash] Maximum display time reached, forcing completion",
+        );
         handleComplete();
       }
     }, maximumDisplayTime);
@@ -281,10 +291,10 @@ export function DivineEntranceSplash({
       >
         <LinearGradient
           colors={[
-            'rgba(253, 245, 230, 0.35)', // Warm amber center (FDF5E6)
-            'rgba(245, 158, 11, 0.15)',  // Golden accent ring
-            'rgba(99, 102, 241, 0.08)',  // Primary indigo fade
-            'rgba(15, 15, 15, 0)',       // Transparent to background
+            "rgba(253, 245, 230, 0.35)", // Warm amber center (FDF5E6)
+            "rgba(245, 158, 11, 0.15)", // Golden accent ring
+            "rgba(99, 102, 241, 0.08)", // Primary indigo fade
+            "rgba(15, 15, 15, 0)", // Transparent to background
           ]}
           locations={[0, 0.3, 0.6, 1]}
           style={styles.glowGradient}
@@ -329,10 +339,7 @@ export function DivineEntranceSplash({
 
         {/* Loading text */}
         <Animated.View
-          style={[
-            styles.loadingContainer,
-            { opacity: loadingTextOpacity },
-          ]}
+          style={[styles.loadingContainer, { opacity: loadingTextOpacity }]}
         >
           <Text style={styles.loadingText}>Preparing your sanctuary...</Text>
         </Animated.View>
@@ -344,8 +351,8 @@ export function DivineEntranceSplash({
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 1000,
   },
   darkBase: {
@@ -353,19 +360,19 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   glowContainer: {
-    position: 'absolute',
+    position: "absolute",
     width: width * 2,
     height: width * 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   glowGradient: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: width,
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: theme.spacing.xl,
   },
   seedContainer: {
@@ -376,8 +383,8 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     backgroundColor: theme.colors.accentAlpha[20],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     // Subtle glow effect
     shadowColor: theme.colors.accent,
     shadowOffset: { width: 0, height: 0 },
@@ -386,14 +393,14 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   scriptureContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     maxWidth: 320,
   },
   scriptureText: {
     fontSize: theme.fontSize.lg,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: theme.fontSize.lg * 1.6,
     opacity: 0.9,
     letterSpacing: 0.3,
@@ -407,7 +414,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     marginTop: theme.spacing.xxl,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
     fontSize: theme.fontSize.sm,

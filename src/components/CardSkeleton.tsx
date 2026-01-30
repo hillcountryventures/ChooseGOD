@@ -4,20 +4,23 @@
  * Reduces perceived wait time and creates a sense of progressive revelation.
  */
 
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
-import { theme } from '../lib/theme';
+import React, { useEffect, useRef, useMemo } from "react";
+import { View, StyleSheet, Animated, Easing } from "react-native";
+import { theme } from "../lib/theme";
 
 interface CardSkeletonProps {
   /** Height of the card (default: 200) */
   height?: number;
   /** Show as a compact row instead of a full card */
-  variant?: 'hero' | 'row' | 'streak';
+  variant?: "hero" | "row" | "streak";
 }
 
-export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonProps) {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(0.5)).current;
+export function CardSkeleton({
+  height = 200,
+  variant = "hero",
+}: CardSkeletonProps) {
+  const shimmerAnim = useMemo(() => new Animated.Value(0), []);
+  const pulseAnim = useMemo(() => new Animated.Value(0.5), []);
 
   useEffect(() => {
     // Shimmer animation (left to right)
@@ -27,7 +30,7 @@ export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonPro
         duration: 1800,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     );
 
     // Pulse animation (soft breathing)
@@ -45,7 +48,7 @@ export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonPro
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
 
     shimmer.start();
@@ -62,13 +65,15 @@ export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonPro
     outputRange: [-300, 300],
   });
 
-  if (variant === 'row') {
+  if (variant === "row") {
     return (
       <Animated.View style={[styles.rowContainer, { opacity: pulseAnim }]}>
         <View style={styles.rowIcon} />
         <View style={styles.rowContent}>
-          <View style={[styles.rowLine, { width: '60%' }]} />
-          <View style={[styles.rowLine, styles.rowLineSmall, { width: '40%' }]} />
+          <View style={[styles.rowLine, { width: "60%" }]} />
+          <View
+            style={[styles.rowLine, styles.rowLineSmall, { width: "40%" }]}
+          />
         </View>
         <View style={styles.rowBadge} />
         <Animated.View
@@ -81,11 +86,11 @@ export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonPro
     );
   }
 
-  if (variant === 'streak') {
+  if (variant === "streak") {
     return (
       <Animated.View style={[styles.streakContainer, { opacity: pulseAnim }]}>
         <View style={styles.streakHeader}>
-          <View style={[styles.rowLine, { width: '40%' }]} />
+          <View style={[styles.rowLine, { width: "40%" }]} />
         </View>
         <View style={styles.streakDays}>
           {Array.from({ length: 7 }).map((_, index) => (
@@ -104,22 +109,32 @@ export function CardSkeleton({ height = 200, variant = 'hero' }: CardSkeletonPro
 
   // Hero variant (default)
   return (
-    <Animated.View style={[styles.heroContainer, { height, opacity: pulseAnim }]}>
+    <Animated.View
+      style={[styles.heroContainer, { height, opacity: pulseAnim }]}
+    >
       {/* Header skeleton */}
       <View style={styles.heroHeader}>
         <View style={styles.heroIconBadge} />
-        <View style={[styles.heroLine, { width: '35%' }]} />
+        <View style={[styles.heroLine, { width: "35%" }]} />
       </View>
 
       {/* Content skeleton - mimics verse text */}
       <View style={styles.heroContent}>
-        <View style={[styles.heroLine, styles.heroLineLarge, { width: '95%' }]} />
-        <View style={[styles.heroLine, styles.heroLineLarge, { width: '85%' }]} />
-        <View style={[styles.heroLine, styles.heroLineLarge, { width: '70%' }]} />
+        <View
+          style={[styles.heroLine, styles.heroLineLarge, { width: "95%" }]}
+        />
+        <View
+          style={[styles.heroLine, styles.heroLineLarge, { width: "85%" }]}
+        />
+        <View
+          style={[styles.heroLine, styles.heroLineLarge, { width: "70%" }]}
+        />
       </View>
 
       {/* Reference skeleton */}
-      <View style={[styles.heroLine, { width: '30%', marginTop: theme.spacing.md }]} />
+      <View
+        style={[styles.heroLine, { width: "30%", marginTop: theme.spacing.md }]}
+      />
 
       {/* Action buttons skeleton */}
       <View style={styles.heroActions}>
@@ -147,13 +162,13 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.xl,
     backgroundColor: theme.colors.backgroundSecondary,
     padding: theme.spacing.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   heroHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.lg,
   },
@@ -174,10 +189,10 @@ const styles = StyleSheet.create({
   },
   heroContent: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   heroActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.md,
     marginTop: theme.spacing.lg,
   },
@@ -190,8 +205,8 @@ const styles = StyleSheet.create({
 
   // Row variant styles
   rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.md,
     padding: theme.spacing.md,
@@ -199,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   rowIcon: {
     width: 40,
@@ -237,14 +252,14 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   streakHeader: {
     marginBottom: theme.spacing.md,
   },
   streakDays: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   streakDay: {
     width: 36,
@@ -256,7 +271,7 @@ const styles = StyleSheet.create({
   // Shimmer effect (shared)
   shimmer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     width: 150,
   },
 });

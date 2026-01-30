@@ -9,7 +9,7 @@
  * This screen celebrates growth while pointing users toward deeper relationship with God.
  */
 
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -21,27 +21,35 @@ import {
   ActivityIndicator,
   Share,
   Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../lib/theme';
-import { RootStackParamList } from '../types';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../lib/theme";
+import { RootStackParamList } from "../types";
 
 // Components
-import { SpiritualScoreCard, PrayerActivityChart, TopicsExplored } from '../components/insights';
+import {
+  SpiritualScoreCard,
+  PrayerActivityChart,
+  TopicsExplored,
+} from "../components/insights";
 
 // Hook
-import { useJourneyInsights } from '../hooks/useJourneyInsights';
-import type { BibleBookEngagement, GrowthInsight, RecentMilestone } from '../hooks/useJourneyInsights';
-import { logger } from '../utils/logger';
-import { useTrackScreen } from '../hooks/useAnalytics';
+import { useJourneyInsights } from "../hooks/useJourneyInsights";
+import type {
+  BibleBookEngagement,
+  GrowthInsight,
+  RecentMilestone,
+} from "../hooks/useJourneyInsights";
+import { logger } from "../utils/logger";
+import { useTrackScreen } from "../hooks/useAnalytics";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // =====================================================
 // BIBLE BOOKS SECTION
@@ -52,7 +60,7 @@ interface BibleBooksGridProps {
 }
 
 function BibleBooksGrid({ books }: BibleBooksGridProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -91,10 +99,7 @@ function BibleBooksGrid({ books }: BibleBooksGridProps) {
         {books.map((book, _index) => (
           <View
             key={book.book}
-            style={[
-              styles.bookCard,
-              { backgroundColor: book.gradient[0] },
-            ]}
+            style={[styles.bookCard, { backgroundColor: book.gradient[0] }]}
           >
             <Text style={styles.bookEmoji}>{book.emoji}</Text>
             <Text style={styles.bookName}>{book.book}</Text>
@@ -115,7 +120,7 @@ interface GrowthInsightCardProps {
 }
 
 function GrowthInsightCard({ insight }: GrowthInsightCardProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -133,7 +138,11 @@ function GrowthInsightCard({ insight }: GrowthInsightCardProps) {
   return (
     <Animated.View style={[styles.insightContainer, { opacity: fadeAnim }]}>
       <LinearGradient
-        colors={[`${theme.colors.success}15`, `${theme.colors.success}25`, `${theme.colors.success}15`]}
+        colors={[
+          `${theme.colors.success}15`,
+          `${theme.colors.success}25`,
+          `${theme.colors.success}15`,
+        ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.insightGradient}
@@ -171,7 +180,7 @@ interface MilestonesCarouselProps {
 }
 
 function MilestonesCarousel({ milestones }: MilestonesCarouselProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -230,23 +239,35 @@ function ShareJourneyButton() {
   const handleShare = useCallback(async () => {
     try {
       await Share.share({
-        message: "I'm growing in my faith journey with ChooseGOD! 🙏 Join me in daily devotionals and prayer. #ChooseGOD",
-        title: 'Share Your Journey',
+        message:
+          "I'm growing in my faith journey with ChooseGOD! 🙏 Join me in daily devotionals and prayer. #ChooseGOD",
+        title: "Share Your Journey",
       });
     } catch (error) {
-      logger.error('Share error:', error);
+      logger.error("Share error:", error);
     }
   }, []);
 
   return (
-    <TouchableOpacity style={styles.shareButton} onPress={handleShare} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.shareButton}
+      onPress={handleShare}
+      activeOpacity={0.8}
+    >
       <LinearGradient
-        colors={[theme.colors.backgroundTertiary, theme.colors.backgroundSecondary]}
+        colors={[
+          theme.colors.backgroundTertiary,
+          theme.colors.backgroundSecondary,
+        ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.shareButtonGradient}
       >
-        <Ionicons name="share-social-outline" size={20} color={theme.colors.text} />
+        <Ionicons
+          name="share-social-outline"
+          size={20}
+          color={theme.colors.text}
+        />
         <Text style={styles.shareButtonText}>Share Your Journey</Text>
       </LinearGradient>
     </TouchableOpacity>
@@ -258,7 +279,7 @@ function ShareJourneyButton() {
 // =====================================================
 
 export default function JourneyInsightsScreen() {
-  useTrackScreen('journey_insights');
+  useTrackScreen("journey_insights");
   const navigation = useNavigation<NavigationProp>();
   const {
     spiritualHealth,
@@ -298,7 +319,11 @@ export default function JourneyInsightsScreen() {
   if (error && !isLoading) {
     return (
       <SafeAreaView style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color={theme.colors.error} />
+        <Ionicons
+          name="alert-circle-outline"
+          size={48}
+          color={theme.colors.error}
+        />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={refresh}>
           <Text style={styles.retryButtonText}>Try Again</Text>
@@ -308,7 +333,7 @@ export default function JourneyInsightsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -321,7 +346,11 @@ export default function JourneyInsightsScreen() {
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.periodPicker}>
             <Text style={styles.periodText}>This Month</Text>
-            <Ionicons name="chevron-down" size={14} color={theme.colors.textSecondary} />
+            <Ionicons
+              name="chevron-down"
+              size={14}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -346,7 +375,7 @@ export default function JourneyInsightsScreen() {
         <PrayerActivityChart
           data={weeklyActivity}
           averageMinutes={Math.round(
-            weeklyActivity.reduce((acc, d) => acc + d.prayerMinutes, 0) / 7
+            weeklyActivity.reduce((acc, d) => acc + d.prayerMinutes, 0) / 7,
           )}
         />
 
@@ -384,8 +413,8 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   loadingText: {
@@ -395,15 +424,15 @@ const styles = StyleSheet.create({
   errorContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.xl,
     gap: theme.spacing.md,
   },
   errorText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   retryButton: {
     backgroundColor: theme.colors.primary,
@@ -414,13 +443,13 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: theme.colors.text,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   // Header
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,
@@ -436,21 +465,21 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: theme.fontSize.xs,
     color: theme.colors.textMuted,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   headerTitle: {
     fontSize: theme.fontSize.xxl,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   periodPicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
@@ -460,7 +489,7 @@ const styles = StyleSheet.create({
   periodText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 
   // Scroll
@@ -482,26 +511,26 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accentAlpha[10],
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
   },
   sectionTitle: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   seeAllText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.accent,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 
   // Books Grid
   booksGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: theme.spacing.md,
   },
   bookCard: {
@@ -517,7 +546,7 @@ const styles = StyleSheet.create({
   },
   bookName: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   bookCount: {
@@ -531,14 +560,14 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.md,
     marginTop: theme.spacing.lg,
     borderRadius: theme.borderRadius.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: `${theme.colors.success}30`,
   },
   insightGradient: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: theme.spacing.lg,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     gap: theme.spacing.md,
   },
   insightIconContainer: {
@@ -546,8 +575,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: `${theme.colors.success}25`,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   insightIcon: {
     fontSize: 18,
@@ -557,7 +586,7 @@ const styles = StyleSheet.create({
   },
   insightTitle: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
     marginBottom: 4,
   },
@@ -567,15 +596,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   verseChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: theme.spacing.sm,
   },
   verseChipText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.success,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 
   // Milestones
@@ -592,7 +621,7 @@ const styles = StyleSheet.create({
     width: 130,
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: theme.colors.accentAlpha[15],
   },
@@ -602,24 +631,24 @@ const styles = StyleSheet.create({
   },
   milestoneTitle: {
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
   },
   milestoneDesc: {
     fontSize: theme.fontSize.xs,
     color: theme.colors.textMuted,
     marginTop: 2,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyMilestones: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xl,
   },
 
   // Empty states
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xl,
   },
   emptyEmoji: {
@@ -629,7 +658,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: theme.spacing.lg,
   },
 
@@ -638,18 +667,18 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.md,
     marginTop: theme.spacing.xl,
     borderRadius: theme.borderRadius.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   shareButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.sm,
   },
   shareButtonText: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
 

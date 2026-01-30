@@ -7,23 +7,36 @@
  * Flow: Shows a demo question, then lets them try their own.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, KeyboardAvoidingView, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../../lib/theme';
-import { OnboardingStackParamList } from '../../types';
-import { useTrackScreen } from '../../hooks/useAnalytics';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Haptics from "expo-haptics";
+import { theme } from "../../lib/theme";
+import { OnboardingStackParamList } from "../../types";
+import { useTrackScreen } from "../../hooks/useAnalytics";
 
-type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'AIDemo'>;
-type RouteProps = RouteProp<OnboardingStackParamList, 'AIDemo'>;
+type NavigationProp = NativeStackNavigationProp<
+  OnboardingStackParamList,
+  "AIDemo"
+>;
+type RouteProps = RouteProp<OnboardingStackParamList, "AIDemo">;
 
 // Demo conversation to show AI capabilities
-const DEMO_QUESTION = "I'm feeling anxious about the future. What does the Bible say?";
+const DEMO_QUESTION =
+  "I'm feeling anxious about the future. What does the Bible say?";
 const DEMO_RESPONSE = `I understand that feeling — uncertainty about tomorrow can weigh heavy on our hearts.
 
 Scripture speaks directly to this anxiety. In **Matthew 6:34**, Jesus says: *"Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own."*
@@ -35,16 +48,16 @@ God invites us to cast our anxieties on Him because He cares for us (1 Peter 5:7
 **Would you like to explore any of these verses deeper, or talk about what's specifically weighing on you?**`;
 
 export default function AIDemoScreen() {
-  useTrackScreen('onboarding_ai_demo');
+  useTrackScreen("onboarding_ai_demo");
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { selectedSeriesIds } = route.params;
-  
-  const [phase, setPhase] = useState<'intro' | 'demo' | 'try'>('intro');
-  const [_userQuestion, _setUserQuestion] = useState('');
+
+  const [phase, setPhase] = useState<"intro" | "demo" | "try">("intro");
+  const [_userQuestion, _setUserQuestion] = useState("");
   const [showingResponse, setShowingResponse] = useState(false);
-  const [typedResponse, setTypedResponse] = useState('');
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [typedResponse, setTypedResponse] = useState("");
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
   const responseIndex = useRef(0);
 
   // Fade in animation
@@ -69,7 +82,7 @@ export default function AIDemoScreen() {
 
   const handleStartDemo = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPhase('demo');
+    setPhase("demo");
     // Start showing response after a brief pause
     setTimeout(() => {
       setShowingResponse(true);
@@ -78,22 +91,27 @@ export default function AIDemoScreen() {
 
   const handleContinue = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate('Paywall', { selectedSeriesIds });
+    navigation.navigate("Paywall", { selectedSeriesIds });
   };
 
   const handleSkip = () => {
-    navigation.navigate('Paywall', { selectedSeriesIds });
+    navigation.navigate("Paywall", { selectedSeriesIds });
   };
 
   // Intro phase - explain what they're about to see
-  if (phase === 'intro') {
+  if (phase === "intro") {
     return (
       <LinearGradient
         colors={[theme.colors.background, theme.colors.primaryDark]}
         style={styles.container}
       >
         <SafeAreaView style={styles.safeArea}>
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Skip AI demo">
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={handleSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Skip AI demo"
+          >
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
 
@@ -103,34 +121,57 @@ export default function AIDemoScreen() {
                 colors={[theme.colors.accent, theme.colors.primary]}
                 style={styles.iconGradient}
               >
-                <Ionicons name="chatbubbles" size={48} color={theme.colors.text} />
+                <Ionicons
+                  name="chatbubbles"
+                  size={48}
+                  color={theme.colors.text}
+                />
               </LinearGradient>
             </View>
 
             <Text style={styles.title}>Meet Your Study Companion</Text>
             <Text style={styles.subtitle}>
-              Ask any question about faith, life, or Scripture — and get personalized,
-              Bible-grounded guidance instantly.
+              Ask any question about faith, life, or Scripture — and get
+              personalized, Bible-grounded guidance instantly.
             </Text>
 
             <View style={styles.featureList}>
               <View style={styles.featureItem}>
                 <Ionicons name="book" size={20} color={theme.colors.primary} />
-                <Text style={styles.featureText}>Instant Scripture references</Text>
+                <Text style={styles.featureText}>
+                  Instant Scripture references
+                </Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="heart" size={20} color={theme.colors.error} />
-                <Text style={styles.featureText}>Compassionate, pastoral tone</Text>
+                <Text style={styles.featureText}>
+                  Compassionate, pastoral tone
+                </Text>
               </View>
               <View style={styles.featureItem}>
-                <Ionicons name="shield-checkmark" size={20} color={theme.colors.success} />
-                <Text style={styles.featureText}>Theologically grounded responses</Text>
+                <Ionicons
+                  name="shield-checkmark"
+                  size={20}
+                  color={theme.colors.success}
+                />
+                <Text style={styles.featureText}>
+                  Theologically grounded responses
+                </Text>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={handleStartDemo} accessibilityRole="button" accessibilityLabel="See Scripture companion in action">
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleStartDemo}
+              accessibilityRole="button"
+              accessibilityLabel="See Scripture companion in action"
+            >
               <Text style={styles.primaryButtonText}>See It In Action</Text>
-              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
+              <Ionicons
+                name="arrow-forward"
+                size={20}
+                color={theme.colors.text}
+              />
             </TouchableOpacity>
           </Animated.View>
         </SafeAreaView>
@@ -146,21 +187,29 @@ export default function AIDemoScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <View style={styles.companionAvatar}>
-                <Ionicons name="sparkles" size={20} color={theme.colors.accent} />
+                <Ionicons
+                  name="sparkles"
+                  size={20}
+                  color={theme.colors.accent}
+                />
               </View>
               <View>
                 <Text style={styles.headerTitle}>Study Companion</Text>
                 <Text style={styles.headerSubtitle}>Bible study assistant</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Skip AI demo">
+            <TouchableOpacity
+              onPress={handleSkip}
+              accessibilityRole="button"
+              accessibilityLabel="Skip AI demo"
+            >
               <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
           </View>
@@ -180,13 +229,21 @@ export default function AIDemoScreen() {
             {showingResponse && (
               <Animated.View style={[styles.aiBubble, { opacity: fadeAnim }]}>
                 <View style={styles.aiHeader}>
-                  <Ionicons name="sparkles" size={14} color={theme.colors.accent} />
+                  <Ionicons
+                    name="sparkles"
+                    size={14}
+                    color={theme.colors.accent}
+                  />
                   <Text style={styles.aiLabel}>Study Companion</Text>
                 </View>
                 <Text style={styles.aiBubbleText}>{typedResponse}</Text>
                 {typedResponse.length >= DEMO_RESPONSE.length && (
                   <View style={styles.responseComplete}>
-                    <Ionicons name="checkmark-circle" size={16} color={theme.colors.success} />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color={theme.colors.success}
+                    />
                   </View>
                 )}
               </Animated.View>
@@ -205,9 +262,18 @@ export default function AIDemoScreen() {
           {/* Bottom action */}
           {typedResponse.length >= DEMO_RESPONSE.length && (
             <View style={styles.bottomAction}>
-              <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} accessibilityRole="button" accessibilityLabel="Continue setup">
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleContinue}
+                accessibilityRole="button"
+                accessibilityLabel="Continue setup"
+              >
                 <Text style={styles.primaryButtonText}>Continue Setup</Text>
-                <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color={theme.colors.text}
+                />
               </TouchableOpacity>
               <Text style={styles.footnote}>
                 {"You'll have unlimited access to ask questions after setup"}
@@ -231,7 +297,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   skipButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     right: 16,
     zIndex: 10,
@@ -245,8 +311,8 @@ const styles = StyleSheet.create({
   // Intro styles
   introContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.xl,
   },
   iconContainer: {
@@ -256,30 +322,30 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.md,
   },
   subtitle: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: theme.spacing.xl,
   },
   featureList: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     marginBottom: theme.spacing.xl,
   },
   featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
@@ -289,9 +355,9 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   primaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing.md,
@@ -307,16 +373,16 @@ const styles = StyleSheet.create({
 
   // Demo/chat styles
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   companionAvatar: {
@@ -324,8 +390,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: theme.colors.accentAlpha[20],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: theme.fontSize.md,
@@ -344,8 +410,8 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl,
   },
   userBubble: {
-    alignSelf: 'flex-end',
-    maxWidth: '80%',
+    alignSelf: "flex-end",
+    maxWidth: "80%",
     backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.lg,
     borderBottomRightRadius: 4,
@@ -358,8 +424,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   aiBubble: {
-    alignSelf: 'flex-start',
-    maxWidth: '90%',
+    alignSelf: "flex-start",
+    maxWidth: "90%",
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.lg,
     borderBottomLeftRadius: 4,
@@ -369,8 +435,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   aiHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginBottom: theme.spacing.sm,
   },
@@ -385,12 +451,12 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   responseComplete: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 8,
     right: 8,
   },
   continuePrompt: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: theme.spacing.md,
     marginTop: theme.spacing.md,
   },
@@ -398,11 +464,11 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.accent,
     fontWeight: theme.fontWeight.medium,
-    textAlign: 'center',
+    textAlign: "center",
   },
   bottomAction: {
     padding: theme.spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
@@ -410,6 +476,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xs,
     color: theme.colors.textMuted,
     marginTop: theme.spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

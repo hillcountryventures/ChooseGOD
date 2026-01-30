@@ -1,16 +1,22 @@
 /**
  * LectioDivinaScreen - Guided Lectio Divina practice
- * 
+ *
  * Four-step ancient prayer practice:
  * 1. Lectio (Read) - Slowly read the passage
  * 2. Meditatio (Reflect) - What word/phrase stands out?
  * 3. Oratio (Respond) - Pray your response to God
  * 4. Contemplatio (Rest) - Sit in God's presence
- * 
+ *
  * Each step has timed guidance with gentle prompts.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -22,32 +28,32 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
+} from "react-native";
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   Easing,
-} from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
-import { theme } from '../lib/theme';
-import { RootStackParamList } from '../types';
-import { useStore } from '../store/useStore';
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/authStore';
-import { logger } from '../utils/logger';
-import { useTrackScreen } from '../hooks/useAnalytics';
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import { theme } from "../lib/theme";
+import { RootStackParamList } from "../types";
+import { useStore } from "../store/useStore";
+import { supabase } from "../lib/supabase";
+import { useAuthStore } from "../store/authStore";
+import { logger } from "../utils/logger";
+import { useTrackScreen } from "../hooks/useAnalytics";
 
-const { width: _width } = Dimensions.get('window');
+const { width: _width } = Dimensions.get("window");
 
-type RouteProps = RouteProp<RootStackParamList, 'LectioDivina'>;
+type RouteProps = RouteProp<RootStackParamList, "LectioDivina">;
 
 interface Step {
-  id: 'lectio' | 'meditatio' | 'oratio' | 'contemplatio';
+  id: "lectio" | "meditatio" | "oratio" | "contemplatio";
   title: string;
   subtitle: string;
   instruction: string;
@@ -60,42 +66,46 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    id: 'lectio',
-    title: 'Lectio',
-    subtitle: 'Read',
-    instruction: 'Read the passage slowly, out loud if possible. Let each word sink in. Read it 2-3 times.',
-    icon: 'book',
+    id: "lectio",
+    title: "Lectio",
+    subtitle: "Read",
+    instruction:
+      "Read the passage slowly, out loud if possible. Let each word sink in. Read it 2-3 times.",
+    icon: "book",
     color: theme.colors.primary,
     durationSeconds: 90,
   },
   {
-    id: 'meditatio',
-    title: 'Meditatio',
-    subtitle: 'Reflect',
-    instruction: 'What word or phrase captures your attention? Sit with it. What is stirring in your heart?',
-    icon: 'heart',
+    id: "meditatio",
+    title: "Meditatio",
+    subtitle: "Reflect",
+    instruction:
+      "What word or phrase captures your attention? Sit with it. What is stirring in your heart?",
+    icon: "heart",
     color: theme.colors.prayer,
     durationSeconds: 120,
     hasInput: true,
-    inputPlaceholder: 'The word/phrase that stands out to me...',
+    inputPlaceholder: "The word/phrase that stands out to me...",
   },
   {
-    id: 'oratio',
-    title: 'Oratio',
-    subtitle: 'Respond',
-    instruction: 'Talk to God about what you noticed. Share your thoughts, questions, gratitude, or needs.',
-    icon: 'chatbubble-ellipses',
+    id: "oratio",
+    title: "Oratio",
+    subtitle: "Respond",
+    instruction:
+      "Talk to God about what you noticed. Share your thoughts, questions, gratitude, or needs.",
+    icon: "chatbubble-ellipses",
     color: theme.colors.accent,
     durationSeconds: 120,
     hasInput: true,
-    inputPlaceholder: 'My prayer response...',
+    inputPlaceholder: "My prayer response...",
   },
   {
-    id: 'contemplatio',
-    title: 'Contemplatio',
-    subtitle: 'Rest',
-    instruction: 'Release words and thoughts. Simply rest in God\'s presence. Be still and know He is God.',
-    icon: 'moon',
+    id: "contemplatio",
+    title: "Contemplatio",
+    subtitle: "Rest",
+    instruction:
+      "Release words and thoughts. Simply rest in God's presence. Be still and know He is God.",
+    icon: "moon",
     color: theme.colors.success,
     durationSeconds: 90,
   },
@@ -103,12 +113,12 @@ const STEPS: Step[] = [
 
 // Default verse if none provided
 const DEFAULT_VERSE = {
-  ref: 'Psalm 46:10',
-  text: 'Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth.',
+  ref: "Psalm 46:10",
+  text: "Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth.",
 };
 
 export default function LectioDivinaScreen() {
-  useTrackScreen('lectio_divina');
+  useTrackScreen("lectio_divina");
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const user = useAuthStore((state) => state.user);
@@ -125,7 +135,7 @@ export default function LectioDivinaScreen() {
 
   // Use Reanimated for progress bar (supports layout animation on UI thread)
   const progressValue = useSharedValue(0);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useMemo(() => new Animated.Value(1), []);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Animated style for progress bar using Reanimated worklet
@@ -178,7 +188,10 @@ export default function LectioDivinaScreen() {
           // Auto-advance to next step
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           advanceToNextStep();
-          return STEPS[Math.min(currentStep + 1, totalSteps - 1)]?.durationSeconds || 0;
+          return (
+            STEPS[Math.min(currentStep + 1, totalSteps - 1)]?.durationSeconds ||
+            0
+          );
         }
         return prev - 1;
       });
@@ -229,32 +242,34 @@ export default function LectioDivinaScreen() {
       try {
         const content = [
           `**Lectio Divina - ${verseRef}**`,
-          '',
+          "",
           `*Passage:* "${verseText}"`,
-          '',
-          responses.meditatio ? `*What stood out:* ${responses.meditatio}` : '',
-          responses.oratio ? `*Prayer response:* ${responses.oratio}` : '',
-        ].filter(Boolean).join('\n');
+          "",
+          responses.meditatio ? `*What stood out:* ${responses.meditatio}` : "",
+          responses.oratio ? `*Prayer response:* ${responses.oratio}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
 
-        await supabase.from('spiritual_moments').insert({
+        await supabase.from("spiritual_moments").insert({
           user_id: user.id,
-          moment_type: 'lectio',
+          moment_type: "lectio",
           content,
-          themes: ['lectio divina', 'meditation', 'prayer'],
+          themes: ["lectio divina", "meditation", "prayer"],
         });
 
         // Update local state
         addMoment({
           id: Date.now().toString(),
           userId: user.id,
-          momentType: 'lectio',
+          momentType: "lectio",
           content,
-          themes: ['lectio divina', 'meditation', 'prayer'],
+          themes: ["lectio divina", "meditation", "prayer"],
           linkedVerses: [],
           createdAt: new Date(),
         });
       } catch (err) {
-        logger.error('[LectioDivina] Save error:', err);
+        logger.error("[LectioDivina] Save error:", err);
       }
     }
   };
@@ -266,7 +281,7 @@ export default function LectioDivinaScreen() {
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
   // Completion screen
@@ -280,8 +295,9 @@ export default function LectioDivinaScreen() {
           <Text style={styles.completionTitle}>Practice Complete</Text>
           <Text style={styles.completionVerse}>&quot;{verseRef}&quot;</Text>
           <Text style={styles.completionText}>
-            You&apos;ve spent time in God&apos;s Word through the ancient practice of Lectio Divina.
-            May His Word continue to dwell in you richly.
+            You&apos;ve spent time in God&apos;s Word through the ancient
+            practice of Lectio Divina. May His Word continue to dwell in you
+            richly.
           </Text>
 
           {responses.meditatio && (
@@ -291,7 +307,10 @@ export default function LectioDivinaScreen() {
             </View>
           )}
 
-          <TouchableOpacity style={styles.completionButton} onPress={handleClose}>
+          <TouchableOpacity
+            style={styles.completionButton}
+            onPress={handleClose}
+          >
             <Text style={styles.completionButtonText}>Finish</Text>
           </TouchableOpacity>
         </View>
@@ -302,7 +321,7 @@ export default function LectioDivinaScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         {/* Header */}
@@ -327,11 +346,18 @@ export default function LectioDivinaScreen() {
               style={[
                 styles.stepDot,
                 i <= currentStep && styles.stepDotActive,
-                { backgroundColor: i <= currentStep ? s.color : theme.colors.surface },
+                {
+                  backgroundColor:
+                    i <= currentStep ? s.color : theme.colors.surface,
+                },
               ]}
             >
               {i < currentStep && (
-                <Ionicons name="checkmark" size={12} color={theme.colors.text} />
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.text}
+                />
               )}
             </View>
           ))}
@@ -356,12 +382,19 @@ export default function LectioDivinaScreen() {
             >
               {/* Step Header */}
               <View style={styles.stepHeader}>
-                <View style={[styles.stepIconContainer, { backgroundColor: `${step.color}20` }]}>
+                <View
+                  style={[
+                    styles.stepIconContainer,
+                    { backgroundColor: `${step.color}20` },
+                  ]}
+                >
                   <Ionicons name={step.icon} size={28} color={step.color} />
                 </View>
                 <View>
                   <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={[styles.stepSubtitle, { color: step.color }]}>{step.subtitle}</Text>
+                  <Text style={[styles.stepSubtitle, { color: step.color }]}>
+                    {step.subtitle}
+                  </Text>
                 </View>
               </View>
 
@@ -375,7 +408,7 @@ export default function LectioDivinaScreen() {
                   onPress={() => setIsPaused((p) => !p)}
                 >
                   <Ionicons
-                    name={isPaused ? 'play' : 'pause'}
+                    name={isPaused ? "play" : "pause"}
                     size={24}
                     color={step.color}
                   />
@@ -384,7 +417,7 @@ export default function LectioDivinaScreen() {
                   {formatTime(timeRemaining)}
                 </Text>
                 <Text style={styles.timerLabel}>
-                  {isPaused ? 'Tap to start' : 'remaining'}
+                  {isPaused ? "Tap to start" : "remaining"}
                 </Text>
               </View>
 
@@ -394,7 +427,7 @@ export default function LectioDivinaScreen() {
                   style={styles.input}
                   placeholder={step.inputPlaceholder}
                   placeholderTextColor={theme.colors.textMuted}
-                  value={responses[step.id] || ''}
+                  value={responses[step.id] || ""}
                   onChangeText={(text) =>
                     setResponses((prev) => ({ ...prev, [step.id]: text }))
                   }
@@ -409,14 +442,19 @@ export default function LectioDivinaScreen() {
         {/* Navigation */}
         <View style={styles.navigation}>
           <TouchableOpacity
-            style={[styles.navButton, currentStep === 0 && styles.navButtonDisabled]}
+            style={[
+              styles.navButton,
+              currentStep === 0 && styles.navButtonDisabled,
+            ]}
             onPress={handlePrevStep}
             disabled={currentStep === 0}
           >
             <Ionicons
               name="chevron-back"
               size={24}
-              color={currentStep === 0 ? theme.colors.textMuted : theme.colors.text}
+              color={
+                currentStep === 0 ? theme.colors.textMuted : theme.colors.text
+              }
             />
             <Text
               style={[
@@ -436,10 +474,12 @@ export default function LectioDivinaScreen() {
 
           <TouchableOpacity style={styles.navButton} onPress={handleNextStep}>
             <Text style={styles.navButtonText}>
-              {currentStep === totalSteps - 1 ? 'Complete' : 'Next'}
+              {currentStep === totalSteps - 1 ? "Complete" : "Next"}
             </Text>
             <Ionicons
-              name={currentStep === totalSteps - 1 ? 'checkmark' : 'chevron-forward'}
+              name={
+                currentStep === totalSteps - 1 ? "checkmark" : "chevron-forward"
+              }
               size={24}
               color={theme.colors.text}
             />
@@ -459,21 +499,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   headerButton: {
     width: 44,
     height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
   progressContainer: {
@@ -483,13 +523,13 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressBar: {
-    height: '100%',
+    height: "100%",
     backgroundColor: theme.colors.primary,
     borderRadius: 2,
   },
   stepIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 12,
     paddingVertical: 16,
   },
@@ -497,8 +537,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   stepDotActive: {},
   scrollView: {
@@ -518,7 +558,7 @@ const styles = StyleSheet.create({
   },
   verseRef: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.primary,
     marginBottom: 8,
   },
@@ -526,18 +566,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: theme.colors.text,
     lineHeight: 28,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   stepCard: {
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   stepGradient: {
     padding: 24,
   },
   stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
     marginBottom: 20,
   },
@@ -545,17 +585,17 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   stepTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
   },
   stepSubtitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   stepInstruction: {
     fontSize: 16,
@@ -564,7 +604,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   timerContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   timerButton: {
@@ -572,13 +612,13 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
   timerText: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   timerLabel: {
     fontSize: 14,
@@ -591,20 +631,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.text,
     minHeight: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   navigation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
   navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -614,7 +654,7 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: theme.colors.text,
   },
   navButtonTextDisabled: {
@@ -628,14 +668,14 @@ const styles = StyleSheet.create({
   },
   stepCounterText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: theme.colors.textSecondary,
   },
   // Completion
   completionContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 40,
   },
   completionIcon: {
@@ -643,26 +683,26 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     backgroundColor: theme.colors.successAlpha[15],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 24,
   },
   completionTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
     marginBottom: 8,
   },
   completionVerse: {
     fontSize: 16,
     color: theme.colors.primary,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 16,
   },
   completionText: {
     fontSize: 16,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: 24,
   },
@@ -671,7 +711,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
-    width: '100%',
+    width: "100%",
   },
   reflectionLabel: {
     fontSize: 12,
@@ -681,7 +721,7 @@ const styles = StyleSheet.create({
   reflectionText: {
     fontSize: 16,
     color: theme.colors.text,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   completionButton: {
     backgroundColor: theme.colors.primary,
@@ -691,7 +731,7 @@ const styles = StyleSheet.create({
   },
   completionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
   },
 });
