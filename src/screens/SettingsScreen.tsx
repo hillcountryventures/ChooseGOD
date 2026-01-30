@@ -5,7 +5,7 @@
  * Settings help personalize the Scripture experience
  */
 
-import React, { useState, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -13,34 +13,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
-  Share,
-  Linking,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../lib/theme";
-import { useStore } from "../store/useStore";
-import { useAuthStore } from "../store/authStore";
-import {
-  useSubscriptionStore,
-  useIsPremium,
-  useIsRestoring,
-} from "../store/subscriptionStore";
-import { Translation } from "../types";
-import { navigateToBibleReference } from "../lib/navigationHelpers";
-import {
-  requestPermissions,
-  scheduleMorningDevotional,
-  scheduleEveningReflection,
-  areNotificationsEnabled,
-} from "../lib/notifications";
-import { updateUserProfile, supabase } from "../lib/supabase";
-import { logger } from "../utils/logger";
 
 // Extracted settings components
 import {
@@ -50,268 +28,33 @@ import {
   TranslationPicker,
   FontSizePicker,
 } from "../components/settings";
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+import { useSettingsHandlers } from "../components/settings/useSettingsHandlers";
 
 export default function SettingsScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const preferences = useStore((state) => state.preferences);
-  const updatePreferences = useStore((state) => state.updatePreferences);
-  const clearMessages = useStore((state) => state.clearMessages);
-  const _recentMoments = useStore((state) => state.recentMoments);
-  const _activePrayers = useStore((state) => state.activePrayers);
-  const signOut = useAuthStore((state) => state.signOut);
-  const deleteAccount = useAuthStore((state) => state.deleteAccount);
-  const isDeleting = useAuthStore((state) => state.isDeleting);
-  const user = useAuthStore((state) => state.user);
-
-  // Subscription state
-  const isPremium = useIsPremium();
-  const isRestoring = useIsRestoring();
-  const restorePurchases = useSubscriptionStore(
-    (state) => state.restorePurchases,
-  );
-  const showPaywall = useSubscriptionStore((state) => state.showPaywall);
-
-  const [showPhilosophy, setShowPhilosophy] = useState(false);
-  const [isSchedulingNotification, setIsSchedulingNotification] =
-    useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-
-  // Handle translation change
-  const handleTranslationChange = useCallback(
-    async (translation: Translation) => {
-      updatePreferences({ preferredTranslation: translation });
-      if (user?.id) {
-        await updateUserProfile(user.id, {
-          preferredTranslation: translation,
-        });
-      }
-    },
-    [updatePreferences, user?.id],
-  );
-
-  // Handle notification toggle changes
-  const handleNotificationToggle = useCallback(
-    async (enabled: boolean) => {
-      if (enabled) {
-        const granted = await requestPermissions();
-        if (!granted) {
-          Alert.alert(
-            "Notifications Disabled",
-            "Please enable notifications in your device settings to receive reminders.",
-            [{ text: "OK" }],
-          );
-          return;
-        }
-      }
-      updatePreferences({ notificationsEnabled: enabled });
-    },
-    [updatePreferences],
-  );
-
-  // Handle morning devotional toggle
-  const handleMorningDevotionalToggle = useCallback(
-    async (enabled: boolean) => {
-      setIsSchedulingNotification(true);
-      try {
-        if (enabled) {
-          const notificationsEnabled = await areNotificationsEnabled();
-          if (!notificationsEnabled) {
-            const granted = await requestPermissions();
-            if (!granted) {
-              Alert.alert(
-                "Enable Notifications",
-                "Please enable notifications to receive morning devotional reminders.",
-                [{ text: "OK" }],
-              );
-              setIsSchedulingNotification(false);
-              return;
-            }
-            updatePreferences({ notificationsEnabled: true });
-          }
-          await scheduleMorningDevotional({ hours: 7, minutes: 0 });
-        }
-        updatePreferences({ dailyDevotional: enabled });
-      } catch (error) {
-        logger.error("Error toggling morning devotional:", error);
-        Alert.alert("Error", "Failed to update notification settings.");
-      } finally {
-        setIsSchedulingNotification(false);
-      }
-    },
-    [updatePreferences],
-  );
-
-  // Handle evening examen toggle
-  const handleEveningExamenToggle = useCallback(
-    async (enabled: boolean) => {
-      setIsSchedulingNotification(true);
-      try {
-        if (enabled) {
-          const notificationsEnabled = await areNotificationsEnabled();
-          if (!notificationsEnabled) {
-            const granted = await requestPermissions();
-            if (!granted) {
-              Alert.alert(
-                "Enable Notifications",
-                "Please enable notifications to receive evening reflection reminders.",
-                [{ text: "OK" }],
-              );
-              setIsSchedulingNotification(false);
-              return;
-            }
-            updatePreferences({ notificationsEnabled: true });
-          }
-          await scheduleEveningReflection({ hours: 21, minutes: 0 });
-        }
-        updatePreferences({ eveningExamen: enabled });
-      } catch (error) {
-        logger.error("Error toggling evening reflection:", error);
-        Alert.alert("Error", "Failed to update notification settings.");
-      } finally {
-        setIsSchedulingNotification(false);
-      }
-    },
-    [updatePreferences],
-  );
-
-  // Handle clear chat with confirmation
-  const handleClearChat = () => {
-    Alert.alert(
-      "Clear Chat History",
-      "This will remove all messages from your chat. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () => {
-            clearMessages();
-            Alert.alert("Done", "Chat history has been cleared.");
-          },
-        },
-      ],
-    );
-  };
-
-  // Handle export data
-  const handleExportData = async () => {
-    Alert.alert(
-      "Export Your Data",
-      "This will download ALL your ChooseGOD data including prayers, journal entries, reading progress, and settings.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Export",
-          onPress: async () => {
-            setIsExporting(true);
-            try {
-              const { data, error } =
-                await supabase.functions.invoke("export-user-data");
-              if (error)
-                throw new Error(error.message || "Failed to export data");
-              if (!data) throw new Error("No data returned from export");
-
-              const timestamp = new Date().toISOString().split("T")[0];
-              await Share.share({
-                message: JSON.stringify(data, null, 2),
-                title: `ChooseGOD Data Export - ${timestamp}`,
-              });
-            } catch (err) {
-              logger.error("[ExportData] Error:", err);
-              Alert.alert(
-                "Export Failed",
-                err instanceof Error
-                  ? err.message
-                  : "Failed to export your data. Please try again.",
-                [{ text: "OK" }],
-              );
-            } finally {
-              setIsExporting(false);
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  // Handle sign out
-  const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: () => signOut(),
-      },
-    ]);
-  };
-
-  // Handle delete account
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "Are you sure you want to permanently delete your account? This will remove all your data including:\n\n• Reading progress\n• Journal entries\n• Prayer requests\n• Chat history\n• All preferences\n\nThis action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete Account",
-          style: "destructive",
-          onPress: () => {
-            Alert.alert(
-              "Final Confirmation",
-              "Type DELETE to confirm. Your account and all data will be permanently removed.",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Yes, Delete Everything",
-                  style: "destructive",
-                  onPress: async () => {
-                    const result = await deleteAccount();
-                    if (result.success) {
-                      Alert.alert(
-                        "Account Deleted",
-                        "Your account has been permanently deleted. We hope to see you again.",
-                        [{ text: "OK" }],
-                      );
-                    } else {
-                      Alert.alert(
-                        "Error",
-                        result.error ||
-                          "Failed to delete account. Please try again.",
-                        [{ text: "OK" }],
-                      );
-                    }
-                  },
-                },
-              ],
-            );
-          },
-        },
-      ],
-    );
-  };
-
-  // Handle restore purchases
-  const handleRestorePurchases = useCallback(async () => {
-    const result = await restorePurchases();
-    Alert.alert(
-      result.success ? "Restored!" : "No Subscription Found",
-      result.message,
-      [{ text: "OK" }],
-    );
-  }, [restorePurchases]);
-
-  // Handle manage subscription
-  const handleManageSubscription = useCallback(() => {
-    Linking.openURL("https://apps.apple.com/account/subscriptions");
-  }, []);
-
-  // Handle footer verse tap
-  const handleFooterVersePress = () => {
-    navigateToBibleReference(navigation, "Psalm 119:105");
-  };
+  const {
+    preferences,
+    updatePreferences,
+    isPremium,
+    isRestoring,
+    isDeleting,
+    isExporting,
+    isSchedulingNotification,
+    showPhilosophy,
+    showPaywall,
+    setShowPhilosophy,
+    navigation,
+    handleTranslationChange,
+    handleNotificationToggle,
+    handleMorningDevotionalToggle,
+    handleEveningExamenToggle,
+    handleClearChat,
+    handleExportData,
+    handleSignOut,
+    handleDeleteAccount,
+    handleRestorePurchases,
+    handleManageSubscription,
+    handleFooterVersePress,
+  } = useSettingsHandlers();
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -589,7 +332,7 @@ export default function SettingsScreen() {
 }
 
 // ============================================================================
-// Styles (layout only; component styles moved to extracted files)
+// Styles (layout only; component styles in extracted files)
 // ============================================================================
 const styles = StyleSheet.create({
   container: {
