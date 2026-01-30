@@ -68,7 +68,7 @@ struct DevotionalSeries: Identifiable, Codable {
     }
     
     var gradient: LinearGradient {
-        let colors = SERIES_GRADIENTS[slug] ?? (Color(hex: "6366F1"), Color(hex: "4F46E5"))
+        let colors = Theme.Colors.Series.colors(for: slug)
         return LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
     
@@ -167,24 +167,9 @@ struct UserSeriesEnrollment: Identifiable, Codable {
     }
 }
 
-// MARK: - Series Gradients
+// MARK: - Series Gradients (delegated to Theme.Colors.Series)
 
-let SERIES_GRADIENTS: [String: (Color, Color)] = [
-    "overcoming-anxiety": (Color(hex: "6366F1"), Color(hex: "4F46E5")),
-    "strengthening-marriage": (Color(hex: "EC4899"), Color(hex: "DB2777")),
-    "biblical-parenting": (Color(hex: "F59E0B"), Color(hex: "D97706")),
-    "trusting-god-finances": (Color(hex: "10B981"), Color(hex: "059669")),
-    "dealing-grief": (Color(hex: "8B5CF6"), Color(hex: "7C3AED")),
-    "cultivating-gratitude": (Color(hex: "F59E0B"), Color(hex: "FBBF24")),
-    "deepening-prayer": (Color(hex: "3B82F6"), Color(hex: "2563EB")),
-    "knowing-gods-character": (Color(hex: "6366F1"), Color(hex: "8B5CF6")),
-    "walking-grace-forgiveness": (Color(hex: "22C55E"), Color(hex: "16A34A")),
-    "hearing-gods-voice": (Color(hex: "06B6D4"), Color(hex: "0891B2")),
-    "advent": (Color(hex: "DC2626"), Color(hex: "B91C1C")),
-    "lent": (Color(hex: "7C3AED"), Color(hex: "6D28D9")),
-]
-
+/// Convenience global — prefer Theme.Colors.Series.gradient(for:) directly
 func getSeriesGradient(_ slug: String) -> LinearGradient {
-    let colors = SERIES_GRADIENTS[slug] ?? (Color(hex: "6366F1"), Color(hex: "4F46E5"))
-    return LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
+    Theme.Colors.Series.gradient(for: slug)
 }

@@ -1,7 +1,36 @@
 import SwiftUI
 
+// MARK: - Theme Manager
+
+/// Observable theme manager that persists color scheme preference
+@Observable
+class ThemeManager {
+    static let shared = ThemeManager()
+    
+    enum SchemePreference: String, CaseIterable {
+        case system, dark, light
+    }
+    
+    var preference: SchemePreference {
+        didSet { UserDefaults.standard.set(preference.rawValue, forKey: "themeSchemePreference") }
+    }
+    
+    var resolvedColorScheme: ColorScheme? {
+        switch preference {
+        case .system: return nil
+        case .dark: return .dark
+        case .light: return .light
+        }
+    }
+    
+    private init() {
+        let stored = UserDefaults.standard.string(forKey: "themeSchemePreference") ?? "dark"
+        self.preference = SchemePreference(rawValue: stored) ?? .dark
+    }
+}
+
 /// Central theme definition for ChooseGOD
-/// Mirrors the React Native theme for consistency
+/// Supports adaptive dark/light color schemes
 enum Theme {
     
     // MARK: - Colors
@@ -16,18 +45,47 @@ enum Theme {
         static let accent = Color(hex: "F59E0B")         // Amber
         static let accentLight = Color(hex: "FBBF24")
         
-        // Background
-        static let background = Color(hex: "0F0F0F")     // Near black
-        static let surface = Color(hex: "1A1A1A")        // Elevated surface
-        static let surfaceElevated = Color(hex: "262626")
+        // Adaptive backgrounds — use UIColor for automatic dark/light
+        static let background = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "0F0F0F"))
+                : UIColor(Color(hex: "F8F8FA"))
+        })
         
-        // Text
-        static let text = Color(hex: "FFFFFF")
-        static let textSecondary = Color(hex: "A3A3A3")
-        static let textTertiary = Color(hex: "737373")
-        static let secondaryText = textSecondary  // Alias for convenience
+        static let surface = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "1A1A1A"))
+                : UIColor(Color(hex: "FFFFFF"))
+        })
         
-        // Semantic
+        static let surfaceElevated = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "262626"))
+                : UIColor(Color(hex: "F0F0F5"))
+        })
+        
+        // Text — adaptive
+        static let text = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "FFFFFF"))
+                : UIColor(Color(hex: "1A1A1A"))
+        })
+        
+        static let textSecondary = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "A3A3A3"))
+                : UIColor(Color(hex: "6B6B6B"))
+        })
+        
+        static let textTertiary = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(Color(hex: "737373"))
+                : UIColor(Color(hex: "9CA3AF"))
+        })
+        
+        static let secondaryText = textSecondary  // Alias
+        
+        // Semantic (same in both modes)
         static let success = Color(hex: "22C55E")
         static let error = Color(hex: "EF4444")
         static let warning = Color(hex: "F59E0B")
@@ -45,6 +103,24 @@ enum Theme {
         static let highlightPurple = Color(hex: "DDD6FE").opacity(0.4)
         static let highlightOrange = Color(hex: "FED7AA").opacity(0.4)
         
+        // Background gradients (centralized from HomeView/PaywallView)
+        static let backgroundGradient = [
+            Color(hex: "0f0f1a"),
+            Color(hex: "1a1a2e"),
+            Color(hex: "0f0f1a")
+        ]
+        
+        static let paywallGradient = [
+            Color(hex: "0F0A1A"),
+            Color(hex: "1A0F2E"),
+            Color(hex: "0F0F0F")
+        ]
+        
+        static let goldGradient = [
+            Color(hex: "FFD700"),
+            Color(hex: "FFA500")
+        ]
+        
         // Alpha variants
         static func primaryAlpha(_ opacity: Double) -> Color {
             primary.opacity(opacity)
@@ -53,27 +129,53 @@ enum Theme {
         static func accentAlpha(_ opacity: Double) -> Color {
             accent.opacity(opacity)
         }
+        
+        // MARK: - Series Gradients (centralized from Devotional.swift)
+        
+        enum Series {
+            static let defaultGradient: (Color, Color) = (Color(hex: "6366F1"), Color(hex: "4F46E5"))
+            
+            static let gradients: [String: (Color, Color)] = [
+                "overcoming-anxiety": (Color(hex: "6366F1"), Color(hex: "4F46E5")),
+                "strengthening-marriage": (Color(hex: "EC4899"), Color(hex: "DB2777")),
+                "biblical-parenting": (Color(hex: "F59E0B"), Color(hex: "D97706")),
+                "trusting-god-finances": (Color(hex: "10B981"), Color(hex: "059669")),
+                "dealing-grief": (Color(hex: "8B5CF6"), Color(hex: "7C3AED")),
+                "cultivating-gratitude": (Color(hex: "F59E0B"), Color(hex: "FBBF24")),
+                "deepening-prayer": (Color(hex: "3B82F6"), Color(hex: "2563EB")),
+                "knowing-gods-character": (Color(hex: "6366F1"), Color(hex: "8B5CF6")),
+                "walking-grace-forgiveness": (Color(hex: "22C55E"), Color(hex: "16A34A")),
+                "hearing-gods-voice": (Color(hex: "06B6D4"), Color(hex: "0891B2")),
+                "advent": (Color(hex: "DC2626"), Color(hex: "B91C1C")),
+                "lent": (Color(hex: "7C3AED"), Color(hex: "6D28D9")),
+            ]
+            
+            static func gradient(for slug: String) -> LinearGradient {
+                let colors = gradients[slug] ?? defaultGradient
+                return LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
+            
+            static func colors(for slug: String) -> (Color, Color) {
+                gradients[slug] ?? defaultGradient
+            }
+        }
     }
     
     // MARK: - Typography
     
     enum Typography {
-        // Display
         static let display = Font.system(size: 36, weight: .bold, design: .serif)
         static let title1 = Font.system(size: 28, weight: .bold, design: .serif)
         static let title2 = Font.system(size: 24, weight: .semibold, design: .serif)
         static let title3 = Font.system(size: 20, weight: .semibold)
         
-        // Body
         static let bodyLarge = Font.system(size: 18, weight: .regular)
         static let body = Font.system(size: 16, weight: .regular)
         static let bodySmall = Font.system(size: 14, weight: .regular)
         
-        // Scripture (serif for Bible text)
         static let scripture = Font.system(size: 18, weight: .regular, design: .serif)
         static let scriptureLarge = Font.system(size: 22, weight: .regular, design: .serif)
         
-        // UI
         static let label = Font.system(size: 14, weight: .medium)
         static let labelSmall = Font.system(size: 12, weight: .medium)
         static let button = Font.system(size: 16, weight: .semibold)
@@ -132,18 +234,15 @@ enum Theme {
     // MARK: - Dimensions
     
     enum Dimensions {
-        // Common component sizes
         static let buttonHeight: CGFloat = 52
         static let inputHeight: CGFloat = 48
         static let iconButtonSize: CGFloat = 44
         static let tabBarHeight: CGFloat = 83
         static let headerHeight: CGFloat = 56
         
-        // Card sizes
         static let cardMinHeight: CGFloat = 120
         static let verseCardHeight: CGFloat = 200
         
-        // Icon sizes
         static let iconXS: CGFloat = 16
         static let iconSM: CGFloat = 20
         static let iconMD: CGFloat = 24
@@ -161,11 +260,11 @@ extension Color {
         Scanner(string: hex).scanHexInt64(&int)
         let a, r, g, b: UInt64
         switch hex.count {
-        case 3: // RGB (12-bit)
+        case 3:
             (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
+        case 6:
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
+        case 8:
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
             (a, r, g, b) = (1, 1, 1, 0)
