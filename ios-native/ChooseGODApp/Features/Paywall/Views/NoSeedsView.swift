@@ -24,7 +24,7 @@ struct NoSeedsView: View {
                     .frame(width: 120, height: 120)
                 
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 56))
+                    .font(Theme.Typography.iconXXL)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Theme.Colors.accent.opacity(0.5), Theme.Colors.accent.opacity(0.2)],
@@ -51,7 +51,7 @@ struct NoSeedsView: View {
                             .overlay {
                                 if i < seedsUsed {
                                     Image(systemName: "xmark")
-                                        .font(.system(size: 6, weight: .bold))
+                                        .font(Theme.Typography.caption2)
                                         .foregroundStyle(.white.opacity(0.5))
                                 }
                             }
@@ -83,9 +83,9 @@ struct NoSeedsView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "crown.fill")
-                            .font(.subheadline)
+                            .font(Theme.Typography.bodySmall)
                         Text("Unlock Unlimited Seeds")
-                            .font(.headline)
+                            .font(Theme.Typography.title3)
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -105,7 +105,8 @@ struct NoSeedsView: View {
                 Button("Come Back Tomorrow") {
                     dismiss()
                 }
-                .font(.subheadline)
+                .accessibilityLabel("Dismiss and come back tomorrow")
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textTertiary)
             }
             .padding(.horizontal, 20)
@@ -133,11 +134,11 @@ struct NoSeedsView: View {
     private func benefitRow(icon: String, text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.accent)
                 .frame(width: 24)
             Text(text)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(.white)
             Spacer()
         }

@@ -5,8 +5,21 @@ struct HomeView: View {
     @Environment(AppState.self) private var appState
     @State private var dailyVerse: Verse?
     @State private var isLoading = true
-    @State private var streak = 7
     @State private var showChat = false
+    @State private var showShareSheet = false
+    @State private var isDailyVerseBookmarked = false
+    
+    // MARK: - Real Stats from UserDefaults
+    @State private var streak: Int = UserDefaults.standard.integer(forKey: "readingStreak")
+    @State private var chaptersRead: Int = UserDefaults.standard.integer(forKey: "chaptersReadTotal")
+    @State private var savedCount: Int = {
+        let data = UserDefaults.standard.data(forKey: "bookmarkedVerses") ?? Data()
+        let bookmarks = (try? JSONDecoder().decode([BookmarkedVerse].self, from: data)) ?? []
+        return bookmarks.count
+    }()
+    
+    /// Callback to switch tabs (provided by MainTabView)
+    var switchToTab: ((MainTabView.Tab) -> Void)?
     
     var body: some View {
         NavigationStack {
@@ -18,6 +31,9 @@ struct HomeView: View {
                     VStack(spacing: 24) {
                         // Greeting with glass pill
                         greetingSection
+                        
+                        // Continue Reading banner
+                        continueReadingCard
                         
                         // Daily Verse Card (Glass)
                         dailyVerseCard
@@ -36,9 +52,30 @@ struct HomeView: View {
             .navigationBarHidden(true)
             .task {
                 await loadDailyVerse()
+                refreshStats()
+            }
+            .onAppear {
+                refreshStats()
+            }
+            // Share sheet
+            .sheet(isPresented: $showShareSheet) {
+                if let verse = dailyVerse {
+                    let shareText = "\"\(verse.text)\"\n— \(verse.reference) (\(verse.translation))\n\nRead more on ChooseGOD: https://choosegod.app/verse/\(verse.book)/\(verse.chapter)/\(verse.verse)"
+                    ShareSheet(activityItems: [shareText])
+                }
             }
         }
         .onAppear { AnalyticsService.shared.screen("home") }
+    }
+    
+    // MARK: - Refresh Stats
+    
+    private func refreshStats() {
+        streak = ReadingStatsManager.currentStreak()
+        chaptersRead = UserDefaults.standard.integer(forKey: "chaptersReadTotal")
+        let data = UserDefaults.standard.data(forKey: "bookmarkedVerses") ?? Data()
+        let bookmarks = (try? JSONDecoder().decode([BookmarkedVerse].self, from: data)) ?? []
+        savedCount = bookmarks.count
     }
     
     // MARK: - Background
@@ -58,7 +95,7 @@ struct HomeView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(greeting)
-                    .font(.subheadline)
+                    .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.secondaryText)
                 
                 Text(appState.currentUser?.displayName ?? AppStrings.Home.defaultName)
@@ -86,8 +123,73 @@ struct HomeView: View {
                 Capsule()
                     .stroke(.white.opacity(0.1), lineWidth: 1)
             }
+            .accessibilityLabel(AccessibilityLabels.streak(days: streak))
         }
         .padding(.top, 60)
+    }
+    
+    // MARK: - Continue Reading Card (wired to last read position)
+    
+    @ViewBuilder
+    private var continueReadingCard: some View {
+        let lastBook = UserDefaults.standard.string(forKey: "lastReadBook")
+        let lastChapter = UserDefaults.standard.integer(forKey: "lastReadChapter")
+        let lastDate = UserDefaults.standard.object(forKey: "lastReadDate") as? Date
+        
+        if let book = lastBook, lastChapter > 0 {
+            NavigationLink {
+                BibleReaderView(initialBook: book, initialChapter: lastChapter)
+            } label: {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(Theme.Colors.primary.opacity(0.2))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: "book.fill")
+                            .font(Theme.Typography.title3)
+                            .foregroundStyle(Theme.Colors.primary)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Continue Reading")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.Colors.text)
+                        
+                        HStack(spacing: 4) {
+                            Text("\(book) \(lastChapter)")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(Theme.Colors.secondaryText)
+                            
+                            if let date = lastDate {
+                                Text("•")
+                                    .foregroundStyle(Theme.Colors.textTertiary)
+                                Text(date.relativeTime)
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(Theme.Colors.textTertiary)
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                }
+                .padding(16)
+                .background {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(.ultraThinMaterial)
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.white.opacity(0.1), lineWidth: 1)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Continue reading \(book) chapter \(lastChapter)")
+            .accessibilityHint("Double tap to resume reading")
+        }
     }
     
     private var dailyVerseCard: some View {
@@ -115,7 +217,7 @@ struct HomeView: View {
             }
             
             if isLoading {
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(.white)
                     .frame(maxWidth: .infinity, minHeight: 80)
             } else if let verse = dailyVerse {
@@ -127,8 +229,14 @@ struct HomeView: View {
                 // Actions
                 HStack(spacing: 16) {
                     GlassIconButton(icon: "square.and.arrow.up", action: shareVerse)
-                    GlassIconButton(icon: "bookmark", action: bookmarkVerse)
+                    .accessibilityLabel("Share verse")
+                    .accessibilityHint("Double tap to share this verse")
+                    GlassIconButton(icon: isDailyVerseBookmarked ? "bookmark.fill" : "bookmark", action: bookmarkVerse)
+                    .accessibilityLabel(isDailyVerseBookmarked ? "Remove bookmark" : "Bookmark verse")
+                    .accessibilityHint("Double tap to save this verse")
                     GlassIconButton(icon: "bubble.left", action: { showChat = true })
+                    .accessibilityLabel("Discuss verse")
+                    .accessibilityHint("Double tap to chat about this verse")
                     Spacer()
                 }
             }
@@ -160,19 +268,26 @@ struct HomeView: View {
                 )
         }
         .shadow(color: Theme.Colors.primary.opacity(0.3), radius: 20, y: 10)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Verse of the day. \(dailyVerse?.reference ?? ""). \(dailyVerse?.text ?? "Loading")")
     }
     
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(AppStrings.Home.continueJourney)
-                .font(.headline)
-                .foregroundStyle(Theme.Colors.text)
+                .sectionHeaderStyle()
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                GlassQuickAction(icon: "book.fill", title: AppStrings.Home.readBible, color: .blue) {}
+                GlassQuickAction(icon: "book.fill", title: AppStrings.Home.readBible, color: .blue) {
+                    switchToTab?(.bible)
+                }
                 GlassQuickAction(icon: "bubble.left.fill", title: AppStrings.Home.askTheBible, color: Theme.Colors.accent) { showChat = true }
-                GlassQuickAction(icon: "hands.sparkles.fill", title: AppStrings.Home.pray, color: Theme.Colors.prayer) {}
-                GlassQuickAction(icon: "sun.max.fill", title: AppStrings.Home.devotional, color: .orange) {}
+                GlassQuickAction(icon: "hands.sparkles.fill", title: AppStrings.Home.pray, color: Theme.Colors.prayer) {
+                    switchToTab?(.prayers)
+                }
+                GlassQuickAction(icon: "sun.max.fill", title: AppStrings.Home.devotional, color: .orange) {
+                    switchToTab?(.devotionals)
+                }
             }
         }
     }
@@ -180,8 +295,11 @@ struct HomeView: View {
     private var statsSection: some View {
         HStack(spacing: 12) {
             GlassStatCard(value: "\(streak)", label: AppStrings.Home.dayStreak, icon: "flame.fill", color: .orange)
-            GlassStatCard(value: "12", label: AppStrings.Home.chapters, icon: "book.fill", color: .blue)
-            GlassStatCard(value: "45", label: AppStrings.Home.saved, icon: "bookmark.fill", color: .purple)
+                .accessibilityLabel("\(streak) day streak")
+            GlassStatCard(value: "\(chaptersRead)", label: AppStrings.Home.chapters, icon: "book.fill", color: .blue)
+                .accessibilityLabel("\(chaptersRead) chapters read")
+            GlassStatCard(value: "\(savedCount)", label: AppStrings.Home.saved, icon: "bookmark.fill", color: .purple)
+                .accessibilityLabel("\(savedCount) verses saved")
         }
     }
     
@@ -211,15 +329,37 @@ struct HomeView: View {
             )
         }
         isLoading = false
+        // Check if daily verse is already bookmarked
+        if let verse = dailyVerse {
+            isDailyVerseBookmarked = BookmarkManager.isBookmarked(verse)
+        }
     }
     
     private func shareVerse() {
-        // Share sheet
+        showShareSheet = true
     }
     
     private func bookmarkVerse() {
-        // Bookmark
+        guard let verse = dailyVerse else { return }
+        isDailyVerseBookmarked = BookmarkManager.toggle(verse)
+        refreshStats()
     }
+}
+
+// MARK: - Share Sheet (UIKit bridge)
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Glass Quick Action
@@ -243,7 +383,7 @@ struct GlassQuickAction: View {
                         .blur(radius: 10)
                     
                     Image(systemName: icon)
-                        .font(.title2)
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(color)
                 }
                 
@@ -265,6 +405,8 @@ struct GlassQuickAction: View {
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.95 : 1)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .accessibilityLabel(title)
+        .accessibilityHint("Double tap to \(title.lowercased())")
     }
 }
 

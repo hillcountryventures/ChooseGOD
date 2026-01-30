@@ -4,17 +4,14 @@ import Supabase
 /// Supabase-backed Bible service for fetching verses
 final class SupabaseBibleService: BibleServiceProtocol {
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     // MARK: - BibleServiceProtocol
     
     func fetchChapter(book: String, chapter: Int, translation: BibleTranslation) async throws -> [Verse] {
-        let response: [BibleVerseRow] = try await supabase
+        let response: [BibleVerseRow] = try await requireSupabase()
             .from("bible_verses")
             .select()
             .eq("book", value: book)
@@ -38,7 +35,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
     
     func searchVerses(query: String, translation: BibleTranslation, limit: Int) async throws -> [Verse] {
         // Text search using ilike
-        let response: [BibleVerseRow] = try await supabase
+        let response: [BibleVerseRow] = try await requireSupabase()
             .from("bible_verses")
             .select()
             .eq("translation", value: translation.rawValue)
@@ -80,7 +77,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
         let index = dayOfYear % dailyVerses.count
         let (book, chapter, verse) = dailyVerses[index]
         
-        let response: [BibleVerseRow] = try await supabase
+        let response: [BibleVerseRow] = try await requireSupabase()
             .from("bible_verses")
             .select()
             .eq("book", value: book)
@@ -116,7 +113,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
     // MARK: - Highlights
     
     func getHighlights(userId: String, book: String, chapter: Int) async throws -> [VerseHighlight] {
-        try await supabase
+        try await requireSupabase()
             .from("verse_highlights")
             .select()
             .eq("user_id", value: userId)
@@ -127,14 +124,14 @@ final class SupabaseBibleService: BibleServiceProtocol {
     }
     
     func saveHighlight(_ highlight: VerseHighlight) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_highlights")
             .upsert(highlight)
             .execute()
     }
     
     func deleteHighlight(id: String) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_highlights")
             .delete()
             .eq("id", value: id)
@@ -144,7 +141,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
     // MARK: - Bookmarks
     
     func getBookmarks(userId: String) async throws -> [VerseBookmark] {
-        try await supabase
+        try await requireSupabase()
             .from("verse_bookmarks")
             .select()
             .eq("user_id", value: userId)
@@ -154,14 +151,14 @@ final class SupabaseBibleService: BibleServiceProtocol {
     }
     
     func saveBookmark(_ bookmark: VerseBookmark) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_bookmarks")
             .upsert(bookmark)
             .execute()
     }
     
     func deleteBookmark(id: String) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_bookmarks")
             .delete()
             .eq("id", value: id)
@@ -171,7 +168,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
     // MARK: - Notes
     
     func getNotes(userId: String, book: String, chapter: Int) async throws -> [VerseNote] {
-        try await supabase
+        try await requireSupabase()
             .from("verse_notes")
             .select()
             .eq("user_id", value: userId)
@@ -182,14 +179,14 @@ final class SupabaseBibleService: BibleServiceProtocol {
     }
     
     func saveNote(_ note: VerseNote) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_notes")
             .upsert(note)
             .execute()
     }
     
     func deleteNote(id: String) async throws {
-        try await supabase
+        try await requireSupabase()
             .from("verse_notes")
             .delete()
             .eq("id", value: id)

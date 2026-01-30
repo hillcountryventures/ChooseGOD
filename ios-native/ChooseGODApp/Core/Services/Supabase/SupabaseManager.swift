@@ -1,3 +1,4 @@
+import os
 import Foundation
 import Supabase
 
@@ -22,17 +23,33 @@ final class SupabaseManager {
     // MARK: - Configuration
     
     /// Reads Supabase URL from Info.plist (set via xcconfig)
-    private var supabaseURL: String {
+    enum ConfigError: Error, LocalizedError {
+        case missingURL
+        case missingAnonKey
+        case invalidURL(String)
+        case clientNotInitialized
+        
+        var errorDescription: String? {
+            switch self {
+            case .missingURL: return "SUPABASE_URL not set in Info.plist — check your xcconfig files"
+            case .missingAnonKey: return "SUPABASE_ANON_KEY not set in Info.plist — check your xcconfig files"
+            case .invalidURL(let url): return "Invalid Supabase URL: \(url)"
+            case .clientNotInitialized: return "Supabase client not initialized. Call SupabaseManager.shared.initialize() first."
+            }
+        }
+    }
+    
+    private var supabaseURL: String? {
         guard let url = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String, !url.isEmpty else {
-            fatalError("SUPABASE_URL not set in Info.plist — check your xcconfig files")
+            return nil
         }
         return url
     }
     
     /// Reads Supabase anon key from Info.plist (set via xcconfig)
-    private var supabaseAnonKey: String {
+    private var supabaseAnonKey: String? {
         guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String, !key.isEmpty else {
-            fatalError("SUPABASE_ANON_KEY not set in Info.plist — check your xcconfig files")
+            return nil
         }
         return key
     }
@@ -43,15 +60,25 @@ final class SupabaseManager {
     
     /// Initialize the Supabase client
     /// Call this early in app startup
-    func initialize() async {
+    func initialize() async throws {
         guard !isInitialized else { return }
         
-        print("[SupabaseManager] URL: \(supabaseURL.isEmpty ? "MISSING" : "SET")")
-        print("[SupabaseManager] Anon Key: \(supabaseAnonKey.isEmpty ? "MISSING" : "SET")")
+        guard let urlString = supabaseURL else {
+            throw ConfigError.missingURL
+        }
+        guard let anonKey = supabaseAnonKey else {
+            throw ConfigError.missingAnonKey
+        }
+        guard let url = URL(string: urlString) else {
+            throw ConfigError.invalidURL(urlString)
+        }
+        
+        AppLogger.network.info("SupabaseManager URL: SET")
+        AppLogger.network.info("SupabaseManager Anon Key: SET")
         
         client = SupabaseClient(
-            supabaseURL: URL(string: supabaseURL)!,
-            supabaseKey: supabaseAnonKey,
+            supabaseURL: url,
+            supabaseKey: anonKey,
             options: .init(
                 auth: .init(
                     storage: KeychainAuthStorage(),
@@ -64,6 +91,14 @@ final class SupabaseManager {
                 )
             )
         )
+    }
+    
+    /// Returns the client or throws if not initialized
+    func requireClient() throws -> SupabaseClient {
+        guard let client = client else {
+            throw ConfigError.clientNotInitialized
+        }
+        return client
     }
 }
 

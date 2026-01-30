@@ -16,17 +16,14 @@ protocol JournalServiceProtocol {
 
 final class SupabaseJournalService: JournalServiceProtocol {
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     private let tableName = "spiritual_moments"
     
     func getMoments(userId: String, type: MomentType? = nil, limit: Int = 50, offset: Int = 0) async throws -> [SpiritualMoment] {
-        var query = supabase
+        var query = try requireSupabase()
             .from(tableName)
             .select()
             .eq("user_id", value: userId)
@@ -43,7 +40,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
     }
     
     func getMoment(id: String) async throws -> SpiritualMoment {
-        try await supabase
+        try await requireSupabase()
             .from(tableName)
             .select()
             .eq("id", value: id)
@@ -53,7 +50,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
     }
     
     func createMoment(_ moment: SpiritualMoment) async throws -> SpiritualMoment {
-        try await supabase
+        try await requireSupabase()
             .from(tableName)
             .insert(moment)
             .select()
@@ -63,7 +60,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
     }
     
     func updateMoment(_ moment: SpiritualMoment) async throws {
-        try await supabase
+        try await requireSupabase()
             .from(tableName)
             .update(moment)
             .eq("id", value: moment.id)
@@ -71,7 +68,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
     }
     
     func deleteMoment(id: String) async throws {
-        try await supabase
+        try await requireSupabase()
             .from(tableName)
             .delete()
             .eq("id", value: id)
@@ -79,7 +76,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
     }
     
     func searchMoments(userId: String, query: String) async throws -> [SpiritualMoment] {
-        try await supabase
+        try await requireSupabase()
             .from(tableName)
             .select()
             .eq("user_id", value: userId)

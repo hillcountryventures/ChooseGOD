@@ -5,8 +5,8 @@ import Supabase
 actor SupabaseInsightsService {
     static let shared = SupabaseInsightsService()
     
-    private var supabase: SupabaseClient {
-        SupabaseManager.shared.client!
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     private init() {}
@@ -65,7 +65,7 @@ actor SupabaseInsightsService {
         let ninetyDaysAgo = Calendar.current.date(byAdding: .day, value: -90, to: Date())!
         let isoDate = ISO8601DateFormatter().string(from: ninetyDaysAgo)
         
-        return try await supabase.from("spiritual_moments")
+        return try await requireSupabase().from("spiritual_moments")
             .select()
             .eq("user_id", value: userId)
             .gte("created_at", value: isoDate)
@@ -77,7 +77,7 @@ actor SupabaseInsightsService {
     // MARK: - Growth Insights
     
     func fetchGrowthInsights(userId: String, type: GrowthInsight.InsightType? = nil) async throws -> [GrowthInsight] {
-        var query = supabase.from("growth_insights")
+        var query = try requireSupabase().from("growth_insights")
             .select()
             .eq("user_id", value: userId)
             .order("created_at", ascending: false)
@@ -129,7 +129,7 @@ actor SupabaseInsightsService {
         }
         
         do {
-            let response = try await supabase.functions.invoke(
+            let response = try await requireSupabase().functions.invoke(
                 "companion",
                 options: .init(body: CompanionRequest(userId: userId, message: prompt, contextMode: "devotional"))
             )
@@ -144,7 +144,7 @@ actor SupabaseInsightsService {
     // MARK: - Timeline
     
     func fetchTimeline(userId: String, limit: Int = 50) async throws -> [TimelineItem] {
-        let rows: [MomentRow] = try await supabase.from("spiritual_moments")
+        let rows: [MomentRow] = try await requireSupabase().from("spiritual_moments")
             .select()
             .eq("user_id", value: userId)
             .order("created_at", ascending: false)

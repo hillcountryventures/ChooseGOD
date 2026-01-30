@@ -7,8 +7,8 @@ final class SupabaseCrossRefService {
     
     private let cache = NSCache<NSString, CachedRefs>()
     
-    private var supabase: SupabaseClient {
-        SupabaseManager.shared.client!
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     private init() {
@@ -57,7 +57,7 @@ final class SupabaseCrossRefService {
             p_min_votes: 0
         )
         
-        let response = try await supabase
+        let response = try await requireSupabase()
             .rpc("get_cross_references_by_ref", params: params)
             .execute()
         
@@ -86,7 +86,7 @@ final class SupabaseCrossRefService {
             p_min_votes: 0
         )
         
-        let response = try await supabase
+        let response = try await requireSupabase()
             .rpc("get_cross_references", params: params)
             .execute()
         
