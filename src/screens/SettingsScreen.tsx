@@ -5,7 +5,7 @@
  * Settings help personalize the Scripture experience
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,265 +13,44 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Modal,
   Alert,
   Share,
   Linking,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../lib/theme';
-import { useStore } from '../store/useStore';
-import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore, useIsPremium, useIsRestoring } from '../store/subscriptionStore';
-import { Translation, AVAILABLE_TRANSLATIONS } from '../types';
-import { navigateToBibleReference } from '../lib/navigationHelpers';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../lib/theme";
+import { useStore } from "../store/useStore";
+import { useAuthStore } from "../store/authStore";
+import {
+  useSubscriptionStore,
+  useIsPremium,
+  useIsRestoring,
+} from "../store/subscriptionStore";
+import { Translation } from "../types";
+import { navigateToBibleReference } from "../lib/navigationHelpers";
 import {
   requestPermissions,
   scheduleMorningDevotional,
   scheduleEveningReflection,
   areNotificationsEnabled,
-} from '../lib/notifications';
-import { updateUserProfile, supabase } from '../lib/supabase';
-import { logger } from '../utils/logger';
+} from "../lib/notifications";
+import { updateUserProfile, supabase } from "../lib/supabase";
+import { logger } from "../utils/logger";
 
-// ============================================================================
-// Setting Row Component
-// ============================================================================
-interface SettingRowProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  iconColor?: string;
-  label: string;
-  value?: string;
-  description?: string;
-  onPress?: () => void;
-  rightElement?: React.ReactNode;
-  isLast?: boolean;
-}
+// Extracted settings components
+import {
+  SettingRow,
+  SectionHeader,
+  PhilosophyModal,
+  TranslationPicker,
+  FontSizePicker,
+} from "../components/settings";
 
-function SettingRow({
-  icon,
-  iconColor = theme.colors.textSecondary,
-  label,
-  value,
-  description,
-  onPress,
-  rightElement,
-  isLast = false,
-}: SettingRowProps) {
-  return (
-    <TouchableOpacity
-      style={[styles.settingRow, isLast && styles.settingRowLast]}
-      onPress={onPress}
-      disabled={!onPress}
-      activeOpacity={onPress ? 0.7 : 1}
-      accessibilityRole="button"
-      accessibilityLabel={`${label}${description ? `, ${description}` : ''}${value ? `, ${value}` : ''}`}
-    >
-      <View style={styles.settingLeft}>
-        <View style={[styles.settingIconBg, { backgroundColor: iconColor + '20' }]}>
-          <Ionicons name={icon} size={18} color={iconColor} />
-        </View>
-        <View style={styles.settingTextContainer}>
-          <Text style={styles.settingLabel}>{label}</Text>
-          {description && <Text style={styles.settingDescription}>{description}</Text>}
-        </View>
-      </View>
-      {rightElement || (
-        <View style={styles.settingRight}>
-          {value && <Text style={styles.settingValue}>{value}</Text>}
-          {onPress && (
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={theme.colors.textMuted}
-            />
-          )}
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-}
-
-// ============================================================================
-// Section Header
-// ============================================================================
-function SectionHeader({ title }: { title: string }) {
-  return <Text style={styles.sectionHeader}>{title}</Text>;
-}
-
-// ============================================================================
-// Translation Picker
-// ============================================================================
-function TranslationPicker({
-  value,
-  onChange,
-}: {
-  value: Translation;
-  onChange: (t: Translation) => void;
-}) {
-  return (
-    <View style={styles.pickerContainer}>
-      {AVAILABLE_TRANSLATIONS.map((t, index) => (
-        <TouchableOpacity
-          key={t.id}
-          style={[
-            styles.pickerOption,
-            value === t.id && styles.pickerOptionSelected,
-            index === AVAILABLE_TRANSLATIONS.length - 1 && styles.pickerOptionLast,
-          ]}
-          onPress={() => onChange(t.id)}
-        >
-          <View style={styles.pickerOptionContent}>
-            <View style={styles.pickerOptionHeader}>
-              <Text
-                style={[
-                  styles.pickerOptionText,
-                  value === t.id && styles.pickerOptionTextSelected,
-                ]}
-              >
-                {t.id}
-              </Text>
-              <Text style={styles.pickerOptionLanguage}>{t.language}</Text>
-            </View>
-            <Text style={styles.pickerOptionDescription}>{t.description}</Text>
-          </View>
-          {value === t.id && (
-            <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
-          )}
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
-// ============================================================================
-// Font Size Picker
-// ============================================================================
-function FontSizePicker({
-  value,
-  onChange,
-}: {
-  value: 'small' | 'medium' | 'large';
-  onChange: (size: 'small' | 'medium' | 'large') => void;
-}) {
-  const sizes: Array<{ id: 'small' | 'medium' | 'large'; label: string; sample: number }> = [
-    { id: 'small', label: 'Small', sample: 14 },
-    { id: 'medium', label: 'Medium', sample: 16 },
-    { id: 'large', label: 'Large', sample: 20 },
-  ];
-
-  return (
-    <View style={styles.segmentContainer}>
-      {sizes.map((size) => (
-        <TouchableOpacity
-          key={size.id}
-          style={[
-            styles.segmentOption,
-            value === size.id && styles.segmentOptionSelected,
-          ]}
-          onPress={() => onChange(size.id)}
-        >
-          <Text
-            style={[
-              styles.segmentOptionText,
-              value === size.id && styles.segmentOptionTextSelected,
-              { fontSize: size.sample },
-            ]}
-          >
-            Aa
-          </Text>
-          <Text style={[styles.segmentLabel, value === size.id && styles.segmentLabelSelected]}>
-            {size.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
-// ============================================================================
-// Philosophy Modal
-// ============================================================================
-function PhilosophyModal({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) {
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Our Philosophy</Text>
-          <TouchableOpacity onPress={onClose} style={styles.modalClose}>
-            <Ionicons name="close" size={24} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.modalContent}>
-          <View style={styles.philosophySection}>
-            <View style={styles.philosophyIconContainer}>
-              <Ionicons name="book" size={48} color={theme.colors.primary} />
-            </View>
-            <Text style={styles.philosophyTitle}>
-              We are not God, only helping others find HIM
-            </Text>
-          </View>
-
-          <View style={styles.philosophyPoint}>
-            <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
-            <Text style={styles.philosophyText}>
-              ChooseGOD is a tool, not a replacement for Scripture, church, or community.
-            </Text>
-          </View>
-
-          <View style={styles.philosophyPoint}>
-            <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
-            <Text style={styles.philosophyText}>
-              The Scripture companion is designed to point you back to God&apos;s Word, never to replace it.
-            </Text>
-          </View>
-
-          <View style={styles.philosophyPoint}>
-            <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
-            <Text style={styles.philosophyText}>
-              Every feature, every response, every interaction should lead you closer to Jesus.
-            </Text>
-          </View>
-
-          <View style={styles.philosophyPoint}>
-            <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
-            <Text style={styles.philosophyText}>
-              We believe the Bible is the inspired Word of God and the ultimate authority for faith and life.
-            </Text>
-          </View>
-
-          <View style={styles.philosophyVerse}>
-            <Text style={styles.philosophyVerseText}>
-              &quot;All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness.&quot;
-            </Text>
-            <Text style={styles.philosophyVerseRef}>— 2 Timothy 3:16</Text>
-          </View>
-        </ScrollView>
-      </View>
-    </Modal>
-  );
-}
-
-// ============================================================================
-// Main Settings Screen
-// ============================================================================
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SettingsScreen() {
@@ -289,229 +68,228 @@ export default function SettingsScreen() {
   // Subscription state
   const isPremium = useIsPremium();
   const isRestoring = useIsRestoring();
-  const restorePurchases = useSubscriptionStore((state) => state.restorePurchases);
+  const restorePurchases = useSubscriptionStore(
+    (state) => state.restorePurchases,
+  );
   const showPaywall = useSubscriptionStore((state) => state.showPaywall);
 
   const [showPhilosophy, setShowPhilosophy] = useState(false);
-  const [isSchedulingNotification, setIsSchedulingNotification] = useState(false);
+  const [isSchedulingNotification, setIsSchedulingNotification] =
+    useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Handle translation change - updates local store and syncs to Supabase
-  const handleTranslationChange = useCallback(async (translation: Translation) => {
-    // Update local preferences immediately for responsive UI
-    updatePreferences({ preferredTranslation: translation });
-
-    // Sync to Supabase if user is logged in
-    if (user?.id) {
-      await updateUserProfile(user.id, { preferredTranslation: translation });
-    }
-  }, [updatePreferences, user?.id]);
+  // Handle translation change
+  const handleTranslationChange = useCallback(
+    async (translation: Translation) => {
+      updatePreferences({ preferredTranslation: translation });
+      if (user?.id) {
+        await updateUserProfile(user.id, {
+          preferredTranslation: translation,
+        });
+      }
+    },
+    [updatePreferences, user?.id],
+  );
 
   // Handle notification toggle changes
-  const handleNotificationToggle = useCallback(async (enabled: boolean) => {
-    if (enabled) {
-      // Request permissions first
-      const granted = await requestPermissions();
-      if (!granted) {
-        Alert.alert(
-          'Notifications Disabled',
-          'Please enable notifications in your device settings to receive reminders.',
-          [{ text: 'OK' }]
-        );
-        return;
+  const handleNotificationToggle = useCallback(
+    async (enabled: boolean) => {
+      if (enabled) {
+        const granted = await requestPermissions();
+        if (!granted) {
+          Alert.alert(
+            "Notifications Disabled",
+            "Please enable notifications in your device settings to receive reminders.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
       }
-    }
-    // Note: Don't cancel individual notifications here - let the specific toggles handle their own
-    updatePreferences({ notificationsEnabled: enabled });
-  }, [updatePreferences]);
+      updatePreferences({ notificationsEnabled: enabled });
+    },
+    [updatePreferences],
+  );
 
   // Handle morning devotional toggle
-  const handleMorningDevotionalToggle = useCallback(async (enabled: boolean) => {
-    setIsSchedulingNotification(true);
-    try {
-      if (enabled) {
-        // Check if notifications are enabled first
-        const notificationsEnabled = await areNotificationsEnabled();
-        if (!notificationsEnabled) {
-          const granted = await requestPermissions();
-          if (!granted) {
-            Alert.alert(
-              'Enable Notifications',
-              'Please enable notifications to receive morning devotional reminders.',
-              [{ text: 'OK' }]
-            );
-            setIsSchedulingNotification(false);
-            return;
+  const handleMorningDevotionalToggle = useCallback(
+    async (enabled: boolean) => {
+      setIsSchedulingNotification(true);
+      try {
+        if (enabled) {
+          const notificationsEnabled = await areNotificationsEnabled();
+          if (!notificationsEnabled) {
+            const granted = await requestPermissions();
+            if (!granted) {
+              Alert.alert(
+                "Enable Notifications",
+                "Please enable notifications to receive morning devotional reminders.",
+                [{ text: "OK" }],
+              );
+              setIsSchedulingNotification(false);
+              return;
+            }
+            updatePreferences({ notificationsEnabled: true });
           }
-          updatePreferences({ notificationsEnabled: true });
+          await scheduleMorningDevotional({ hours: 7, minutes: 0 });
         }
-        // Schedule morning reminder at 7:00 AM
-        await scheduleMorningDevotional({ hours: 7, minutes: 0 });
+        updatePreferences({ dailyDevotional: enabled });
+      } catch (error) {
+        logger.error("Error toggling morning devotional:", error);
+        Alert.alert("Error", "Failed to update notification settings.");
+      } finally {
+        setIsSchedulingNotification(false);
       }
-      updatePreferences({ dailyDevotional: enabled });
-    } catch (error) {
-      logger.error('Error toggling morning devotional:', error);
-      Alert.alert('Error', 'Failed to update notification settings.');
-    } finally {
-      setIsSchedulingNotification(false);
-    }
-  }, [updatePreferences]);
+    },
+    [updatePreferences],
+  );
 
   // Handle evening examen toggle
-  const handleEveningExamenToggle = useCallback(async (enabled: boolean) => {
-    setIsSchedulingNotification(true);
-    try {
-      if (enabled) {
-        // Check if notifications are enabled first
-        const notificationsEnabled = await areNotificationsEnabled();
-        if (!notificationsEnabled) {
-          const granted = await requestPermissions();
-          if (!granted) {
-            Alert.alert(
-              'Enable Notifications',
-              'Please enable notifications to receive evening reflection reminders.',
-              [{ text: 'OK' }]
-            );
-            setIsSchedulingNotification(false);
-            return;
+  const handleEveningExamenToggle = useCallback(
+    async (enabled: boolean) => {
+      setIsSchedulingNotification(true);
+      try {
+        if (enabled) {
+          const notificationsEnabled = await areNotificationsEnabled();
+          if (!notificationsEnabled) {
+            const granted = await requestPermissions();
+            if (!granted) {
+              Alert.alert(
+                "Enable Notifications",
+                "Please enable notifications to receive evening reflection reminders.",
+                [{ text: "OK" }],
+              );
+              setIsSchedulingNotification(false);
+              return;
+            }
+            updatePreferences({ notificationsEnabled: true });
           }
-          updatePreferences({ notificationsEnabled: true });
+          await scheduleEveningReflection({ hours: 21, minutes: 0 });
         }
-        // Schedule evening reminder at 9:00 PM
-        await scheduleEveningReflection({ hours: 21, minutes: 0 });
+        updatePreferences({ eveningExamen: enabled });
+      } catch (error) {
+        logger.error("Error toggling evening reflection:", error);
+        Alert.alert("Error", "Failed to update notification settings.");
+      } finally {
+        setIsSchedulingNotification(false);
       }
-      updatePreferences({ eveningExamen: enabled });
-    } catch (error) {
-      logger.error('Error toggling evening reflection:', error);
-      Alert.alert('Error', 'Failed to update notification settings.');
-    } finally {
-      setIsSchedulingNotification(false);
-    }
-  }, [updatePreferences]);
+    },
+    [updatePreferences],
+  );
 
   // Handle clear chat with confirmation
   const handleClearChat = () => {
     Alert.alert(
-      'Clear Chat History',
-      'This will remove all messages from your chat. This cannot be undone.',
+      "Clear Chat History",
+      "This will remove all messages from your chat. This cannot be undone.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Clear',
-          style: 'destructive',
+          text: "Clear",
+          style: "destructive",
           onPress: () => {
             clearMessages();
-            Alert.alert('Done', 'Chat history has been cleared.');
+            Alert.alert("Done", "Chat history has been cleared.");
           },
         },
-      ]
+      ],
     );
   };
 
-  // Handle export data - Complete GDPR-compliant export
-  const [isExporting, setIsExporting] = useState(false);
-  
+  // Handle export data
   const handleExportData = async () => {
     Alert.alert(
-      'Export Your Data',
-      'This will download ALL your ChooseGOD data including prayers, journal entries, reading progress, and settings.',
+      "Export Your Data",
+      "This will download ALL your ChooseGOD data including prayers, journal entries, reading progress, and settings.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Export',
+          text: "Export",
           onPress: async () => {
             setIsExporting(true);
             try {
-              // Call the export-user-data edge function for complete export
-              const { data, error } = await supabase.functions.invoke('export-user-data');
+              const { data, error } =
+                await supabase.functions.invoke("export-user-data");
+              if (error)
+                throw new Error(error.message || "Failed to export data");
+              if (!data) throw new Error("No data returned from export");
 
-              if (error) {
-                throw new Error(error.message || 'Failed to export data');
-              }
-
-              if (!data) {
-                throw new Error('No data returned from export');
-              }
-
-              // Share the data (iOS/Android share sheet)
-              const timestamp = new Date().toISOString().split('T')[0];
+              const timestamp = new Date().toISOString().split("T")[0];
               await Share.share({
                 message: JSON.stringify(data, null, 2),
                 title: `ChooseGOD Data Export - ${timestamp}`,
               });
             } catch (err) {
-              logger.error('[ExportData] Error:', err);
+              logger.error("[ExportData] Error:", err);
               Alert.alert(
-                'Export Failed',
-                err instanceof Error ? err.message : 'Failed to export your data. Please try again.',
-                [{ text: 'OK' }]
+                "Export Failed",
+                err instanceof Error
+                  ? err.message
+                  : "Failed to export your data. Please try again.",
+                [{ text: "OK" }],
               );
             } finally {
               setIsExporting(false);
             }
           },
         },
-      ]
+      ],
     );
   };
 
   // Handle sign out
   const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: () => signOut(),
-        },
-      ]
-    );
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => signOut(),
+      },
+    ]);
   };
 
-  // Handle delete account (Apple App Store requirement)
+  // Handle delete account
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to permanently delete your account? This will remove all your data including:\n\n• Reading progress\n• Journal entries\n• Prayer requests\n• Chat history\n• All preferences\n\nThis action cannot be undone.',
+      "Delete Account",
+      "Are you sure you want to permanently delete your account? This will remove all your data including:\n\n• Reading progress\n• Journal entries\n• Prayer requests\n• Chat history\n• All preferences\n\nThis action cannot be undone.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete Account',
-          style: 'destructive',
+          text: "Delete Account",
+          style: "destructive",
           onPress: () => {
-            // Second confirmation for safety
             Alert.alert(
-              'Final Confirmation',
-              'Type DELETE to confirm. Your account and all data will be permanently removed.',
+              "Final Confirmation",
+              "Type DELETE to confirm. Your account and all data will be permanently removed.",
               [
-                { text: 'Cancel', style: 'cancel' },
+                { text: "Cancel", style: "cancel" },
                 {
-                  text: 'Yes, Delete Everything',
-                  style: 'destructive',
+                  text: "Yes, Delete Everything",
+                  style: "destructive",
                   onPress: async () => {
                     const result = await deleteAccount();
                     if (result.success) {
                       Alert.alert(
-                        'Account Deleted',
-                        'Your account has been permanently deleted. We hope to see you again.',
-                        [{ text: 'OK' }]
+                        "Account Deleted",
+                        "Your account has been permanently deleted. We hope to see you again.",
+                        [{ text: "OK" }],
                       );
                     } else {
                       Alert.alert(
-                        'Error',
-                        result.error || 'Failed to delete account. Please try again.',
-                        [{ text: 'OK' }]
+                        "Error",
+                        result.error ||
+                          "Failed to delete account. Please try again.",
+                        [{ text: "OK" }],
                       );
                     }
                   },
                 },
-              ]
+              ],
             );
           },
         },
-      ]
+      ],
     );
   };
 
@@ -519,25 +297,24 @@ export default function SettingsScreen() {
   const handleRestorePurchases = useCallback(async () => {
     const result = await restorePurchases();
     Alert.alert(
-      result.success ? 'Restored!' : 'No Subscription Found',
+      result.success ? "Restored!" : "No Subscription Found",
       result.message,
-      [{ text: 'OK' }]
+      [{ text: "OK" }],
     );
   }, [restorePurchases]);
 
   // Handle manage subscription
   const handleManageSubscription = useCallback(() => {
-    // Deep link to App Store subscription management
-    Linking.openURL('https://apps.apple.com/account/subscriptions');
+    Linking.openURL("https://apps.apple.com/account/subscriptions");
   }, []);
 
   // Handle footer verse tap
   const handleFooterVersePress = () => {
-    navigateToBibleReference(navigation, 'Psalm 119:105');
+    navigateToBibleReference(navigation, "Psalm 119:105");
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -641,13 +418,17 @@ export default function SettingsScreen() {
             icon="sparkles"
             iconColor={theme.colors.accent}
             label={isPremium ? "ChooseGOD Pro" : "Upgrade to Pro"}
-            description={isPremium ? "You have unlimited access" : "Unlock all features"}
+            description={
+              isPremium ? "You have unlimited access" : "Unlock all features"
+            }
             onPress={isPremium ? undefined : showPaywall}
-            rightElement={isPremium ? (
-              <View style={styles.proBadge}>
-                <Text style={styles.proBadgeText}>PRO</Text>
-              </View>
-            ) : undefined}
+            rightElement={
+              isPremium ? (
+                <View style={styles.proBadge}>
+                  <Text style={styles.proBadgeText}>PRO</Text>
+                </View>
+              ) : undefined
+            }
           />
           {isPremium && (
             <SettingRow
@@ -665,9 +446,11 @@ export default function SettingsScreen() {
             description="Recover your subscription"
             isLast
             onPress={isRestoring ? undefined : handleRestorePurchases}
-            rightElement={isRestoring ? (
-              <ActivityIndicator size="small" color={theme.colors.accent} />
-            ) : undefined}
+            rightElement={
+              isRestoring ? (
+                <ActivityIndicator size="small" color={theme.colors.accent} />
+              ) : undefined
+            }
           />
         </View>
 
@@ -680,7 +463,7 @@ export default function SettingsScreen() {
             label="Invite Friends"
             description="Give 7 days Pro, get 7 days free"
             isLast
-            onPress={() => navigation.navigate('Referral')}
+            onPress={() => navigation.navigate("Referral")}
           />
         </View>
 
@@ -726,20 +509,20 @@ export default function SettingsScreen() {
             label="Privacy & Data"
             description="Manage analytics and crash reporting"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onPress={() => (navigation as any).navigate('ConsentManagement')}
+            onPress={() => (navigation as any).navigate("ConsentManagement")}
           />
           <SettingRow
             icon="document-text-outline"
             iconColor={theme.colors.textSecondary}
             label="Privacy Policy"
-            onPress={() => Linking.openURL('https://choosegod.app/privacy')}
+            onPress={() => Linking.openURL("https://choosegod.app/privacy")}
           />
           <SettingRow
             icon="reader-outline"
             iconColor={theme.colors.textSecondary}
             label="Terms of Service"
             isLast
-            onPress={() => Linking.openURL('https://choosegod.app/terms')}
+            onPress={() => Linking.openURL("https://choosegod.app/terms")}
           />
         </View>
 
@@ -765,8 +548,7 @@ export default function SettingsScreen() {
             label="Subscription Debug"
             description="Troubleshoot subscription issues"
             isLast
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onPress={() => (navigation as any).navigate('SubscriptionDebug')}
+            onPress={() => (navigation as any).navigate("SubscriptionDebug")}
           />
         </View>
 
@@ -777,14 +559,22 @@ export default function SettingsScreen() {
           activeOpacity={0.7}
         >
           <View style={styles.footerQuote}>
-            <Ionicons name="book-outline" size={16} color={theme.colors.textMuted} />
+            <Ionicons
+              name="book-outline"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </View>
           <Text style={styles.footerText}>
             &quot;Your word is a lamp for my feet, a light on my path.&quot;
           </Text>
           <View style={styles.footerVerseRow}>
             <Text style={styles.footerVerse}>Psalm 119:105</Text>
-            <Ionicons name="arrow-forward" size={12} color={theme.colors.primary} />
+            <Ionicons
+              name="arrow-forward"
+              size={12}
+              color={theme.colors.primary}
+            />
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -799,7 +589,7 @@ export default function SettingsScreen() {
 }
 
 // ============================================================================
-// Styles
+// Styles (layout only; component styles moved to extracted files)
 // ============================================================================
 const styles = StyleSheet.create({
   container: {
@@ -813,9 +603,9 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.lg,
@@ -828,8 +618,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: theme.fontSize.xxl,
@@ -841,21 +631,11 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: theme.spacing.xs,
   },
-  sectionHeader: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.sm,
-  },
   section: {
     backgroundColor: theme.colors.card,
     marginHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -871,132 +651,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.border,
     marginVertical: theme.spacing.sm,
   },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  settingRowLast: {
-    borderBottomWidth: 0,
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    flex: 1,
-  },
-  settingIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  settingTextContainer: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
-  },
-  settingDescription: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  settingValue: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  pickerContainer: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingBottom: theme.spacing.sm,
-  },
-  pickerOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.xs,
-  },
-  pickerOptionLast: {
-    marginBottom: 0,
-  },
-  pickerOptionSelected: {
-    backgroundColor: theme.colors.primary + '20',
-  },
-  pickerOptionContent: {
-    flex: 1,
-  },
-  pickerOptionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  pickerOptionLanguage: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
-  },
-  pickerOptionText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.textSecondary,
-  },
-  pickerOptionTextSelected: {
-    color: theme.colors.primary,
-  },
-  pickerOptionDescription: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  segmentContainer: {
-    flexDirection: 'row',
-    padding: theme.spacing.sm,
-    gap: theme.spacing.sm,
-  },
-  segmentOption: {
-    flex: 1,
-    paddingVertical: theme.spacing.md,
-    alignItems: 'center',
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-  },
-  segmentOptionSelected: {
-    backgroundColor: theme.colors.primary,
-  },
-  segmentOptionText: {
-    color: theme.colors.textSecondary,
-    fontWeight: theme.fontWeight.medium,
-  },
-  segmentOptionTextSelected: {
-    color: theme.colors.text,
-  },
-  segmentLabel: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    marginTop: theme.spacing.xs,
-  },
-  segmentLabelSelected: {
-    color: theme.colors.text,
-  },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.lg,
     marginTop: theme.spacing.md,
@@ -1007,13 +663,13 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
-    fontStyle: 'italic',
-    textAlign: 'center',
+    fontStyle: "italic",
+    textAlign: "center",
     lineHeight: theme.fontSize.md * 1.5,
   },
   footerVerseRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
     marginTop: theme.spacing.sm,
   },
@@ -1022,89 +678,6 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
     color: theme.colors.primary,
   },
-
-  // Modal styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  modalTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  modalClose: {
-    padding: theme.spacing.xs,
-  },
-  modalContent: {
-    flex: 1,
-    padding: theme.spacing.lg,
-  },
-  philosophySection: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-  },
-  philosophyIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  philosophyTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-    textAlign: 'center',
-    lineHeight: theme.fontSize.xl * 1.4,
-  },
-  philosophyPoint: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-    paddingRight: theme.spacing.md,
-  },
-  philosophyText: {
-    flex: 1,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textSecondary,
-    lineHeight: theme.fontSize.md * 1.5,
-  },
-  philosophyVerse: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  philosophyVerseText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
-    fontStyle: 'italic',
-    lineHeight: theme.fontSize.md * 1.5,
-    textAlign: 'center',
-  },
-  philosophyVerseRef: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
-    textAlign: 'center',
-    marginTop: theme.spacing.sm,
-  },
-
-  // Subscription styles
   proBadge: {
     backgroundColor: theme.colors.accent,
     paddingHorizontal: theme.spacing.sm,

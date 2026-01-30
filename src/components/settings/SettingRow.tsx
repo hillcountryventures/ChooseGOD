@@ -1,7 +1,11 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../lib/theme';
+/**
+ * SettingRow & SectionHeader - Reusable settings row components
+ */
+
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../lib/theme";
 
 export interface SettingRowProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -31,15 +35,19 @@ export function SettingRow({
       disabled={!onPress}
       activeOpacity={onPress ? 0.7 : 1}
       accessibilityRole="button"
-      accessibilityLabel={`${label}${description ? `, ${description}` : ''}${value ? `, ${value}` : ''}`}
+      accessibilityLabel={`${label}${description ? `, ${description}` : ""}${value ? `, ${value}` : ""}`}
     >
       <View style={styles.settingLeft}>
-        <View style={[styles.settingIconBg, { backgroundColor: iconColor + '20' }]}>
+        <View
+          style={[styles.settingIconBg, { backgroundColor: iconColor + "20" }]}
+        >
           <Ionicons name={icon} size={18} color={iconColor} />
         </View>
         <View style={styles.settingTextContainer}>
           <Text style={styles.settingLabel}>{label}</Text>
-          {description && <Text style={styles.settingDescription}>{description}</Text>}
+          {description && (
+            <Text style={styles.settingDescription}>{description}</Text>
+          )}
         </View>
       </View>
       {rightElement || (
@@ -64,11 +72,11 @@ export function SectionHeader({ title }: { title: string }) {
 
 const styles = StyleSheet.create({
   settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
@@ -76,48 +84,47 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
     flex: 1,
   },
   settingIconBg: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
   settingTextContainer: {
     flex: 1,
   },
   settingLabel: {
-    fontSize: theme.typography.sizes.md,
+    fontSize: theme.fontSize.md,
     color: theme.colors.text,
-    fontWeight: theme.typography.weights.medium,
   },
   settingDescription: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.fontSize.xs,
     color: theme.colors.textMuted,
     marginTop: 2,
   },
   settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
   },
   settingValue: {
-    fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textMuted,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
   },
   sectionHeader: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.semibold,
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
     color: theme.colors.textMuted,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 8,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.sm,
   },
 });
