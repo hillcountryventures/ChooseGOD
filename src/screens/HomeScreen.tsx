@@ -10,36 +10,24 @@
  * - Quick: Tappable verse, floating ask bar
  */
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Share,
-  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "../lib/theme";
 import { useStore } from "../store/useStore";
-import { useDailyVerse } from "../hooks/useDailyVerse";
-import { BottomTabParamList, RootStackParamList, ChatMode } from "../types";
+import { BottomTabParamList, RootStackParamList } from "../types";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import {
-  navigateToBibleVerse,
-  navigateToProverbsOfDay,
-  openJournalCompose,
-  openChatHub,
-} from "../lib/navigationHelpers";
-import { STREAK_LIMITS, BIBLE_LIMITS } from "../constants/limits";
-import { WEEK_DAYS, BIBLE_DEFAULTS } from "../constants/strings";
-import { useChatQuota } from "../hooks/useChatQuota";
+import { navigateToBibleVerse } from "../lib/navigationHelpers";
 import { useUserProfile, getFirstName } from "../hooks/useUserProfile";
 import { useAuthStore } from "../store/authStore";
 import WayfarerProgressCard from "../components/WayfarerProgressCard";
@@ -58,524 +46,28 @@ import {
   scheduleWayfarerReminder,
 } from "../lib/notifications";
 import { supabase } from "../lib/supabase";
-import { useCommunityCount } from "../hooks/useCommunityCount";
-import { useScriptureScan } from "../hooks/useScriptureScan";
-import { useGreeting } from "../hooks/useGreeting";
 import { DailyFocusCarousel } from "../components/DailyFocusCarousel";
-import { ActiveStepsSection } from "../components/home/ActiveStepsSection";
 import { StreakMilestoneModal } from "../components/StreakMilestoneModal";
 import { useStreakMilestone } from "../hooks/useStreakMilestone";
 import { useTrackScreen } from "../hooks/useAnalytics";
-import { ContinueReadingBanner } from "../components/home/ContinueReadingBanner";
-import { trackStreakDay } from "../services/analytics";
+import { useGreeting } from "../hooks/useGreeting";
 import { logger } from "../utils/logger";
+
+// Extracted home section components
+import {
+  HeroVerseCard,
+  ProverbsOfTheDay,
+  StreakBar,
+  AskTheBibleButton,
+  ContextualCard,
+  ActiveStepsSection,
+  ContinueReadingBanner,
+} from "../components/home";
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
   NativeStackNavigationProp<RootStackParamList>
 >;
-
-// ============================================================================
-// Hero Verse Card - Tappable verse that opens Bible reader
-// ============================================================================
-function HeroVerseCard() {
-  const navigation = useNavigation<NavigationProp>();
-  const { dailyVerse, fetchDailyVerse, isLoading } = useDailyVerse();
-
-  // Get community count for this verse
-  const verseReference = dailyVerse
-    ? `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`
-    : "";
-  const communityCount = useCommunityCount(verseReference);
-
-  useEffect(() => {
-    fetchDailyVerse();
-  }, [fetchDailyVerse]);
-
-  const handleVersePress = () => {
-    if (!dailyVerse) return;
-    // Navigate to Bible at this verse
-    navigateToBibleVerse(
-      navigation,
-      dailyVerse.verse.book,
-      dailyVerse.verse.chapter,
-      dailyVerse.verse.verse,
-    );
-  };
-
-  const handleReflect = () => {
-    if (!dailyVerse) return;
-    openJournalCompose(navigation, {
-      verse: {
-        book: dailyVerse.verse.book,
-        chapter: dailyVerse.verse.chapter,
-        verse: dailyVerse.verse.verse,
-        text: dailyVerse.verse.text,
-        translation: BIBLE_DEFAULTS.translation,
-      },
-      source: {
-        type: "verse_reflection",
-        referenceId: `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`,
-      },
-    });
-  };
-
-  const handleShare = async () => {
-    if (!dailyVerse) return;
-    const reference = `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`;
-    try {
-      await Share.share({
-        message: `"${dailyVerse.verse.text}"\n\n— ${reference}\n\nShared from ChooseGOD`,
-      });
-    } catch (error) {
-      logger.error("Error sharing:", error);
-    }
-  };
-
-  const handleAskAboutVerse = () => {
-    if (!dailyVerse) return;
-    const reference = `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`;
-    openChatHub(navigation, {
-      contextVerse: {
-        book: dailyVerse.verse.book,
-        chapter: dailyVerse.verse.chapter,
-        verse: dailyVerse.verse.verse,
-        text: dailyVerse.verse.text,
-        translation: BIBLE_DEFAULTS.translation,
-      },
-      initialMessage: `Help me understand ${reference}: "${dailyVerse.verse.text}"`,
-    });
-  };
-
-  if (isLoading || !dailyVerse) {
-    return (
-      <View style={styles.heroCard}>
-        <LinearGradient
-          colors={theme.colors.gradient.dark as [string, string]}
-          style={styles.heroGradient}
-        >
-          <View style={styles.heroLoading}>
-            <Ionicons
-              name="book-outline"
-              size={32}
-              color={theme.colors.textMuted}
-            />
-            <Text style={styles.heroLoadingText}>
-              Loading today&apos;s verse...
-            </Text>
-          </View>
-        </LinearGradient>
-      </View>
-    );
-  }
-
-  const reference = `${dailyVerse.verse.book} ${dailyVerse.verse.chapter}:${dailyVerse.verse.verse}`;
-
-  return (
-    <View style={styles.heroCard}>
-      <LinearGradient
-        colors={theme.colors.gradient.spiritual as [string, string]}
-        style={styles.heroGradient}
-      >
-        <View style={styles.heroHeader}>
-          <View style={styles.heroTitleRow}>
-            <View style={styles.heroIconBadge}>
-              <Ionicons name="sunny" size={14} color={theme.colors.accent} />
-            </View>
-            <Text style={styles.heroTitle}>VERSE OF THE DAY</Text>
-          </View>
-        </View>
-
-        {/* Tappable verse text */}
-        <TouchableOpacity
-          onPress={handleVersePress}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Daily verse: tap to open in Bible"
-        >
-          <Text style={styles.heroVerseText}>
-            &quot;{dailyVerse.verse.text}&quot;
-          </Text>
-        </TouchableOpacity>
-
-        {/* Tappable reference - navigates to Bible */}
-        <TouchableOpacity
-          onPress={handleVersePress}
-          style={styles.heroReferenceRow}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel={`Open ${reference} in Bible reader`}
-        >
-          <Text style={styles.heroReference}>— {reference}</Text>
-          <Ionicons
-            name="arrow-forward"
-            size={14}
-            color={theme.colors.primary}
-          />
-        </TouchableOpacity>
-
-        {/* Community Breadcrumb - Fellowship without social features */}
-        {communityCount > 0 && (
-          <View style={styles.communityBreadcrumb}>
-            <Ionicons
-              name="people-outline"
-              size={14}
-              color={theme.colors.textSecondary}
-            />
-            <Text style={styles.communityText}>
-              Join {communityCount.toLocaleString()} others reflecting today
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.heroActions}>
-          <TouchableOpacity
-            style={styles.heroActionBtn}
-            onPress={handleAskAboutVerse}
-            accessibilityRole="button"
-            accessibilityLabel="Ask about this verse"
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={16}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.heroActionText}>Ask</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.heroActionBtn}
-            onPress={handleReflect}
-            accessibilityRole="button"
-            accessibilityLabel="Write a reflection"
-          >
-            <Ionicons
-              name="pencil-outline"
-              size={16}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.heroActionText}>Reflect</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.heroActionBtn}
-            onPress={handleShare}
-            accessibilityRole="button"
-            accessibilityLabel="Share this verse"
-          >
-            <Ionicons
-              name="share-outline"
-              size={16}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.heroActionText}>Share</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </View>
-  );
-}
-
-// ============================================================================
-// Proverbs of the Day - Compact tappable row
-// ============================================================================
-function ProverbsOfTheDay() {
-  const navigation = useNavigation<NavigationProp>();
-  const dayOfMonth = new Date().getDate();
-  const proverbsChapter = Math.min(
-    dayOfMonth,
-    BIBLE_LIMITS.maxProverbsChapters,
-  );
-
-  const handlePress = () => {
-    navigateToProverbsOfDay(navigation);
-  };
-
-  return (
-    <TouchableOpacity
-      style={styles.proverbsCard}
-      onPress={handlePress}
-      activeOpacity={0.8}
-      accessibilityRole="button"
-      accessibilityLabel={`Read Proverbs ${proverbsChapter}`}
-    >
-      <View style={styles.proverbsIconContainer}>
-        <Ionicons name="book-outline" size={20} color={theme.colors.primary} />
-      </View>
-      <View style={styles.proverbsContent}>
-        <Text style={styles.proverbsTitle}>Proverbs of the Day</Text>
-        <Text style={styles.proverbsSubtitle}>
-          Read Proverbs {proverbsChapter}
-        </Text>
-      </View>
-      <View style={styles.proverbsChapterBadge}>
-        <Text style={styles.proverbsChapterText}>{proverbsChapter}</Text>
-      </View>
-      <Ionicons
-        name="chevron-forward"
-        size={18}
-        color={theme.colors.textMuted}
-      />
-    </TouchableOpacity>
-  );
-}
-
-// ============================================================================
-// Minimal Streak Bar - 7 circles showing weekly progress
-// ============================================================================
-function StreakBar() {
-  const recentMoments = useStore((state) => state.recentMoments);
-  const greeting = useGreeting();
-
-  // Calculate streak from recent moments
-  const streak = Math.min(recentMoments.length, STREAK_LIMITS.weekDays);
-  const today = new Date().getDay();
-
-  // Track streak day for retention funnel
-  useEffect(() => {
-    if (streak > 0) {
-      trackStreakDay(streak);
-    }
-  }, [streak]);
-
-  return (
-    <View style={styles.streakBar}>
-      <View style={styles.streakHeader}>
-        <View style={styles.streakTitleRow}>
-          <Ionicons name="flame" size={18} color={theme.colors.accent} />
-          <Text style={styles.streakTitle}>
-            {streak > 0 ? `${streak} day streak` : greeting}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.streakDays}>
-        {WEEK_DAYS.map((day: string, index: number) => {
-          const isCompleted = index <= today && streak > today - index;
-          const isToday = index === today;
-          return (
-            <View
-              key={index}
-              style={[
-                styles.streakDay,
-                isCompleted && styles.streakDayCompleted,
-                isToday && styles.streakDayToday,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.streakDayText,
-                  isCompleted && styles.streakDayTextCompleted,
-                ]}
-              >
-                {day}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-// ============================================================================
-// Ask the Bible Button - Primary entry point for AI chat
-// Includes pulse animation when all 3 seeds are available
-// ============================================================================
-function AskTheBibleButton() {
-  const navigation = useNavigation<NavigationProp>();
-  const { seedsRemaining, totalSeeds, isPremium } = useChatQuota();
-  const { scanImage } = useScriptureScan();
-
-  // Pulse animation for when all seeds are available (draws attention)
-  const pulseAnim = useMemo(() => new Animated.Value(1), []);
-
-  useEffect(() => {
-    // Only animate if all seeds are available (fresh day) and not premium
-    if (seedsRemaining === totalSeeds && !isPremium) {
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.02,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-      pulse.start();
-
-      return () => pulse.stop();
-    } else {
-      // Reset to normal scale
-      pulseAnim.setValue(1);
-    }
-  }, [seedsRemaining, totalSeeds, isPremium, pulseAnim]);
-
-  const handlePress = () => {
-    openChatHub(navigation);
-  };
-
-  const handleScanPress = () => {
-    scanImage(navigation);
-  };
-
-  return (
-    <View style={styles.askBibleContainer}>
-      {/* Camera Scan Button - Kingdom Perspective */}
-      <TouchableOpacity
-        style={styles.scanButton}
-        onPress={handleScanPress}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel="Scan Scripture with camera"
-      >
-        <Ionicons
-          name="camera-outline"
-          size={24}
-          color={theme.colors.primary}
-        />
-      </TouchableOpacity>
-
-      {/* Main Ask Button */}
-      <Animated.View
-        style={[styles.askBibleButton, { transform: [{ scale: pulseAnim }] }]}
-      >
-        <TouchableOpacity
-          onPress={handlePress}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Ask the Bible — open AI chat"
-        >
-          <LinearGradient
-            colors={[theme.colors.primary, "#818CF8"] as [string, string]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.askBibleGradient}
-          >
-            <View style={styles.askBibleIconContainer}>
-              <Ionicons
-                name="chatbubbles"
-                size={24}
-                color={theme.colors.text}
-              />
-            </View>
-            <View style={styles.askBibleContent}>
-              <Text style={styles.askBibleTitle}>Ask the Bible</Text>
-              <Text style={styles.askBibleSubtitle}>
-                {isPremium
-                  ? "Unlimited questions & guidance"
-                  : seedsRemaining === totalSeeds
-                    ? `${seedsRemaining} fresh seeds ready`
-                    : `${seedsRemaining} seed${seedsRemaining !== 1 ? "s" : ""} remaining`}
-              </Text>
-            </View>
-            {/* Seed indicator for free users */}
-            {!isPremium && (
-              <View style={styles.askBibleSeeds}>
-                {Array.from({ length: totalSeeds }).map((_, i) => (
-                  <Text key={i} style={styles.askBibleSeedEmoji}>
-                    {i < seedsRemaining ? "🌱" : "·"}
-                  </Text>
-                ))}
-              </View>
-            )}
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="rgba(255,255,255,0.8)"
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
-  );
-}
-
-// ============================================================================
-// Contextual Card - Shows the most relevant action right now
-// ============================================================================
-function ContextualCard() {
-  const navigation = useNavigation<NavigationProp>();
-  const memoryVersesDue = useStore((state) => state.memoryVersesDue);
-  const activePrayers = useStore((state) => state.activePrayers);
-  const pendingObedienceSteps = useStore(
-    (state) => state.pendingObedienceSteps,
-  );
-
-  // Priority: Memory verses > Obedience steps > Active prayers > Default devotional
-  let card: {
-    icon: keyof typeof Ionicons.glyphMap;
-    iconBg: string;
-    title: string;
-    subtitle: string;
-    onPress: () => void;
-  } | null = null;
-
-  const _openChatWithMode = (mode: ChatMode) => {
-    openChatHub(navigation, { contextMode: mode });
-  };
-
-  if (memoryVersesDue.length > 0) {
-    card = {
-      icon: "bulb",
-      iconBg: theme.colors.accent,
-      title: "Memory Review",
-      subtitle: `${memoryVersesDue.length} verse${memoryVersesDue.length > 1 ? "s" : ""} ready to review`,
-      onPress: () => navigation.navigate("MemoryPractice"),
-    };
-  } else if (pendingObedienceSteps.length > 0) {
-    card = {
-      icon: "checkmark-circle",
-      iconBg: theme.colors.success,
-      title: "Follow Through",
-      subtitle: `${pendingObedienceSteps.length} commitment${pendingObedienceSteps.length > 1 ? "s" : ""} to check on`,
-      onPress: () => navigation.navigate("Journey"),
-    };
-  } else if (activePrayers.length > 0) {
-    card = {
-      icon: "heart",
-      iconBg: theme.colors.error,
-      title: "Continue in Prayer",
-      subtitle: `${activePrayers.length} prayer${activePrayers.length > 1 ? "s" : ""} before the Lord`,
-      onPress: () => navigation.navigate("Prayers"),
-    };
-  } else {
-    // Default: Start devotional
-    card = {
-      icon: "sunny",
-      iconBg: theme.colors.accent,
-      title: "Today's Devotional",
-      subtitle: "Start your day with God",
-      onPress: () =>
-        navigation.navigate("Devotionals", { screen: "DevotionalHub" }),
-    };
-  }
-
-  return (
-    <TouchableOpacity
-      style={styles.contextCard}
-      onPress={card.onPress}
-      activeOpacity={0.8}
-      accessibilityRole="button"
-      accessibilityLabel={`${card.title}: ${card.subtitle}`}
-    >
-      <View style={[styles.contextIcon, { backgroundColor: card.iconBg }]}>
-        <Ionicons name={card.icon} size={22} color={theme.colors.text} />
-      </View>
-      <View style={styles.contextContent}>
-        <Text style={styles.contextTitle}>{card.title}</Text>
-        <Text style={styles.contextSubtitle}>{card.subtitle}</Text>
-      </View>
-      <Ionicons
-        name="chevron-forward"
-        size={20}
-        color={theme.colors.textMuted}
-      />
-    </TouchableOpacity>
-  );
-}
 
 // ============================================================================
 // Main HomeScreen
@@ -623,14 +115,13 @@ export default function HomeScreen() {
 
   // Streak milestone celebration
   const recentMoments = useStore((state) => state.recentMoments);
-  const currentStreak = Math.min(recentMoments.length, 365); // Cap at 365 for milestone check
+  const currentStreak = Math.min(recentMoments.length, 365);
   const { showMilestone, pendingMilestone, dismissMilestone } =
     useStreakMilestone(currentStreak);
 
   // Wayfarer handlers
   const handleStartReading = () => {
     if (todaysReading) {
-      // Navigate to Bible at the first verse of today's reading
       const firstRef = todaysReading.versesJson[0];
       if (firstRef) {
         navigateToBibleVerse(navigation, firstRef.book, firstRef.startChapter);
@@ -641,18 +132,14 @@ export default function HomeScreen() {
   const handleGracePath = async () => {
     if (!activeProgress || !user?.id) return;
 
-    // Open modal immediately with loading state
     setShowGraceSummaryModal(true);
     setGraceSummaryLoading(true);
     setGraceSummaryError(null);
     setGraceSummaryData(null);
 
     try {
-      // Build missed sections from wayfarer state
       const missedSections = wayfarerState.missedReadingTitles.map(
         (title, index) => {
-          // Parse the display title to extract verse references
-          // Format is typically "Genesis 13-15" or "Psalm 1-3"
           const dayNumber =
             activeProgress.currentDay - wayfarerState.daysMissed + index;
           return {
@@ -663,7 +150,6 @@ export default function HomeScreen() {
         },
       );
 
-      // Call the Grace Path edge function
       const { data, error } = await supabase.functions.invoke(
         "grace-path-summary",
         {
@@ -684,8 +170,6 @@ export default function HomeScreen() {
           daysCovered: data.daysCovered || missedSections.length,
           chaptersCovered: data.chaptersCovered || [],
         });
-
-        // Apply the grace path in the database
         await applyGracePath(activeProgress.progressId, data.summary);
       } else {
         throw new Error(data?.error || "Failed to generate summary");
@@ -702,11 +186,9 @@ export default function HomeScreen() {
     }
   };
 
-  // Helper to parse display titles like "Genesis 13-15" into verse references
   const parseDisplayTitleToVerseRefs = (
     title: string,
   ): Array<{ book: string; startChapter: number; endChapter: number }> => {
-    // Match patterns like "Genesis 13-15", "Psalm 1", "1 Kings 5-7"
     const match = title.match(/^(\d?\s?[A-Za-z]+)\s+(\d+)(?:-(\d+))?$/);
     if (match) {
       const book = match[1].trim();
@@ -714,7 +196,6 @@ export default function HomeScreen() {
       const endChapter = match[3] ? parseInt(match[3], 10) : startChapter;
       return [{ book, startChapter, endChapter }];
     }
-    // Fallback: return empty if parsing fails
     return [];
   };
 
@@ -724,10 +205,8 @@ export default function HomeScreen() {
     }
   };
 
-  // Grace Summary modal handlers
   const handleGraceSummaryContinue = () => {
     setShowGraceSummaryModal(false);
-    // Navigate to today's reading
     if (todaysReading) {
       const firstRef = todaysReading.versesJson[0];
       if (firstRef) {
@@ -740,21 +219,16 @@ export default function HomeScreen() {
     setShowGraceSummaryModal(false);
   };
 
-  // Show reminder modal when user wants to enroll
   const handleEnrollPress = () => {
     setShowReminderModal(true);
   };
 
-  // Handle enrollment with reminder
   const handleEnrollWithReminder = async (selectedTime: Date) => {
     if (!user?.id) return;
 
     setIsEnrolling(true);
     try {
-      // 1. Request notification permissions
       const hasPermission = await requestPermissions();
-
-      // 2. Schedule daily reminder if permission granted
       if (hasPermission) {
         await scheduleWayfarerReminder({
           hours: selectedTime.getHours(),
@@ -762,7 +236,6 @@ export default function HomeScreen() {
         });
       }
 
-      // 3. Fetch plans and enroll
       await fetchAvailablePlans();
       const plans = useReadingPlanStore.getState().availablePlans;
       const canonicalPlan = plans.find((p) => p.slug === "canonical-365");
@@ -779,7 +252,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Handle enrollment without reminder (skip)
   const handleEnrollSkipReminder = async () => {
     if (!user?.id) return;
 
@@ -833,10 +305,10 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Continue Reading Banner - shows last read position */}
+        {/* Continue Reading Banner */}
         <ContinueReadingBanner />
 
-        {/* Daily Focus Carousel - Unified "path" experience (Proverbs 4:25) */}
+        {/* Daily Focus Carousel */}
         <DailyFocusCarousel>
           <HeroVerseCard />
           <WayfarerProgressCard
@@ -851,13 +323,13 @@ export default function HomeScreen() {
         {/* Minimal Streak */}
         <StreakBar />
 
-        {/* Active Obedience Steps - "Be doers of the word" (James 1:22) */}
+        {/* Active Obedience Steps */}
         <ActiveStepsSection />
 
-        {/* Contextual Action Card - One priority action */}
+        {/* Contextual Action Card */}
         <ContextualCard />
 
-        {/* Ask the Bible Button - Dedicated chat entry point */}
+        {/* Ask the Bible Button */}
         <AskTheBibleButton />
 
         {/* Bottom padding */}
@@ -893,7 +365,7 @@ export default function HomeScreen() {
 }
 
 // ============================================================================
-// Styles
+// Styles (header + layout only; section styles moved to components)
 // ============================================================================
 const styles = StyleSheet.create({
   container: {
@@ -906,8 +378,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: theme.spacing.xxl,
   },
-
-  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -935,301 +405,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: theme.colors.border,
-  },
-
-  // Hero Verse Card
-  heroCard: {
-    marginHorizontal: theme.spacing.md,
-    marginVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.xl,
-    overflow: "hidden",
-    ...theme.shadows.lg,
-  },
-  heroGradient: {
-    padding: theme.spacing.lg,
-    minHeight: 200,
-  },
-  heroHeader: {
-    marginBottom: theme.spacing.md,
-  },
-  heroTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-  },
-  heroIconBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: theme.colors.accentAlpha[20],
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  heroTitle: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.accent,
-    letterSpacing: 2,
-  },
-  heroVerseText: {
-    fontSize: theme.fontSize.xl,
-    color: theme.colors.text,
-    lineHeight: theme.fontSize.xl * 1.6,
-    fontStyle: "italic",
-    marginBottom: theme.spacing.md,
-    flexWrap: "wrap",
-  },
-  heroReferenceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
-  },
-  heroReference: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
-  },
-  communityBreadcrumb: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-  },
-  communityText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.textSecondary,
-    fontStyle: "italic",
-    flexWrap: "wrap",
-  },
-  heroActions: {
-    flexDirection: "row",
-    gap: theme.spacing.md,
-  },
-  heroActionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.primaryAlpha[15],
-    borderRadius: theme.borderRadius.full,
-  },
-  heroActionText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.primary,
-  },
-  heroLoading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-  },
-  heroLoadingText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textMuted,
-  },
-
-  // Proverbs of the Day
-  proverbsCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  proverbsIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.primary + "20",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  proverbsContent: {
-    flex: 1,
-    marginLeft: theme.spacing.md,
-  },
-  proverbsTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-  },
-  proverbsSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  proverbsChapterBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: theme.spacing.sm,
-  },
-  proverbsChapterText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-  },
-
-  // Streak Bar
-  streakBar: {
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  streakHeader: {
-    marginBottom: theme.spacing.sm,
-  },
-  streakTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-  },
-  streakTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-  },
-  streakDays: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: theme.spacing.sm,
-  },
-  streakDay: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.backgroundSecondary,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  streakDayCompleted: {
-    backgroundColor: theme.colors.accent,
-    borderColor: theme.colors.accent,
-  },
-  streakDayToday: {
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-  },
-  streakDayText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.textMuted,
-  },
-  streakDayTextCompleted: {
-    color: theme.colors.text,
-  },
-
-  // Ask the Bible Button Container
-  askBibleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    gap: theme.spacing.sm,
-  },
-  scanButton: {
-    width: 56,
-    height: 56,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.primary + "40",
-    justifyContent: "center",
-    alignItems: "center",
-    ...theme.shadows.sm,
-  },
-  askBibleButton: {
-    flex: 1,
-    borderRadius: theme.borderRadius.lg,
-    overflow: "hidden",
-    ...theme.shadows.md,
-  },
-  askBibleGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: theme.spacing.lg,
-  },
-  askBibleIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  askBibleContent: {
-    flex: 1,
-    marginLeft: theme.spacing.md,
-  },
-  askBibleTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  askBibleSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: 2,
-  },
-  askBibleSeeds: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: theme.spacing.sm,
-    gap: 2,
-  },
-  askBibleSeedEmoji: {
-    fontSize: 14,
-  },
-
-  // Contextual Card
-  contextCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  contextIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contextContent: {
-    flex: 1,
-    marginLeft: theme.spacing.md,
-  },
-  contextTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-  },
-  contextSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-    flexWrap: "wrap",
   },
 });
