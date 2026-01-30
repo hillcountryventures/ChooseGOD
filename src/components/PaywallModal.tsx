@@ -18,6 +18,7 @@ import {
   Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { logger } from '../utils/logger';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Purchases, {
@@ -98,7 +99,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
         setError(PAYWALL_STRINGS.noOptions);
       }
     } catch (err) {
-      console.error('[Paywall] Error fetching offerings:', err);
+      logger.error('[Paywall] Error fetching offerings:', err);
       setError(PAYWALL_STRINGS.loadError);
     } finally {
       setIsLoading(false);
@@ -148,7 +149,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
           break;
         default:
           setError(ERROR_MESSAGES.purchaseGeneric);
-          console.error('[Paywall] Purchase error:', purchaseError);
+          logger.error('[Paywall] Purchase error:', purchaseError);
       }
     } finally {
       setIsPurchasing(false);
@@ -176,7 +177,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
         );
       }
     } catch (err) {
-      console.error('[Paywall] Restore error:', err);
+      logger.error('[Paywall] Restore error:', err);
       setError(ERROR_MESSAGES.restoreFailed);
     } finally {
       setIsRestoring(false);
