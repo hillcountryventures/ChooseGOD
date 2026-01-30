@@ -139,6 +139,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 async function insertVerse(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   verse: (typeof SAMPLE_VERSES)[0],
   embedding: number[]
@@ -166,6 +167,7 @@ async function insertVerse(
 
 async function main() {
   // Dynamic import for cross-runtime compatibility
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let createClient: any;
 
   try {

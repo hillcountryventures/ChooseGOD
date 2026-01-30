@@ -38,6 +38,7 @@ export const useOfflineCacheStore = create<OfflineCacheState>()(
         })),
 
       getCachedVerse: (key: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state = (set as any).getState?.() || {};
         return state.offlineVerses?.[key] || null;
       },

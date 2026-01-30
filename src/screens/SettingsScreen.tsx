@@ -725,6 +725,7 @@ export default function SettingsScreen() {
             iconColor={theme.colors.primary}
             label="Privacy & Data"
             description="Manage analytics and crash reporting"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onPress={() => (navigation as any).navigate('ConsentManagement')}
           />
           <SettingRow
@@ -764,6 +765,7 @@ export default function SettingsScreen() {
             label="Subscription Debug"
             description="Troubleshoot subscription issues"
             isLast
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onPress={() => (navigation as any).navigate('SubscriptionDebug')}
           />
         </View>

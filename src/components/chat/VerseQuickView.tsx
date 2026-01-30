@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share, Platform } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
@@ -206,6 +207,7 @@ export function VerseQuickView({
         chapter: reference.chapter,
         verse: reference.verseStart,
       },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   }, [reference, navigation, onClose]);
 
@@ -232,7 +234,7 @@ export function VerseQuickView({
   }, [reference, verseText, displayReference, hasSeeds, showPaywall, navigation, onClose, preferences.preferredTranslation]);
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={-1}
@@ -336,6 +338,7 @@ export function VerseQuickView({
                           chapter: parseInt(match[2], 10),
                           verse: match[3] ? parseInt(match[3], 10) : undefined,
                         },
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       } as any);
                     }
                   }}

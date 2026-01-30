@@ -27,6 +27,7 @@ function handleRoute(
   switch (route.type) {
     case 'verse':
       // Navigate to the verse / Bible reader screen
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (navigation as any).navigate('Bible', {
         screen: 'BibleReader',
         params: {
@@ -42,6 +43,7 @@ function handleRoute(
         options.onReferral(route.code);
       } else {
         // Default: navigate to referral screen with the code pre-filled
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (navigation as any).navigate('Settings', {
           screen: 'Referral',
           params: { code: route.code },

@@ -11,7 +11,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { TABLES } from '../constants/database';
-import { PrayerCircle, CircleMember, PrayerRequest } from '../types/domain/prayer';
+import { PrayerCircle, CircleMember, PrayerRequest, PrayerStatus } from '../types/domain/prayer';
 import { logger } from '../utils/logger';
 
 // =====================================================
@@ -80,7 +80,17 @@ function generateInviteCode(): string {
   return code;
 }
 
-function mapCircleRow(row: any, userId: string): CircleWithMembers {
+interface CircleRow {
+  id: string;
+  name: string;
+  created_by: string;
+  invite_code: string;
+  member_count?: number;
+  created_at: string;
+  active_request_count?: number;
+}
+
+function mapCircleRow(row: CircleRow, userId: string): CircleWithMembers {
   return {
     id: row.id,
     name: row.name,
@@ -94,7 +104,14 @@ function mapCircleRow(row: any, userId: string): CircleWithMembers {
   };
 }
 
-function mapMemberRow(row: any): CircleMember {
+interface MemberRow {
+  circle_id: string;
+  user_id: string;
+  display_name: string;
+  joined_at: string;
+}
+
+function mapMemberRow(row: MemberRow): CircleMember {
   return {
     circleId: row.circle_id,
     userId: row.user_id,
@@ -103,7 +120,22 @@ function mapMemberRow(row: any): CircleMember {
   };
 }
 
-function mapPrayerRequestRow(row: any): CirclePrayerRequest {
+interface PrayerRequestRow {
+  id: string;
+  user_id: string;
+  circle_id: string;
+  request: string;
+  scripture_anchor?: { book: string; chapter: number; verse: number; text: string };
+  status?: string;
+  answered_at?: string;
+  answered_reflection?: string;
+  created_at: string;
+  author_name?: string;
+  praying_count?: number;
+  user_is_praying?: boolean;
+}
+
+function mapPrayerRequestRow(row: PrayerRequestRow): CirclePrayerRequest {
   return {
     id: row.id,
     userId: row.user_id,
@@ -115,7 +147,7 @@ function mapPrayerRequestRow(row: any): CirclePrayerRequest {
       verse: row.scripture_anchor.verse,
       text: row.scripture_anchor.text,
     } : undefined,
-    status: row.status || 'active',
+    status: (row.status || 'active') as PrayerStatus,
     answeredAt: row.answered_at ? new Date(row.answered_at) : undefined,
     answeredReflection: row.answered_reflection,
     createdAt: new Date(row.created_at),

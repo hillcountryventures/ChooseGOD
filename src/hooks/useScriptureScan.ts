@@ -17,8 +17,7 @@ export function useScriptureScan() {
   const [isScanning] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const scanImage = async (navigation: any) => {
+    const scanImage = async (navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void }) => {
     try {
       // Check/request camera permissions
       if (!permission?.granted) {

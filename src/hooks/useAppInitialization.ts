@@ -54,6 +54,7 @@ export function useAppInitialization() {
         const navData = handleNotificationResponse(response);
         if (navData && navigationRef.current) {
           setTimeout(() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (navigationRef.current as any)?.navigate(navData.screen, navData.params);
           }, 100);
         }

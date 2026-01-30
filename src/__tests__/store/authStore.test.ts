@@ -120,7 +120,9 @@ describe('authStore', () => {
     it('should clear user and session on signOut', async () => {
       // Set a user first
       useAuthStore.setState({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         user: { id: '123' } as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: { access_token: 'token' } as any,
       });
       

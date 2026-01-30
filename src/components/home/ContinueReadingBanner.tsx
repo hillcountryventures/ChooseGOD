@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: theme.fontSize.sm,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fontWeight: theme.fontWeight.semibold as any,
     color: theme.colors.text,
   },
@@ -111,6 +112,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: theme.fontSize.sm,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fontWeight: theme.fontWeight.semibold as any,
     color: theme.colors.primary,
   },

@@ -100,6 +100,7 @@ function PrayerTimelineCard({
   const handleVersePress = () => {
     if (prayer.scriptureAnchor) {
       navigateToBibleVerse(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         navigation as any,
         prayer.scriptureAnchor.book,
         prayer.scriptureAnchor.chapter,

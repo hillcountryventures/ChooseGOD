@@ -11,7 +11,9 @@ describe('inputSanitizer', () => {
     });
 
     it('returns empty string for non-string input', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(sanitizeSearchQuery(null as any)).toBe('');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(sanitizeSearchQuery(undefined as any)).toBe('');
     });
 

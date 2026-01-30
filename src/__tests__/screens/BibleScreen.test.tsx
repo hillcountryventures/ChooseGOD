@@ -17,6 +17,7 @@ jest.mock('../../components/bible', () => ({
 }));
 jest.mock('../../components/bible/VerseRow', () => ({ VerseRow: 'VerseRow' }));
 jest.mock('../../components/bible/VerseActionBar', () => ({ VerseActionBar: 'VerseActionBar' }));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 jest.mock('../../components/ErrorBoundary', () => ({ ErrorBoundary: ({ children }: any) => children }));
 jest.mock('../../components/chat/AskAboutPassage', () => ({ AskAboutPassage: 'AskAboutPassage' }));
 jest.mock('../../components/CrossReferencesSheet', () => ({ CrossReferencesSheet: 'CrossReferencesSheet' }));

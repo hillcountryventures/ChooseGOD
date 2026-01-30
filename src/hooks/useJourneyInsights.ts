@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useJourneyStore } from '../store/journeyStore';
 import { useStore } from '../store/useStore';
-import { SpiritualMoment, MomentType } from '../types';
+import { SpiritualMoment, MomentType, VerseSource } from '../types';
 
 // Re-export sub-hook types for consumers
 export type { SpiritualHealthScore } from './insights/useSpiritualHealth';
@@ -136,8 +136,21 @@ export function useJourneyInsights(): JourneyInsightsData {
 
       if (chatError) throw chatError;
 
+      interface MomentRow {
+        id: string;
+        user_id: string;
+        moment_type: MomentType;
+        content?: string;
+        ai_reflection?: string;
+        linked_verses?: VerseSource[];
+        sentiment_score?: number;
+        themes?: string[];
+        created_at: string;
+        updated_at?: string;
+        metadata?: Record<string, unknown>;
+      }
       const transformedMoments: SpiritualMoment[] = (momentsData || []).map(
-        (row: any) => ({
+        (row: MomentRow) => ({
           id: row.id,
           userId: row.user_id,
           momentType: row.moment_type,

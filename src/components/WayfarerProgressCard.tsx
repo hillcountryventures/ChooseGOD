@@ -483,6 +483,7 @@ export default function WayfarerProgressCard({
           {nextMilestone && !isIntervention && (
             <View style={styles.milestoneContainer}>
               <Ionicons
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 name={nextMilestone.icon as any}
                 size={16}
                 color={theme.colors.accent}

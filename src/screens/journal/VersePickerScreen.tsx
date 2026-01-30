@@ -74,6 +74,7 @@ interface VersePickerParams {
 
 export default function VersePickerScreen() {
   useTrackScreen('verse_picker');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ params: VersePickerParams }, 'params'>>();
 

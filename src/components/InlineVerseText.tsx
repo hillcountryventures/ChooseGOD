@@ -76,7 +76,7 @@ function parseMarkdown(text: string): Array<{ type: 'text' | 'bold' | 'italic' |
     // Determine the type based on which group matched
     const fullMatch = match[0];
     let content = '';
-    let type: 'bold' | 'italic' | 'bolditalic' = 'text' as any;
+    let type: 'text' | 'bold' | 'italic' | 'bolditalic' = 'text';
 
     if (match[2] || match[3]) {
       // ***text*** or ___text___

@@ -53,6 +53,7 @@ function TimelineCard({ moment }: { moment: SpiritualMoment }) {
       <View style={styles.timelineContent}>
         <View style={styles.timelineHeader}>
           <View style={styles.timelineMeta}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Ionicons name={config.icon as any} size={14} color={config.color} />
             <Text style={[styles.timelineType, { color: config.color }]}>
               {config.label}

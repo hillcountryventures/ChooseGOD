@@ -182,7 +182,9 @@ export const isValidBook = (book: string): boolean => {
 
 // Helper to get testament for a book
 export const getTestament = (book: string): 'Old Testament' | 'New Testament' | null => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (BIBLE_BOOKS['Old Testament'].includes(book as any)) return 'Old Testament';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (BIBLE_BOOKS['New Testament'].includes(book as any)) return 'New Testament';
   return null;
 };

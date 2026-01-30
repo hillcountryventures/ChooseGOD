@@ -109,7 +109,16 @@ function getMonthRange(month: Date): { start: string; end: string } {
   };
 }
 
-function mapRowToTimelineItem(row: any): TimelineItem {
+interface TimelineRow {
+  id: string;
+  moment_type: MomentType;
+  content: string;
+  linked_verses?: VerseSource[];
+  themes?: string[];
+  created_at: string;
+}
+
+function mapRowToTimelineItem(row: TimelineRow): TimelineItem {
   return {
     id: row.id,
     type: row.moment_type,

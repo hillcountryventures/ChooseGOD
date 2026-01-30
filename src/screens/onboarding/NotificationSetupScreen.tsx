@@ -34,7 +34,7 @@ export default function NotificationSetupScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleTimeChange = (event: any, selectedDate?: Date) => {
+  const handleTimeChange = (event: unknown, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
     }

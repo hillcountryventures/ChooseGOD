@@ -70,11 +70,11 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
 // SCREEN WRAPPERS
 // =====================================================
 
-const SafeHomeScreen = (props: any) => <ScreenErrorBoundary name="HomeScreen"><HomeScreen {...props} /></ScreenErrorBoundary>;
-const SafeBibleScreen = (props: any) => <ScreenErrorBoundary name="BibleScreen"><BibleScreen {...props} /></ScreenErrorBoundary>;
-const SafeJourneyScreen = (props: any) => <ScreenErrorBoundary name="JourneyScreen"><JourneyScreen {...props} /></ScreenErrorBoundary>;
-const SafePrayersScreen = (props: any) => <ScreenErrorBoundary name="PrayersScreen"><PrayersScreen {...props} /></ScreenErrorBoundary>;
-const SafeDevotionalNavigator = (props: any) => <ScreenErrorBoundary name="DevotionalNavigator"><DevotionalNavigator {...props} /></ScreenErrorBoundary>;
+const SafeHomeScreen = (props: Record<string, unknown>) => <ScreenErrorBoundary name="HomeScreen"><HomeScreen {...props} /></ScreenErrorBoundary>;
+const SafeBibleScreen = (props: Record<string, unknown>) => <ScreenErrorBoundary name="BibleScreen"><BibleScreen {...props} /></ScreenErrorBoundary>;
+const SafeJourneyScreen = (props: Record<string, unknown>) => <ScreenErrorBoundary name="JourneyScreen"><JourneyScreen {...props} /></ScreenErrorBoundary>;
+const SafePrayersScreen = (props: Record<string, unknown>) => <ScreenErrorBoundary name="PrayersScreen"><PrayersScreen {...props} /></ScreenErrorBoundary>;
+const SafeDevotionalNavigator = (props: Record<string, unknown>) => <ScreenErrorBoundary name="DevotionalNavigator"><DevotionalNavigator {...props} /></ScreenErrorBoundary>;
 
 // =====================================================
 // NAVIGATORS

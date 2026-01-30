@@ -265,6 +265,7 @@ export default function JournalComposeScreen() {
   };
 
   const handleAddVerse = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (navigation as any).navigate('VersePicker', {
       selectedVerses: linkedVerses,
     });
@@ -398,6 +399,7 @@ export default function JournalComposeScreen() {
     }
 
     // Navigate to ChatHub for AI-powered journaling assistance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (navigation as any).navigate('ChatHub', {
       contextMode: 'journal',
       initialMessage: contextMessage,

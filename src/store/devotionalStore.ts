@@ -129,18 +129,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           if (error) throw error;
 
           // Map RPC results to DevotionalSeries
-          return (data || []).map((row: any) => ({
-            id: row.id,
-            slug: row.slug,
-            title: row.title,
-            description: row.description,
-            coverImageUrl: row.cover_image_url,
-            totalDays: row.total_days,
-            topics: row.topics,
-            isSeasonal: row.is_seasonal,
-            difficultyLevel: row.difficulty_level,
-            createdAt: new Date(),
-          })) as DevotionalSeries[];
+          return (data || []).map((row: DevotionalSeriesRow) => toDevotionalSeries(row));
         } catch (error) {
           logger.error('Error getting recommended series:', error);
           // Fallback: return first 5 non-seasonal series
@@ -169,11 +158,11 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           if (error) throw error;
 
-          const enrollments = (data || []).map((row: any) => {
+          const enrollments = (data || []).map((row: UserSeriesEnrollmentRow & { devotional_series?: DevotionalSeriesRow }) => {
             const series = row.devotional_series
               ? toDevotionalSeries(row.devotional_series)
               : undefined;
-            return toUserSeriesEnrollment(row as UserSeriesEnrollmentRow, series);
+            return toUserSeriesEnrollment(row, series);
           });
 
           const primaryEnrollment = enrollments.find((e) => e.isPrimary);
@@ -464,7 +453,21 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           if (error) throw error;
 
-          return (data || []).map((row: any) => ({
+          interface EnrollmentProgressRow {
+            enrollment_id: string;
+            series_id: string;
+            series_title: string;
+            series_slug: string;
+            total_days: number;
+            current_day: number;
+            completed_days?: number[];
+            is_primary: boolean;
+            is_active: boolean;
+            progress_percentage?: number;
+            days_remaining?: number;
+            last_activity_at: string;
+          }
+          return (data || []).map((row: EnrollmentProgressRow) => ({
             enrollmentId: row.enrollment_id,
             seriesId: row.series_id,
             seriesTitle: row.series_title,

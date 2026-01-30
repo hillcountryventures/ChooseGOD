@@ -13,6 +13,7 @@ describe('theologicalGuardrails', () => {
 
     it('returns safe for empty/null input', () => {
       expect(validateAIResponse('')).toEqual({ safe: true, flags: [] });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(validateAIResponse(null as any)).toEqual({ safe: true, flags: [] });
     });
 

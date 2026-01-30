@@ -36,7 +36,7 @@ type JournalDetailRouteProp = RouteProp<RootStackParamList, 'JournalDetail'>;
 
 export default function JournalDetailScreen() {
   useTrackScreen('journal_detail');
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation();
   const route = useRoute<JournalDetailRouteProp>();
   const { momentId, editMode: initialEditMode } = route.params;
 
@@ -146,7 +146,7 @@ export default function JournalDetailScreen() {
     }
   };
 
-  const handleVersePress = (verse: any) => {
+  const handleVersePress = (verse: { book: string; chapter: number; verse: number }) => {
     navigateToBibleVerse(navigation, verse.book, verse.chapter, verse.verse);
   };
 

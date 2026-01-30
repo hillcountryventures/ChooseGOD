@@ -62,6 +62,7 @@ export function MilestonesSection({
         <View style={styles.nextMilestoneCard}>
           <View style={styles.nextMilestoneHeader}>
             <Ionicons
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               name={nextMilestone.icon as any}
               size={24}
               color={theme.colors.primary}
@@ -96,6 +97,7 @@ export function MilestonesSection({
             <View key={milestone.id} style={styles.milestoneCard}>
               <View style={styles.milestoneCardHeader}>
                 <Ionicons
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   name={milestone.icon as any}
                   size={20}
                   color={theme.colors.accent}

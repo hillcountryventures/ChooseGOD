@@ -27,6 +27,7 @@ export function AnchorVersesSection({ topVerses }: AnchorVersesSectionProps) {
           style={styles.anchorVerseCard}
           onPress={() =>
             navigateToBibleVerse(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               navigation as any,
               item.verse.book,
               item.verse.chapter,

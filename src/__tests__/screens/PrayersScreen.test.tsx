@@ -7,6 +7,7 @@ jest.mock('@react-navigation/native', () => ({
 }));
 jest.mock('@react-navigation/native-stack', () => ({ NativeStackNavigationProp: jest.fn() }));
 jest.mock('@shopify/flash-list', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   FlashList: ({ _renderItem, _data, ...props }: any) => {
     const { View } = require('react-native');
     return <View {...props} />;

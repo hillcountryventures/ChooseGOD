@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
 
 interface ChatInputAreaProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputRef: React.RefObject<any>;
   inputText: string;
   onChangeText: (text: string) => void;

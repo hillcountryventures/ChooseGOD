@@ -43,6 +43,7 @@ jest.mock('../screens/journal/VersePickerScreen', () => () => null);
 // Mock all heavy dependencies before importing App
 jest.mock('../utils/sentry', () => ({
   initSentry: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Sentry: { wrap: (component: any) => component },
 }));
 
@@ -66,6 +67,7 @@ jest.mock('../store/devotionalStore', () => ({
 }));
 
 jest.mock('../store/subscriptionStore', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useSubscriptionStore: (selector: any) => selector({
     initialize: jest.fn(),
     hidePaywall: jest.fn(),
@@ -94,12 +96,14 @@ jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
   return {
     ...actual,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     NavigationContainer: ({ children }: any) => children,
   };
 });
 
 jest.mock('@react-navigation/native-stack', () => ({
   createNativeStackNavigator: () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Navigator: ({ children }: any) => children,
     Screen: () => null,
   }),
@@ -107,12 +111,14 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 jest.mock('@react-navigation/bottom-tabs', () => ({
   createBottomTabNavigator: () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Navigator: ({ children }: any) => children,
     Screen: () => null,
   }),
 }));
 
 jest.mock('react-native-gesture-handler', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   GestureHandlerRootView: ({ children }: any) => children,
 }));
 
