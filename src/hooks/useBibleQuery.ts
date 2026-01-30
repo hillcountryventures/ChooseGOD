@@ -19,6 +19,15 @@ interface UseBibleQueryReturn {
 /** Cache key prefix for RAG query responses */
 const RAG_CACHE_TRANSLATION = '__rag__';
 
+/** djb2 hash — collision-resistant numeric key from string */
+function djb2Hash(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0; // force 32-bit int
+  }
+  return Math.abs(hash);
+}
+
 export function useBibleQuery(): UseBibleQueryReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +62,7 @@ export function useBibleQuery(): UseBibleQueryReturn {
           RAG_CACHE_TRANSLATION,
           preferences.preferredTranslation,
           // Abuse chapter param as a hash — use charCode sum for numeric key
-          cacheKey.split('').reduce((s, c) => s + c.charCodeAt(0), 0)
+          djb2Hash(cacheKey)
         );
 
         if (cached) {
@@ -91,7 +100,7 @@ export function useBibleQuery(): UseBibleQueryReturn {
         await cacheChapter(
           RAG_CACHE_TRANSLATION,
           preferences.preferredTranslation,
-          cacheKey.split('').reduce((s, c) => s + c.charCodeAt(0), 0),
+          djb2Hash(cacheKey),
           response
         );
 

@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
+import { logger } from '../utils/logger';
 
 export function useScriptureScan() {
   const [isScanning] = useState(false);
@@ -38,7 +39,7 @@ export function useScriptureScan() {
         mode: 'scripture-scan',
       });
     } catch (error) {
-      console.error('[useScriptureScan] Error:', error);
+      logger.error('[useScriptureScan] Error:', error);
       Alert.alert(
         'Error',
         'Could not access camera. Please check your device settings.',

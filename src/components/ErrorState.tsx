@@ -9,9 +9,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
+import { ERROR_STATE_STRINGS } from '../constants/strings';
 
 interface ErrorStateProps {
-  /** Error title - defaults to "Something went wrong" */
+  /** Error title - defaults to ERROR_STATE_STRINGS.defaultTitle */
   title?: string;
   /** Error message/description */
   message?: string;
@@ -32,8 +33,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Something unexpected happened',
-  message = "Don't worry — take a breath, and let's try that again.",
+  title = ERROR_STATE_STRINGS.defaultTitle,
+  message = ERROR_STATE_STRINGS.defaultMessage,
   icon = 'alert-circle-outline',
   iconColor = theme.colors.error,
   onRetry,
@@ -84,9 +85,9 @@ export function ErrorState({
       <View style={styles.scriptureContainer}>
         <Ionicons name="book-outline" size={14} color={theme.colors.textMuted} />
         <Text style={styles.scriptureText}>
-          {"\u201CCast all your anxiety on him because he cares for you.\u201D"}
+          {"\u201C" + ERROR_STATE_STRINGS.scripture.replace(/^[""\u201C]+|[""\u201D]+$/g, '') + "\u201D"}
         </Text>
-        <Text style={styles.scriptureRef}>— 1 Peter 5:7</Text>
+        <Text style={styles.scriptureRef}>— {ERROR_STATE_STRINGS.scriptureRef}</Text>
       </View>
     </View>
   );

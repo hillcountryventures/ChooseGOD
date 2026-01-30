@@ -9,6 +9,7 @@
 import { CommonActions } from '@react-navigation/native';
 import { parseReference, ParsedVerse } from './verseParser';
 import type { ChatMode } from '../types';
+import { logger } from '../utils/logger';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyNavigation = any;
@@ -40,7 +41,7 @@ export function navigateToBibleReference(
 ): boolean {
   const parsed = parseReference(reference);
   if (!parsed) {
-    console.warn(`Could not parse verse reference: ${reference}`);
+    logger.warn(`Could not parse verse reference: ${reference}`);
     return false;
   }
 
@@ -67,7 +68,7 @@ export function navigateToAskMode(
   _mode: ChatMode,
   _initialMessage?: string
 ): void {
-  console.warn('navigateToAskMode is deprecated. Use the Chat FAB instead.');
+  logger.warn('navigateToAskMode is deprecated. Use the Chat FAB instead.');
 }
 
 /**
@@ -79,7 +80,7 @@ export function askAboutVerse(
   _reference: string,
   _question?: string
 ): void {
-  console.warn('askAboutVerse is deprecated. Use the Chat FAB instead.');
+  logger.warn('askAboutVerse is deprecated. Use the Chat FAB instead.');
 }
 
 /**

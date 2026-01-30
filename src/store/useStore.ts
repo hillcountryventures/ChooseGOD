@@ -16,6 +16,7 @@ import {
   JournalPrompt,
   ChatContext,
 } from '../types';
+import { logger } from '../utils/logger';
 
 const defaultPreferences: UserPreferences = {
   preferredTranslation: 'KJV',
@@ -272,7 +273,7 @@ export const useStore = create<AppState>()(
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('[Store] Error rehydrating:', error);
+          logger.error('[Store] Error rehydrating:', error);
           return;
         }
         // Clear stale daily verse on app startup (wrong date or wrong translation)
@@ -285,7 +286,7 @@ export const useStore = create<AppState>()(
           const isWrongTranslation = currentTranslation && state.dailyVerse.translation !== currentTranslation;
 
           if (isStaleDate || isWrongTranslation) {
-            console.log('[Store] Clearing stale daily verse:', {
+            logger.debug('[Store] Clearing stale daily verse:', {
               verseDate: state.dailyVerse.date,
               today,
               verseTranslation: state.dailyVerse.translation,

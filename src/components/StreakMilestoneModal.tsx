@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../lib/theme';
+import { logger } from '../utils/logger';
 
 export interface StreakMilestone {
   days: number;
@@ -172,7 +173,7 @@ export function StreakMilestoneModal({ visible, milestone, onClose }: StreakMile
         message: `🎉 ${milestone.title}\n\nI just hit a ${milestone.days}-day streak on ChooseGOD!\n\n"${milestone.scripture}" — ${milestone.scriptureRef}\n\n#ChooseGOD #BibleStudy #Faith`,
       });
     } catch (error) {
-      console.error('Error sharing milestone:', error);
+      logger.error('Error sharing milestone:', error);
     }
   };
 

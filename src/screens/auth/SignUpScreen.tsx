@@ -19,7 +19,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
+import { trackEvent } from '../../services/analytics';
 import { AuthStackParamList } from '../../types/navigation';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Logo = require('../../../assets/logo.png');
@@ -27,6 +29,7 @@ const Logo = require('../../../assets/logo.png');
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
 
 export default function SignUpScreen() {
+  useTrackScreen('signup');
   const navigation = useNavigation<NavigationProp>();
   const signUp = useAuthStore((state) => state.signUp);
 
@@ -85,6 +88,7 @@ export default function SignUpScreen() {
     setLoading(false);
 
     if (error) {
+      trackEvent('error', { source: 'auth_signup', message: error.message });
       Alert.alert('Error', error.message);
     }
   };

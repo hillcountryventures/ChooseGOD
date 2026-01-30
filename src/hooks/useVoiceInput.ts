@@ -11,6 +11,7 @@ import {
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 import * as Haptics from 'expo-haptics';
+import { logger } from '../utils/logger';
 
 export interface UseVoiceInputOptions {
   lang?: string;
@@ -68,7 +69,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
           setHasPermission(permissions.granted);
         }
       } catch (err) {
-        console.warn('Speech recognition availability check failed:', err);
+        logger.warn('Speech recognition availability check failed:', err);
         setIsAvailable(false);
       }
     };
@@ -103,7 +104,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
   });
 
   useSpeechRecognitionEvent('error', (event) => {
-    console.error('Speech recognition error:', event.error, event.message);
+    logger.error('Speech recognition error:', event.error, event.message);
     setError(event.message || event.error);
     setIsListening(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -116,7 +117,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
       setHasPermission(result.granted);
       return result.granted;
     } catch (err) {
-      console.error('Permission request failed:', err);
+      logger.error('Permission request failed:', err);
       return false;
     }
   }, []);
@@ -165,7 +166,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
         iosTaskHint: 'dictation',
       });
     } catch (err) {
-      console.error('Failed to start speech recognition:', err);
+      logger.error('Failed to start speech recognition:', err);
       setError('Failed to start voice input');
     }
   }, [isAvailable, hasPermission, requestPermission, lang, continuous]);

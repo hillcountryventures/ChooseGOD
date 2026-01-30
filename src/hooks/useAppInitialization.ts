@@ -12,6 +12,7 @@ import {
   requestPermissions,
 } from '../lib/notifications';
 import { RootStackParamList } from '../types';
+import { logger } from '../utils/logger';
 
 export function useAppInitialization() {
   const { user, initialized, initialize } = useAuthStore();
@@ -30,14 +31,14 @@ export function useAppInitialization() {
         await initializeSubscription();
         await initialize();
       } catch (error) {
-        console.error('[App] Initialization error:', error);
+        logger.error('[App] Initialization error:', error);
       }
     }
     initializeApp();
 
     const timeoutId = setTimeout(() => {
       if (!initialized) {
-        console.warn('[App] Initialization timeout reached, proceeding to app');
+        logger.warn('[App] Initialization timeout reached, proceeding to app');
         setInitTimedOut(true);
       }
     }, 10000);

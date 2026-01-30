@@ -140,3 +140,12 @@ CREATE POLICY "Users can update own profile"
   ON user_profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
+
+-- ============================================================
+-- bible_verses — public read access (reference data)
+-- ============================================================
+ALTER TABLE bible_verses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read"
+  ON bible_verses FOR SELECT
+  USING (true);

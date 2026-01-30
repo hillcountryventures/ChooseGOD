@@ -22,11 +22,13 @@ import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore'
 import { useAuthStore } from '../../store/authStore';
 import { useIsPremium, useSubscriptionStore } from '../../store/subscriptionStore';
 import { FREE_ENROLLMENT_LIMIT } from '../../constants/subscription';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'SeriesDetail'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'SeriesDetail'>;
 
 export default function SeriesDetailScreen() {
+  useTrackScreen('series_detail');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { seriesId, series: routeSeries } = route.params;
@@ -125,11 +127,11 @@ export default function SeriesDetailScreen() {
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
             </TouchableOpacity>
             {series.isSeasonal && (
               <View style={styles.seasonalBadge}>
-                <Ionicons name="calendar" size={14} color="#fff" />
+                <Ionicons name="calendar" size={14} color={theme.colors.text} />
                 <Text style={styles.seasonalText}>Seasonal</Text>
               </View>
             )}
@@ -237,13 +239,13 @@ export default function SeriesDetailScreen() {
             end={{ x: 1, y: 0 }}
           >
             {enrolling ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.colors.text} />
             ) : (
               <>
                 <Text style={styles.ctaText}>
                   {isEnrolled ? 'Continue Journey' : 'Start This Journey'}
                 </Text>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
               </>
             )}
           </LinearGradient>
@@ -294,7 +296,7 @@ const styles = StyleSheet.create({
   seasonalText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   heroContent: {
     paddingHorizontal: theme.spacing.lg,
@@ -303,7 +305,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: theme.fontSize.xxxl,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
   heroMeta: {
@@ -440,6 +442,6 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

@@ -17,8 +17,10 @@ import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../lib/theme';
 import { useAuthStore } from '../../store/authStore';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 export default function ForgotPasswordScreen() {
+  useTrackScreen('forgot_password');
   const navigation = useNavigation();
   const resetPassword = useAuthStore((state) => state.resetPassword);
 

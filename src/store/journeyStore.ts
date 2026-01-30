@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { TABLES } from '../constants/database';
 import { TimelineItem, MomentType, VerseSource } from '../types';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // TYPES
@@ -201,7 +202,7 @@ export const useJourneyStore = create<JourneyState>()(
             timelineOffset: offset + items.length,
           }));
         } catch (error) {
-          console.error('Error fetching timeline:', error);
+          logger.error('Error fetching timeline:', error);
           set({
             timelineError: error instanceof Error ? error.message : 'Failed to fetch timeline',
             timelineLoading: false,
@@ -281,7 +282,7 @@ export const useJourneyStore = create<JourneyState>()(
             .single();
 
           if (streakError && streakError.code !== 'PGRST116') {
-            console.warn('Error fetching streak data:', streakError);
+            logger.warn('Error fetching streak data:', streakError);
           }
 
           set({
@@ -298,7 +299,7 @@ export const useJourneyStore = create<JourneyState>()(
             currentStreak: streakData?.current_streak || 0,
           });
         } catch (error) {
-          console.error('Error fetching habits data:', error);
+          logger.error('Error fetching habits data:', error);
           set({ habitsLoading: false });
         }
       },
@@ -347,7 +348,7 @@ export const useJourneyStore = create<JourneyState>()(
             },
           });
         } catch (error) {
-          console.error('Error updating streak:', error);
+          logger.error('Error updating streak:', error);
         }
       },
 
@@ -439,7 +440,7 @@ export const useJourneyStore = create<JourneyState>()(
             growthLoading: false,
           });
         } catch (error) {
-          console.error('Error fetching growth data:', error);
+          logger.error('Error fetching growth data:', error);
           set({ growthLoading: false });
         }
       },

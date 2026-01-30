@@ -5,6 +5,7 @@ import { RAGQueryResponse, Translation, VerseSource } from '../types';
 import { TABLES, EDGE_FUNCTIONS } from '../constants/database';
 import { BIBLE_DEFAULTS } from '../constants/strings';
 import { SEARCH_LIMITS } from '../constants/limits';
+import { logger } from '../utils/logger';
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
@@ -24,8 +25,18 @@ const _supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Debug: Log Supabase configuration (remove in production)
 if (__DEV__) {
-  console.log('[Supabase] URL:', _supabaseUrl ? `${_supabaseUrl.substring(0, 30)}...` : 'MISSING');
-  console.log('[Supabase] Key:', _supabaseAnonKey ? `${_supabaseAnonKey.substring(0, 20)}...` : 'MISSING');
+  logger.debug('[Supabase] URL:', _supabaseUrl ? 'SET' : 'MISSING');
+  logger.debug('[Supabase] Key:', _supabaseAnonKey ? 'SET' : 'MISSING');
+}
+
+/**
+ * Sanitize a search query to prevent injection via ilike patterns.
+ * Escapes special Postgres LIKE characters and trims whitespace.
+ */
+function sanitizeSearchQuery(query: string): string {
+  return query
+    .trim()
+    .replace(/[%_\\]/g, (ch) => `\\${ch}`);
 }
 
 /**
@@ -82,7 +93,7 @@ export async function queryBible(
       processingTime,
     };
   } catch (error) {
-    console.error('Error querying Bible:', error);
+    logger.error('Error querying Bible:', error);
     throw error;
   }
 }
@@ -110,12 +121,12 @@ export async function fetchVerse(
       .maybeSingle(); // Use maybeSingle() instead of single() to avoid error when no rows found
 
     if (error) {
-      console.error('Error fetching verse:', error);
+      logger.error('Error fetching verse:', error);
       return null;
     }
 
     if (!data) {
-      console.log(`Verse not found: ${book} ${chapter}:${verse} (${translationLower})`);
+      logger.debug(`Verse not found: ${book} ${chapter}:${verse} (${translationLower})`);
       return null;
     }
 
@@ -127,7 +138,7 @@ export async function fetchVerse(
       translation: data.translation.toUpperCase() as Translation,
     };
   } catch (error) {
-    console.error('Error fetching verse:', error);
+    logger.error('Error fetching verse:', error);
     return null;
   }
 }
@@ -143,16 +154,21 @@ export async function searchVerses(
   try {
     // Database stores translation as lowercase
     const translationLower = translation.toLowerCase();
+    const sanitized = sanitizeSearchQuery(keyword);
+
+    if (!sanitized) {
+      return [];
+    }
 
     const { data, error } = await supabase
       .from(TABLES.bibleVerses)
       .select('book, chapter, verse, text, translation')
       .eq('translation', translationLower)
-      .ilike('text', `%${keyword}%`)
+      .ilike('text', `%${sanitized}%`)
       .limit(limit);
 
     if (error) {
-      console.error('Error searching verses:', error);
+      logger.error('Error searching verses:', error);
       return [];
     }
 
@@ -164,7 +180,7 @@ export async function searchVerses(
       translation: row.translation.toUpperCase() as Translation,
     }));
   } catch (error) {
-    console.error('Error searching verses:', error);
+    logger.error('Error searching verses:', error);
     return [];
   }
 }
@@ -190,12 +206,12 @@ export async function fetchChapter(
       .order('verse', { ascending: true });
 
     if (error) {
-      console.error('Error fetching chapter:', error);
+      logger.error('Error fetching chapter:', error);
       return [];
     }
 
     if (!data || data.length === 0) {
-      console.log(`No verses found for ${book} ${chapter} (${translationLower})`);
+      logger.debug(`No verses found for ${book} ${chapter} (${translationLower})`);
       return [];
     }
 
@@ -207,7 +223,7 @@ export async function fetchChapter(
       translation: row.translation.toUpperCase() as Translation,
     }));
   } catch (error) {
-    console.error('Error fetching chapter:', error);
+    logger.error('Error fetching chapter:', error);
     return [];
   }
 }
@@ -237,7 +253,7 @@ export async function getBookChapterCount(
 
     return data[0].chapter;
   } catch (error) {
-    console.error('Error getting chapter count:', error);
+    logger.error('Error getting chapter count:', error);
     return 0;
   }
 }
@@ -265,7 +281,7 @@ export async function fetchVerseParallel(
       .in('translation', translationsLower);
 
     if (error) {
-      console.error('Error fetching parallel verses:', error);
+      logger.error('Error fetching parallel verses:', error);
       return [];
     }
 
@@ -288,7 +304,7 @@ export async function fetchVerseParallel(
       translation: row.translation.toUpperCase() as Translation,
     }));
   } catch (error) {
-    console.error('Error fetching parallel verses:', error);
+    logger.error('Error fetching parallel verses:', error);
     return [];
   }
 }
@@ -335,13 +351,13 @@ export async function updateUserProfile(
       });
 
     if (error) {
-      console.error('Error updating user profile:', error);
+      logger.error('Error updating user profile:', error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    logger.error('Error updating user profile:', error);
     return false;
   }
 }
@@ -376,7 +392,7 @@ export async function fetchUserProfile(
       eveningExamen: data.evening_examen,
     };
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    logger.error('Error fetching user profile:', error);
     return null;
   }
 }

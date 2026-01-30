@@ -81,7 +81,7 @@ export default function WelcomeScreen() {
                 end={{ x: 1, y: 0 }}
               >
                 <Text style={styles.primaryButtonText}>Get Started</Text>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
               </LinearGradient>
             </TouchableOpacity>
 
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   secondaryButton: {
     paddingVertical: theme.spacing.md,

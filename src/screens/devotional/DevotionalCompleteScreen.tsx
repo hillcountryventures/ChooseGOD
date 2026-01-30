@@ -17,6 +17,7 @@ import {
   getSeriesGradient,
 } from '../../types';
 import { useDevotionalStore, useEnrollments } from '../../store/devotionalStore';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width: _width } = Dimensions.get('window');
 
@@ -33,6 +34,7 @@ const ENCOURAGEMENTS = [
 ];
 
 export default function DevotionalCompleteScreen() {
+  useTrackScreen('devotional_complete');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { seriesId, dayNumber, seriesTitle } = route.params;
@@ -118,9 +120,9 @@ export default function DevotionalCompleteScreen() {
               end={{ x: 1, y: 1 }}
             >
               {isSeriesComplete ? (
-                <Ionicons name="trophy" size={64} color="#fff" />
+                <Ionicons name="trophy" size={64} color={theme.colors.text} />
               ) : (
-                <Ionicons name="checkmark-circle" size={64} color="#fff" />
+                <Ionicons name="checkmark-circle" size={64} color={theme.colors.text} />
               )}
             </LinearGradient>
           </View>
@@ -200,7 +202,7 @@ export default function DevotionalCompleteScreen() {
               <Text style={styles.buttonText}>
                 {isSeriesComplete ? 'Back to Devotionals' : 'Continue to Day ' + (dayNumber + 1)}
               </Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
             </LinearGradient>
           </TouchableOpacity>
 
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   secondaryButton: {
     paddingVertical: theme.spacing.md,

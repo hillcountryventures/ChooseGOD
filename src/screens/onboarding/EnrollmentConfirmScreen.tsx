@@ -19,11 +19,14 @@ import {
 } from '../../types';
 import { useDevotionalStore } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'EnrollConfirm'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'EnrollConfirm'>;
 
 export default function EnrollmentConfirmScreen() {
+  useTrackScreen('onboarding_enrollment_confirm');
   const _navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { seriesIds, primarySeriesId } = route.params;
@@ -76,7 +79,7 @@ export default function EnrollmentConfirmScreen() {
       // Navigate to main app - the App.tsx will handle showing the main navigator
       // since onboardingCompleted is now true
     } catch (error) {
-      console.error('Error enrolling:', error);
+      logger.error('Error enrolling:', error);
       setEnrolling(false);
     }
   };
@@ -129,7 +132,7 @@ export default function EnrollmentConfirmScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="checkmark-circle" size={64} color="#fff" />
+              <Ionicons name="checkmark-circle" size={64} color={theme.colors.text} />
             </LinearGradient>
           </View>
 
@@ -205,6 +208,8 @@ export default function EnrollmentConfirmScreen() {
             onPress={handleBeginJourney}
             disabled={enrolling}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={enrolling ? 'Enrolling in devotional' : 'Begin Day 1 of your devotional journey'}
           >
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -213,11 +218,11 @@ export default function EnrollmentConfirmScreen() {
               end={{ x: 1, y: 0 }}
             >
               {enrolling ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={theme.colors.text} />
               ) : (
                 <>
                   <Text style={styles.buttonText}>Begin Day 1</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#fff" />
+                  <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
                 </>
               )}
             </LinearGradient>
@@ -314,14 +319,14 @@ const styles = StyleSheet.create({
   previewBadgeText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   previewTitle: {
     fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   previewDescription: {
@@ -385,6 +390,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

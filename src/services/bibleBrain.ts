@@ -8,6 +8,8 @@
  */
 
 import Constants from 'expo-constants';
+import { logger } from '../utils/logger';
+import { trackEvent } from './analytics';
 
 // =============================================================================
 // Types
@@ -179,7 +181,9 @@ class BibleBrainService {
     
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Bible Brain API error: ${response.status} - ${error}`);
+      const apiError = `Bible Brain API error: ${response.status} - ${error}`;
+      trackEvent('error', { source: 'bible_brain_api', message: apiError, code: response.status });
+      throw new Error(apiError);
     }
 
     const data = await response.json();
@@ -244,7 +248,7 @@ class BibleBrainService {
       );
       return data?.[0] || null;
     } catch (error) {
-      console.error(`Failed to get audio for ${bookId} ${chapter}:`, error);
+      logger.error(`Failed to get audio for ${bookId} ${chapter}:`, error);
       return null;
     }
   }
@@ -260,7 +264,7 @@ class BibleBrainService {
   ): Promise<AudioFile | null> {
     const filesetId = this.getAudioFilesetId(translation, preferDrama);
     if (!filesetId) {
-      console.warn(`No audio fileset mapped for translation: ${translation}`);
+      logger.warn(`No audio fileset mapped for translation: ${translation}`);
       return null;
     }
     return this.getChapterAudio(filesetId, bookId, chapter);
@@ -302,7 +306,7 @@ class BibleBrainService {
         timestamp: item.timestamp,
       }));
     } catch (error) {
-      console.error(`Failed to get timestamps for ${bookId} ${chapter}:`, error);
+      logger.error(`Failed to get timestamps for ${bookId} ${chapter}:`, error);
       return [];
     }
   }
@@ -347,7 +351,7 @@ class BibleBrainService {
       const data = await this.request<{ path: string }[]>(path);
       return data?.[0]?.path || null;
     } catch (error) {
-      console.error('Failed to get download URL:', error);
+      logger.error('Failed to get download URL:', error);
       return null;
     }
   }

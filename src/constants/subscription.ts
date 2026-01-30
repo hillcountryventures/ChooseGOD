@@ -192,7 +192,7 @@ export const PAYWALL_CONTENT = {
         author: 'Sarah M.',
       },
       {
-        text: 'The AI companion feels like talking to a wise pastor who knows the Bible deeply.',
+        text: 'The Scripture companion feels like talking to a wise pastor who knows the Bible deeply.',
         author: 'James K.',
       },
     ],
@@ -202,7 +202,7 @@ export const PAYWALL_CONTENT = {
   features: [
     {
       icon: 'chatbubbles',
-      title: 'Unlimited AI Conversations',
+      title: 'Unlimited Scripture Conversations',
       description: 'Ask anything about Scripture—no daily limits, anytime access.',
     },
     {

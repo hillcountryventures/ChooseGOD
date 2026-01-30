@@ -25,11 +25,13 @@ import { getSupabaseConfig } from '../lib/supabase';
 import { CHAT_LIMITS } from '../constants/limits';
 import { ANIMATION_DELAY } from '../constants/animations';
 import { sanitizeChatMessage } from '../utils/inputSanitizer';
+import { validateAIResponse, getGuardrailFallback } from '../utils/theologicalGuardrails';
 import { usePremiumStatus } from './usePremiumStatus';
 import { useChatQuota } from './useChatQuota';
 import { streamCompanionResponse } from '../components/chat/utils';
 import { useVoiceInput } from './useVoiceInput';
 import { isPrayerMode as checkIsPrayerMode } from '../constants/chatModes';
+import { logger } from '../utils/logger';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type ChatHubRouteProp = RouteProp<RootStackParamList, 'ChatHub'>;
@@ -229,7 +231,12 @@ export function useChatHub() {
             updateMessage(assistantMessageId, { content: fullContent });
           },
           onDone: async (fullResponse) => {
-            updateMessage(assistantMessageId, { content: fullResponse });
+            // Theological guardrails — validate before displaying
+            const guardrailResult = validateAIResponse(fullResponse);
+            const safeContent = guardrailResult.safe
+              ? fullResponse
+              : getGuardrailFallback(guardrailResult.flags);
+            updateMessage(assistantMessageId, { content: safeContent });
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             setIsQuerying(false);
             abortControllerRef.current = null;
@@ -386,7 +393,7 @@ export function useChatHub() {
         .join('\n\n---\n\n');
       await Share.share({ message: `${conversationText}\n\n✝️ Shared from ChooseGOD` });
     } catch (error) {
-      console.error('Share failed:', error);
+      logger.error('Share failed:', error);
     }
   }, [messages]);
 

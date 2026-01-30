@@ -3,6 +3,7 @@
  *
  * Wraps any child with a fade + slide-up entrance animation.
  * Use on daily verse card, streak card, or any element needing polish.
+ * Respects reduced motion accessibility preference.
  *
  * Usage:
  *   <FadeIn delay={200}>
@@ -11,8 +12,8 @@
  */
 
 import React from 'react';
-import Animated, { FadeInDown, FadeIn as ReanimatedFadeIn } from 'react-native-reanimated';
-import { ViewStyle, StyleProp } from 'react-native';
+import Animated, { FadeInDown, FadeIn as ReanimatedFadeIn, useReducedMotion } from 'react-native-reanimated';
+import { View, ViewStyle, StyleProp } from 'react-native';
 
 interface FadeInProps {
   children: React.ReactNode;
@@ -33,6 +34,13 @@ export const FadeIn: React.FC<FadeInProps> = ({
   slideDistance = 16,
   style,
 }) => {
+  const reducedMotion = useReducedMotion();
+
+  // When reduced motion is enabled, render children without animation
+  if (reducedMotion) {
+    return <View style={style}>{children}</View>;
+  }
+
   const entering =
     slideDistance > 0
       ? FadeInDown.delay(delay).duration(duration).springify().damping(18)

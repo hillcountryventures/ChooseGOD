@@ -21,6 +21,7 @@ import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
 import { JournalMedia } from '../../types';
+import { logger } from '../../utils/logger';
 
 interface VoiceNoteRecorderProps {
   onRecordingComplete: (media: JournalMedia) => void;
@@ -103,7 +104,7 @@ export default function VoiceNoteRecorder({
       setIsRecording(true);
       setDuration(0);
     } catch (error) {
-      console.error('Failed to start recording:', error);
+      logger.error('Failed to start recording:', error);
       Alert.alert('Error', 'Failed to start recording. Please try again.');
     }
   };
@@ -132,7 +133,7 @@ export default function VoiceNoteRecorder({
 
       setRecording(null);
     } catch (error) {
-      console.error('Failed to stop recording:', error);
+      logger.error('Failed to stop recording:', error);
       Alert.alert('Error', 'Failed to save recording. Please try again.');
     }
   };

@@ -10,10 +10,12 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 interface OfflineStatus {
   isOnline: boolean;
   isOffline: boolean;
+  /** True until first NetInfo check completes */
+  isIndeterminate: boolean;
 }
 
 export function useOfflineStatus(): OfflineStatus {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Get initial state
@@ -30,7 +32,8 @@ export function useOfflineStatus(): OfflineStatus {
   }, []);
 
   return {
-    isOnline,
-    isOffline: !isOnline,
+    isOnline: isOnline ?? true, // default true until known — prevents false offline UI flash
+    isOffline: isOnline === false,
+    isIndeterminate: isOnline === null,
   };
 }

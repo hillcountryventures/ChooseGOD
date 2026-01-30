@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 /**
  * fetchWithRetry
  *
@@ -49,7 +50,7 @@ export async function fetchWithRetry<T>(
       if (attempt < maxAttempts) {
         const backoff = BASE_DELAY_MS * Math.pow(2, attempt - 1); // 1s, 2s, 4s
         options?.onRetry?.(attempt, err);
-        console.warn(
+        logger.warn(
           `[fetchWithRetry] Attempt ${attempt}/${maxAttempts} failed, retrying in ${backoff}ms`,
           err
         );

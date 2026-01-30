@@ -32,12 +32,14 @@ import { useAuthStore } from '../../store/authStore';
 import { useIsPremium, useSubscriptionStore } from '../../store/subscriptionStore';
 import { DrawNearBanner } from '../../components/devotional/DrawNearBanner';
 import { FREE_ENROLLMENT_LIMIT } from '../../constants/subscription';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'DevotionalHub'>;
 
 export default function DevotionalHubScreen() {
+  useTrackScreen('devotional_hub');
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
   const {
@@ -193,7 +195,7 @@ export default function DevotionalHubScreen() {
                 {/* Continue button */}
                 <View style={styles.heroCTA}>
                   <Text style={styles.heroCTAText}>Continue</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                  <Ionicons name="arrow-forward" size={18} color={theme.colors.text} />
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -225,7 +227,7 @@ export default function DevotionalHubScreen() {
                         {isLocked && (
                           <View style={styles.lockOverlay}>
                             <View style={styles.lockBadge}>
-                              <Ionicons name="lock-closed" size={14} color="#fff" />
+                              <Ionicons name="lock-closed" size={14} color={theme.colors.text} />
                               <Text style={styles.lockText}>Pro</Text>
                             </View>
                           </View>
@@ -291,7 +293,7 @@ export default function DevotionalHubScreen() {
                   end={{ x: 1, y: 0 }}
                 >
                   <Text style={styles.emptyStateButtonText}>Browse Devotionals</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                  <Ionicons name="arrow-forward" size={18} color={theme.colors.text} />
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -379,7 +381,7 @@ const styles = StyleSheet.create({
   heroSeriesTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
     flex: 1,
     marginRight: theme.spacing.md,
   },
@@ -399,7 +401,7 @@ const styles = StyleSheet.create({
   heroDayNumber: {
     fontSize: theme.fontSize.xxxl,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
     lineHeight: 36,
   },
   heroDayOf: {
@@ -417,7 +419,7 @@ const styles = StyleSheet.create({
   },
   heroProgressFill: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 3,
   },
   heroProgressText: {
@@ -437,7 +439,7 @@ const styles = StyleSheet.create({
   heroCTAText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Other Enrollments Section
@@ -469,7 +471,7 @@ const styles = StyleSheet.create({
   enrollmentCardTitle: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   enrollmentCardFooter: {
@@ -488,7 +490,7 @@ const styles = StyleSheet.create({
   enrollmentCardDayNumber: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   enrollmentCardProgress: {
     height: 4,
@@ -497,7 +499,7 @@ const styles = StyleSheet.create({
   },
   enrollmentCardProgressFill: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 2,
   },
   lockOverlay: {
@@ -523,7 +525,7 @@ const styles = StyleSheet.create({
   lockText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Discover Link
@@ -582,6 +584,6 @@ const styles = StyleSheet.create({
   emptyStateButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

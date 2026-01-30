@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useStore } from '../store/useStore';
+import { logger } from '../utils/logger';
 
 /**
  * Cross-reference result from Supabase
@@ -138,7 +139,7 @@ export function useCrossReferences(): UseCrossReferencesReturn {
         }
         const message = err instanceof Error ? err.message : 'Failed to fetch cross-references';
         setError(message);
-        console.error('[CrossReferences] Error:', err);
+        logger.error('[CrossReferences] Error:', err);
         return [];
       } finally {
         setIsLoading(false);
@@ -204,7 +205,7 @@ export function useCrossReferences(): UseCrossReferencesReturn {
         }
         const message = err instanceof Error ? err.message : 'Failed to fetch cross-references';
         setError(message);
-        console.error('[CrossReferences] Error:', err);
+        logger.error('[CrossReferences] Error:', err);
         return [];
       } finally {
         setIsLoading(false);

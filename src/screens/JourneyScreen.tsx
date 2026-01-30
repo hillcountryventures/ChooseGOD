@@ -31,6 +31,8 @@ import { RootStackParamList } from '../types';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
 import { generateJourneyPDF } from '../lib/journeyPDF';
 import { TimelineView, InsightsView } from '../components/journey';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type TabType = 'timeline' | 'insights';
@@ -67,6 +69,7 @@ function TabButton({
 // Main JourneyScreen
 // ============================================================================
 export default function JourneyScreen() {
+  useTrackScreen('journey');
   const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
   const [isExporting, setIsExporting] = useState(false);
@@ -111,7 +114,7 @@ export default function JourneyScreen() {
         Alert.alert('Export Complete', 'PDF saved successfully.');
       }
     } catch (error) {
-      console.error('PDF export failed:', error);
+      logger.error('PDF export failed:', error);
       Alert.alert('Export Failed', 'Unable to generate PDF. Please try again.');
     } finally {
       setIsExporting(false);

@@ -21,6 +21,7 @@ import {
   getSeriesGradient,
 } from '../../types';
 import { useDevotionalStore, useAllSeries, useEnrollments } from '../../store/devotionalStore';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - theme.spacing.lg * 2 - theme.spacing.md) / 2;
@@ -39,6 +40,7 @@ const FILTERS: { id: FilterType; label: string }[] = [
 ];
 
 export default function SeriesLibraryScreen() {
+  useTrackScreen('series_library');
   const navigation = useNavigation<NavigationProp>();
   const { fetchAllSeries, seriesLoading: _seriesLoading } = useDevotionalStore();
   const allSeries = useAllSeries();
@@ -112,14 +114,14 @@ export default function SeriesLibraryScreen() {
         >
           {isEnrolled && (
             <View style={styles.enrolledBadge}>
-              <Ionicons name="checkmark-circle" size={14} color="#fff" />
+              <Ionicons name="checkmark-circle" size={14} color={theme.colors.text} />
               <Text style={styles.enrolledBadgeText}>Enrolled</Text>
             </View>
           )}
 
           {item.isSeasonal && (
             <View style={styles.seasonalBadge}>
-              <Ionicons name="calendar" size={12} color="#fff" />
+              <Ionicons name="calendar" size={12} color={theme.colors.text} />
             </View>
           )}
 
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   filterChipTextActive: {
-    color: '#fff',
+    color: theme.colors.text,
   },
   gridContent: {
     paddingHorizontal: theme.spacing.lg,
@@ -326,7 +328,7 @@ const styles = StyleSheet.create({
   enrolledBadgeText: {
     fontSize: 10,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   seasonalBadge: {
     position: 'absolute',
@@ -346,7 +348,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
   cardMeta: {

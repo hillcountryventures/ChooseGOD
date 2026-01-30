@@ -6,6 +6,7 @@
  */
 
 import { File, Directory, Paths } from 'expo-file-system';
+import { logger } from '../utils/logger';
 
 const CACHE_DIR_NAME = 'bible-cache';
 
@@ -82,7 +83,7 @@ export async function getCachedChapter<T = unknown>(
     const raw = await file.text();
     return JSON.parse(raw) as T;
   } catch (err) {
-    console.warn('[BibleCache] Read error for', key, err);
+    logger.warn('[BibleCache] Read error for', key, err);
     const index2 = ensureIndex();
     index2.delete(key);
     return null;
@@ -105,7 +106,7 @@ export async function cacheChapter(
     const index = ensureIndex();
     index.add(key);
   } catch (err) {
-    console.warn('[BibleCache] Write error for', key, err);
+    logger.warn('[BibleCache] Write error for', key, err);
   }
 }
 
@@ -141,6 +142,6 @@ export async function clearCache(): Promise<void> {
     _cacheDir = null;
     cacheIndex = null;
   } catch (err) {
-    console.warn('[BibleCache] Clear error', err);
+    logger.warn('[BibleCache] Clear error', err);
   }
 }

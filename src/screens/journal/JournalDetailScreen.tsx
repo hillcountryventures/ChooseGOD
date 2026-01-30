@@ -29,10 +29,13 @@ import { RootStackParamList } from '../../types';
 import { navigateToBibleVerse } from '../../lib/navigationHelpers';
 import { MediaPreviewList } from '../../components/journal/MediaPreview';
 import VoiceNotePlayer from '../../components/journal/VoiceNotePlayer';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type JournalDetailRouteProp = RouteProp<RootStackParamList, 'JournalDetail'>;
 
 export default function JournalDetailScreen() {
+  useTrackScreen('journal_detail');
   const navigation = useNavigation<any>();
   const route = useRoute<JournalDetailRouteProp>();
   const { momentId, editMode: initialEditMode } = route.params;
@@ -99,7 +102,7 @@ export default function JournalDetailScreen() {
       });
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating journal entry:', error);
+      logger.error('Error updating journal entry:', error);
       Alert.alert('Error', 'Failed to save changes. Please try again.');
     } finally {
       setIsSaving(false);
@@ -139,7 +142,7 @@ export default function JournalDetailScreen() {
 
       await Share.share({ message: shareText });
     } catch (error) {
-      console.error('Error sharing:', error);
+      logger.error('Error sharing:', error);
     }
   };
 
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   scrollView: {
     flex: 1,

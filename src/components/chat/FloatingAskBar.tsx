@@ -21,6 +21,7 @@ import { useStore } from '../../store/useStore';
 import { ChatMessage } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { EDGE_FUNCTIONS } from '../../constants/database';
+import { logger } from '../../utils/logger';
 
 export function FloatingAskBar() {
   const inputRef = useRef<TextInput>(null);
@@ -98,7 +99,7 @@ export function FloatingAskBar() {
       };
       addMessage(assistantMessage);
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',

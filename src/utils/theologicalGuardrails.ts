@@ -21,9 +21,9 @@ interface FlagPattern {
  * Each pattern has a regex and a human-readable flag description.
  */
 const FLAG_PATTERNS: FlagPattern[] = [
-  // AI claiming divinity or divine authority
+  // AI claiming divinity or divine authority (including contractions)
   {
-    pattern: /\b(I am God|I am the Lord|I am Jesus|I am Christ|I am the Holy Spirit|I am your savior|I am divine|worship me)\b/i,
+    pattern: /\b(I am God|I'm God|I am the Lord|I'm the Lord|I am Jesus|I'm Jesus|I am Christ|I'm Christ|I am the Holy Spirit|I'm the Holy Spirit|I am your savior|I'm your savior|I am divine|I'm divine|worship me)\b/i,
     flag: 'ai-claims-divinity',
   },
   {
@@ -37,7 +37,7 @@ const FLAG_PATTERNS: FlagPattern[] = [
     flag: 'contradicts-core-doctrine',
   },
   {
-    pattern: /\b(the Bible is (?:false|wrong|unreliable|a lie|fiction)|Scripture (?:cannot|can't) be trusted)\b/i,
+    pattern: /\b(the Bible(?:'s| is) (?:false|wrong|unreliable|a lie|fiction)|Scripture (?:cannot|can't) be trusted)\b/i,
     flag: 'undermines-scripture',
   },
   {
@@ -77,8 +77,9 @@ const FLAG_PATTERNS: FlagPattern[] = [
  * @returns GuardrailResult with safety status and any flags triggered
  */
 export function validateAIResponse(response: string): GuardrailResult {
-  if (!response || typeof response !== 'string') {
-    return { safe: true, flags: [] };
+  // Fix 6: Empty/whitespace responses are unsafe
+  if (!response || typeof response !== 'string' || response.trim().length === 0) {
+    return { safe: false, flags: ['empty-response'] };
   }
 
   const flags: string[] = [];
@@ -99,6 +100,10 @@ export function validateAIResponse(response: string): GuardrailResult {
  * Get a safe fallback message when guardrails are triggered.
  */
 export function getGuardrailFallback(flags: string[]): string {
+  if (flags.includes('empty-response')) {
+    return "I wasn't able to generate a response. Let me try again — what would you like to explore in Scripture?";
+  }
+
   if (flags.includes('harmful-content')) {
     return "I'm here to support you. If you're struggling, please reach out to a pastor, counselor, or call 988 (Suicide & Crisis Lifeline). You are loved by God. 💛";
   }

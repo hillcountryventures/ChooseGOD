@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 /**
  * AudioTreasure Public Domain Bible Audio
  * 
@@ -186,12 +187,12 @@ function getBookInfo(bookName: string): BookInfo | null {
 export function getChapterAudioUrl(bookName: string, chapter: number): string | null {
   const book = getBookInfo(bookName);
   if (!book) {
-    console.warn(`AudioTreasure: Unknown book "${bookName}"`);
+    logger.warn(`AudioTreasure: Unknown book "${bookName}"`);
     return null;
   }
   
   if (chapter < 1 || chapter > book.chapters) {
-    console.warn(`AudioTreasure: Invalid chapter ${chapter} for ${bookName} (max: ${book.chapters})`);
+    logger.warn(`AudioTreasure: Invalid chapter ${chapter} for ${bookName} (max: ${book.chapters})`);
     return null;
   }
   

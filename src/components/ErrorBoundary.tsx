@@ -7,6 +7,7 @@ import React, { Component, ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { ErrorState } from './ErrorState';
+import { logger } from '../utils/logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -34,7 +35,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const { name = 'Unknown', onError } = this.props;
-    console.error(`[ErrorBoundary:${name}]`, error, errorInfo);
+    logger.error(`[ErrorBoundary:${name}]`, error, errorInfo);
 
     Sentry.captureException(error, {
       tags: { boundary: name, level: this.props.level || 'component' },

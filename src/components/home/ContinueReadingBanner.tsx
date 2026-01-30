@@ -47,6 +47,8 @@ export function ContinueReadingBanner() {
       style={styles.banner}
       onPress={handlePress}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`Continue reading ${lastReadBook} chapter ${lastReadChapter}, last read ${timeAgo}`}
     >
       <View style={styles.iconContainer}>
         <Ionicons name="bookmark" size={18} color={theme.colors.primary} />

@@ -53,6 +53,7 @@ import { useStreakMilestone } from '../hooks/useStreakMilestone';
 import { useTrackScreen } from '../hooks/useAnalytics';
 import { ContinueReadingBanner } from '../components/home/ContinueReadingBanner';
 import { trackStreakDay } from '../services/analytics';
+import { logger } from '../utils/logger';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -112,7 +113,7 @@ function HeroVerseCard() {
         message: `"${dailyVerse.verse.text}"\n\n— ${reference}\n\nShared from ChooseGOD`,
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      logger.error('Error sharing:', error);
     }
   };
 
@@ -168,6 +169,8 @@ function HeroVerseCard() {
           onPress={handleVersePress}
           style={styles.heroReferenceRow}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${reference} in Bible reader`}
         >
           <Text style={styles.heroReference}>— {reference}</Text>
           <Ionicons name="arrow-forward" size={14} color={theme.colors.primary} />
@@ -215,7 +218,7 @@ function ProverbsOfTheDay() {
   };
 
   return (
-    <TouchableOpacity style={styles.proverbsCard} onPress={handlePress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.proverbsCard} onPress={handlePress} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={`Read Proverbs ${proverbsChapter}`}>
       <View style={styles.proverbsIconContainer}>
         <Ionicons name="book-outline" size={20} color={theme.colors.primary} />
       </View>
@@ -336,13 +339,15 @@ function AskTheBibleButton() {
         style={styles.scanButton}
         onPress={handleScanPress}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Scan Scripture with camera"
       >
         <Ionicons name="camera-outline" size={24} color={theme.colors.primary} />
       </TouchableOpacity>
 
       {/* Main Ask Button */}
       <Animated.View style={[styles.askBibleButton, { transform: [{ scale: pulseAnim }] }]}>
-        <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
+        <TouchableOpacity onPress={handlePress} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Ask the Bible — open AI chat">
           <LinearGradient
             colors={[theme.colors.primary, '#818CF8'] as [string, string]}
             start={{ x: 0, y: 0 }}
@@ -350,7 +355,7 @@ function AskTheBibleButton() {
             style={styles.askBibleGradient}
           >
             <View style={styles.askBibleIconContainer}>
-              <Ionicons name="chatbubbles" size={24} color="#fff" />
+              <Ionicons name="chatbubbles" size={24} color={theme.colors.text} />
             </View>
             <View style={styles.askBibleContent}>
               <Text style={styles.askBibleTitle}>Ask the Bible</Text>
@@ -438,9 +443,9 @@ function ContextualCard() {
   }
 
   return (
-    <TouchableOpacity style={styles.contextCard} onPress={card.onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.contextCard} onPress={card.onPress} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={`${card.title}: ${card.subtitle}`}>
       <View style={[styles.contextIcon, { backgroundColor: card.iconBg }]}>
-        <Ionicons name={card.icon} size={22} color="#fff" />
+        <Ionicons name={card.icon} size={22} color={theme.colors.text} />
       </View>
       <View style={styles.contextContent}>
         <Text style={styles.contextTitle}>{card.title}</Text>
@@ -547,7 +552,7 @@ export default function HomeScreen() {
         throw new Error(data?.error || 'Failed to generate summary');
       }
     } catch (error) {
-      console.error('Grace Path error:', error);
+      logger.error('Grace Path error:', error);
       setGraceSummaryError(
         error instanceof Error ? error.message : 'Failed to generate summary. Please try again.'
       );
@@ -625,7 +630,7 @@ export default function HomeScreen() {
 
       setShowReminderModal(false);
     } catch (error) {
-      console.error('Error enrolling with reminder:', error);
+      logger.error('Error enrolling with reminder:', error);
     } finally {
       setIsEnrolling(false);
     }
@@ -647,7 +652,7 @@ export default function HomeScreen() {
 
       setShowReminderModal(false);
     } catch (error) {
-      console.error('Error enrolling:', error);
+      logger.error('Error enrolling:', error);
     } finally {
       setIsEnrolling(false);
     }
@@ -663,7 +668,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>
+            <Text style={styles.greeting} accessibilityRole="header">
               {greeting}{firstName ? `, ${firstName}` : ''}
             </Text>
             <Text style={styles.subtitle}>What&apos;s on your heart today?</Text>
@@ -671,6 +676,8 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => navigation.navigate('Settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
           >
             <Ionicons name="settings-outline" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
@@ -921,7 +928,7 @@ const styles = StyleSheet.create({
   proverbsChapterText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Streak Bar
@@ -976,7 +983,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   streakDayTextCompleted: {
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Ask the Bible Button Container
@@ -1024,7 +1031,7 @@ const styles = StyleSheet.create({
   askBibleTitle: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   askBibleSubtitle: {
     fontSize: theme.fontSize.sm,

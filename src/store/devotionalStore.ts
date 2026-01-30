@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { DevotionalSeries, DevotionalDay, UserSeriesEnrollment, OnboardingResponses, EnrollmentProgress, toDevotionalSeries, toDevotionalDay, toUserSeriesEnrollment, DevotionalSeriesRow, DevotionalDayRow, UserSeriesEnrollmentRow } from '../types/devotional';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // STORE INTERFACE
@@ -93,7 +94,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           const series = (data as DevotionalSeriesRow[]).map(toDevotionalSeries);
           set({ allSeries: series, seriesLoading: false });
         } catch (error) {
-          console.error('Error fetching series:', error);
+          logger.error('Error fetching series:', error);
           set({
             seriesError: error instanceof Error ? error.message : 'Failed to fetch series',
             seriesLoading: false,
@@ -112,7 +113,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           if (error) throw error;
           return toDevotionalSeries(data as DevotionalSeriesRow);
         } catch (error) {
-          console.error('Error fetching series by ID:', error);
+          logger.error('Error fetching series by ID:', error);
           return null;
         }
       },
@@ -141,7 +142,7 @@ export const useDevotionalStore = create<DevotionalState>()(
             createdAt: new Date(),
           })) as DevotionalSeries[];
         } catch (error) {
-          console.error('Error getting recommended series:', error);
+          logger.error('Error getting recommended series:', error);
           // Fallback: return first 5 non-seasonal series
           const { allSeries } = get();
           return allSeries.filter((s) => !s.isSeasonal).slice(0, 5);
@@ -182,7 +183,7 @@ export const useDevotionalStore = create<DevotionalState>()(
             primaryEnrollmentId: primaryEnrollment?.id || null,
           });
         } catch (error) {
-          console.error('Error fetching enrollments:', error);
+          logger.error('Error fetching enrollments:', error);
           set({ enrollmentsLoading: false });
         }
       },
@@ -219,7 +220,7 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           return enrollment;
         } catch (error) {
-          console.error('Error enrolling in series:', error);
+          logger.error('Error enrolling in series:', error);
           return null;
         }
       },
@@ -243,7 +244,7 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           return true;
         } catch (error) {
-          console.error('Error unenrolling from series:', error);
+          logger.error('Error unenrolling from series:', error);
           return false;
         }
       },
@@ -269,7 +270,7 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           return true;
         } catch (error) {
-          console.error('Error setting primary enrollment:', error);
+          logger.error('Error setting primary enrollment:', error);
           return false;
         }
       },
@@ -318,7 +319,7 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           return true;
         } catch (error) {
-          console.error('Error completing day:', error);
+          logger.error('Error completing day:', error);
           return false;
         }
       },
@@ -340,7 +341,7 @@ export const useDevotionalStore = create<DevotionalState>()(
 
           return true;
         } catch (error) {
-          console.error('Error updating reminder time:', error);
+          logger.error('Error updating reminder time:', error);
           return false;
         }
       },
@@ -365,7 +366,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           set({ currentDay: day, currentDayLoading: false });
           return day;
         } catch (error) {
-          console.error('Error fetching day content:', error);
+          logger.error('Error fetching day content:', error);
           set({ currentDayLoading: false });
           return null;
         }
@@ -395,7 +396,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           set({ onboardingResponses: responses });
           return true;
         } catch (error) {
-          console.error('Error saving onboarding responses:', error);
+          logger.error('Error saving onboarding responses:', error);
           return false;
         }
       },
@@ -415,7 +416,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           set({ onboardingCompleted: true });
           return true;
         } catch (error) {
-          console.error('Error marking onboarding complete:', error);
+          logger.error('Error marking onboarding complete:', error);
           return false;
         }
       },
@@ -441,7 +442,7 @@ export const useDevotionalStore = create<DevotionalState>()(
           set({ onboardingCompleted: completed });
           return completed;
         } catch (error) {
-          console.error('Error checking onboarding status:', error);
+          logger.error('Error checking onboarding status:', error);
           set({ onboardingCompleted: false });
           return false;
         }
@@ -478,7 +479,7 @@ export const useDevotionalStore = create<DevotionalState>()(
             lastActivityAt: new Date(row.last_activity_at),
           })) as EnrollmentProgress[];
         } catch (error) {
-          console.error('Error getting enrollment progress:', error);
+          logger.error('Error getting enrollment progress:', error);
           return [];
         }
       },

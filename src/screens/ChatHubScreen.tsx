@@ -33,8 +33,10 @@ import { SeedTracker, FinalSeedBanner, NoSeedsCard } from '../components/chat/Se
 import { ChatModeSelector, getModeName } from '../components/chat/ChatModeSelector';
 import { ChatEmptyState } from '../components/chat/ChatEmptyState';
 import { useChatHub } from '../hooks/useChatHub';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 export default function ChatHubScreen() {
+  useTrackScreen('chat_hub');
   const hub = useChatHub();
 
   const {
@@ -100,6 +102,8 @@ export default function ChatHubScreen() {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
@@ -143,10 +147,10 @@ export default function ChatHubScreen() {
             />
             {hasMessages && (
               <>
-                <TouchableOpacity style={styles.headerButton} onPress={handleShareConversation}>
+                <TouchableOpacity style={styles.headerButton} onPress={handleShareConversation} accessibilityRole="button" accessibilityLabel="Share conversation">
                   <Ionicons name="share-outline" size={20} color={theme.colors.textMuted} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.headerButton} onPress={handleClearChat}>
+                <TouchableOpacity style={styles.headerButton} onPress={handleClearChat} accessibilityRole="button" accessibilityLabel="Clear chat">
                   <Ionicons name="trash-outline" size={20} color={theme.colors.textMuted} />
                 </TouchableOpacity>
               </>
@@ -214,7 +218,7 @@ export default function ChatHubScreen() {
           <View style={styles.listeningBanner}>
             <View style={styles.listeningDot} />
             <Text style={styles.listeningText}>Listening...</Text>
-            <TouchableOpacity onPress={cancelListening} style={styles.cancelListening}>
+            <TouchableOpacity onPress={cancelListening} style={styles.cancelListening} accessibilityRole="button" accessibilityLabel="Cancel listening">
               <Ionicons name="close" size={16} color={theme.colors.textMuted} />
             </TouchableOpacity>
           </View>
@@ -228,6 +232,8 @@ export default function ChatHubScreen() {
                 style={[styles.voiceButton, isListening && styles.voiceButtonActive]}
                 onPress={isListening ? stopListening : startListening}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={isListening ? "Stop listening" : "Start voice input"}
               >
                 <Ionicons
                   name={isListening ? 'mic' : 'mic-outline'}
@@ -247,6 +253,8 @@ export default function ChatHubScreen() {
               multiline
               maxLength={1000}
               editable={!isListening}
+              accessibilityLabel="Message input"
+              accessibilityHint="Type your question about the Bible"
             />
 
             <TouchableOpacity
@@ -254,6 +262,8 @@ export default function ChatHubScreen() {
                 styles.sendButton,
                 (!inputText.trim() && !isQuerying && !isListening) && styles.sendButtonDisabled,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={isQuerying ? "Stop generating" : isListening ? "Confirm voice input" : "Send message"}
               onPress={() => {
                 if (isListening) {
                   stopListening();
@@ -268,7 +278,7 @@ export default function ChatHubScreen() {
               <Ionicons
                 name={isQuerying ? 'stop' : isListening ? 'checkmark' : 'send'}
                 size={20}
-                color={inputText.trim() || isQuerying || isListening ? '#fff' : theme.colors.textMuted}
+                color={inputText.trim() || isQuerying || isListening ? theme.colors.text : theme.colors.textMuted}
               />
             </TouchableOpacity>
           </View>

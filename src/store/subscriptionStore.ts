@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { CustomerInfo, LOG_LEVEL } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { REVENUECAT_ENTITLEMENTS, FREE_CHAT_LIMIT } from '../constants/subscription';
+import { trackEvent } from '../services/analytics';
+import { logger } from '../utils/logger';
 
 // Verification status for entitlement integrity checking
 type VerificationResult = 'VERIFIED' | 'NOT_REQUESTED' | 'FAILED' | 'VERIFIED_ON_DEVICE';
@@ -122,7 +124,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       initialize: async () => {
         // Prevent multiple initializations
         if (get().isInitialized) {
-          console.log('[RevenueCat] Already initialized, skipping');
+          logger.debug('[RevenueCat] Already initialized, skipping');
           return;
         }
 
@@ -136,7 +138,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           });
 
           if (!apiKey) {
-            console.warn('[RevenueCat] No API key found for platform:', Platform.OS);
+            logger.warn('[RevenueCat] No API key found for platform:', Platform.OS);
             set({
               isLoading: false,
               isInitialized: true,
@@ -148,7 +150,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // Check if RevenueCat is already configured
           const isConfigured = await Purchases.isConfigured();
           if (isConfigured) {
-            console.log('[RevenueCat] SDK already configured, fetching customer info');
+            logger.debug('[RevenueCat] SDK already configured, fetching customer info');
             set({ isInitialized: true });
             await get().refreshCustomerInfo();
             set({ isLoading: false });
@@ -163,21 +165,21 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // Configure RevenueCat
           Purchases.configure({ apiKey });
 
-          console.log('[RevenueCat] SDK initialized successfully');
+          logger.debug('[RevenueCat] SDK initialized successfully');
 
           // Set up customer info listener for real-time updates
           Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-            console.log('[RevenueCat] Customer info updated');
+            logger.debug('[RevenueCat] Customer info updated');
 
             // Check verification status for security
             let verificationStatus: VerificationResult = 'NOT_REQUESTED';
             if (customerInfo.entitlements.verification) {
               verificationStatus = customerInfo.entitlements.verification as VerificationResult;
-              console.log('[RevenueCat] Listener verification status:', verificationStatus);
+              logger.debug('[RevenueCat] Listener verification status:', verificationStatus);
 
               // If verification failed, treat as non-premium
               if (verificationStatus === 'FAILED') {
-                console.warn('[RevenueCat] Listener: Verification FAILED - treating as non-premium');
+                logger.warn('[RevenueCat] Listener: Verification FAILED - treating as non-premium');
                 set({ customerInfo, isPremium: false, verificationStatus });
                 return;
               }
@@ -192,7 +194,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
 
           set({ isInitialized: true, isLoading: false });
         } catch (error) {
-          console.error('[RevenueCat] Initialization error:', error);
+          logger.error('[RevenueCat] Initialization error:', error);
           set({
             isLoading: false,
             isInitialized: true,
@@ -210,7 +212,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // Ensure RevenueCat is configured before fetching customer info
           const isConfigured = await Purchases.isConfigured();
           if (!isConfigured) {
-            console.log('[RevenueCat] SDK not configured yet, skipping refresh');
+            logger.debug('[RevenueCat] SDK not configured yet, skipping refresh');
             return;
           }
 
@@ -222,20 +224,20 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           let verificationStatus: VerificationResult = 'NOT_REQUESTED';
           if (customerInfo.entitlements.verification) {
             verificationStatus = customerInfo.entitlements.verification as VerificationResult;
-            console.log('[RevenueCat] Verification status:', verificationStatus);
+            logger.debug('[RevenueCat] Verification status:', verificationStatus);
 
             // If verification failed, treat as non-premium for security
             if (verificationStatus === 'FAILED') {
-              console.warn('[RevenueCat] Entitlement verification FAILED - treating as non-premium');
+              logger.warn('[RevenueCat] Entitlement verification FAILED - treating as non-premium');
               set({ customerInfo, isPremium: false, verificationStatus });
               return;
             }
           }
 
-          console.log('[RevenueCat] Premium status:', isPremium);
+          logger.debug('[RevenueCat] Premium status:', isPremium);
           set({ customerInfo, isPremium, verificationStatus });
         } catch (error) {
-          console.error('[RevenueCat] Error fetching customer info:', error);
+          logger.error('[RevenueCat] Error fetching customer info:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to fetch subscription status',
           });
@@ -251,17 +253,17 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // Ensure RevenueCat is initialized before attempting login
           const isConfigured = await Purchases.isConfigured();
           if (!isConfigured) {
-            console.log('[RevenueCat] SDK not configured yet, skipping login');
+            logger.debug('[RevenueCat] SDK not configured yet, skipping login');
             return;
           }
 
-          console.log('[RevenueCat] Logging in user:', userId);
+          logger.debug('[RevenueCat] Logging in user:', userId);
           const { customerInfo } = await Purchases.logIn(userId);
           const isPremium = checkPremiumStatus(customerInfo);
-          console.log('[RevenueCat] User logged in, premium:', isPremium);
+          logger.debug('[RevenueCat] User logged in, premium:', isPremium);
           set({ customerInfo, isPremium });
         } catch (error) {
-          console.error('[RevenueCat] Error logging in user:', error);
+          logger.error('[RevenueCat] Error logging in user:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to login to RevenueCat',
           });
@@ -277,15 +279,15 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // Ensure RevenueCat is initialized before attempting logout
           const isConfigured = await Purchases.isConfigured();
           if (!isConfigured) {
-            console.log('[RevenueCat] SDK not configured yet, skipping logout');
+            logger.debug('[RevenueCat] SDK not configured yet, skipping logout');
             return;
           }
 
-          console.log('[RevenueCat] Logging out user');
+          logger.debug('[RevenueCat] Logging out user');
           const customerInfo = await Purchases.logOut();
           set({ customerInfo, isPremium: false });
         } catch (error) {
-          console.error('[RevenueCat] Error logging out user:', error);
+          logger.error('[RevenueCat] Error logging out user:', error);
         }
       },
 
@@ -363,7 +365,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             return { success: false, message: 'RevenueCat not configured' };
           }
 
-          console.log('[RevenueCat] Restoring purchases...');
+          logger.debug('[RevenueCat] Restoring purchases...');
           const customerInfo = await Purchases.restorePurchases();
           const isPremium = checkPremiumStatus(customerInfo);
 
@@ -376,14 +378,14 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           set({ customerInfo, isPremium, verificationStatus });
 
           if (isPremium) {
-            console.log('[RevenueCat] Purchases restored - Premium active');
+            logger.debug('[RevenueCat] Purchases restored - Premium active');
             return { success: true, message: 'Your subscription has been restored!' };
           } else {
-            console.log('[RevenueCat] No active subscription found');
+            logger.debug('[RevenueCat] No active subscription found');
             return { success: false, message: 'No active subscription found for your account.' };
           }
         } catch (error) {
-          console.error('[RevenueCat] Restore error:', error);
+          logger.error('[RevenueCat] Restore error:', error);
           const message = error instanceof Error ? error.message : 'Failed to restore purchases';
           set({ error: message });
           return { success: false, message };

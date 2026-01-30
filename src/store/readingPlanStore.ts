@@ -21,6 +21,7 @@ import {
   TodaysReadingRow,
 } from '../types/readingPlan';
 import { TABLES, RPC_FUNCTIONS } from '../constants';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // WAYFARER INTERVENTION THRESHOLD
@@ -130,7 +131,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
           const plans = (data as ReadingPlanRow[]).map(toReadingPlan);
           set({ availablePlans: plans, plansLoading: false });
         } catch (error) {
-          console.error('Error fetching reading plans:', error);
+          logger.error('Error fetching reading plans:', error);
           set({
             plansError: error instanceof Error ? error.message : 'Failed to fetch plans',
             plansLoading: false,
@@ -149,7 +150,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
           if (error) throw error;
           return toReadingPlan(data as ReadingPlanRow);
         } catch (error) {
-          console.error('Error fetching plan by ID:', error);
+          logger.error('Error fetching plan by ID:', error);
           return null;
         }
       },
@@ -169,7 +170,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
           set({ currentSection: section });
           return section;
         } catch (error) {
-          console.error('Error fetching plan section:', error);
+          logger.error('Error fetching plan section:', error);
           return null;
         }
       },
@@ -199,7 +200,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
             get().checkWayfarerStatus(userId);
           }
         } catch (error) {
-          console.error('Error fetching user progress:', error);
+          logger.error('Error fetching user progress:', error);
           set({ progressLoading: false });
         }
       },
@@ -237,7 +238,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return progress;
         } catch (error) {
-          console.error('Error enrolling in plan:', error);
+          logger.error('Error enrolling in plan:', error);
           return null;
         }
       },
@@ -263,7 +264,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return true;
         } catch (error) {
-          console.error('Error unenrolling from plan:', error);
+          logger.error('Error unenrolling from plan:', error);
           return false;
         }
       },
@@ -306,7 +307,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
             });
           }
         } catch (error) {
-          console.error('Error fetching today\'s reading:', error);
+          logger.error('Error fetching today\'s reading:', error);
           set({ todaysReadingLoading: false });
         }
       },
@@ -360,7 +361,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return true;
         } catch (error) {
-          console.error('Error completing reading day:', error);
+          logger.error('Error completing reading day:', error);
           return false;
         }
       },
@@ -422,7 +423,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
             });
           }
         } catch (error) {
-          console.error('Error checking wayfarer status:', error);
+          logger.error('Error checking wayfarer status:', error);
           set({
             wayfarerState: {
               status: 'normal',
@@ -473,7 +474,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return true;
         } catch (error) {
-          console.error('Error applying grace path:', error);
+          logger.error('Error applying grace path:', error);
           return false;
         }
       },
@@ -510,7 +511,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return true;
         } catch (error) {
-          console.error('Error applying patient path:', error);
+          logger.error('Error applying patient path:', error);
           return false;
         }
       },
@@ -534,7 +535,7 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
 
           return (data || []).map((row: { display_title: string }) => row.display_title);
         } catch (error) {
-          console.error('Error fetching missed reading titles:', error);
+          logger.error('Error fetching missed reading titles:', error);
           return [];
         }
       },

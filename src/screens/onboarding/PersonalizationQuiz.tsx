@@ -14,12 +14,14 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList, OnboardingResponses, ONBOARDING_QUIZ, QuizOption } from '../../types';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Quiz'>;
 
 export default function PersonalizationQuiz() {
+  useTrackScreen('onboarding_personalization');
   const navigation = useNavigation<NavigationProp>();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<OnboardingResponses>({});
@@ -98,6 +100,9 @@ export default function PersonalizationQuiz() {
         style={[styles.optionCard, isSelected && styles.optionCardSelected]}
         onPress={() => handleSelectOption(option)}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`${option.label}${option.description ? ': ' + option.description : ''}`}
+        accessibilityState={{ selected: isSelected }}
       >
         {option.icon && (
           <View
@@ -109,7 +114,7 @@ export default function PersonalizationQuiz() {
             <Ionicons
               name={option.icon as keyof typeof Ionicons.glyphMap}
               size={24}
-              color={isSelected ? '#fff' : theme.colors.primary}
+              color={isSelected ? theme.colors.text : theme.colors.primary}
             />
           </View>
         )}
@@ -139,7 +144,7 @@ export default function PersonalizationQuiz() {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
           <View style={styles.progressContainer}>
@@ -153,7 +158,7 @@ export default function PersonalizationQuiz() {
             </Text>
           </View>
           {!question.isRequired && (
-            <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+            <TouchableOpacity onPress={handleSkip} style={styles.skipButton} accessibilityRole="button" accessibilityLabel="Skip this question">
               <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
           )}

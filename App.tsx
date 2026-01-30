@@ -26,6 +26,9 @@ import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
 import { PaywallModal } from './src/components/PaywallModal';
 
+// Components
+import { ScreenErrorBoundary } from './src/components/ScreenErrorBoundary';
+
 // Screens (root-level modals/stacks)
 import ChatHubScreen from './src/screens/ChatHubScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -44,11 +47,39 @@ import VersePickerScreen from './src/screens/journal/VersePickerScreen';
 // Stores & hooks
 import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
 import { useAppInitialization } from './src/hooks/useAppInitialization';
+import { useSyncQueue } from './src/hooks/useSyncQueue';
 
 // Types
 import { RootStackParamList } from './src/types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
+
+/** Wrap a screen component in ScreenErrorBoundary */
+function withErrorBoundary<P extends object>(Component: React.ComponentType<P>, name: string) {
+  const Wrapped = (props: P) => (
+    <ScreenErrorBoundary name={name}>
+      <Component {...props} />
+    </ScreenErrorBoundary>
+  );
+  Wrapped.displayName = `Safe${name}`;
+  return Wrapped;
+}
+
+// Wrapped root screens
+const SafeChatHubScreen = withErrorBoundary(ChatHubScreen, 'ChatHub');
+const SafeSettingsScreen = withErrorBoundary(SettingsScreen, 'Settings');
+const SafeReferralScreen = withErrorBoundary(ReferralScreen, 'Referral');
+const SafeSubscriptionDebugScreen = withErrorBoundary(SubscriptionDebugScreen, 'SubscriptionDebug');
+const SafeReflectionModal = withErrorBoundary(ReflectionModal, 'ReflectionModal');
+const SafeCameraScreen = withErrorBoundary(CameraScreen, 'CameraScreen');
+const SafeMemoryPracticeScreen = withErrorBoundary(MemoryPracticeScreen, 'MemoryPractice');
+const SafeLectioDivinaScreen = withErrorBoundary(LectioDivinaScreen, 'LectioDivina');
+const SafeJourneyInsightsScreen = withErrorBoundary(JourneyInsightsScreen, 'JourneyInsights');
+const SafePrayerCirclesScreen = withErrorBoundary(PrayerCirclesScreen, 'PrayerCircles');
+const SafeCircleDetailScreen = withErrorBoundary(CircleDetailScreen, 'CircleDetail');
+const SafeJournalComposeScreen = withErrorBoundary(JournalComposeScreen, 'JournalCompose');
+const SafeJournalDetailScreen = withErrorBoundary(JournalDetailScreen, 'JournalDetail');
+const SafeVersePickerScreen = withErrorBoundary(VersePickerScreen, 'VersePicker');
 
 function App() {
   const {
@@ -60,6 +91,9 @@ function App() {
     initialized,
     navigationRef,
   } = useAppInitialization();
+
+  // Wire offline sync queue — auto-processes on reconnect
+  useSyncQueue();
 
   const hidePaywall = useSubscriptionStore((s) => s.hidePaywall);
   const isPaywallVisible = useIsPaywallVisible();
@@ -93,20 +127,20 @@ function App() {
               ) : (
                 <>
                   <RootStack.Screen name="Main" component={TabNavigator} />
-                  <RootStack.Screen name="ReflectionModal" component={ReflectionModal} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="JournalCompose" component={JournalComposeScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="JournalDetail" component={JournalDetailScreen} options={{ animation: 'slide_from_right' }} />
-                  <RootStack.Screen name="VersePicker" component={VersePickerScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="Settings" component={SettingsScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="Referral" component={ReferralScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
-                  <RootStack.Screen name="SubscriptionDebug" component={SubscriptionDebugScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="ChatHub" component={ChatHubScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="MemoryPractice" component={MemoryPracticeScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="LectioDivina" component={LectioDivinaScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-                  <RootStack.Screen name="JourneyInsights" component={JourneyInsightsScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
-                  <RootStack.Screen name="PrayerCircles" component={PrayerCirclesScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
-                  <RootStack.Screen name="CircleDetail" component={CircleDetailScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="ReflectionModal" component={SafeReflectionModal} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JournalCompose" component={SafeJournalComposeScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JournalDetail" component={SafeJournalDetailScreen} options={{ animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="VersePicker" component={SafeVersePickerScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="Settings" component={SafeSettingsScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="Referral" component={SafeReferralScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="SubscriptionDebug" component={SafeSubscriptionDebugScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="ChatHub" component={SafeChatHubScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="CameraScreen" component={SafeCameraScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="MemoryPractice" component={SafeMemoryPracticeScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="LectioDivina" component={SafeLectioDivinaScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="JourneyInsights" component={SafeJourneyInsightsScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="PrayerCircles" component={SafePrayerCirclesScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="CircleDetail" component={SafeCircleDetailScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
                 </>
               )}
             </RootStack.Navigator>

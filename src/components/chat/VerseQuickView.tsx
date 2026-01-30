@@ -29,6 +29,7 @@ import { useChatQuota } from '../../hooks/useChatQuota';
 import { usePremiumStatus } from '../../hooks/usePremiumStatus';
 import { RootStackParamList } from '../../types';
 import { openChatHub, openJournalCompose } from '../../lib/navigationHelpers';
+import { logger } from '../../utils/logger';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -137,7 +138,7 @@ export function VerseQuickView({
           setError('Verse not found');
         }
       } catch (err) {
-        console.error('[VerseQuickView] Error fetching verse:', err);
+        logger.error('[VerseQuickView] Error fetching verse:', err);
         setError('Unable to load verse');
       } finally {
         setIsLoading(false);
@@ -172,7 +173,7 @@ export function VerseQuickView({
         message: `"${verseText}"\n\n— ${displayReference}\n\nShared from ChooseGOD`,
       });
     } catch (err) {
-      console.error('Share failed:', err);
+      logger.error('Share failed:', err);
     }
   }, [verseText, displayReference]);
 

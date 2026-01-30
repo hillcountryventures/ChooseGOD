@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 // --- Constants ---
 const STORAGE_KEY_REMINDER_TIME = '@choosegod:reminder_time';
@@ -40,7 +41,7 @@ const DEVOTIONAL_MESSAGES = [
 // --- Permission ---
 export async function requestPermissions(): Promise<boolean> {
   if (!Device.isDevice) {
-    console.warn('[Notifications] Must use physical device for push notifications');
+    logger.warn('[Notifications] Must use physical device for push notifications');
     return false;
   }
 
@@ -84,44 +85,65 @@ export async function registerPushToken(): Promise<string | null> {
       }
     } catch (e) {
       // Supabase storage is best-effort; table may not exist yet
-      console.warn('[Notifications] Could not store push token:', e);
+      logger.warn('[Notifications] Could not store push token:', e);
     }
 
     return token;
   } catch (e) {
-    console.warn('[Notifications] Failed to get push token:', e);
+    logger.warn('[Notifications] Failed to get push token:', e);
     return null;
   }
 }
 
 // --- Daily Reminder Scheduling ---
 export async function scheduleDailyReminder(hour: number, minute: number): Promise<void> {
-  // Cancel any existing daily reminder first
+  // Cancel any existing daily reminders first
   await cancelDailyReminder();
 
-  const msg = DEVOTIONAL_MESSAGES[Math.floor(Math.random() * DEVOTIONAL_MESSAGES.length)];
+  // Schedule 7 days of rotating notification content
+  const shuffled = [...DEVOTIONAL_MESSAGES].sort(() => Math.random() - 0.5);
+  const now = new Date();
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: DAILY_REMINDER_ID,
-    content: {
-      title: msg.title,
-      body: msg.body,
-      sound: 'default',
-      data: { type: 'daily_reminder' },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour,
-      minute,
-    },
-  });
+  for (let day = 0; day < 7; day++) {
+    const msg = shuffled[day % shuffled.length];
+    const target = new Date(now);
+    target.setDate(target.getDate() + day);
+    target.setHours(hour, minute, 0, 0);
+
+    // Skip if the time already passed today
+    if (target <= now) {
+      target.setDate(target.getDate() + 1);
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: `${DAILY_REMINDER_ID}-${day}`,
+      content: {
+        title: msg.title,
+        body: msg.body,
+        sound: 'default',
+        data: { type: 'daily_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: target,
+      },
+    });
+  }
 
   // Persist preferences
   await savePreferences({ enabled: true, hour, minute });
 }
 
 export async function cancelDailyReminder(): Promise<void> {
-  await Notifications.cancelScheduledNotificationAsync(DAILY_REMINDER_ID);
+  // Cancel all 7 scheduled daily reminders
+  const cancellations = [];
+  for (let day = 0; day < 7; day++) {
+    cancellations.push(
+      Notifications.cancelScheduledNotificationAsync(`${DAILY_REMINDER_ID}-${day}`)
+        .catch(() => {}) // Ignore if not scheduled
+    );
+  }
+  await Promise.all(cancellations);
 }
 
 export async function rescheduleReminder(hour: number, minute: number): Promise<void> {

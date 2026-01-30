@@ -44,7 +44,7 @@ export function PhilosophyModal({ visible, onClose }: Props) {
           <View style={styles.philosophyPoint}>
             <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
             <Text style={styles.philosophyText}>
-              The AI companion is designed to point you back to God&apos;s Word, never to replace it.
+              The Scripture companion is designed to point you back to God&apos;s Word, never to replace it.
             </Text>
           </View>
 

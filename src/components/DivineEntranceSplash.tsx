@@ -23,6 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '../lib/theme';
+import { logger } from '../utils/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -255,7 +256,7 @@ export function DivineEntranceSplash({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!hasCalledComplete.current) {
-        console.warn('[DivineEntranceSplash] Maximum display time reached, forcing completion');
+        logger.warn('[DivineEntranceSplash] Maximum display time reached, forcing completion');
         handleComplete();
       }
     }, maximumDisplayTime);

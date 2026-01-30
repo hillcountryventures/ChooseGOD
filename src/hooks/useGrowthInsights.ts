@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { SpiritualMoment } from '../types';
+import { logger } from '../utils/logger';
 
 export interface GrowthInsight {
   summary: string;
@@ -143,7 +144,7 @@ Format your response as JSON:
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to generate insight';
         setError(errorMessage);
-        console.error('[useGrowthInsights] Error:', err);
+        logger.error('[useGrowthInsights] Error:', err);
         return null;
       } finally {
         setIsGenerating(false);

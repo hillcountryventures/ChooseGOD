@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 export function useCommunityCount(verseReference: string): number {
   const [count, setCount] = useState<number>(0);
@@ -30,7 +31,7 @@ export function useCommunityCount(verseReference: string): number {
 
         if (error && error.code !== 'PGRST116') {
           // PGRST116 = no rows returned (not an error)
-          console.error('Error fetching community count:', error);
+          logger.error('Error fetching community count:', error);
         }
 
         if (data) {
@@ -46,11 +47,11 @@ export function useCommunityCount(verseReference: string): number {
           p_verse_reference: verseReference,
         }).then(({ error: rpcError }) => {
           if (rpcError) {
-            console.error('Error incrementing view count:', rpcError);
+            logger.error('Error incrementing view count:', rpcError);
           }
         });
       } catch (error) {
-        console.error('Error in useCommunityCount:', error);
+        logger.error('Error in useCommunityCount:', error);
         // Fallback to seed number
         setCount(Math.floor(Math.random() * 500) + 800);
       }

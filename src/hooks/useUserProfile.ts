@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { logger } from '../utils/logger';
 
 interface UserProfile {
   displayName: string | null;
@@ -81,7 +82,7 @@ export function useUserProfile(): UseUserProfileReturn {
         cachedUserId = user.id;
       }
     } catch (err) {
-      console.error('[useUserProfile] Error fetching profile:', err);
+      logger.error('[useUserProfile] Error fetching profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to load profile');
     } finally {
       setIsLoading(false);

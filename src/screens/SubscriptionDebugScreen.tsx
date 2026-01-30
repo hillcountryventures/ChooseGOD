@@ -28,6 +28,8 @@ import {
   SubscriptionDebugInfo,
 } from '../store/subscriptionStore';
 import { useAuthStore } from '../store/authStore';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 // ============================================================================
 // Debug Info Row Component
@@ -78,6 +80,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // Main Screen
 // ============================================================================
 export default function SubscriptionDebugScreen() {
+  useTrackScreen('subscription_debug');
   const navigation = useNavigation();
   const user = useAuthStore((state) => state.user);
   const getSubscriptionDebugInfo = useSubscriptionStore((s) => s.getSubscriptionDebugInfo);
@@ -103,7 +106,7 @@ export default function SubscriptionDebugScreen() {
         setRawCustomerInfo(JSON.stringify(customerInfo, null, 2));
       }
     } catch (error) {
-      console.error('[Debug] Error loading info:', error);
+      logger.error('[Debug] Error loading info:', error);
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +149,7 @@ export default function SubscriptionDebugScreen() {
         title: 'ChooseGOD Subscription Debug Info',
       });
     } catch (error) {
-      console.error('[Debug] Export error:', error);
+      logger.error('[Debug] Export error:', error);
     }
   }, [debugInfo, rawCustomerInfo, user?.id]);
 
@@ -286,10 +289,10 @@ export default function SubscriptionDebugScreen() {
             disabled={isRefreshing}
           >
             {isRefreshing ? (
-              <ActivityIndicator size="small" color={theme.colors.textInverse} />
+              <ActivityIndicator size="small" color={theme.colors.text} />
             ) : (
               <>
-                <Ionicons name="refresh" size={20} color={theme.colors.textInverse} />
+                <Ionicons name="refresh" size={20} color={theme.colors.text} />
                 <Text style={styles.actionButtonText}>Refresh Status</Text>
               </>
             )}
@@ -444,7 +447,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.textInverse,
+    color: theme.colors.text,
   },
   actionButtonTextSecondary: {
     color: theme.colors.accent,

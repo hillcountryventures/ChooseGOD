@@ -18,6 +18,7 @@ import {
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
+import { logger } from '../../utils/logger';
 
 interface VoiceNotePlayerProps {
   uri: string;
@@ -53,7 +54,7 @@ export default function VoiceNotePlayer({
       soundRef.current = sound;
       return sound;
     } catch (error) {
-      console.error('Failed to load sound:', error);
+      logger.error('Failed to load sound:', error);
       return null;
     }
   };
@@ -86,7 +87,7 @@ export default function VoiceNotePlayer({
         await soundRef.current?.playAsync();
       }
     } catch (error) {
-      console.error('Playback error:', error);
+      logger.error('Playback error:', error);
     }
   };
 

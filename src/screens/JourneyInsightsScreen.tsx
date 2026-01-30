@@ -36,6 +36,8 @@ import { SpiritualScoreCard, PrayerActivityChart, TopicsExplored } from '../comp
 // Hook
 import { useJourneyInsights } from '../hooks/useJourneyInsights';
 import type { BibleBookEngagement, GrowthInsight, RecentMilestone } from '../hooks/useJourneyInsights';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -232,7 +234,7 @@ function ShareJourneyButton() {
         title: 'Share Your Journey',
       });
     } catch (error) {
-      console.error('Share error:', error);
+      logger.error('Share error:', error);
     }
   }, []);
 
@@ -256,6 +258,7 @@ function ShareJourneyButton() {
 // =====================================================
 
 export default function JourneyInsightsScreen() {
+  useTrackScreen('journey_insights');
   const navigation = useNavigation<NavigationProp>();
   const {
     spiritualHealth,

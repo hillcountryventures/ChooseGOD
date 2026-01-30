@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useStore } from '../store/useStore';
 import { MemoryVerse } from '../types';
+import { logger } from '../utils/logger';
 
 export type ReviewRating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -127,7 +128,7 @@ export function useMemoryVerses(): UseMemoryVersesReturn {
       const due = mappedVerses.filter((v) => new Date(v.nextReview) <= new Date());
       setMemoryVersesDue(due);
     } catch (err) {
-      console.error('[useMemoryVerses] Fetch error:', err);
+      logger.error('[useMemoryVerses] Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch verses');
     } finally {
       setIsLoading(false);
@@ -164,7 +165,7 @@ export function useMemoryVerses(): UseMemoryVersesReturn {
       await fetchVerses();
       return true;
     } catch (err) {
-      console.error('[useMemoryVerses] Add error:', err);
+      logger.error('[useMemoryVerses] Add error:', err);
       setError(err instanceof Error ? err.message : 'Failed to add verse');
       return false;
     }
@@ -211,7 +212,7 @@ export function useMemoryVerses(): UseMemoryVersesReturn {
       const due = updatedVerses.filter((v) => new Date(v.nextReview) <= new Date());
       setMemoryVersesDue(due);
     } catch (err) {
-      console.error('[useMemoryVerses] Review error:', err);
+      logger.error('[useMemoryVerses] Review error:', err);
       setError(err instanceof Error ? err.message : 'Failed to update review');
     }
   }, [verses, setMemoryVersesDue]);
@@ -232,7 +233,7 @@ export function useMemoryVerses(): UseMemoryVersesReturn {
       const due = updatedVerses.filter((v) => new Date(v.nextReview) <= new Date());
       setMemoryVersesDue(due);
     } catch (err) {
-      console.error('[useMemoryVerses] Delete error:', err);
+      logger.error('[useMemoryVerses] Delete error:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete verse');
     }
   }, [verses, setMemoryVersesDue]);

@@ -15,6 +15,8 @@ import * as Haptics from 'expo-haptics';
 import { theme } from '../../lib/theme';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 interface ReferralStats {
   referralCode: string;
@@ -24,6 +26,7 @@ interface ReferralStats {
 }
 
 export default function ReferralScreen() {
+  useTrackScreen('referral');
   const navigation = useNavigation();
   const user = useAuthStore((s) => s.user);
   const [stats, setStats] = useState<ReferralStats | null>(null);
@@ -77,16 +80,22 @@ export default function ReferralScreen() {
         });
       }
     } catch (err) {
-      console.error('Error loading referral stats:', err);
+      logger.error('Error loading referral stats:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const generateReferralCode = (userId: string): string => {
-    // Generate a unique 8-character code from user ID
-    const hash = userId.replace(/-/g, '').substring(0, 6).toUpperCase();
-    return `CG${hash}`;
+    // Hash the full UUID for better entropy and collision resistance
+    const stripped = userId.replace(/-/g, '');
+    let hash = 0;
+    for (let i = 0; i < stripped.length; i++) {
+      const char = stripped.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) | 0; // simple djb2-style hash
+    }
+    const code = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0').substring(0, 8);
+    return `CG${code}`;
   };
 
   const handleCopyCode = async () => {
@@ -102,7 +111,7 @@ export default function ReferralScreen() {
     if (!stats) return;
     
     const shareUrl = `https://choosegod.app/invite/${stats.referralCode}`;
-    const message = `I've been using ChooseGOD for Bible study and it's amazing! The AI companion helps me understand Scripture deeper.\n\nUse my invite code "${stats.referralCode}" to get 7 days of Pro free:\n${shareUrl}`;
+    const message = `I've been using ChooseGOD for Bible study and it's amazing! The Scripture companion helps me understand God's Word deeper.\n\nUse my invite code "${stats.referralCode}" to get 7 days of Pro free:\n${shareUrl}`;
 
     try {
       await Share.share({
@@ -111,7 +120,7 @@ export default function ReferralScreen() {
       });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (err) {
-      console.error('Share error:', err);
+      logger.error('Share error:', err);
     }
   };
 
@@ -183,7 +192,7 @@ export default function ReferralScreen() {
           accessibilityLabel="Share your referral code"
           accessibilityRole="button"
         >
-          <Ionicons name="share-social" size={20} color="#fff" />
+          <Ionicons name="share-social" size={20} color={theme.colors.text} />
           <Text style={styles.shareButtonText}>Share with Friends</Text>
         </TouchableOpacity>
 
@@ -373,7 +382,7 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   statsSection: {
     marginBottom: theme.spacing.xl,
@@ -431,7 +440,7 @@ const styles = StyleSheet.create({
   stepNumberText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   stepContent: {
     flex: 1,

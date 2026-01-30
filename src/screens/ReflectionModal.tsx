@@ -17,10 +17,13 @@ import { theme } from '../lib/theme';
 import { useStore, usePreferences } from '../store/useStore';
 import { RootStackParamList, SpiritualMoment } from '../types';
 import { getPromptFromSeed } from '../data/prompts/reflection';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 type ReflectionModalRouteProp = RouteProp<RootStackParamList, 'ReflectionModal'>;
 
 export default function ReflectionModal() {
+  useTrackScreen('reflection');
   const navigation = useNavigation();
   const route = useRoute<ReflectionModalRouteProp>();
   const { verse, reference } = route.params;
@@ -71,7 +74,7 @@ export default function ReflectionModal() {
       // Navigate back
       navigation.goBack();
     } catch (error) {
-      console.error('Error saving reflection:', error);
+      logger.error('Error saving reflection:', error);
       Alert.alert('Error', 'Failed to save your reflection. Please try again.');
     } finally {
       setIsSaving(false);
@@ -187,7 +190,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   saveButtonTextDisabled: {
     opacity: 0.5,

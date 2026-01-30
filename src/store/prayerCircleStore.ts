@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { TABLES } from '../constants/database';
 import { PrayerCircle, CircleMember, PrayerRequest } from '../types/domain/prayer';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // TYPES
@@ -201,7 +202,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           set({ circles, loading: false });
         } catch (error) {
-          console.error('Error fetching circles:', error);
+          logger.error('Error fetching circles:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to fetch circles',
             loading: false,
@@ -243,7 +244,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           set({ currentCircle: circle, loading: false });
         } catch (error) {
-          console.error('Error fetching circle:', error);
+          logger.error('Error fetching circle:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to fetch circle',
             loading: false,
@@ -294,7 +295,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return newCircle;
         } catch (error) {
-          console.error('Error creating circle:', error);
+          logger.error('Error creating circle:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to create circle',
             loading: false,
@@ -326,7 +327,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return true;
         } catch (error) {
-          console.error('Error deleting circle:', error);
+          logger.error('Error deleting circle:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to delete circle',
             loading: false,
@@ -383,7 +384,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
           set({ loading: false });
           return { success: true };
         } catch (error) {
-          console.error('Error joining circle:', error);
+          logger.error('Error joining circle:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to join circle',
             loading: false,
@@ -412,7 +413,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return true;
         } catch (error) {
-          console.error('Error leaving circle:', error);
+          logger.error('Error leaving circle:', error);
           set({
             error: error instanceof Error ? error.message : 'Failed to leave circle',
             loading: false,
@@ -433,7 +434,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return (data || []).map(mapMemberRow);
         } catch (error) {
-          console.error('Error fetching members:', error);
+          logger.error('Error fetching members:', error);
           return [];
         }
       },
@@ -472,7 +473,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           set({ circleRequests: requests, requestsLoading: false });
         } catch (error) {
-          console.error('Error fetching circle prayers:', error);
+          logger.error('Error fetching circle prayers:', error);
           set({ requestsLoading: false });
         }
       },
@@ -488,7 +489,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return true;
         } catch (error) {
-          console.error('Error sharing prayer:', error);
+          logger.error('Error sharing prayer:', error);
           return false;
         }
       },
@@ -530,9 +531,9 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
             if (error) {
               // Table might not exist yet - fallback to local state only
               if (error.code === '42P01') {
-                console.warn('[PrayerCircles] prayer_responses table not created yet');
+                logger.warn('[PrayerCircles] prayer_responses table not created yet');
               } else {
-                console.error('[PrayerCircles] Error saving prayer response:', error);
+                logger.error('[PrayerCircles] Error saving prayer response:', error);
               }
             }
 
@@ -548,7 +549,7 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
 
           return true;
         } catch (error) {
-          console.error('[PrayerCircles] Error marking prayer:', error);
+          logger.error('[PrayerCircles] Error marking prayer:', error);
           // Still update local state even if database fails
           set((state) => ({
             circleRequests: state.circleRequests.map((r) =>

@@ -20,11 +20,14 @@ import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { TappableVerse } from '../../components/TappableVerse';
 import { InlineVerseText } from '../../components/InlineVerseText';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<DevotionalStackParamList, 'DailyDevotional'>;
 type RouteProps = RouteProp<DevotionalStackParamList, 'DailyDevotional'>;
 
 export default function DailyDevotionalScreen() {
+  useTrackScreen('daily_devotional');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { enrollmentId, seriesId, dayNumber } = route.params;
@@ -94,7 +97,7 @@ export default function DailyDevotionalScreen() {
       const text = data.map((v) => v.text).join(' ');
       setScriptureText(text || 'Scripture not found.');
     } catch (error) {
-      console.error('Error loading scripture:', error);
+      logger.error('Error loading scripture:', error);
       setScriptureText('Unable to load scripture.');
     }
   };
@@ -134,7 +137,7 @@ export default function DailyDevotionalScreen() {
       if (error) throw error;
       setAiReflection(data.response || day.contentPrompt);
     } catch (error) {
-      console.error('Error generating reflection:', error);
+      logger.error('Error generating reflection:', error);
       // Fallback to content prompt
       setAiReflection(day.contentPrompt || 'Take a moment to reflect on today\'s Scripture.');
     } finally {
@@ -184,7 +187,7 @@ export default function DailyDevotionalScreen() {
               accessibilityLabel="Go back"
               accessibilityRole="button"
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <Text style={styles.headerDay}>Day {dayNumber}</Text>
@@ -329,11 +332,11 @@ export default function DailyDevotionalScreen() {
               end={{ x: 1, y: 0 }}
             >
               {completing ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={theme.colors.text} />
               ) : (
                 <>
                   <Text style={styles.completeText}>Mark Day Complete</Text>
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.text} />
                 </>
               )}
             </LinearGradient>
@@ -393,7 +396,7 @@ const styles = StyleSheet.create({
   headerSeries: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   scrollView: {
     flex: 1,
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
   completeText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   completedBanner: {
     flexDirection: 'row',

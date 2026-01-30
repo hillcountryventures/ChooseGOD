@@ -31,6 +31,7 @@ import { OnboardingStackParamList } from '../../types';
 import { PAYWALL_CONTENT, REVENUECAT_PRODUCT_IDS } from '../../constants/subscription';
 import { useSubscriptionStore } from '../../store/subscriptionStore';
 import { useTrackScreen } from '../../hooks/useAnalytics';
+import { logger } from '../../utils/logger';
 
 // Legal URLs
 const PRIVACY_POLICY_URL = 'https://choosegod.app/privacy.html';
@@ -114,7 +115,7 @@ export default function PaywallScreen() {
         setError('No subscription options available.');
       }
     } catch (err) {
-      console.error('[PaywallScreen] Error fetching offerings:', err);
+      logger.error('[PaywallScreen] Error fetching offerings:', err);
       setError('Unable to load subscription options.');
     } finally {
       setIsLoading(false);
@@ -157,7 +158,7 @@ export default function PaywallScreen() {
           break;
         default:
           setError("That didn't work — please try once more.");
-          console.error('[PaywallScreen] Purchase error:', purchaseError);
+          logger.error('[PaywallScreen] Purchase error:', purchaseError);
       }
     } finally {
       setIsPurchasing(false);
@@ -179,7 +180,7 @@ export default function PaywallScreen() {
         setError('No active subscription found.');
       }
     } catch (err) {
-      console.error('[PaywallScreen] Restore error:', err);
+      logger.error('[PaywallScreen] Restore error:', err);
       setError('Unable to restore purchases.');
     } finally {
       setIsRestoring(false);
@@ -245,6 +246,9 @@ export default function PaywallScreen() {
         style={[styles.planCard, option.isSelected && styles.planCardSelected]}
         onPress={() => setSelectedPackage(pkg)}
         activeOpacity={0.7}
+        accessibilityRole="radio"
+        accessibilityLabel={`${option.title} plan: ${option.price}${option.period}${option.pricePerMonth ? ', ' + option.pricePerMonth : ''}`}
+        accessibilityState={{ selected: option.isSelected }}
       >
         {option.badge && (
           <View style={styles.badge}>
@@ -348,7 +352,7 @@ export default function PaywallScreen() {
                 <View style={styles.errorContainer}>
                   <Ionicons name="alert-circle" size={32} color={theme.colors.error} />
                   <Text style={styles.errorText}>{error}</Text>
-                  <TouchableOpacity onPress={fetchOfferings} style={styles.retryButton}>
+                  <TouchableOpacity onPress={fetchOfferings} style={styles.retryButton} accessibilityRole="button" accessibilityLabel="Retry loading subscription options">
                     <Text style={styles.retryText}>Try Again</Text>
                   </TouchableOpacity>
                 </View>
@@ -381,7 +385,7 @@ export default function PaywallScreen() {
                 accessibilityRole="button"
               >
                 {isPurchasing ? (
-                  <ActivityIndicator size="small" color={theme.colors.textInverse} />
+                  <ActivityIndicator size="small" color={theme.colors.text} />
                 ) : (
                   <Text style={styles.ctaText}>Start Free Trial</Text>
                 )}
@@ -414,6 +418,8 @@ export default function PaywallScreen() {
               <TouchableOpacity
                 style={styles.legalButton}
                 onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+                accessibilityRole="link"
+                accessibilityLabel="Privacy Policy"
               >
                 <Text style={styles.legalButtonText}>Privacy Policy</Text>
               </TouchableOpacity>
@@ -421,6 +427,8 @@ export default function PaywallScreen() {
               <TouchableOpacity
                 style={styles.legalButton}
                 onPress={() => Linking.openURL(TERMS_OF_USE_URL)}
+                accessibilityRole="link"
+                accessibilityLabel="Terms of Use"
               >
                 <Text style={styles.legalButtonText}>Terms of Use</Text>
               </TouchableOpacity>
@@ -639,7 +647,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: theme.colors.textInverse,
+    color: theme.colors.text,
     letterSpacing: 0.5,
   },
   planContent: {
@@ -724,7 +732,7 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 18,
     fontWeight: '700',
-    color: theme.colors.textInverse,
+    color: theme.colors.text,
   },
   restoreButton: {
     alignItems: 'center',

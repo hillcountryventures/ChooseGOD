@@ -31,6 +31,7 @@ import { WEEK_DAYS } from '../constants/strings';
 import { PrayerEntryModal } from '../components/PrayerEntryModal';
 import { AnsweredPrayerModal } from '../components/AnsweredPrayerModal';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -206,7 +207,7 @@ function PrayerTimelineCard({
               onPress={() => onMarkAnswered(prayer.id)}
               activeOpacity={0.7}
             >
-              <Ionicons name="checkmark-circle" size={16} color="#fff" />
+              <Ionicons name="checkmark-circle" size={16} color={theme.colors.text} />
               <Text style={styles.answeredButtonText}>God Answered!</Text>
             </TouchableOpacity>
           )}
@@ -479,6 +480,7 @@ function CalendarView({ prayers }: { prayers: PrayerRequest[] }) {
 // Main PrayersScreen
 // ============================================================================
 export default function PrayersScreen() {
+  useTrackScreen('prayers');
   const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
   const [showPrayerEntry, setShowPrayerEntry] = useState(false);
@@ -838,7 +840,7 @@ const styles = StyleSheet.create({
   answeredButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Empty state

@@ -37,6 +37,7 @@ import {
 import { HEADER } from '../constants/dimensions';
 import { AI_QUICK_ACTIONS, getVerseKey } from '../components/bible';
 import { VerseWithAnnotations } from '../components/bible/VerseRow';
+import { logger } from '../utils/logger';
 
 type BibleScreenRouteProp = RouteProp<BottomTabParamList, 'Bible'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -110,7 +111,7 @@ export function useBibleReader() {
             await cacheChapter(translation, currentBook, currentChapter, fresh);
           }
         } catch (networkErr) {
-          console.warn('[BibleScreen] Network fetch failed, using cache', networkErr);
+          logger.warn('[BibleScreen] Network fetch failed, using cache', networkErr);
         }
       }
 
@@ -135,7 +136,7 @@ export function useBibleReader() {
         if (count > 0) setTotalChapters(count);
       }
     } catch (error) {
-      console.error('Error loading chapter:', error);
+      logger.error('Error loading chapter:', error);
     } finally {
       setIsLoading(false);
     }
@@ -256,7 +257,7 @@ export function useBibleReader() {
       await Share.share({ message: textContent, url: deepLink });
       setSelectedVerse(null);
     } catch (error) {
-      console.error('Error sharing verse:', error);
+      logger.error('Error sharing verse:', error);
     }
   }, [selectedVerse, preferences.preferredTranslation]);
 
@@ -356,7 +357,7 @@ export function useBibleReader() {
       const results = await searchVerses(query, preferences.preferredTranslation, 20);
       setSearchResults(results);
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);

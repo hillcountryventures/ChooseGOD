@@ -22,6 +22,7 @@ import {
 import { useDevotionalStore } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
 import { allStarterPlans } from '../../data/plans';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Recom
 type RouteProps = RouteProp<OnboardingStackParamList, 'Recommendations'>;
 
 export default function RecommendationsScreen() {
+  useTrackScreen('onboarding_recommendations');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { quizResponses } = route.params;
@@ -114,6 +116,9 @@ export default function RecommendationsScreen() {
         ]}
         onPress={() => toggleSelection(series.id)}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`${isTopPick ? 'Top pick: ' : ''}${series.title}, ${series.totalDays} days, ${series.difficultyLevel}`}
+        accessibilityState={{ selected: isSelected }}
       >
         <LinearGradient
           colors={gradient}
@@ -123,7 +128,7 @@ export default function RecommendationsScreen() {
         >
           {isTopPick && (
             <View style={styles.topPickBadge}>
-              <Ionicons name="star" size={12} color="#fff" />
+              <Ionicons name="star" size={12} color={theme.colors.text} />
               <Text style={styles.topPickBadgeText}>Top Pick</Text>
             </View>
           )}
@@ -193,6 +198,8 @@ export default function RecommendationsScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
@@ -268,6 +275,8 @@ export default function RecommendationsScreen() {
           <TouchableOpacity
             style={styles.browseAllButton}
             onPress={handleBrowseAll}
+            accessibilityRole="button"
+            accessibilityLabel="Browse all devotionals"
           >
             <Text style={styles.browseAllText}>Browse All Devotionals</Text>
             <Ionicons
@@ -288,6 +297,9 @@ export default function RecommendationsScreen() {
             onPress={handleContinue}
             disabled={selectedIds.size === 0}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={`Start ${selectedIds.size === 1 ? 'this journey' : selectedIds.size + ' journeys'}`}
+            accessibilityState={{ disabled: selectedIds.size === 0 }}
           >
             <LinearGradient
               colors={
@@ -302,7 +314,7 @@ export default function RecommendationsScreen() {
               <Text style={styles.buttonText}>
                 Start {selectedIds.size === 1 ? 'This Journey' : `${selectedIds.size} Journeys`}
               </Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -394,7 +406,7 @@ const styles = StyleSheet.create({
   topPickBadgeText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   cardContent: {
     flex: 1,
@@ -402,7 +414,7 @@ const styles = StyleSheet.create({
   topPickTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   topPickDescription: {
@@ -438,8 +450,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.5)',
   },
   selectionIndicatorSelected: {
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.text,
   },
   horizontalScroll: {
     gap: theme.spacing.md,
@@ -459,7 +471,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
   cardDescription: {
@@ -545,6 +557,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

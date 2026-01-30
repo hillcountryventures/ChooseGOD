@@ -37,6 +37,7 @@ import {
   areNotificationsEnabled,
 } from '../lib/notifications';
 import { updateUserProfile, supabase } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 // ============================================================================
 // Setting Row Component
@@ -238,7 +239,7 @@ function PhilosophyModal({
           <View style={styles.philosophyPoint}>
             <Ionicons name="arrow-forward" size={16} color={theme.colors.accent} />
             <Text style={styles.philosophyText}>
-              The AI companion is designed to point you back to God&apos;s Word, never to replace it.
+              The Scripture companion is designed to point you back to God&apos;s Word, never to replace it.
             </Text>
           </View>
 
@@ -348,7 +349,7 @@ export default function SettingsScreen() {
       }
       updatePreferences({ dailyDevotional: enabled });
     } catch (error) {
-      console.error('Error toggling morning devotional:', error);
+      logger.error('Error toggling morning devotional:', error);
       Alert.alert('Error', 'Failed to update notification settings.');
     } finally {
       setIsSchedulingNotification(false);
@@ -380,7 +381,7 @@ export default function SettingsScreen() {
       }
       updatePreferences({ eveningExamen: enabled });
     } catch (error) {
-      console.error('Error toggling evening reflection:', error);
+      logger.error('Error toggling evening reflection:', error);
       Alert.alert('Error', 'Failed to update notification settings.');
     } finally {
       setIsSchedulingNotification(false);
@@ -438,7 +439,7 @@ export default function SettingsScreen() {
                 title: `ChooseGOD Data Export - ${timestamp}`,
               });
             } catch (err) {
-              console.error('[ExportData] Error:', err);
+              logger.error('[ExportData] Error:', err);
               Alert.alert(
                 'Export Failed',
                 err instanceof Error ? err.message : 'Failed to export your data. Please try again.',

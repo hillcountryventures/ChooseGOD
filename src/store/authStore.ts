@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase';
 import { useStore } from './useStore';
 import { useReadingPlanStore } from './readingPlanStore';
 import { useDevotionalStore } from './devotionalStore';
-import { identifyUser, resetAnalytics } from '../services/analytics';
+import { identifyUser, resetAnalytics, trackEvent } from '../services/analytics';
+import { logger } from '../utils/logger';
 
 interface DeleteAccountResult {
   success: boolean;
@@ -66,7 +67,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         }
       });
     } catch (error) {
-      console.error('Error initializing auth:', error);
+      logger.error('Error initializing auth:', error);
       set({ loading: false, initialized: true });
     }
   },
@@ -112,18 +113,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       });
 
       if (error) {
-        console.error('[Auth] Delete account error:', error);
+        logger.error('[Auth] Delete account error:', error);
         set({ isDeleting: false });
         return { success: false, error: error.message };
       }
 
       if (!data?.success) {
-        console.error('[Auth] Delete account failed:', data?.error);
+        logger.error('[Auth] Delete account failed:', data?.error);
         set({ isDeleting: false });
         return { success: false, error: data?.error || 'Failed to delete account' };
       }
 
-      console.log('[Auth] Account deleted successfully');
+      logger.debug('[Auth] Account deleted successfully');
 
       // Clear all local stores
       useSubscriptionStore.getState().logoutUser();
@@ -140,7 +141,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       return { success: true };
     } catch (error) {
-      console.error('[Auth] Delete account exception:', error);
+      logger.error('[Auth] Delete account exception:', error);
       set({ isDeleting: false });
       return {
         success: false,

@@ -3,6 +3,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { useStore } from '../store/useStore';
 import { fetchVerse } from '../lib/supabase';
 import { DailyVerse } from '../types';
+import { logger } from '../utils/logger';
 
 // Curated list of popular/meaningful verses for daily devotional
 // Note: Book names must match database exactly (e.g., "Psalms" not "Psalm")
@@ -74,7 +75,7 @@ export function useDailyVerse() {
   useEffect(() => {
     const today = getTodayString();
     if (dailyVerse && dailyVerse.date !== today) {
-      console.log('[useDailyVerse] Auto-clearing stale verse from:', dailyVerse.date);
+      logger.debug('[useDailyVerse] Auto-clearing stale verse from:', dailyVerse.date);
       setDailyVerse(null);
     }
   }, [dailyVerse, setDailyVerse]);
@@ -85,7 +86,7 @@ export function useDailyVerse() {
 
     // Clear stale verse from a different day IMMEDIATELY
     if (dailyVerse && dailyVerse.date !== today) {
-      console.log('[useDailyVerse] Clearing stale verse from:', dailyVerse.date, 'today is:', today);
+      logger.debug('[useDailyVerse] Clearing stale verse from:', dailyVerse.date, 'today is:', today);
       setDailyVerse(null);
     }
 
@@ -133,7 +134,7 @@ export function useDailyVerse() {
       setDailyVerse(newVerse);
       return newVerse;
     } catch (err) {
-      console.error('Failed to fetch daily verse:', err);
+      logger.error('Failed to fetch daily verse:', err);
       return null;
     } finally {
       setIsLoading(false);
@@ -152,7 +153,7 @@ export function useDailyVerse() {
         const today = getTodayString();
         // Check if the cached verse is stale
         if (!dailyVerse || dailyVerse.date !== today) {
-          console.log('[useDailyVerse] App foregrounded - fetching fresh verse');
+          logger.debug('[useDailyVerse] App foregrounded - fetching fresh verse');
           fetchDailyVerse(true); // Force refresh
         }
       }

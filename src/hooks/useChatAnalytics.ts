@@ -5,6 +5,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 interface ChatAnalyticsData {
   query: string;
@@ -35,7 +36,7 @@ export function useChatAnalytics() {
 
       if (error) {
         // Silently fail - analytics should not disrupt UX
-        console.warn('[ChatAnalytics] Failed to log query:', error.message);
+        logger.warn('[ChatAnalytics] Failed to log query:', error.message);
       }
 
       return null;

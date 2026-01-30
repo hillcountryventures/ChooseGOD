@@ -13,6 +13,7 @@ import {
   AudioTimestamp, 
   bookToUsfm 
 } from '../services/bibleBrain';
+import { logger } from '../utils/logger';
 
 // =============================================================================
 // Types
@@ -229,7 +230,7 @@ export function useBibleAudio(options: UseBibleAudioOptions = {}): UseBibleAudio
 
       return true;
     } catch (error) {
-      console.error('Failed to load chapter audio:', error);
+      logger.error('Failed to load chapter audio:', error);
       setState(prev => ({
         ...prev,
         isLoading: false,

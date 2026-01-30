@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMilestoneForStreak, StreakMilestone } from '../components/StreakMilestoneModal';
+import { logger } from '../utils/logger';
 
 const SEEN_MILESTONES_KEY = '@choosegod_seen_milestones';
 
@@ -33,7 +34,7 @@ export function useStreakMilestone(currentStreak: number) {
         await AsyncStorage.setItem(SEEN_MILESTONES_KEY, JSON.stringify(seen));
       }
     } catch (error) {
-      console.error('Error checking milestone:', error);
+      logger.error('Error checking milestone:', error);
     }
   };
 
@@ -61,7 +62,7 @@ export function useStreakMilestone(currentStreak: number) {
     try {
       await AsyncStorage.removeItem(SEEN_MILESTONES_KEY);
     } catch (error) {
-      console.error('Error resetting milestones:', error);
+      logger.error('Error resetting milestones:', error);
     }
   }, []);
 

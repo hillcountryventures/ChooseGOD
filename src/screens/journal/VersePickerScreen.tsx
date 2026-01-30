@@ -28,6 +28,8 @@ import { theme } from '../../lib/theme';
 import { searchVerses, fetchChapter } from '../../lib/supabase';
 import { VerseSource, Translation } from '../../types';
 import { useStore } from '../../store/useStore';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 // Bible books for browsing
 const BIBLE_BOOKS = {
@@ -71,6 +73,7 @@ interface VersePickerParams {
 }
 
 export default function VersePickerScreen() {
+  useTrackScreen('verse_picker');
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ params: VersePickerParams }, 'params'>>();
 
@@ -124,7 +127,7 @@ export default function VersePickerScreen() {
           setSearchResults(results);
         }
       } catch (error) {
-        console.error('Search error:', error);
+        logger.error('Search error:', error);
         Alert.alert('Search Error', 'Failed to search verses. Please try again.');
       } finally {
         setIsSearching(false);
@@ -147,7 +150,7 @@ export default function VersePickerScreen() {
       setSelectedChapter(chapter);
       setViewMode('chapter');
     } catch (error) {
-      console.error('Error loading chapter:', error);
+      logger.error('Error loading chapter:', error);
       Alert.alert('Error', 'Failed to load chapter. Please try again.');
     } finally {
       setIsLoadingChapter(false);
@@ -609,7 +612,7 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   doneButtonTextDisabled: {
     opacity: 0.7,

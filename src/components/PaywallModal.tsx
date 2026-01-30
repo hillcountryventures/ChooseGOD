@@ -27,6 +27,7 @@ import Purchases, {
 } from 'react-native-purchases';
 import { theme } from '../lib/theme';
 import { PAYWALL_CONTENT, REVENUECAT_PRODUCT_IDS } from '../constants/subscription';
+import { ERROR_MESSAGES, PAYWALL_STRINGS } from '../constants/strings';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 
 // Legal URLs
@@ -94,11 +95,11 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
         );
         setSelectedPackage(annualPkg || availablePackages[0]);
       } else {
-        setError('No subscription options available. Please try again later.');
+        setError(PAYWALL_STRINGS.noOptions);
       }
     } catch (err) {
       console.error('[Paywall] Error fetching offerings:', err);
-      setError('Unable to load subscription options. Please check your connection.');
+      setError(PAYWALL_STRINGS.loadError);
     } finally {
       setIsLoading(false);
     }
@@ -131,10 +132,10 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
           // User cancelled - don't show error
           break;
         case PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR:
-          setError('Purchases are not allowed on this device.');
+          setError(ERROR_MESSAGES.purchaseNotAllowed);
           break;
         case PURCHASES_ERROR_CODE.PURCHASE_INVALID_ERROR:
-          setError('This purchase is invalid. Please try again.');
+          setError(ERROR_MESSAGES.purchaseInvalid);
           break;
         case PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR:
           // Already purchased - refresh and close
@@ -143,10 +144,10 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
           onClose();
           break;
         case PURCHASES_ERROR_CODE.NETWORK_ERROR:
-          setError("We couldn't reach the store. Check your connection and try again.");
+          setError(ERROR_MESSAGES.purchaseNetwork);
           break;
         default:
-          setError("That didn't work — please try once more.");
+          setError(ERROR_MESSAGES.purchaseGeneric);
           console.error('[Paywall] Purchase error:', purchaseError);
       }
     } finally {
@@ -165,18 +166,18 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
       // Check if restore found active subscription
       if (customerInfo.entitlements.active['ChooseGOD Pro']) {
         await refreshCustomerInfo();
-        Alert.alert('Restored!', 'Your subscription has been restored.', [
+        Alert.alert(PAYWALL_STRINGS.restoredTitle, PAYWALL_STRINGS.restoredMessage, [
           { text: 'OK', onPress: () => { onSuccess?.(); onClose(); } },
         ]);
       } else {
         Alert.alert(
-          'No Subscription Found',
-          'We couldn\'t find an active subscription for your account.'
+          PAYWALL_STRINGS.noSubscriptionTitle,
+          PAYWALL_STRINGS.noSubscriptionMessage
         );
       }
     } catch (err) {
       console.error('[Paywall] Restore error:', err);
-      setError("We couldn't restore your purchases right now. Please try again.");
+      setError(ERROR_MESSAGES.restoreFailed);
     } finally {
       setIsRestoring(false);
     }
@@ -348,7 +349,7 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={theme.colors.accent} />
-                <Text style={styles.loadingText}>Loading options...</Text>
+                <Text style={styles.loadingText}>{PAYWALL_STRINGS.loadingOptions}</Text>
               </View>
             ) : error && packages.length === 0 ? (
               <View style={styles.errorContainer}>
@@ -406,13 +407,13 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
             {isRestoring ? (
               <ActivityIndicator size="small" color={theme.colors.accent} />
             ) : (
-              <Text style={styles.restoreText}>Restore Purchases</Text>
+              <Text style={styles.restoreText}>{PAYWALL_STRINGS.restorePurchases}</Text>
             )}
           </TouchableOpacity>
 
           {/* Auto-Renewal Disclosure */}
           <Text style={styles.renewalDisclosure}>
-            Subscription automatically renews unless canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period.
+            {PAYWALL_STRINGS.renewalDisclosure}
           </Text>
 
           {/* Legal Links */}

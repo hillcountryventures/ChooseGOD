@@ -24,10 +24,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../lib/theme';
 import { supabase } from '../lib/supabase';
 import type { RootStackParamList } from '../types';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function CameraScreen() {
+  useTrackScreen('camera');
   const navigation = useNavigation<NavigationProp>();
   const cameraRef = useRef<CameraView>(null);
 
@@ -110,7 +113,7 @@ export default function CameraScreen() {
       });
 
     } catch (error) {
-      console.error('[CameraScreen] Capture error:', error);
+      logger.error('[CameraScreen] Capture error:', error);
       Alert.alert(
         'Scan Error',
         'Could not process the image. Please try again.',
@@ -142,7 +145,7 @@ export default function CameraScreen() {
             onPress={handleClose}
             disabled={isProcessing}
           >
-            <Ionicons name="close" size={28} color="#fff" />
+            <Ionicons name="close" size={28} color={theme.colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Scripture Scan</Text>
           <View style={styles.headerButton} />
@@ -150,7 +153,7 @@ export default function CameraScreen() {
 
         {/* Instructions */}
         <View style={styles.instructions}>
-          <Ionicons name="scan-outline" size={32} color="#fff" style={styles.scanIcon} />
+          <Ionicons name="scan-outline" size={32} color={theme.colors.text} style={styles.scanIcon} />
           <Text style={styles.instructionsText}>
             Point camera at any text
           </Text>
@@ -169,7 +172,7 @@ export default function CameraScreen() {
             onPress={toggleCameraFacing}
             disabled={isProcessing}
           >
-            <Ionicons name="camera-reverse" size={32} color="#fff" />
+            <Ionicons name="camera-reverse" size={32} color={theme.colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -191,7 +194,7 @@ export default function CameraScreen() {
         {/* Processing overlay */}
         {isProcessing && (
           <View style={styles.processingOverlay}>
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color={theme.colors.text} />
             <Text style={styles.processingText}>Reading text...</Text>
             <Text style={styles.processingSubtext}>Finding biblical insights</Text>
           </View>
@@ -204,7 +207,7 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.background,
   },
   camera: {
     flex: 1,
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: theme.fontSize.lg,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text,
   },
   instructions: {
     paddingHorizontal: theme.spacing.xl,
@@ -241,7 +244,7 @@ const styles = StyleSheet.create({
   instructionsText: {
     fontSize: theme.fontSize.md,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
     textAlign: 'center',
   },
   instructionsSubtext: {
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.text,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
@@ -296,7 +299,7 @@ const styles = StyleSheet.create({
   processingText: {
     fontSize: theme.fontSize.lg,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
   processingSubtext: {
     fontSize: theme.fontSize.sm,
@@ -334,7 +337,7 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
   backButton: {
     paddingVertical: theme.spacing.sm,

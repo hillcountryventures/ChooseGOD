@@ -8,6 +8,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { supabase } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,7 +48,7 @@ async function readQueue(): Promise<SyncAction[]> {
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
     return raw ? (JSON.parse(raw) as SyncAction[]) : [];
   } catch {
-    console.warn('[SyncQueue] Failed to read queue');
+    logger.warn('[SyncQueue] Failed to read queue');
     return [];
   }
 }
@@ -56,7 +57,7 @@ async function writeQueue(queue: SyncAction[]): Promise<void> {
   try {
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
-    console.warn('[SyncQueue] Failed to write queue');
+    logger.warn('[SyncQueue] Failed to write queue');
   }
 }
 
@@ -122,7 +123,7 @@ async function executeAction(action: SyncAction): Promise<void> {
       break;
     }
     default:
-      console.warn('[SyncQueue] Unknown action type:', type);
+      logger.warn('[SyncQueue] Unknown action type:', type);
   }
 }
 
@@ -152,7 +153,7 @@ export async function queueAction(
       await executeAction(action);
       return; // success — no need to queue
     } catch (err) {
-      console.warn('[SyncQueue] Immediate exec failed, queuing', err);
+      logger.warn('[SyncQueue] Immediate exec failed, queuing', err);
     }
   }
 
@@ -160,7 +161,7 @@ export async function queueAction(
   const queue = await readQueue();
   queue.push(action);
   await writeQueue(queue);
-  console.log(`[SyncQueue] Queued ${type} (${queue.length} pending)`);
+  logger.debug(`[SyncQueue] Queued ${type} (${queue.length} pending)`);
 }
 
 /**
@@ -172,7 +173,7 @@ export async function processQueue(): Promise<number> {
   const queue = await readQueue();
   if (queue.length === 0) return 0;
 
-  console.log(`[SyncQueue] Processing ${queue.length} queued actions…`);
+  logger.debug(`[SyncQueue] Processing ${queue.length} queued actions…`);
 
   const remaining: SyncAction[] = [];
   let processed = 0;
@@ -185,12 +186,12 @@ export async function processQueue(): Promise<number> {
       action.retryCount++;
       if (action.retryCount < MAX_RETRIES) {
         remaining.push(action);
-        console.warn(
+        logger.warn(
           `[SyncQueue] Retry ${action.retryCount}/${MAX_RETRIES} for ${action.type}`,
           err,
         );
       } else {
-        console.error(
+        logger.error(
           `[SyncQueue] Dropping ${action.type} after ${MAX_RETRIES} retries`,
           err,
         );
@@ -199,7 +200,7 @@ export async function processQueue(): Promise<number> {
   }
 
   await writeQueue(remaining);
-  console.log(`[SyncQueue] Processed ${processed}, ${remaining.length} remaining`);
+  logger.debug(`[SyncQueue] Processed ${processed}, ${remaining.length} remaining`);
   return processed;
 }
 

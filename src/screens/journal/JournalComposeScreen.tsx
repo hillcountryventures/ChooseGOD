@@ -41,6 +41,8 @@ import {
 import { MediaPreviewList } from '../../components/journal/MediaPreview';
 import VoiceNoteRecorder from '../../components/journal/VoiceNoteRecorder';
 import { getTimeBasedPrompts } from '../../components/journal/JournalPromptsCarousel';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type JournalComposeRouteProp = RouteProp<RootStackParamList, 'JournalCompose'>;
 
@@ -62,6 +64,7 @@ interface JournalComposeParams {
 }
 
 export default function JournalComposeScreen() {
+  useTrackScreen('journal_compose');
   const navigation = useNavigation();
   const route = useRoute<JournalComposeRouteProp>();
 
@@ -244,7 +247,7 @@ export default function JournalComposeScreen() {
       clearDraft();
       navigation.goBack();
     } catch (error) {
-      console.error('Error saving journal entry:', error);
+      logger.error('Error saving journal entry:', error);
       Alert.alert('Error', 'Failed to save your entry. Please try again.');
     } finally {
       setIsSaving(false);
@@ -614,7 +617,7 @@ export default function JournalComposeScreen() {
 
             <TouchableOpacity style={styles.mediaButton} onPress={handleAskAI}>
               <View style={[styles.mediaButtonIcon, styles.aiButtonIcon]}>
-                <Ionicons name="sparkles" size={20} color="#fff" />
+                <Ionicons name="sparkles" size={20} color={theme.colors.text} />
               </View>
               <Text style={styles.mediaButtonLabel}>Ask AI</Text>
             </TouchableOpacity>
@@ -667,7 +670,7 @@ const styles = StyleSheet.create({
   postButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.bold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   postButtonTextDisabled: {
     opacity: 0.7,

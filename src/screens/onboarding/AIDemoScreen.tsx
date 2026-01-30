@@ -2,7 +2,7 @@
  * AIDemoScreen - Showcase AI Companion During Onboarding
  *
  * Philosophy: "We are not God, only helping others find HIM"
- * This screen gives users their first "aha moment" with the AI companion.
+ * This screen gives users their first "aha moment" with the Scripture companion.
  *
  * Flow: Shows a demo question, then lets them try their own.
  */
@@ -17,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'AIDemo'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'AIDemo'>;
@@ -34,6 +35,7 @@ God invites us to cast our anxieties on Him because He cares for us (1 Peter 5:7
 **Would you like to explore any of these verses deeper, or talk about what's specifically weighing on you?**`;
 
 export default function AIDemoScreen() {
+  useTrackScreen('onboarding_ai_demo');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { selectedSeriesIds } = route.params;
@@ -91,7 +93,7 @@ export default function AIDemoScreen() {
         style={styles.container}
       >
         <SafeAreaView style={styles.safeArea}>
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Skip AI demo">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
 
@@ -101,7 +103,7 @@ export default function AIDemoScreen() {
                 colors={[theme.colors.accent, theme.colors.primary]}
                 style={styles.iconGradient}
               >
-                <Ionicons name="chatbubbles" size={48} color="#fff" />
+                <Ionicons name="chatbubbles" size={48} color={theme.colors.text} />
               </LinearGradient>
             </View>
 
@@ -126,9 +128,9 @@ export default function AIDemoScreen() {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={handleStartDemo}>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleStartDemo} accessibilityRole="button" accessibilityLabel="See Scripture companion in action">
               <Text style={styles.primaryButtonText}>See It In Action</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
             </TouchableOpacity>
           </Animated.View>
         </SafeAreaView>
@@ -158,7 +160,7 @@ export default function AIDemoScreen() {
                 <Text style={styles.headerSubtitle}>Bible study assistant</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={handleSkip}>
+            <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Skip AI demo">
               <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
           </View>
@@ -203,9 +205,9 @@ export default function AIDemoScreen() {
           {/* Bottom action */}
           {typedResponse.length >= DEMO_RESPONSE.length && (
             <View style={styles.bottomAction}>
-              <TouchableOpacity style={styles.primaryButton} onPress={handleContinue}>
+              <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} accessibilityRole="button" accessibilityLabel="Continue setup">
                 <Text style={styles.primaryButtonText}>Continue Setup</Text>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
               </TouchableOpacity>
               <Text style={styles.footnote}>
                 {"You'll have unlimited access to ask questions after setup"}
@@ -300,7 +302,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 
   // Demo/chat styles
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
   },
   userBubbleText: {
     fontSize: theme.fontSize.md,
-    color: '#fff',
+    color: theme.colors.text,
     lineHeight: 22,
   },
   aiBubble: {

@@ -23,6 +23,7 @@ import { useTopicsExplored } from './insights/useTopicsExplored';
 import type { TopicEngagement } from './insights/useTopicsExplored';
 import { useBibleEngagement } from './insights/useBibleEngagement';
 import type { BibleBookEngagement } from './insights/useBibleEngagement';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // TYPES (kept here for backward compat)
@@ -154,7 +155,7 @@ export function useJourneyInsights(): JourneyInsightsData {
       setMoments(transformedMoments);
       setChatLogs(chatData || []);
     } catch (err) {
-      console.error('[useJourneyInsights] Fetch error:', err);
+      logger.error('[useJourneyInsights] Fetch error:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load insights'
       );

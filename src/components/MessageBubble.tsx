@@ -24,6 +24,7 @@ import { ChatMessage, VerseSource, SuggestedAction } from '../types';
 import { navigateToBibleVerse } from '../lib/navigationHelpers';
 import { InlineVerseText } from './InlineVerseText';
 import { ShareableVerseCard } from './ShareableVerseCard';
+import { logger } from '../utils/logger';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -75,7 +76,7 @@ export function MessageBubble({
       }
       await Share.share({ message: shareText });
     } catch (error) {
-      console.error('Error sharing:', error);
+      logger.error('Error sharing:', error);
     }
   };
 

@@ -31,6 +31,8 @@ import {
 } from '../../store/prayerCircleStore';
 import { CircleMemberAvatar, SharedPrayerCard } from '../../components/circles';
 import { RootStackParamList } from '../../types';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type CircleDetailRouteProp = RouteProp<RootStackParamList, 'CircleDetail'>;
@@ -77,6 +79,7 @@ function TabButton({
 // ============================================================================
 
 export default function CircleDetailScreen() {
+  useTrackScreen('circle_detail');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CircleDetailRouteProp>();
   const { circleId } = route.params;
@@ -128,7 +131,7 @@ export default function CircleDetailScreen() {
         message: `Join my prayer circle "${circle.name}" on ChooseGOD! Use invite code: ${circle.inviteCode}`,
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      logger.error('Error sharing:', error);
     }
   };
 
@@ -440,7 +443,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
   },
   backButtonText: {
-    color: '#fff',
+    color: theme.colors.text,
     fontWeight: theme.fontWeight.semibold,
   },
 

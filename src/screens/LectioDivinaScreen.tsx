@@ -39,6 +39,8 @@ import { RootStackParamList } from '../types';
 import { useStore } from '../store/useStore';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { logger } from '../utils/logger';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 const { width: _width } = Dimensions.get('window');
 
@@ -106,6 +108,7 @@ const DEFAULT_VERSE = {
 };
 
 export default function LectioDivinaScreen() {
+  useTrackScreen('lectio_divina');
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const user = useAuthStore((state) => state.user);
@@ -251,7 +254,7 @@ export default function LectioDivinaScreen() {
           createdAt: new Date(),
         });
       } catch (err) {
-        console.error('[LectioDivina] Save error:', err);
+        logger.error('[LectioDivina] Save error:', err);
       }
     }
   };
@@ -328,7 +331,7 @@ export default function LectioDivinaScreen() {
               ]}
             >
               {i < currentStep && (
-                <Ionicons name="checkmark" size={12} color="#fff" />
+                <Ionicons name="checkmark" size={12} color={theme.colors.text} />
               )}
             </View>
           ))}
@@ -689,6 +692,6 @@ const styles = StyleSheet.create({
   completionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

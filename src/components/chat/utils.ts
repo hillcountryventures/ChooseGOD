@@ -149,6 +149,7 @@ export function updateRateLimitState(
 
 import { VerseSource, SuggestedAction, ChatMode, ChatBibleContext } from '../../types';
 import EventSource from 'react-native-sse';
+import { logger } from '../../utils/logger';
 
 export interface StreamEvent {
   type: 'meta' | 'content' | 'done' | 'error';
@@ -238,7 +239,7 @@ export async function streamCompanionResponse(
     const timeoutMs = attempt === 0 ? INITIAL_TIMEOUT_MS : RETRY_TIMEOUT_MS;
 
     try {
-      console.log(`[Stream] Attempt ${attempt + 1}/${MAX_RETRIES + 1}, timeout: ${timeoutMs}ms`);
+      logger.debug(`[Stream] Attempt ${attempt + 1}/${MAX_RETRIES + 1}, timeout: ${timeoutMs}ms`);
 
       await new Promise<void>((resolve, reject) => {
         let fullContent = '';
@@ -303,7 +304,7 @@ export async function streamCompanionResponse(
         });
 
         eventSource.addEventListener('open', () => {
-          console.log('[Stream] SSE connection opened');
+          logger.debug('[Stream] SSE connection opened');
         });
 
         eventSource.addEventListener('message', (event) => {
@@ -341,12 +342,12 @@ export async function streamCompanionResponse(
                 break;
             }
           } catch (parseError) {
-            console.warn('[Stream] Failed to parse SSE event:', eventData, parseError);
+            logger.warn('[Stream] Failed to parse SSE event:', eventData, parseError);
           }
         });
 
         eventSource.addEventListener('error', (event) => {
-          console.error('[Stream] SSE error:', event);
+          logger.error('[Stream] SSE error:', event);
 
           // Extract error details from the event
           const errorEvent = event as { message?: string; xhrStatus?: number; type?: string };
@@ -383,7 +384,7 @@ export async function streamCompanionResponse(
         lastError = error;
         if (attempt < MAX_RETRIES) {
           attempt++;
-          console.log(`[Stream] Error, retrying (attempt ${attempt + 1})...`);
+          logger.debug(`[Stream] Error, retrying (attempt ${attempt + 1})...`);
           callbacks.onRetry?.(attempt);
           await sleep(1000 * attempt);
           continue;

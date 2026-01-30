@@ -34,18 +34,18 @@ async function loadConsent(): Promise<{ analytics: boolean; crash: boolean }> {
       AsyncStorage.getItem(CONSENT_CRASH_KEY),
     ]);
     return {
-      analytics: analytics !== 'false', // default true
-      crash: crash !== 'false', // default true
+      analytics: analytics === 'true', // default false (opt-out for GDPR)
+      crash: crash === 'true', // default false (opt-out for GDPR)
     };
   } catch {
-    return { analytics: true, crash: true };
+    return { analytics: false, crash: false };
   }
 }
 
 export default function ConsentManagementScreen() {
   const navigation = useNavigation();
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
-  const [crashEnabled, setCrashEnabled] = useState(true);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [crashEnabled, setCrashEnabled] = useState(false);
 
   useEffect(() => {
     loadConsent().then(({ analytics, crash }) => {

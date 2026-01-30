@@ -7,6 +7,7 @@
  */
 
 import PostHog from 'posthog-react-native';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // CONFIGURATION
@@ -29,6 +30,15 @@ let initialized = false;
 export async function initAnalytics(): Promise<void> {
   if (initialized) return;
 
+  if (!POSTHOG_API_KEY) {
+    logger.warn(
+      '[Analytics] ⚠️  PostHog API key is empty! Analytics will NOT be initialized. ' +
+      'Set EXPO_PUBLIC_POSTHOG_API_KEY in your environment.',
+    );
+    initialized = true;
+    return;
+  }
+
   try {
     posthog = new PostHog(POSTHOG_API_KEY, {
       host: POSTHOG_HOST,
@@ -40,7 +50,7 @@ export async function initAnalytics(): Promise<void> {
     });
     initialized = true;
   } catch (err) {
-    console.warn('[Analytics] Failed to initialize PostHog:', err);
+    logger.warn('[Analytics] Failed to initialize PostHog:', err);
   }
 }
 

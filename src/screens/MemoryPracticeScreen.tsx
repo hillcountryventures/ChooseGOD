@@ -26,6 +26,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../lib/theme';
 import { useMemoryVerses, ReviewRating } from '../hooks/useMemoryVerses';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 const { width: _width } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ function generateHint(text: string): string {
 }
 
 export default function MemoryPracticeScreen() {
+  useTrackScreen('memory_practice');
   const navigation = useNavigation();
   const { dueVerses, reviewVerse, isLoading } = useMemoryVerses();
 
@@ -265,7 +267,7 @@ export default function MemoryPracticeScreen() {
         {!isRevealed ? (
           <TouchableOpacity style={styles.revealButton} onPress={handleReveal}>
             <Text style={styles.revealButtonText}>Reveal Answer</Text>
-            <Ionicons name="eye" size={20} color="#fff" />
+            <Ionicons name="eye" size={20} color={theme.colors.text} />
           </TouchableOpacity>
         ) : (
           <View style={styles.ratingContainer}>
@@ -382,7 +384,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.background,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -513,7 +515,7 @@ const styles = StyleSheet.create({
   revealButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
   ratingContainer: {
     alignItems: 'center',
@@ -579,7 +581,7 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
   // Completion state
   completionContainer: {
@@ -610,6 +612,6 @@ const styles = StyleSheet.create({
   completionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

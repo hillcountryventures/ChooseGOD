@@ -17,6 +17,7 @@ import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
 import { useDevotionalStore } from '../../store/devotionalStore';
 import { useAuthStore } from '../../store/authStore';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 const { width } = Dimensions.get('window');
 
@@ -55,6 +56,7 @@ const SLIDES: Slide[] = [
 ];
 
 export default function OnboardingCarousel() {
+  useTrackScreen('onboarding_carousel');
   const navigation = useNavigation<NavigationProp>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -89,7 +91,7 @@ export default function OnboardingCarousel() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Ionicons name={item.icon} size={80} color="#fff" />
+        <Ionicons name={item.icon} size={80} color={theme.colors.text} />
       </LinearGradient>
       <Text style={styles.slideTitle}>{item.title}</Text>
       <Text style={styles.slideDescription}>{item.description}</Text>
@@ -139,10 +141,10 @@ export default function OnboardingCarousel() {
       <SafeAreaView style={styles.safeArea}>
         {/* Skip Button */}
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Skip onboarding carousel">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.goHomeButton} onPress={handleSkipOnboarding}>
+          <TouchableOpacity style={styles.goHomeButton} onPress={handleSkipOnboarding} accessibilityRole="button" accessibilityLabel="Skip to home screen">
             <Ionicons name="home-outline" size={16} color={theme.colors.textSecondary} />
             <Text style={styles.goHomeText}>Go Home</Text>
           </TouchableOpacity>
@@ -179,6 +181,8 @@ export default function OnboardingCarousel() {
             style={styles.nextButton}
             onPress={handleNext}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={currentIndex === SLIDES.length - 1 ? 'Continue to quiz' : 'Next slide'}
           >
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -189,7 +193,7 @@ export default function OnboardingCarousel() {
               <Text style={styles.buttonText}>
                 {currentIndex === SLIDES.length - 1 ? 'Continue' : 'Next'}
               </Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -294,6 +298,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

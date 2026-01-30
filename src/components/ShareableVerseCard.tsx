@@ -29,6 +29,7 @@ import { VerseSource, Translation } from '../types';
 import { fetchVerseParallel } from '../lib/supabase';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
 import { generateVerseLink } from '../utils/deepLinks';
+import { logger } from '../utils/logger';
 
 // Default translations to compare (English versions available in DB)
 const COMPARE_TRANSLATIONS: Translation[] = ['KJV', 'ASV', 'BBE'];
@@ -111,7 +112,7 @@ export function ShareableVerseCard({
       );
       setParallelVerses(verses);
     } catch (error) {
-      console.error('Error fetching parallel translations:', error);
+      logger.error('Error fetching parallel translations:', error);
       setParallelVerses([]);
     } finally {
       setIsLoadingParallel(false);
@@ -175,7 +176,7 @@ export function ShareableVerseCard({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (error) {
-      console.error('Error sharing verse card:', error);
+      logger.error('Error sharing verse card:', error);
 
       // Fallback to text sharing with deep link
       try {
@@ -183,7 +184,7 @@ export function ShareableVerseCard({
         const textContent = `"${source.text}"\n\n— ${source.book} ${source.chapter}:${source.verse} (${source.translation.toUpperCase()})\n\n${verseLink}`;
         await Share.share({ message: textContent, url: verseLink });
       } catch (fallbackError) {
-        console.error('Fallback share failed:', fallbackError);
+        logger.error('Fallback share failed:', fallbackError);
         Alert.alert('Share Failed', 'Unable to share this verse. Please try again.');
       }
     }

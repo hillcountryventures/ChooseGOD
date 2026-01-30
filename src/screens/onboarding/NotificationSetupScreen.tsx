@@ -16,11 +16,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { theme } from '../../lib/theme';
 import { OnboardingStackParamList } from '../../types';
 import { useNotifications } from '../../hooks/useNotifications';
+import { logger } from '../../utils/logger';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'NotificationSetup'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'NotificationSetup'>;
 
 export default function NotificationSetupScreen() {
+  useTrackScreen('onboarding_notification_setup');
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { selectedSeriesIds = [] } = route.params || {};
@@ -61,7 +64,7 @@ export default function NotificationSetupScreen() {
         await disable();
       }
     } catch (e) {
-      console.warn('[NotificationSetup] Error:', e);
+      logger.warn('[NotificationSetup] Error:', e);
     } finally {
       setIsSubmitting(false);
     }
@@ -97,10 +100,12 @@ export default function NotificationSetupScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+          <TouchableOpacity onPress={handleSkip} style={styles.skipButton} accessibilityRole="button" accessibilityLabel="Skip notification setup">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -115,7 +120,7 @@ export default function NotificationSetupScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="notifications" size={48} color="#fff" />
+              <Ionicons name="notifications" size={48} color={theme.colors.text} />
             </LinearGradient>
           </View>
 
@@ -130,6 +135,9 @@ export default function NotificationSetupScreen() {
             style={styles.toggleCard}
             onPress={() => setNotificationsEnabled(!notificationsEnabled)}
             activeOpacity={0.8}
+            accessibilityRole="switch"
+            accessibilityLabel="Daily reminders"
+            accessibilityState={{ checked: notificationsEnabled }}
           >
             <View style={styles.toggleContent}>
               <Ionicons
@@ -167,6 +175,8 @@ export default function NotificationSetupScreen() {
                 style={styles.timeButton}
                 onPress={() => setShowTimePicker(true)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`Reminder time: ${formatTime(reminderTime)}. Tap to change`}
               >
                 <Ionicons
                   name="time-outline"
@@ -219,6 +229,8 @@ export default function NotificationSetupScreen() {
             style={styles.continueButton}
             onPress={handleContinue}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={notificationsEnabled ? 'Enable reminders and continue' : 'Continue without reminders'}
           >
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -229,7 +241,7 @@ export default function NotificationSetupScreen() {
               <Text style={styles.buttonText}>
                 {notificationsEnabled ? 'Enable Reminders' : 'Continue'}
               </Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.colors.text} />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -337,7 +349,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
   },
   toggleKnobActive: {
     transform: [{ translateX: 20 }],
@@ -439,6 +451,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });

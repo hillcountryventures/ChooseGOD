@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { supabase } from './supabase';
 import { TABLES, NOTIFICATION_CHANNELS } from '../constants/database';
 import { theme } from './theme';
+import { logger } from '../utils/logger';
 
 // =====================================================
 // NOTIFICATION CONFIGURATION
@@ -29,7 +30,7 @@ Notifications.setNotificationHandler({
  */
 export async function requestPermissions(): Promise<boolean> {
   if (!Device.isDevice) {
-    console.log('Notifications only work on physical devices');
+    logger.debug('Notifications only work on physical devices');
     return false;
   }
 
@@ -42,7 +43,7 @@ export async function requestPermissions(): Promise<boolean> {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('Permission for notifications not granted');
+    logger.debug('Permission for notifications not granted');
     return false;
   }
 
@@ -74,7 +75,7 @@ export async function getExpoPushToken(): Promise<string | null> {
     });
     return token;
   } catch (error) {
-    console.error('Error getting push token:', error);
+    logger.error('Error getting push token:', error);
     return null;
   }
 }
@@ -94,7 +95,7 @@ export async function savePushToken(userId: string, token: string): Promise<bool
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error saving push token:', error);
+    logger.error('Error saving push token:', error);
     return false;
   }
 }
@@ -155,10 +156,10 @@ export async function scheduleMorningDevotional(
       },
     });
 
-    console.log('[Notifications] Morning devotional scheduled for', time);
+    logger.debug('[Notifications] Morning devotional scheduled for', time);
     return identifier;
   } catch (error) {
-    console.error('Error scheduling morning devotional:', error);
+    logger.error('Error scheduling morning devotional:', error);
     return null;
   }
 }
@@ -189,10 +190,10 @@ export async function scheduleEveningReflection(
       },
     });
 
-    console.log('[Notifications] Evening reflection scheduled for', time);
+    logger.debug('[Notifications] Evening reflection scheduled for', time);
     return identifier;
   } catch (error) {
-    console.error('Error scheduling evening reflection:', error);
+    logger.error('Error scheduling evening reflection:', error);
     return null;
   }
 }
@@ -228,7 +229,7 @@ export async function scheduleDevotionalReminder(
 
     return identifier;
   } catch (error) {
-    console.error('Error scheduling devotional reminder:', error);
+    logger.error('Error scheduling devotional reminder:', error);
     return null;
   }
 }
@@ -287,10 +288,10 @@ export async function scheduleDailyWisdomNotification(
       },
     });
 
-    console.log('[Notifications] Daily wisdom notification scheduled for', time);
+    logger.debug('[Notifications] Daily wisdom notification scheduled for', time);
     return identifier;
   } catch (error) {
-    console.error('Error scheduling daily wisdom notification:', error);
+    logger.error('Error scheduling daily wisdom notification:', error);
     return null;
   }
 }
@@ -392,7 +393,7 @@ export async function sendReengagementNotification(seriesTitle: string): Promise
 export function handleNotificationReceived(
   notification: Notifications.Notification
 ): void {
-  console.log('Notification received:', notification.request.content);
+  logger.debug('Notification received:', notification.request.content);
 }
 
 /**
@@ -553,10 +554,10 @@ export async function scheduleWayfarerReminder(
       },
     });
 
-    console.log('[Notifications] Wayfarer reminder scheduled for', time);
+    logger.debug('[Notifications] Wayfarer reminder scheduled for', time);
     return identifier;
   } catch (error) {
-    console.error('Error scheduling Wayfarer reminder:', error);
+    logger.error('Error scheduling Wayfarer reminder:', error);
     return null;
   }
 }

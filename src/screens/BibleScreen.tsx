@@ -26,8 +26,10 @@ import { AskAboutPassage } from '../components/chat/AskAboutPassage';
 import { CrossReferencesSheet } from '../components/CrossReferencesSheet';
 import { useBibleReader } from '../hooks/useBibleReader';
 import { VerseActionBar } from '../components/bible/VerseActionBar';
+import { useTrackScreen } from '../hooks/useAnalytics';
 
 export default function BibleScreen() {
+  useTrackScreen('bible');
   const insets = useSafeAreaInsets();
   const reader = useBibleReader();
 

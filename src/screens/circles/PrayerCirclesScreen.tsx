@@ -29,6 +29,7 @@ import { useAuthStore } from '../../store/authStore';
 import { usePrayerCircleStore, useCircles, useCircleLoading } from '../../store/prayerCircleStore';
 import { CircleCard } from '../../components/circles';
 import { RootStackParamList } from '../../types';
+import { useTrackScreen } from '../../hooks/useAnalytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -94,10 +95,10 @@ function CreateCircleModal({ visible, onClose, onSubmit, loading }: CreateCircle
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={theme.colors.text} size="small" />
             ) : (
               <>
-                <Ionicons name="add-circle" size={20} color="#fff" />
+                <Ionicons name="add-circle" size={20} color={theme.colors.text} />
                 <Text style={styles.modalButtonText}>Create Circle</Text>
               </>
             )}
@@ -182,10 +183,10 @@ function JoinCircleModal({ visible, onClose, onSubmit, loading }: JoinCircleModa
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={theme.colors.text} size="small" />
             ) : (
               <>
-                <Ionicons name="enter" size={20} color="#fff" />
+                <Ionicons name="enter" size={20} color={theme.colors.text} />
                 <Text style={styles.modalButtonText}>Join Circle</Text>
               </>
             )}
@@ -201,6 +202,7 @@ function JoinCircleModal({ visible, onClose, onSubmit, loading }: JoinCircleModa
 // ============================================================================
 
 export default function PrayerCirclesScreen() {
+  useTrackScreen('prayer_circles');
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
   const circles = useCircles();
@@ -349,7 +351,7 @@ export default function PrayerCirclesScreen() {
           onPress={() => setShowCreateModal(true)}
           activeOpacity={0.8}
         >
-          <Ionicons name="add-circle" size={22} color="#fff" />
+          <Ionicons name="add-circle" size={22} color={theme.colors.text} />
           <Text style={styles.createButtonText}>Create New Circle</Text>
         </TouchableOpacity>
 
@@ -526,7 +528,7 @@ const styles = StyleSheet.create({
   createButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
   bottomPadding: {
     height: 100,
@@ -593,6 +595,6 @@ const styles = StyleSheet.create({
   modalButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
-    color: '#fff',
+    color: theme.colors.text,
   },
 });
