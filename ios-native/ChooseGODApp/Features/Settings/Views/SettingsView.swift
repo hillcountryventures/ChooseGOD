@@ -5,6 +5,8 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @State private var showDeleteConfirmation = false
     @State private var showSignOutConfirmation = false
+    @State private var showExportShare = false
+    @State private var exportURL: URL?
     
     var body: some View {
         NavigationStack {
@@ -129,6 +131,31 @@ struct SettingsView: View {
                     ))
                 }
                 
+                // Privacy & Data
+                Section("Privacy & Data") {
+                    NavigationLink {
+                        ConsentManagementView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "hand.raised.fill")
+                                .foregroundStyle(Theme.Colors.primary)
+                            Text("Privacy Settings")
+                                .foregroundStyle(Theme.Colors.text)
+                        }
+                    }
+                    
+                    Button {
+                        exportUserData()
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundStyle(Theme.Colors.accent)
+                            Text("Export My Data")
+                                .foregroundStyle(Theme.Colors.text)
+                        }
+                    }
+                }
+                
                 // Support
                 Section("Support") {
                     Link(destination: URL(string: "mailto:support@choosegod.app")!) {
@@ -205,8 +232,42 @@ struct SettingsView: View {
             } message: {
                 Text("This action cannot be undone. All your data will be permanently deleted.")
             }
+            .sheet(isPresented: $showExportShare) {
+                if let exportURL {
+                    ShareSheet(activityItems: [exportURL])
+                }
+            }
+        }
+        .onAppear { AnalyticsService.shared.screen("settings") }
+    }
+    
+    private func exportUserData() {
+        let userData: [String: Any] = [
+            "displayName": appState.currentUser?.displayName ?? "",
+            "email": appState.currentUser?.email ?? "",
+            "exportDate": ISO8601DateFormatter().string(from: Date()),
+            "note": "This is a copy of your ChooseGOD account data."
+        ]
+        
+        if let jsonData = try? JSONSerialization.data(withJSONObject: userData, options: .prettyPrinted) {
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("ChooseGOD_DataExport.json")
+            try? jsonData.write(to: tempURL)
+            exportURL = tempURL
+            showExportShare = true
         }
     }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Subscription View

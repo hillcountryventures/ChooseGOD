@@ -39,6 +39,7 @@ struct MemoryVerseListView: View {
             // TODO: Set userId from auth state
             await viewModel.fetchVerses()
         }
+        .onAppear { AnalyticsService.shared.screen("memory_verse_list") }
     }
     
     // MARK: - Verse List
@@ -131,21 +132,13 @@ struct MemoryVerseListView: View {
     }
     
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "book.closed.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(Theme.Colors.textTertiary)
-            Text("No Memory Verses")
-                .font(.title3.bold())
-                .foregroundStyle(Theme.Colors.text)
-            Text("Add verses from the Bible reader to build your memorization queue.")
-                .font(.subheadline)
-                .foregroundStyle(Theme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-            Button("Add Verse") { showAddSheet = true }
-                .buttonStyle(GlassButtonStyle(isProminent: true))
-        }
-        .padding(40)
+        EmptyStateView(
+            icon: "brain.head.profile",
+            title: "Hide His Word in Your Heart",
+            description: "Add verses from the Bible reader to memorize Scripture and grow deeper in faith.",
+            actionTitle: "Add Verse",
+            action: { showAddSheet = true }
+        )
     }
     
     // MARK: - Helpers

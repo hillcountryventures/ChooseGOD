@@ -45,6 +45,7 @@ struct PaywallView: View {
             if success { dismiss() }
         }
         .onAppear { animateEntrance() }
+        .onAppear { AnalyticsService.shared.screen("paywall") }
     }
     
     // MARK: - Background
@@ -400,13 +401,18 @@ struct PaywallView: View {
     // MARK: - Trial Note
     
     private var trialNote: some View {
-        Group {
+        VStack(spacing: 4) {
             if viewModel.hasFreeTrial {
-                Text("\(viewModel.trialDays)-day free trial, then \(viewModel.selectedPlan == .annual ? viewModel.annualPrice : viewModel.monthlyPrice). Cancel anytime.")
+                Text("\(viewModel.trialDays)-day free trial, then \(viewModel.selectedPlan == .annual ? viewModel.annualPrice + "/year" : viewModel.monthlyPrice + "/month"). Cancel anytime.")
                     .font(.caption)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .multilineTextAlignment(.center)
             }
+            Text("Subscription automatically renews at \(viewModel.selectedPlan == .annual ? viewModel.annualPrice + "/year" : viewModel.monthlyPrice + "/month") unless canceled at least 24 hours before the end of the current period. You can manage or cancel anytime in your App Store Settings.")
+                .font(.caption2)
+                .foregroundStyle(Theme.Colors.textTertiary.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
     }
     
@@ -426,11 +432,25 @@ struct PaywallView: View {
                 }
             }
             
-            Text("By subscribing, you agree to our Terms of Service and Privacy Policy.\nYour subscription supports faithful Bible tools for everyone.")
-                .font(.caption2)
-                .foregroundStyle(Theme.Colors.textTertiary.opacity(0.6))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
+            VStack(spacing: 4) {
+                HStack(spacing: 4) {
+                    Text("By subscribing, you agree to our")
+                        .font(.caption2)
+                        .foregroundStyle(Theme.Colors.textTertiary.opacity(0.6))
+                    Link("Terms of Service", destination: URL(string: "https://choosegod.app/terms")!)
+                        .font(.caption2)
+                    Text("and")
+                        .font(.caption2)
+                        .foregroundStyle(Theme.Colors.textTertiary.opacity(0.6))
+                    Link("Privacy Policy", destination: URL(string: "https://choosegod.app/privacy")!)
+                        .font(.caption2)
+                }
+                Text("Your subscription supports faithful Bible tools for everyone.")
+                    .font(.caption2)
+                    .foregroundStyle(Theme.Colors.textTertiary.opacity(0.6))
+            }
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 20)
         }
     }
     

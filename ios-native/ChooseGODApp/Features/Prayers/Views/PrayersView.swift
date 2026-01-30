@@ -81,28 +81,19 @@ struct PrayersView: View {
                 await loadPrayers()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("prayers") }
     }
     
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
-            Image(systemName: "hands.sparkles")
-                .font(.system(size: 60))
-                .foregroundStyle(Theme.Colors.primary.opacity(0.5))
-            
-            Text(selectedTab == .answered ? "No answered prayers yet" : "No prayers yet")
-                .font(.title3.weight(.medium))
-                .foregroundStyle(Theme.Colors.text)
-            
-            Text(selectedTab == .answered ? "When God answers, you'll see them here" : "Tap + to add your first prayer request")
-                .font(.subheadline)
-                .foregroundStyle(Theme.Colors.secondaryText)
-                .multilineTextAlignment(.center)
-            
-            Spacer()
-        }
-        .padding()
+        EmptyStateView(
+            icon: "hands.sparkles",
+            title: selectedTab == .answered ? "No Answered Prayers Yet" : "Begin Your Prayer Journey",
+            description: selectedTab == .answered
+                ? "When God answers, you'll see them here. Keep praying — He hears you."
+                : "Cast your cares upon the Lord. Tap + to lift your first prayer.",
+            actionTitle: selectedTab == .answered ? nil : "Add Prayer",
+            action: selectedTab == .answered ? nil : { showNewPrayerSheet = true }
+        )
     }
     
     private func loadPrayers() async {
@@ -279,6 +270,7 @@ struct NewPrayerSheet: View {
     }
     
     private func savePrayer() async {
+        AnalyticsService.shared.capture("prayer_added")
         guard let userId = appState.currentUser?.id else { return }
         
         isSaving = true

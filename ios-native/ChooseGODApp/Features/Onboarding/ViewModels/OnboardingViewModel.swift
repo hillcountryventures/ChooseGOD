@@ -8,12 +8,14 @@ final class OnboardingViewModel {
     // MARK: - Flow State
     
     enum OnboardingStep: Int, CaseIterable {
+        case ageGate
         case welcome
         case quizLifeArea
         case quizTime
         case quizExperience
         case quizLifeStage
         case recommendations
+        case paywall
         case notificationSetup
         
         var isQuizStep: Bool {
@@ -22,6 +24,8 @@ final class OnboardingViewModel {
             default: return false
             }
         }
+        
+        var isAgeGate: Bool { self == .ageGate }
         
         var quizIndex: Int {
             switch self {
@@ -36,7 +40,7 @@ final class OnboardingViewModel {
         static let quizStepCount = 4
     }
     
-    var currentStep: OnboardingStep = .welcome
+    var currentStep: OnboardingStep = .ageGate
     var responses = OnboardingResponses()
     var recommendations: [SeriesRecommendation] = []
     var selectedSeriesIds: Set<String> = []
@@ -53,17 +57,20 @@ final class OnboardingViewModel {
     
     var canProceed: Bool {
         switch currentStep {
+        case .ageGate: return true
         case .welcome: return true
         case .quizLifeArea: return responses.lifeAreaFocus != nil
         case .quizTime: return responses.timeAvailable != nil
         case .quizExperience: return responses.experienceLevel != nil
         case .quizLifeStage: return responses.lifeStage != nil
         case .recommendations: return !selectedSeriesIds.isEmpty
+        case .paywall: return true
         case .notificationSetup: return true
         }
     }
     
     func advance() {
+        AnalyticsService.shared.capture("onboarding_step_completed", properties: ["step": String(currentStep.rawValue)])
         transitionDirection = .trailing
         guard let allSteps = OnboardingStep.allCases.first(where: { $0.rawValue == currentStep.rawValue + 1 }) else { return }
         
@@ -134,6 +141,7 @@ final class OnboardingViewModel {
     }
     
     func saveAndComplete(userId: String?) async {
+        AnalyticsService.shared.capture("onboarding_completed")
         if let userId {
             try? await service.saveResponses(responses, userId: userId)
         }

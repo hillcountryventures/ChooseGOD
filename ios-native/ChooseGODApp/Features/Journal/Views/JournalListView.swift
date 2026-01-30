@@ -39,6 +39,7 @@ struct JournalListView: View {
                 await viewModel.loadMoments()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("journal_list") }
     }
     
     // MARK: - Filter Bar
@@ -97,33 +98,13 @@ struct JournalListView: View {
     // MARK: - Empty State
     
     private var emptyView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "book.closed.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(Theme.Colors.textTertiary)
-            
-            Text("No journal entries yet")
-                .font(Theme.Typography.title3)
-                .foregroundStyle(Theme.Colors.text)
-            
-            Text("Start writing to capture what God is doing in your life")
-                .font(Theme.Typography.body)
-                .foregroundStyle(Theme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Button {
-                showingCompose = true
-            } label: {
-                Label("Write Entry", systemImage: "pencil")
-                    .font(Theme.Typography.body.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Theme.Colors.primary, in: Capsule())
-            }
-            .padding(.top, 8)
-        }
+        EmptyStateView(
+            icon: "book.closed.fill",
+            title: "Your Story Awaits",
+            description: "Start writing to capture what God is doing in your life. Every entry is a testimony.",
+            actionTitle: "Write Entry",
+            action: { showingCompose = true }
+        )
     }
     
     // MARK: - Loading

@@ -61,6 +61,7 @@ final class PaywallViewModel {
     // MARK: - Initialization
     
     init() {
+        AnalyticsService.shared.capture("paywall_presented")
         Task { await loadOfferings() }
     }
     
@@ -106,6 +107,7 @@ final class PaywallViewModel {
     // MARK: - Purchase
     
     func purchase(using service: SubscriptionServiceProtocol) async {
+        AnalyticsService.shared.capture("purchase_tapped", properties: ["plan": String(describing: selectedPlan)])
         isPurchasing = true
         defer { isPurchasing = false }
         
@@ -113,10 +115,13 @@ final class PaywallViewModel {
             let success = try await service.purchase(package: selectedPlan)
             if success {
                 purchaseSucceeded = true
+                AnalyticsService.shared.capture("subscription_purchased", properties: ["plan": String(describing: selectedPlan)])
             }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
+            AnalyticsService.shared.capture("subscription_failed", properties: ["plan": String(describing: selectedPlan), "error": error.localizedDescription])
+            AnalyticsService.shared.capture("error", properties: ["source": "purchase", "message": error.localizedDescription])
         }
     }
     
@@ -137,6 +142,7 @@ final class PaywallViewModel {
         } catch {
             errorMessage = error.localizedDescription
             showError = true
+            AnalyticsService.shared.capture("error", properties: ["source": "restore_purchase", "message": error.localizedDescription])
         }
     }
 }
