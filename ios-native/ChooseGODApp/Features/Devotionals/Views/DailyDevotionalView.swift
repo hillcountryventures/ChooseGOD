@@ -51,6 +51,7 @@ struct DailyDevotionalView: View {
         .task {
             await loadDay()
         }
+        .onAppear { AnalyticsService.shared.screen("daily_devotional") }
     }
     
     // MARK: - Subviews
@@ -208,6 +209,7 @@ struct DailyDevotionalView: View {
     }
     
     private func completeDay() async {
+        AnalyticsService.shared.capture("devotional_completed")
         isCompleting = true
         
         let service = SupabaseDevotionalService()

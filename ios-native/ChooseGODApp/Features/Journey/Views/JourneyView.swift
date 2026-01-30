@@ -32,6 +32,7 @@ struct JourneyView: View {
                 await loadData()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("journey") }
     }
     
     // MARK: - Streak Card

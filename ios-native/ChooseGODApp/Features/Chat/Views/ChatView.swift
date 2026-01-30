@@ -7,6 +7,7 @@ struct ChatView: View {
     
     @State private var viewModel = ChatViewModel()
     @FocusState private var isInputFocused: Bool
+    @State private var voiceService = VoiceInputService()
     
     // Initial context (optional)
     var initialPrompt: String?
@@ -116,6 +117,7 @@ struct ChatView: View {
                 }
             }
         }
+        .onAppear { AnalyticsService.shared.screen("chat") }
     }
     
     private var isPremium: Bool {
@@ -265,28 +267,39 @@ struct ChatView: View {
     // MARK: - Input Bar
     
     private var inputBar: some View {
-        HStack(spacing: 12) {
-            TextField("Ask anything...", text: $viewModel.inputText, axis: .vertical)
-                .textFieldStyle(.plain)
-                .padding(12)
-                .background(Theme.Colors.surface)
-                .cornerRadius(20)
-                .focused($isInputFocused)
-                .lineLimit(1...5)
-                .onSubmit {
-                    viewModel.sendMessage(isPremium: isPremium)
-                }
+        VStack(spacing: 0) {
+            // Voice transcript overlay
+            VoiceTranscriptOverlay(voiceService: voiceService)
             
-            Button {
-                viewModel.sendMessage(isPremium: isPremium)
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(viewModel.inputText.isEmpty ? Theme.Colors.secondaryText : Theme.Colors.primary)
+            HStack(spacing: 12) {
+                // Voice input button
+                VoiceInputButton(voiceService: voiceService) { transcript in
+                    viewModel.inputText += transcript
+                }
+                .frame(width: 44, height: 44)
+                
+                TextField("Ask anything...", text: $viewModel.inputText, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .padding(12)
+                    .background(Theme.Colors.surface)
+                    .cornerRadius(20)
+                    .focused($isInputFocused)
+                    .lineLimit(1...5)
+                    .onSubmit {
+                        viewModel.sendMessage(isPremium: isPremium)
+                    }
+                
+                Button {
+                    viewModel.sendMessage(isPremium: isPremium)
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(viewModel.inputText.isEmpty ? Theme.Colors.secondaryText : Theme.Colors.primary)
+                }
+                .disabled(viewModel.inputText.isEmpty || viewModel.isLoading)
             }
-            .disabled(viewModel.inputText.isEmpty || viewModel.isLoading)
+            .padding()
         }
-        .padding()
         .background(Theme.Colors.background)
     }
 }

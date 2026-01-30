@@ -51,6 +51,7 @@ struct SeriesDetailView: View {
             }
         }
         .task { await loadData() }
+        .onAppear { AnalyticsService.shared.screen("series_detail") }
     }
     
     // MARK: - Hero Header

@@ -48,6 +48,7 @@ struct JourneyInsightsView: View {
             .navigationBarTitleDisplayMode(.large)
             .task { await viewModel.loadAll() }
         }
+        .onAppear { AnalyticsService.shared.screen("journey_insights") }
     }
     
     // MARK: - Period Picker

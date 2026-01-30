@@ -65,6 +65,7 @@ struct PersonalizationQuizView: View {
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.bottom, 40)
         }
+        .onAppear { AnalyticsService.shared.screen("onboarding_quiz") }
     }
     
     // MARK: - Progress Bar

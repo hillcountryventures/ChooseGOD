@@ -115,6 +115,7 @@ struct JournalDetailView: View {
         } message: {
             Text("Are you sure? This cannot be undone.")
         }
+        .onAppear { AnalyticsService.shared.screen("journal_detail") }
     }
     
     // MARK: - Media

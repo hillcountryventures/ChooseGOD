@@ -27,6 +27,7 @@ struct ReferralView: View {
         .navigationTitle("Share & Earn")
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadStats() }
+        .onAppear { AnalyticsService.shared.screen("referral") }
     }
     
     // MARK: - Hero

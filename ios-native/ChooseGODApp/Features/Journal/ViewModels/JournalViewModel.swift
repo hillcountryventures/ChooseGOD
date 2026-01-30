@@ -203,6 +203,7 @@ final class JournalViewModel {
     }
     
     func saveDraft() {
+        AnalyticsService.shared.capture("journal_created")
         guard !composeContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
               !composeLinkedVerses.isEmpty || !composeMedia.isEmpty else { return }
         

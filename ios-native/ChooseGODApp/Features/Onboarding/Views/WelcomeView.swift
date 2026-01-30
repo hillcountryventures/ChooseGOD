@@ -134,6 +134,8 @@ struct WelcomeView: View {
                 glowPhase = .pi * 2
             }
         }
+        .onAppear { AnalyticsService.shared.screen("onboarding_welcome")
+            AnalyticsService.shared.capture("onboarding_started") }
     }
 }
 

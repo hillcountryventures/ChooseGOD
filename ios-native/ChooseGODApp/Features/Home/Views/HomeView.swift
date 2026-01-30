@@ -38,17 +38,14 @@ struct HomeView: View {
                 await loadDailyVerse()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("home") }
     }
     
     // MARK: - Background
     
     private var backgroundGradient: some View {
         LinearGradient(
-            colors: [
-                Color(hex: "0f0f1a"),
-                Color(hex: "1a1a2e"),
-                Color(hex: "0f0f1a")
-            ],
+            colors: Theme.Colors.backgroundGradient,
             startPoint: .top,
             endPoint: .bottom
         )
@@ -64,7 +61,7 @@ struct HomeView: View {
                     .font(.subheadline)
                     .foregroundStyle(Theme.Colors.secondaryText)
                 
-                Text(appState.currentUser?.displayName ?? "Friend")
+                Text(appState.currentUser?.displayName ?? AppStrings.Home.defaultName)
                     .font(.title2.bold())
                     .foregroundStyle(Theme.Colors.text)
             }
@@ -100,7 +97,7 @@ struct HomeView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "sun.max.fill")
                         .foregroundStyle(.yellow)
-                    Text("Verse of the Day")
+                    Text(AppStrings.Home.verseOfTheDay)
                         .font(.subheadline.weight(.medium))
                 }
                 .foregroundStyle(.white.opacity(0.9))
@@ -167,24 +164,24 @@ struct HomeView: View {
     
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Continue Your Journey")
+            Text(AppStrings.Home.continueJourney)
                 .font(.headline)
                 .foregroundStyle(Theme.Colors.text)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                GlassQuickAction(icon: "book.fill", title: "Read Bible", color: .blue) {}
-                GlassQuickAction(icon: "bubble.left.fill", title: "Ask AI", color: Theme.Colors.accent) { showChat = true }
-                GlassQuickAction(icon: "hands.sparkles.fill", title: "Pray", color: Theme.Colors.prayer) {}
-                GlassQuickAction(icon: "sun.max.fill", title: "Devotional", color: .orange) {}
+                GlassQuickAction(icon: "book.fill", title: AppStrings.Home.readBible, color: .blue) {}
+                GlassQuickAction(icon: "bubble.left.fill", title: AppStrings.Home.askTheBible, color: Theme.Colors.accent) { showChat = true }
+                GlassQuickAction(icon: "hands.sparkles.fill", title: AppStrings.Home.pray, color: Theme.Colors.prayer) {}
+                GlassQuickAction(icon: "sun.max.fill", title: AppStrings.Home.devotional, color: .orange) {}
             }
         }
     }
     
     private var statsSection: some View {
         HStack(spacing: 12) {
-            GlassStatCard(value: "\(streak)", label: "Day Streak", icon: "flame.fill", color: .orange)
-            GlassStatCard(value: "12", label: "Chapters", icon: "book.fill", color: .blue)
-            GlassStatCard(value: "45", label: "Saved", icon: "bookmark.fill", color: .purple)
+            GlassStatCard(value: "\(streak)", label: AppStrings.Home.dayStreak, icon: "flame.fill", color: .orange)
+            GlassStatCard(value: "12", label: AppStrings.Home.chapters, icon: "book.fill", color: .blue)
+            GlassStatCard(value: "45", label: AppStrings.Home.saved, icon: "bookmark.fill", color: .purple)
         }
     }
     
@@ -193,9 +190,9 @@ struct HomeView: View {
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 0..<12: return "Good morning,"
-        case 12..<17: return "Good afternoon,"
-        default: return "Good evening,"
+        case 0..<12: return AppStrings.Home.goodMorning
+        case 12..<17: return AppStrings.Home.goodAfternoon
+        default: return AppStrings.Home.goodEvening
         }
     }
     

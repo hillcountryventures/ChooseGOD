@@ -32,6 +32,7 @@ struct LectioDivinaView: View {
                 ambientPhase = .pi * 2
             }
         }
+        .onAppear { AnalyticsService.shared.screen("lectio_divina") }
     }
     
     // MARK: - Ambient Background

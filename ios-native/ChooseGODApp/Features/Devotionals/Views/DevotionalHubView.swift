@@ -47,6 +47,7 @@ struct DevotionalHubView: View {
                 await loadData()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("devotional_hub") }
     }
     
     // MARK: - Sections

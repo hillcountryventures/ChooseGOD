@@ -127,6 +127,7 @@ struct JournalComposeView: View {
                 }
             }
         }
+        .onAppear { AnalyticsService.shared.screen("journal_compose") }
     }
     
     // MARK: - Prompts

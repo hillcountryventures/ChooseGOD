@@ -128,6 +128,8 @@ struct BibleReaderView: View {
                 await loadChapter()
             }
         }
+        .onAppear { AnalyticsService.shared.screen("bible_reader")
+            AnalyticsService.shared.capture("bible_read") }
     }
     
     private func loadChapter() async {

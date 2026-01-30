@@ -84,6 +84,9 @@ final class RevenueCatService: SubscriptionServiceProtocol {
         let (_, customerInfo, _) = try await Purchases.shared.purchase(package: packageToPurchase)
         
         isPremium = customerInfo.entitlements["premium"]?.isActive == true
+        if isPremium {
+            AnalyticsService.shared.capture("subscription_purchased", properties: ["package": String(describing: package)])
+        }
         return isPremium
     }
     

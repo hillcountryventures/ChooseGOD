@@ -44,6 +44,7 @@ struct ForgotPasswordView: View {
                 }
             }
         }
+        .onAppear { AnalyticsService.shared.screen("forgot_password") }
     }
     
     // MARK: - Reset Form

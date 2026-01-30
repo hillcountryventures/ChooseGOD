@@ -66,6 +66,7 @@ struct LoginView: View {
                 }
             }
         }
+        .onAppear { AnalyticsService.shared.screen("login") }
     }
     
     // MARK: - Header

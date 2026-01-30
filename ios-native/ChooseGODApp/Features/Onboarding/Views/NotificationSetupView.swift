@@ -112,6 +112,7 @@ struct NotificationSetupView: View {
                 .padding(.bottom, 32)
             }
         }
+        .onAppear { AnalyticsService.shared.screen("onboarding_notifications") }
     }
     
     // MARK: - Subviews
