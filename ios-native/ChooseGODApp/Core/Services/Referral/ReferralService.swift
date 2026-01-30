@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import Supabase
 
 /// Referral stats model
@@ -125,11 +126,11 @@ final class ReferralService {
     
     // MARK: - Code Generation
     
-    /// Generate a unique 8-char code from user ID: "CG" + first 6 hex chars
+    /// Generate a unique 8-char code from user ID using SHA256 hash
     private func generateCode(userId: String) -> String {
-        let cleaned = userId.replacingOccurrences(of: "-", with: "")
-        let prefix = String(cleaned.prefix(6)).uppercased()
-        return "CG\(prefix)"
+        let hash = SHA256.hash(data: Data(userId.utf8))
+        let hex = hash.prefix(4).map { String(format: "%02X", $0) }.joined()
+        return "CG\(hex.prefix(6).uppercased())"
     }
 }
 

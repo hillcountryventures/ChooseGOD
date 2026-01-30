@@ -31,13 +31,38 @@ struct ChooseGODApp: App {
                         .environment(appState)
                 }
             }
-            .preferredColorScheme(.dark) // Default to dark mode
+            .preferredColorScheme(ThemeManager.shared.resolvedColorScheme)
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
+            .task {
+                // Reschedule rotating notifications weekly on app open
+                try? await NotificationService.shared.scheduleRotatingReminders()
+            }
+        }
+    }
+    
+    // MARK: - Deep Links
+    
+    private func handleDeepLink(_ url: URL) {
+        // Handle choosegod://invite/{code} or https://choosegod.app/invite/{code}
+        let pathComponents = url.pathComponents
+        if let inviteIndex = pathComponents.firstIndex(of: "invite"),
+           inviteIndex + 1 < pathComponents.count {
+            let code = pathComponents[inviteIndex + 1]
+            UserDefaults.standard.set(code.uppercased(), forKey: "pendingReferralCode")
         }
     }
     
     // MARK: - Initialization
     
     private func initialize() async {
+        // TODO: Add Sentry iOS SDK
+        // SentrySDK.start { options in
+        //     options.dsn = Bundle.main.infoDictionary?["SENTRY_DSN"] as? String
+        //     options.tracesSampleRate = 0.2
+        // }
+
         // 1. Initialize Supabase
         await SupabaseManager.shared.initialize()
         
@@ -48,10 +73,19 @@ struct ChooseGODApp: App {
             appState.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         }
         
-        // 3. Initialize RevenueCat
+        // 3. Auto-apply pending referral code
+        if let userId = appState.currentUser?.id,
+           let pendingCode = UserDefaults.standard.string(forKey: "pendingReferralCode") {
+            let applied = await ReferralService.shared.applyReferralCode(pendingCode, forUserId: userId)
+            if applied {
+                UserDefaults.standard.removeObject(forKey: "pendingReferralCode")
+            }
+        }
+        
+        // 4. Initialize RevenueCat
         await appState.subscriptionService.configure(userId: appState.currentUser?.id)
         
-        // 4. Mark as initialized
+        // 5. Mark as initialized
         withAnimation(.easeOut(duration: 0.3)) {
             isInitialized = true
         }

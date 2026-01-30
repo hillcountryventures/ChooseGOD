@@ -112,6 +112,11 @@ final class NotificationService: NSObject, NotificationServiceProtocol, UNUserNo
                     hour: prefs.morningNotificationTime.hour ?? 7,
                     minute: prefs.morningNotificationTime.minute ?? 0
                 )
+                // Also schedule rotating content for variety
+                try await scheduleRotatingReminders(
+                    hour: prefs.morningNotificationTime.hour ?? 7,
+                    minute: prefs.morningNotificationTime.minute ?? 0
+                )
             }
             
             if prefs.eveningNotificationEnabled {
@@ -128,6 +133,82 @@ final class NotificationService: NSObject, NotificationServiceProtocol, UNUserNo
         }
     }
     
+
+    // MARK: - Rotating Notification Content
+    
+    private static let devotionalMessages: [(title: String, body: String)] = [
+        ("Good Morning ☀️", "God's mercies are new every morning. Open His Word today."),
+        ("Rise & Shine 🌅", "The Lord is your strength today. Start with Scripture."),
+        ("New Day, New Grace ✨", "His faithfulness reaches to the skies. Read today's verse."),
+        ("God is Calling 📖", "Be still and know He is God. Your devotional awaits."),
+        ("Morning Light 🌤️", "Let God's Word be a lamp to your feet today."),
+        ("Blessed Morning 🙏", "Seek first His kingdom. Your reading plan is waiting."),
+        ("Walk in Faith 🌿", "Trust the Lord with all your heart. Dive into His Word."),
+        ("Fresh Start 🌱", "Every morning is a chance to grow closer to God."),
+        ("Grace Awaits 💛", "God has something to say to you today. Come and listen."),
+        ("Daily Bread 🍞", "Man does not live by bread alone. Feed your spirit."),
+        ("Heaven's Invitation 🕊️", "Draw near to God and He will draw near to you."),
+        ("Peace Be With You ☮️", "Let the peace of Christ rule in your heart today."),
+        ("Strength for Today 💪", "I can do all things through Christ who strengthens me."),
+        ("Joy in the Morning 😊", "The joy of the Lord is your strength. Read and rejoice."),
+        ("Love Letter 💌", "God wrote you a love letter. It's called the Bible."),
+        ("Faithful & True 🌟", "Great is His faithfulness. Discover it in today's reading."),
+        ("Heart Check ❤️", "Guard your heart, for everything flows from it. Start with God."),
+        ("Wisdom Calling 🦉", "If any of you lacks wisdom, ask God. He gives generously."),
+        ("Anchor Your Day ⚓", "Build your day on the rock of God's Word."),
+        ("Renewed Mind 🧠", "Be transformed by the renewing of your mind. Read today."),
+        ("Heavenly Focus 🎯", "Set your mind on things above. Your devotional is ready."),
+        ("God's Promises 🌈", "Every promise of God is yes in Christ. Discover them."),
+        ("Living Water 💧", "Come to the well that never runs dry. Read His Word."),
+        ("Abide in Him 🍇", "Remain in the vine and bear much fruit today."),
+        ("Fearfully Made 🌺", "You are wonderfully made. See yourself through His Word."),
+        ("Kingdom Builder 👑", "Your labor in the Lord is not in vain. Be encouraged."),
+        ("Light of the World 🕯️", "Let your light shine. Start by filling up on Scripture."),
+        ("Good Shepherd 🐑", "The Lord is your shepherd. Follow His voice today."),
+        ("Unshakable Hope 🏔️", "Hope that is seen is not hope. Walk by faith today."),
+        ("Eternal Perspective 🌌", "What is seen is temporary. Focus on what is eternal."),
+        ("Rooted & Grounded 🌳", "Be rooted in love. Let God's Word ground you today."),
+        ("Amazing Grace 🎶", "Grace upon grace. Open the Bible and receive it."),
+    ]
+    
+    /// Schedule 7 days of unique rotating notifications, cancelling old ones first
+    func scheduleRotatingReminders(hour: Int = 7, minute: Int = 0) async throws {
+        // Cancel existing rotating reminders
+        let existingIds = (0..<7).map { "rotating_devotional_day_\($0)" }
+        center.removePendingNotificationRequests(withIdentifiers: existingIds)
+        
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Pick a rotating offset based on the week of the year so messages change weekly
+        let weekOfYear = calendar.component(.weekOfYear, from: today)
+        let startIndex = (weekOfYear * 7) % Self.devotionalMessages.count
+        
+        for dayOffset in 0..<7 {
+            let msgIndex = (startIndex + dayOffset) % Self.devotionalMessages.count
+            let message = Self.devotionalMessages[msgIndex]
+            
+            let content = UNMutableNotificationContent()
+            content.title = message.title
+            content.body = message.body
+            content.sound = .default
+            content.categoryIdentifier = NotificationCategory.devotionalReminder
+            
+            guard let futureDate = calendar.date(byAdding: .day, value: dayOffset, to: today) else { continue }
+            var dateComponents = calendar.dateComponents([.year, .month, .day], from: futureDate)
+            dateComponents.hour = hour
+            dateComponents.minute = minute
+            
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+            let request = UNNotificationRequest(
+                identifier: "rotating_devotional_day_\(dayOffset)",
+                content: content,
+                trigger: trigger
+            )
+            try await center.add(request)
+        }
+    }
+
     // MARK: - Badge Management
     
     func setBadge(_ count: Int) {
