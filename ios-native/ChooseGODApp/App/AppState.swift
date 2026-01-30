@@ -14,6 +14,11 @@ final class AppState {
     var isLoading = false
     var errorMessage: String?
     var showError = false
+
+    // MARK: - Deep Link Navigation
+    var deepLinkVerseRef: String?
+    var deepLinkInviteCode: String?
+    var deepLinkDevotionalId: String?
     
     // MARK: - User Preferences
     var preferences: UserPreferences
