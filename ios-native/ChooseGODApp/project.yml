@@ -6,6 +6,14 @@ options:
   generateEmptyDirectories: true
   groupSortPosition: top
 
+configs:
+  Debug: debug
+  Release: release
+
+configFiles:
+  Debug: ../Configuration/Debug.xcconfig
+  Release: ../Configuration/Release.xcconfig
+
 settings:
   base:
     MARKETING_VERSION: "1.0.0"
