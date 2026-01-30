@@ -42,7 +42,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
             .from("bible_verses")
             .select()
             .eq("translation", value: translation.rawValue)
-            .ilike("text", pattern: "%\(query)%")
+            .ilike("text", pattern: "%\(InputSanitizer.sanitizeSearchQuery(query))%")
             .limit(limit)
             .execute()
             .value

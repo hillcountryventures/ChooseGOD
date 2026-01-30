@@ -57,6 +57,7 @@ final class ChatViewModel {
         guard allowed else { return }
         
         // Add user message
+        AnalyticsService.shared.capture("chat_message_sent")
         let userMessage = ChatMessage(role: .user, content: trimmed)
         messages.append(userMessage)
         inputText = ""
@@ -74,14 +75,18 @@ final class ChatViewModel {
                     verseContext: context.bibleContext
                 )
                 
+                // Validate AI response through theological guardrails
+                let validation = TheologicalGuardrails.validate(response.response)
+                let safeContent = validation.isValid ? response.response : validation.sanitized
+                
                 let aiMessage = ChatMessage(
                     role: .assistant,
-                    content: response.response,
-                    sources: response.sources,
+                    content: safeContent,
+                    sources: validation.isValid ? response.sources : [],
                     mode: currentMode,
-                    toolsUsed: response.toolsUsed,
-                    celebration: response.celebration,
-                    suggestedActions: response.suggestedActions
+                    toolsUsed: validation.isValid ? response.toolsUsed : nil,
+                    celebration: validation.isValid ? response.celebration : nil,
+                    suggestedActions: validation.isValid ? response.suggestedActions : nil
                 )
                 messages.append(aiMessage)
                 suggestedActions = response.suggestedActions ?? []
@@ -101,6 +106,7 @@ final class ChatViewModel {
                 )
                 messages.append(errorMsg)
                 self.errorMessage = error.localizedDescription
+                AnalyticsService.shared.capture("error", properties: ["source": "chat", "message": error.localizedDescription])
             }
             isLoading = false
         }

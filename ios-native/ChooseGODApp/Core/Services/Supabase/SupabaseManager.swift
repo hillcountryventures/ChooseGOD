@@ -21,12 +21,21 @@ final class SupabaseManager {
     
     // MARK: - Configuration
     
-    /// Supabase project URL
-    private let supabaseURL = "https://rtozduhxrfsksygsmwuj.supabase.co"
+    /// Reads Supabase URL from Info.plist (set via xcconfig)
+    private var supabaseURL: String {
+        guard let url = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String, !url.isEmpty else {
+            fatalError("SUPABASE_URL not set in Info.plist — check your xcconfig files")
+        }
+        return url
+    }
     
-    /// Supabase anon/public key
-    /// Note: This is safe to include in the app - it's a public key
-    private let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0b3pkdWh4cmZza3N5Z3Ntd3VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MjU3OTQsImV4cCI6MjA4MzIwMTc5NH0.wDBmX1WiOHA7DBaZC8nzuO7MqmCa3TOi3aQ-YsdeC5I"
+    /// Reads Supabase anon key from Info.plist (set via xcconfig)
+    private var supabaseAnonKey: String {
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String, !key.isEmpty else {
+            fatalError("SUPABASE_ANON_KEY not set in Info.plist — check your xcconfig files")
+        }
+        return key
+    }
     
     // MARK: - Initialization
     
@@ -36,6 +45,9 @@ final class SupabaseManager {
     /// Call this early in app startup
     func initialize() async {
         guard !isInitialized else { return }
+        
+        print("[SupabaseManager] URL: \(supabaseURL.isEmpty ? "MISSING" : "SET")")
+        print("[SupabaseManager] Anon Key: \(supabaseAnonKey.isEmpty ? "MISSING" : "SET")")
         
         client = SupabaseClient(
             supabaseURL: URL(string: supabaseURL)!,
@@ -111,19 +123,5 @@ struct KeychainAuthStorage: AuthLocalStorage {
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw NSError(domain: "Keychain", code: Int(status))
         }
-    }
-}
-
-// MARK: - Configuration from Environment
-
-extension SupabaseManager {
-    /// Load configuration from Info.plist or environment
-    /// Use this in production to avoid hardcoding keys
-    static func loadConfiguration() -> (url: String, key: String)? {
-        guard let url = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
-              let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String else {
-            return nil
-        }
-        return (url, key)
     }
 }

@@ -83,7 +83,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
             .from(tableName)
             .select()
             .eq("user_id", value: userId)
-            .ilike("content", pattern: "%\(query)%")
+            .ilike("content", pattern: "%\(InputSanitizer.sanitizeSearchQuery(query))%")
             .order("created_at", ascending: false)
             .limit(30)
             .execute()
