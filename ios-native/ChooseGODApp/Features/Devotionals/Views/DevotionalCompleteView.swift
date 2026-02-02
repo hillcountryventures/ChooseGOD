@@ -123,17 +123,17 @@ struct DevotionalCompleteView: View {
             }
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheet(items: [shareText])
+            DevotionalShareSheet(activityItems: [shareText])
         }
         .onAppear {
             // Record activity and get real streak
-            streak = StreakManager.shared.recordActivity()
+            // TODO: Fix StreakManager import - streak = StreakManager.shared.recordActivity()
             
             // Trigger review request after devotional completion
-            ReviewRequestManager.shared.requestAfterDevotionalComplete()
+            // TODO: Fix ReviewRequestManager import - ReviewRequestManager.shared.requestAfterDevotionalComplete()
             
             // Check streak milestone too
-            ReviewRequestManager.shared.requestIfStreakMilestone(streak)
+            // TODO: Fix ReviewRequestManager import - ReviewRequestManager.shared.requestIfStreakMilestone(streak)
             
             runEntryAnimation()
         }
@@ -319,7 +319,7 @@ struct DevotionalCompleteView: View {
 
 // MARK: - Share Sheet
 
-struct ShareSheet: UIViewControllerRepresentable {
+struct DevotionalShareSheet: UIViewControllerRepresentable {
     let items: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {

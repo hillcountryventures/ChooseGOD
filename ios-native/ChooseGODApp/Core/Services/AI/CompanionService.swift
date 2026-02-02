@@ -74,7 +74,7 @@ final class CompanionService {
                 try await requireSupabase().from("chat_logs").insert(payload).execute()
             } catch {
                 // Silently fail — analytics should not disrupt UX
-                AppLogger.ai.error("CompanionService analytics log failed: \(error.localizedDescription)")
+                Logger(subsystem: "com.choosegod.app", category: "ai").error("CompanionService analytics log failed: \(error.localizedDescription)")
             }
         }
     }

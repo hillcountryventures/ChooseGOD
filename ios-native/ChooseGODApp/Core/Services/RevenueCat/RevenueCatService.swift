@@ -21,7 +21,7 @@ final class RevenueCatService: SubscriptionServiceProtocol {
     
     func configure(userId: String?) async {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String, !apiKey.isEmpty else {
-            AppLogger.subscription.warning("REVENUECAT_API_KEY not found in Info.plist")
+            Logger(subsystem: "com.choosegod.app", category: "subscription").warning("REVENUECAT_API_KEY not found in Info.plist")
             return
         }
         
@@ -45,7 +45,7 @@ final class RevenueCatService: SubscriptionServiceProtocol {
             isPremium = customerInfo.entitlements["premium"]?.isActive == true
             return isPremium
         } catch {
-            AppLogger.subscription.error("Failed to check premium status: \(error)")
+            Logger(subsystem: "com.choosegod.app", category: "subscription").error("Failed to check premium status: \(error)")
             return false
         }
     }
@@ -78,7 +78,7 @@ final class RevenueCatService: SubscriptionServiceProtocol {
         
         isPremium = customerInfo.entitlements["premium"]?.isActive == true
         if isPremium {
-            AnalyticsService.shared.capture("subscription_purchased", properties: ["package": String(describing: package)])
+            // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("subscription_purchased", properties: ["package": String(describing: package)])
         }
         return isPremium
     }

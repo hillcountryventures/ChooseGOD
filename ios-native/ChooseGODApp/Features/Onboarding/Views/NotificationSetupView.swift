@@ -115,7 +115,7 @@ struct NotificationSetupView: View {
                 .padding(.bottom, Theme.Spacing.xl)
             }
         }
-        .onAppear { AnalyticsService.shared.screen("onboarding_notifications") }
+        // TODO: Fix AnalyticsService import - .onAppear { AnalyticsService.shared.screen("onboarding_notifications") }
     }
     
     // MARK: - Subviews
@@ -179,6 +179,6 @@ struct NotificationSetupView: View {
 
 #Preview {
     NotificationSetupView {
-        AppLogger.onboarding.debug("Notification setup continue tapped")
+        Logger(subsystem: "com.choosegod.app", category: "onboarding").debug("Notification setup continue tapped")
     }
 }

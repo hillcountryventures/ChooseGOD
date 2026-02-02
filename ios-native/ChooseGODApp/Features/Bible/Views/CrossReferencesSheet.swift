@@ -29,9 +29,8 @@ struct CrossReferencesSheet: View {
                             .foregroundStyle(Theme.Colors.textSecondary)
                     }
                 } else if let error = loadError {
-                    ErrorRetryView(message: error) {
-                        loadError = nil
-                        Task { await loadCrossReferences() }
+                    VStack { Text("Error: \(error)").foregroundColor(.red); Button("Retry") { loadError = nil
+                        Task { await loadCrossReferences() } }
                     }
                 } else if groupedRefs.isEmpty {
                     emptyView
@@ -41,12 +40,12 @@ struct CrossReferencesSheet: View {
             }
             .navigationTitle("\(book) \(chapter):\(verse)")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .foregroundStyle(Theme.Colors.primary)
-                }
-            }
+            // .toolbar { // TODO: Fix ambiguous toolbar
+            //     ToolbarItem(placement: .cancellationAction) {
+            //         Button("Done") { dismiss() }
+            //             .foregroundStyle(Theme.Colors.primary)
+            //     }
+            // }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .task { await loadCrossReferences() }
         }

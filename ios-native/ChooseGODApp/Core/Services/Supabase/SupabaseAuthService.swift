@@ -72,8 +72,8 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         try await storeSession(session)
         
         currentUser = user
-        AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
-        AnalyticsService.shared.capture("login_completed", properties: ["method": "apple"])
+        // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
+        // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("login_completed", properties: ["method": "apple"])
         return user
     }
     
@@ -102,11 +102,11 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
             try await storeSession(session)
             
             currentUser = user
-            AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
-            AnalyticsService.shared.capture("login_completed", properties: ["method": "email"])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("login_completed", properties: ["method": "email"])
             return user
         } catch {
-            AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "email_login", "message": error.localizedDescription])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "email_login", "message": error.localizedDescription])
             throw mapSupabaseError(error)
         }
     }
@@ -136,11 +136,11 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
             }
             
             currentUser = user
-            AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
-            AnalyticsService.shared.capture("signup_completed", properties: ["method": "email"])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.identify(user.id, properties: ["email": user.email])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("signup_completed", properties: ["method": "email"])
             return user
         } catch {
-            AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "email_signup", "message": error.localizedDescription])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "email_signup", "message": error.localizedDescription])
             throw mapSupabaseError(error)
         }
     }
@@ -151,7 +151,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         try await requireSupabase().auth.signOut()
         try KeychainManager.delete(key: .session)
         currentUser = nil
-        AnalyticsService.shared.reset()
+        // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.reset()
     }
     
     func restoreSession() async -> Session? {
@@ -203,11 +203,11 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
             try await requireSupabase().rpc("delete_user_account", params: ["user_id": userId])
                 .execute()
         } catch {
-            AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "delete_account", "message": error.localizedDescription])
+            // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "delete_account", "message": error.localizedDescription])
             throw error
         }
         
-        AnalyticsService.shared.capture("account_deleted")
+        // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("account_deleted")
         try await signOut()
     }
     

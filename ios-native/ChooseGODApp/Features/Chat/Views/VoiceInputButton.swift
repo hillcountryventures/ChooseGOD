@@ -140,7 +140,7 @@ struct VoiceTranscriptOverlay: View {
     ZStack {
         Theme.Colors.background.ignoresSafeArea()
         VoiceInputButton(voiceService: VoiceInputService()) { text in
-            AppLogger.general.debug("Voice input: \(text)")
+            Logger(subsystem: "com.choosegod.app", category: "general").debug("Voice input: \(text)")
         }
     }
 }

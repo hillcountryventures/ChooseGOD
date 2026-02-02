@@ -37,7 +37,7 @@ final class AudioPlayerManager {
             try session.setCategory(.playback, mode: .spokenAudio, options: [.allowAirPlay])
             try session.setActive(true)
         } catch {
-            AppLogger.audio.error("Audio session error: \(error)")
+            Logger(subsystem: "com.choosegod.app", category: "audio").error("Audio session error: \(error)")
         }
     }
     

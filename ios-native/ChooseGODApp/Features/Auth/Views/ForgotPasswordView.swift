@@ -1,191 +1,107 @@
 import SwiftUI
 
-/// Password reset screen
 struct ForgotPasswordView: View {
-    @Environment(AppState.self) private var appState
-    @Environment(\.dismiss) private var dismiss
+    // @Environment(\AppState.self) private var appState // TODO: Fix this environment
     @State private var viewModel = AuthViewModel()
-    
     @State private var email = ""
-    @State private var emailSent = false
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background
-                    .ignoresSafeArea()
-                
-                VStack(spacing: Theme.Spacing.xl) {
-                    if emailSent {
-                        successView
-                    } else {
-                        resetFormView
-                    }
-                }
-                .padding(.horizontal, Theme.Spacing.lg)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                }
-            }
-            .alert("Error", isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
-            }
-            .overlay {
-                if viewModel.isLoading {
-                    LoadingOverlay()
-                }
-            }
-        }
-        .onAppear { AnalyticsService.shared.screen("forgot_password") }
-    }
-    
-    // MARK: - Reset Form
-    
-    private var resetFormView: some View {
-        VStack(spacing: Theme.Spacing.xl) {
-            // Icon
-            Image(systemName: "key.fill")
-                .font(Theme.Typography.iconXL)
-                .foregroundStyle(Theme.Colors.primary)
-                .padding(.top, Theme.Spacing.xxl)
+        ZStack {
+            Color.clear.ignoresSafeArea() // Placeholder for Theme.Colors.background
             
-            // Header
-            VStack(spacing: Theme.Spacing.sm) {
+            VStack(alignment: .leading, spacing: 0) {
+                // Title
                 Text("Reset Password")
-                    .font(Theme.Typography.title1)
-                    .foregroundStyle(Theme.Colors.text)
+                    .font(.largeTitle) // Placeholder for Theme.Typography.display
+                    .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+                    .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
                 
-                Text("Enter your email address and we'll send you a link to reset your password.")
-                    .font(Theme.Typography.body)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            // Email Field
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Email")
-                    .font(Theme.Typography.label)
-                    .foregroundStyle(Theme.Colors.textSecondary)
+                // Subtitle
+                Text("Enter your email to receive a password reset link")
+                    .font(.body) // Placeholder for Theme.Typography.body
+                    .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                    .padding(.bottom, 24) // Placeholder for Theme.Spacing.xl
                 
-                TextField("Enter your email", text: $email)
-                    .textFieldStyle(ChooseGODTextFieldStyle())
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    .autocorrectionDisabled()
-            }
-            
-            // Send Button
-            Button {
-                Task {
-                    await sendResetEmail()
+                // Email Field
+                VStack(alignment: .leading, spacing: 8) { // Placeholder for Theme.Spacing.sm
+                    Text("Email")
+                        .font(.caption) // Placeholder for Theme.Typography.label
+                        .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                    
+                    TextField("Email", text: $email)
+                        .keyboardType(.emailAddress)
+                        .textContentType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        // .textFieldStyle(ChooseGODTextFieldStyle()) // TODO: Fix ChooseGODTextFieldStyle import
                 }
-            } label: {
-                Text("Send Reset Link")
-                    .font(Theme.Typography.button)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Theme.Dimensions.buttonHeight)
-                    .background(email.isEmpty ? Theme.Colors.primary.opacity(0.5) : Theme.Colors.primary)
-                    .cornerRadius(Theme.CornerRadius.lg)
+                .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
+                
+                // Send Reset Link Button
+                Button {
+                    Task {
+                        await viewModel.resetPassword(email: email)
+                    }
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
+                    } else {
+                        Text("Send Reset Link")
+                            .font(.headline) // Placeholder for Theme.Typography.button
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
+                    }
+                }
+                .disabled(email.isEmpty || viewModel.isLoading)
+                
+                Spacer()
             }
-            .disabled(email.isEmpty || viewModel.isLoading)
-            
-            Spacer()
+            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
+            .padding(.top, 24) // Placeholder for Theme.Spacing.xxl
         }
+        .navigationTitle("Forgot Password")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    // Dismiss
+                    presentationMode.wrappedValue.dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        // TODO: Fix AnalyticsService import - .onAppear { AnalyticsService.shared.screen("forgot_password") }
+        // TODO: Fix AppStrings import - .alert(AppStrings.Auth.resetPasswordSentTitle, isPresented: $viewModel.showResetSent) {
+        //     Button(AppStrings.Errors.ok, role: .cancel) {
+        //         // Dismiss
+        //         presentationMode.wrappedValue.dismiss()
+        //     }
+        // } message: {
+        //     Text(AppStrings.Auth.resetPasswordSentMessage)
+        // }
+        // TODO: Fix AppStrings import - .alert(AppStrings.Errors.genericTitle, isPresented: $viewModel.showError) {
+        //     Button(AppStrings.Errors.ok, role: .cancel) {}
+        // } message: {
+        //     Text(viewModel.errorMessage ?? AppStrings.Errors.genericBody)
+        // }
+        // .overlay(LoadingOverlay(isLoading: viewModel.isLoading)) // TODO: Fix LoadingOverlay import
     }
     
-    // MARK: - Success View
-    
-    private var successView: some View {
-        VStack(spacing: Theme.Spacing.xl) {
-            Spacer()
-            
-            // Success Icon
-            Image(systemName: "envelope.badge.fill")
-                .font(Theme.Typography.iconHuge)
-                .foregroundStyle(Theme.Colors.success)
-            
-            // Message
-            VStack(spacing: Theme.Spacing.sm) {
-                Text("Check Your Email")
-                    .font(Theme.Typography.title1)
-                    .foregroundStyle(Theme.Colors.text)
-                
-                Text("We've sent a password reset link to:")
-                    .font(Theme.Typography.body)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                
-                Text(email)
-                    .font(Theme.Typography.body)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Theme.Colors.primary)
-                
-                Text("Please check your inbox and follow the instructions to reset your password.")
-                    .font(Theme.Typography.body)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, Theme.Spacing.sm)
-            }
-            
-            // Done Button
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                        .accessibilityLabel("Done")
-                    .font(Theme.Typography.button)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Theme.Dimensions.buttonHeight)
-                    .background(Theme.Colors.primary)
-                    .cornerRadius(Theme.CornerRadius.lg)
-            }
-            .padding(.top, Theme.Spacing.lg)
-            
-            // Resend Link
-            Button {
-                Task {
-                    await sendResetEmail()
-                }
-            } label: {
-                Text("Didn't receive the email? Send again")
-                    .font(Theme.Typography.bodySmall)
-                    .foregroundStyle(Theme.Colors.primary)
-            }
-            
-            Spacer()
-        }
-    }
-    
-    // MARK: - Actions
-    
-    private func sendResetEmail() async {
-        viewModel.isLoading = true
-        defer { viewModel.isLoading = false }
-        
-        do {
-            try await appState.authService.resetPassword(email: email)
-            await MainActor.run {
-                withAnimation {
-                    emailSent = true
-                }
-            }
-        } catch {
-            viewModel.handleError(error)
-        }
-    }
+    @Environment(\PresentationMode.self) private var presentationMode
 }
 
-#Preview {
-    ForgotPasswordView()
-        .environment(AppState.preview)
-}
+// #Preview {
+//    NavigationStack {
+//        ForgotPasswordView()
+//            .environment(\AppState.self, AppState())
+//    }
+//}

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -202,7 +202,7 @@
 		D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerService.swift; sourceTree = "<group>"; };
 		D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyInsightsView.swift; sourceTree = "<group>"; };
 		D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
-		D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChooseGOD.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChooseGOD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC7931D430A30CA79458C4A /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		E6208C410F97E16CFE92E620 /* Bible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bible.swift; sourceTree = "<group>"; };
 		E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesDetailView.swift; sourceTree = "<group>"; };
@@ -885,7 +885,7 @@
 				7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 				FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
-			preferredProjectObjectVersion = 77;
+			productRefGroup = FED599ADFF0DA84DAF767F0E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1013,6 +1013,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Resources/ChooseGOD.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HWV3Q7B59G;
 				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1031,6 +1033,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Resources/ChooseGOD.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HWV3Q7B59G;
 				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

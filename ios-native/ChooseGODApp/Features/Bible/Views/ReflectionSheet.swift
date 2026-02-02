@@ -178,7 +178,7 @@ struct ReflectionSheet: View {
         isSaving = true
         
         // TODO: Save to Supabase journal/spiritual_moments
-        AppLogger.journal.info("Reflection saved for \(verseRef)")
+        Logger(subsystem: "com.choosegod.app", category: "journal").info("Reflection saved for \(verseRef)")
         
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)

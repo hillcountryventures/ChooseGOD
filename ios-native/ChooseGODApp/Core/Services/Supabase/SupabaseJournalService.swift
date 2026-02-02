@@ -1,5 +1,6 @@
 import Foundation
 import Supabase
+import os
 
 // MARK: - Protocol
 
@@ -15,6 +16,14 @@ protocol JournalServiceProtocol {
 // MARK: - Supabase Implementation
 
 final class SupabaseJournalService: JournalServiceProtocol {
+    
+    /// Sanitize search query to prevent SQL injection
+    private func sanitizeSearchQuery(_ query: String) -> String {
+        query
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "%", with: "\\%")
+            .replacingOccurrences(of: "_", with: "\\_")
+    }
     
     private func requireSupabase() throws -> SupabaseClient {
         try SupabaseManager.shared.requireClient()
@@ -80,7 +89,7 @@ final class SupabaseJournalService: JournalServiceProtocol {
             .from(tableName)
             .select()
             .eq("user_id", value: userId)
-            .ilike("content", pattern: "%\(InputSanitizer.sanitizeSearchQuery(query))%")
+            .ilike("content", pattern: "%\(sanitizeSearchQuery(query))%")
             .order("created_at", ascending: false)
             .limit(30)
             .execute()

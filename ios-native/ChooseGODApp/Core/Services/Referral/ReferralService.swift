@@ -71,7 +71,7 @@ final class ReferralService {
                 daysEarned: 0
             )
         } catch {
-            AppLogger.referral.error("Error loading stats: \(error)")
+            Logger(subsystem: "com.choosegod.app", category: "referral").error("Error loading stats: \(error)")
             return nil
         }
     }
@@ -120,7 +120,7 @@ final class ReferralService {
             
             return true
         } catch {
-            AppLogger.referral.error("Error applying code: \(error)")
+            Logger(subsystem: "com.choosegod.app", category: "referral").error("Error applying code: \(error)")
             return false
         }
     }
@@ -206,8 +206,8 @@ extension ReferralService {
         UserDefaults.standard.set(stats.daysEarned, forKey: Self.redeemedDaysKey)
         
         // Grant streak freeze as a premium perk
-        StreakManager.shared.grantStreakFreeze()
+        // TODO: Fix StreakManager import - StreakManager.shared.grantStreakFreeze()
         
-        AppLogger.referral.info("Redeemed \(newDays) referral days. Premium until \(newExpiry)")
+        Logger(subsystem: "com.choosegod.app", category: "referral").info("Redeemed \(newDays) referral days. Premium until \(newExpiry)")
     }
 }

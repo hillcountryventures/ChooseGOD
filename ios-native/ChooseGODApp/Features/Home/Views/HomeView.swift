@@ -369,17 +369,17 @@ struct HomeView: View {
         } catch {
             dailyVerseError = "Couldn't load today's verse. Please try again."
             dailyVerse = nil
+        }
         isLoading = false
     }
     
-    // Fix 4: Implemented shareVerse()
     private func shareVerse() {
         showShareSheet = true
     }
     
     private func bookmarkVerse() {
         HapticManager.shared.success()
-        // Bookmark
+        // Bookmark logic here
     }
 }
 

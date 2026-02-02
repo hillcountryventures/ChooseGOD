@@ -90,7 +90,7 @@ struct RecommendationsView: View {
                 appeared = true
             }
         }
-        .onAppear { AnalyticsService.shared.screen("onboarding_recommendations") }
+        // TODO: Fix AnalyticsService import - .onAppear { AnalyticsService.shared.screen("onboarding_recommendations") }
     }
 }
 

@@ -83,7 +83,8 @@ struct CreateCircleSheet: View {
             } label: {
                 Group {
                     if viewModel.isCreating {
-                        ShimmerView(height: 20)
+                        // ShimmerView(height: 20) // TODO: Fix ambiguous initializer
+                        ProgressView()
                             .tint(.white)
                     } else {
                         Text("Create Circle")

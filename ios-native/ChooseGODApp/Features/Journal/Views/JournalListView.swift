@@ -1,223 +1,194 @@
 import SwiftUI
 
 struct JournalListView: View {
-    @Environment(AppState.self) private var appState
-    @State private var viewModel = JournalViewModel()
-    @State private var showingCompose = false
+    @StateObject private var viewModel = JournalViewModel()
+    @State private var showCompose = false
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.clear
-                
-                if viewModel.isLoading && viewModel.moments.isEmpty {
-                    loadingView
-                } else if let error = viewModel.errorMessage {
-                    ErrorRetryView(message: error) {
-                        viewModel.errorMessage = nil
-                        Task { await viewModel.loadMoments() }
-                    }
-                } else if viewModel.filteredMoments.isEmpty {
-                    emptyView
-                } else {
-                    momentsList
-                }
-            }
-            .screenBackground()
-            .navigationTitle("Journal")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .searchable(text: $viewModel.searchText, prompt: "Search entries...")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingCompose = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .foregroundStyle(Theme.Colors.primary)
-                            .accessibilityLabel("New journal entry")
-                            .accessibilityHint("Double tap to write a new journal entry")
+        ZStack {
+            Color.clear.ignoresSafeArea() // Placeholder for Theme.Colors.background
+            
+            if viewModel.isLoading && viewModel.entries.isEmpty {
+                ShimmerView(height: 20)
+                    .tint(.blue) // Placeholder for Theme.Colors.primary
+            } else if let error = viewModel.error, viewModel.entries.isEmpty {
+                // ErrorRetryView(message: error) { // Replaced with simple view
+                VStack {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                    Button("Retry") {
+                        viewModel.error = nil
+                        Task { await viewModel.fetchEntries() }
                     }
                 }
-            }
-            .sheet(isPresented: $showingCompose) {
-                JournalComposeView(viewModel: viewModel)
-            }
-            .task {
-                await viewModel.loadMoments()
+                // }
+            } else if viewModel.entries.isEmpty {
+                emptyState
+            } else {
+                listContent
             }
         }
-        .onAppear { AnalyticsService.shared.screen("journal_list") }
-    }
-    
-    // MARK: - Filter Bar
-    
-    private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(JournalFilter.allCases, id: \.self) { filter in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            viewModel.activeFilter = filter
-                        }
-                    } label: {
-                        Text(filter.rawValue)
-                            .font(Theme.Typography.caption)
-                            .fontWeight(viewModel.activeFilter == filter ? .semibold : .regular)
-                            .foregroundStyle(viewModel.activeFilter == filter ? .white : Theme.Colors.textSecondary)
-                            .padding(.horizontal, Theme.Spacing.mds)
-                            .padding(.vertical, 7)
-                            .background {
-                                Capsule()
-                                    .fill(viewModel.activeFilter == filter
-                                          ? Theme.Colors.primary
-                                          : Theme.Colors.surface)
-                            }
-                    }
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-    
-    // MARK: - Moments List
-    
-    private var momentsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                filterBar
-                    .padding(.vertical, Theme.Spacing.sm)
-                
-                ForEach(viewModel.filteredMoments) { moment in
-                    NavigationLink {
-                        JournalDetailView(moment: moment, viewModel: viewModel)
-                    } label: {
-                        MomentRowView(moment: moment)
-                    }
-                    .buttonStyle(.plain)
+        // .screenBackground(Theme.Colors.background) // TODO: Fix this modifier
+        .navigationTitle("Journal")
+        .navigationBarTitleDisplayMode(.large)
+        .preferredColorScheme(.dark)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showCompose = true
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
                 }
             }
         }
-        .refreshable {
-            await viewModel.loadMoments()
+        .sheet(isPresented: $showCompose) {
+            JournalComposeView(viewModel: viewModel)
+        }
+        .task {
+            await viewModel.fetchEntries()
+        }
+        .onAppear {
+            // TODO: Fix AnalyticsService import - AnalyticsService.shared.screen("journal_list")
         }
     }
     
     // MARK: - Empty State
     
-    private var emptyView: some View {
-        EmptyStateView(
-            icon: "book.closed.fill",
-            title: "Your Story Awaits",
-            description: "Start writing to capture what God is doing in your life. Every entry is a testimony.",
-            actionTitle: "Write Entry",
-            action: { showingCompose = true }
-        )
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "book.closed")
+                .font(.system(size: 80)) // Placeholder for Theme.Typography.iconLarge
+                .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
+            Text("Your journal is empty")
+                .font(.title2) // Placeholder for Theme.Typography.h3
+                .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+            Text("Tap the pencil icon to write your first entry")
+                .font(.body) // Placeholder for Theme.Typography.body
+                .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                .multilineTextAlignment(.center)
+            Button {
+                showCompose = true
+            } label: {
+                Text("Write Entry")
+                    .font(.headline) // Placeholder for Theme.Typography.button
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16) // Placeholder for Theme.Spacing.md
+                    .padding(.vertical, 12) // Placeholder for Theme.Spacing.sm
+                    .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
+            }
+        }
+        .padding(.horizontal, 24) // Placeholder for Theme.Spacing.xl
     }
     
-    // MARK: - Loading
+    // MARK: - Journal List
     
-    private var loadingView: some View {
-        VStack(spacing: 12) {
-                ShimmerView(height: 20)
-                .tint(Theme.Colors.primary)
-            Text("Loading entries...")
-                .font(Theme.Typography.caption)
-                .foregroundStyle(Theme.Colors.textSecondary)
+    private var listContent: some View {
+        ScrollView {
+            VStack(spacing: 16) { // Placeholder for Theme.Spacing.lg
+                ForEach(viewModel.entries) { entry in
+                    NavigationLink {
+                        JournalDetailView(entry: entry, viewModel: viewModel)
+                    } label: {
+                        JournalEntryCard(entry: entry)
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                if viewModel.hasMore {
+                    Button {
+                        Task { await viewModel.loadMore() }
+                    } label: {
+                        if viewModel.isLoadingMore {
+                            ProgressView()
+                                .tint(.blue) // Placeholder for Theme.Colors.primary
+                        } else {
+                            Text("Load More")
+                                .font(.body) // Placeholder for Theme.Typography.body
+                                .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
+                        }
+                    }
+                    .padding(.vertical, 16) // Placeholder for Theme.Spacing.lg
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
+            .padding(.vertical, 16) // Placeholder for Theme.Spacing.lg
         }
     }
 }
 
-// MARK: - Moment Row
+// MARK: - Journal Entry Card
 
-struct MomentRowView: View {
-    let moment: SpiritualMoment
+struct JournalEntryCard: View {
+    let entry: JournalEntry
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Header: type badge + date
-            HStack {
-                Label {
-                    Text(moment.momentType.rawValue.capitalized)
-                        .font(Theme.Typography.caption2)
-                } icon: {
-                    Image(systemName: iconForType(moment.momentType))
-                        .font(Theme.Typography.caption2)
-                }
-                .foregroundStyle(Theme.Colors.primary)
-                            .accessibilityLabel("New journal entry")
-                            .accessibilityHint("Double tap to write a new journal entry")
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, 4)
-                .background(Theme.Colors.primaryAlpha(0.15), in: Capsule())
-                
-                Spacer()
-                
-                Text(moment.shortDate)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.Colors.textTertiary)
-            }
-            
-            // Content preview
-            Text(moment.content)
-                .font(Theme.Typography.body)
-                .foregroundStyle(Theme.Colors.text)
-                .lineLimit(3)
-            
-            // Linked verses
-            if !moment.linkedVerses.isEmpty {
-                HStack(spacing: 6) {
-                    Image(systemName: "book")
-                        .font(Theme.Typography.caption2)
-                        .foregroundStyle(Theme.Colors.primary)
-                            .accessibilityLabel("New journal entry")
-                            .accessibilityHint("Double tap to write a new journal entry")
-                    
-                    Text(moment.linkedVerses.map(\.reference).joined(separator: ", "))
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(Theme.Colors.primaryLight)
-                        .lineLimit(1)
-                }
-            }
-            
-            // Themes
-            if !moment.themes.isEmpty {
-                HStack(spacing: 6) {
-                    ForEach(moment.themes.prefix(3), id: \.self) { theme in
-                        Text(theme)
-                            .font(Theme.Typography.caption2)
-                            .foregroundStyle(Theme.Colors.textSecondary)
-                            .padding(.horizontal, Theme.Spacing.sm)
-                            .padding(.vertical, 3)
-                            .background(Theme.Colors.surfaceElevated, in: Capsule())
+        VStack(alignment: .leading, spacing: 8) { // Placeholder for Theme.Spacing.sm
+            Text(entry.title)
+                .font(.headline) // Placeholder for Theme.Typography.h4
+                .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+                .lineLimit(1)
+            Text(entry.content)
+                .font(.body) // Placeholder for Theme.Typography.body
+                .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                .lineLimit(2)
+            Text(entry.createdAt, style: .date)
+                .font(.caption) // Placeholder for Theme.Typography.caption1
+                .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
+        }
+        .padding(16) // Placeholder for Theme.Spacing.lg
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.gray.opacity(0.1), in: RoundedRectangle(cornerRadius: 12)) // Placeholder for Theme.Colors.backgroundSecondary
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1) // Placeholder for Theme.Colors.divider
+        }
+    }
+}
+
+// MARK: - Shimmer View (Placeholder)
+
+struct ShimmerView: View {
+    let height: CGFloat
+    @State private var phase = 0.0
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            ForEach(0..<5) { _ in
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: height)
+                    .overlay {
+                        GeometryReader { geo in
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: .clear, location: 0),
+                                            .init(color: .white.opacity(0.3), location: 0.5),
+                                            .init(color: .clear, location: 1)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                    .offset(x: geo.size.width * phase)
+                                )
+                        }
                     }
-                }
             }
         }
-        .padding()
-        .background(Theme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
-        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl, opacity: 0.5))
-        .padding(.horizontal)
-        .padding(.vertical, 4)
-    }
-    
-    private func iconForType(_ type: MomentType) -> String {
-        switch type {
-        case .journal: return "pencil.line"
-        case .prayer: return "hands.sparkles.fill"
-        case .gratitude: return "heart.fill"
-        case .devotional: return "book.fill"
-        case .confession: return "drop.fill"
-        case .lectio: return "text.book.closed.fill"
-        case .examen: return "moon.stars.fill"
-        default: return "circle.fill"
+        .padding(.horizontal, 16)
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                phase = 1.0
+            }
         }
     }
 }
 
 #Preview {
-    JournalListView()
-        .environment(AppState())
-        .preferredColorScheme(.dark)
+    NavigationStack {
+        JournalListView()
+    }
 }

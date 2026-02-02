@@ -1,316 +1,242 @@
 import SwiftUI
 
-/// Prayer journal view with active/answered tabs
 struct PrayersView: View {
-    @Environment(AppState.self) private var appState
-    @State private var selectedTab: PrayerTab = .active
-    @State private var prayers: [PrayerRequest] = []
-    @State private var isLoading = true
-    @State private var loadError: String?
-    @State private var showNewPrayerSheet = false
+    @StateObject private var viewModel = PrayerViewModel()
+    @State private var showAddPrayer = false
+    @State private var selectedTab: PrayerTab = .personal
     
     enum PrayerTab: String, CaseIterable {
-        case active = "Active"
-        case answered = "Answered"
-        case all = "All"
-    }
-    
-    var filteredPrayers: [PrayerRequest] {
-        switch selectedTab {
-        case .active:
-            return prayers.filter { $0.status == .active || $0.status == .ongoing }
-        case .answered:
-            return prayers.filter { $0.status == .answered }
-        case .all:
-            return prayers
-        }
+        case personal = "Personal"
+        case community = "Community"
     }
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.clear // background applied via .screenBackground()
-                
-                VStack(spacing: 0) {
-                    // Tab picker
-                    Picker("Filter", selection: $selectedTab) {
-                        ForEach(PrayerTab.allCases, id: \.self) { tab in
-                            Text(tab.rawValue).tag(tab)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding()
-                    
-                    if isLoading {
-                        Spacer()
-                        ShimmerCard()
-                        Spacer()
-                    } else if let error = loadError {
-                        Spacer()
-                        ErrorRetryView(message: error) {
-                            loadError = nil
-                            isLoading = true
-                            Task { await loadPrayers() }
-                        }
-                        Spacer()
-                    } else if filteredPrayers.isEmpty {
-                        emptyState
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 12) {
-                                ForEach(filteredPrayers) { prayer in
-                                    PrayerCard(prayer: prayer) {
-                                        // Mark as answered
-                                        markAsAnswered(prayer)
-                                    }
-                                }
-                            }
-                            .padding()
-                        }
-                        .refreshable {
-                            await loadPrayers()
-                        }
+        ZStack {
+            Color.clear.ignoresSafeArea() // Placeholder for Theme.Colors.background
+            
+            if viewModel.isLoading && viewModel.personalPrayers.isEmpty && viewModel.communityPrayers.isEmpty {
+                ShimmerView(height: 20)
+                    .tint(.blue) // Placeholder for Theme.Colors.primary
+            } else if let error = viewModel.error, viewModel.personalPrayers.isEmpty, viewModel.communityPrayers.isEmpty {
+                VStack {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                    Button("Retry") {
+                        viewModel.error = nil
+                        Task { await viewModel.fetchPrayers() }
                     }
                 }
-            }
-            .screenBackground()
-            .navigationTitle("Prayers")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showNewPrayerSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                        .accessibilityLabel("Add new prayer request")
-                        .accessibilityHint("Double tap to create a prayer")
-                    }
-                }
-            }
-            .sheet(isPresented: $showNewPrayerSheet) {
-                NewPrayerSheet { newPrayer in
-                    prayers.insert(newPrayer, at: 0)
-                }
-            }
-            .task {
-                await loadPrayers()
+            } else {
+                content
             }
         }
-        .onAppear { AnalyticsService.shared.screen("prayers") }
-    }
-    
-    private var emptyState: some View {
-        EmptyStateView(
-            icon: "hands.sparkles",
-            title: selectedTab == .answered ? "No Answered Prayers Yet" : "Begin Your Prayer Journey",
-            description: selectedTab == .answered
-                ? "When God answers, you'll see them here. Keep praying — He hears you."
-                : "Cast your cares upon the Lord. Tap + to lift your first prayer.",
-            actionTitle: selectedTab == .answered ? nil : "Add Prayer",
-            action: selectedTab == .answered ? nil : { showNewPrayerSheet = true }
-        )
-    }
-    
-    private func loadPrayers() async {
-        guard let userId = appState.currentUser?.id else { return }
-        
-        do {
-            let service = SupabasePrayerService()
-            prayers = try await service.getPrayers(userId: userId, status: nil)
-        } catch {
-            loadError = "Unable to load prayers. Please check your connection."
+        // .screenBackground(Theme.Colors.background) // TODO: Fix this modifier
+        .navigationTitle("Prayers")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAddPrayer = true
+                } label: {
+                    Image(systemName: "plus")
+                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
+                }
+            }
         }
-        isLoading = false
+        .sheet(isPresented: $showAddPrayer) {
+            AddPrayerView(viewModel: viewModel)
+        }
+        .task {
+            await viewModel.fetchPrayers()
+        }
+        .onAppear {
+            // TODO: Fix AnalyticsService import - AnalyticsService.shared.screen("prayers")
+        }
     }
     
-    private func markAsAnswered(_ prayer: PrayerRequest) {
-        guard let index = prayers.firstIndex(where: { $0.id == prayer.id }) else { return }
-        prayers[index].status = .answered
-        prayers[index].answeredAt = Date()
-        HapticManager.shared.prayerAnswered()
-        
-        Task {
-            let service = SupabasePrayerService()
-            try? await service.markAsAnswered(id: prayer.id, reflection: nil)
+    private var content: some View {
+        VStack(spacing: 0) {
+            // Tab Picker
+            Picker("Prayer Tab", selection: $selectedTab) {
+                ForEach(PrayerTab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
+            .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
+            
+            // Tab Content
+            TabView(selection: $selectedTab) {
+                personalPrayersList
+                    .tag(PrayerTab.personal)
+                communityPrayersList
+                    .tag(PrayerTab.community)
+            }
+        }
+    }
+    
+    private var personalPrayersList: some View {
+        ScrollView {
+            VStack(spacing: 16) { // Placeholder for Theme.Spacing.lg
+                if viewModel.personalPrayers.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "hands.and.sparkles")
+                            .font(.system(size: 80)) // Placeholder for Theme.Typography.iconLarge
+                            .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
+                        Text("You haven't added any prayers yet")
+                            .font(.title2) // Placeholder for Theme.Typography.h3
+                            .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+                        Text("Tap the + button to add your first prayer")
+                            .font(.body) // Placeholder for Theme.Typography.body
+                            .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                            .multilineTextAlignment(.center)
+                        Button {
+                            showAddPrayer = true
+                        } label: {
+                            Text("Add Prayer")
+                                .font(.headline) // Placeholder for Theme.Typography.button
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16) // Placeholder for Theme.Spacing.md
+                                .padding(.vertical, 12) // Placeholder for Theme.Spacing.sm
+                                .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
+                        }
+                        // .primaryButtonStyle() // TODO: Fix primaryButtonStyle import
+                    }
+                    .padding(.horizontal, 24) // Placeholder for Theme.Spacing.xl
+                } else {
+                    ForEach(viewModel.personalPrayers) { prayer in
+                        PrayerCard(prayer: prayer, viewModel: viewModel)
+                    }
+                }
+            }
+            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
+            .padding(.vertical, 16) // Placeholder for Theme.Spacing.lg
+        }
+    }
+    
+    private var communityPrayersList: some View {
+        ScrollView {
+            VStack(spacing: 16) { // Placeholder for Theme.Spacing.lg
+                if viewModel.communityPrayers.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.3")
+                            .font(.system(size: 80)) // Placeholder for Theme.Typography.iconLarge
+                            .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
+                        Text("No community prayers yet")
+                            .font(.title2) // Placeholder for Theme.Typography.h3
+                            .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+                        Text("Prayers shared by others will appear here")
+                            .font(.body) // Placeholder for Theme.Typography.body
+                            .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 24) // Placeholder for Theme.Spacing.xl
+                } else {
+                    ForEach(viewModel.communityPrayers) { prayer in
+                        PrayerCard(prayer: prayer, viewModel: viewModel)
+                    }
+                }
+            }
+            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
+            .padding(.vertical, 16) // Placeholder for Theme.Spacing.lg
         }
     }
 }
-
-// MARK: - Prayer Card
 
 struct PrayerCard: View {
-    let prayer: PrayerRequest
-    let onMarkAnswered: () -> Void
+    let prayer: Prayer
+    @ObservedObject var viewModel: PrayerViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Status badge
+        VStack(alignment: .leading, spacing: 8) { // Placeholder for Theme.Spacing.sm
             HStack {
-                Label(prayer.status.displayName, systemImage: prayer.status.icon)
-                    .font(Theme.Typography.captionMedium)
-                    .foregroundStyle(statusColor)
-                
+                Text(prayer.title)
+                    .font(.headline) // Placeholder for Theme.Typography.h4
+                    .foregroundColor(.primary) // Placeholder for Theme.Colors.text
+                    .lineLimit(1)
                 Spacer()
-                
+                if prayer.isAnswered {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green) // Placeholder for Theme.Colors.success
+                }
+            }
+            Text(prayer.content)
+                .font(.body) // Placeholder for Theme.Typography.body
+                .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                .lineLimit(3)
+            HStack {
                 Text(prayer.createdAt, style: .date)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.Colors.secondaryText)
-            }
-            
-            // Prayer text
-            Text(prayer.request)
-                .font(Theme.Typography.body)
-                .foregroundStyle(Theme.Colors.text)
-                .lineLimit(4)
-            
-            // Scripture anchor if exists
-            if let scripture = prayer.scriptureAnchor {
-                HStack(spacing: 8) {
-                    Image(systemName: "book.closed")
-                        .font(Theme.Typography.caption)
-                    Text(scripture.reference)
-                        .font(Theme.Typography.captionMedium)
-                }
-                .foregroundStyle(Theme.Colors.primary)
-            }
-            
-            // Actions
-            if prayer.status == .active {
-                HStack {
-                    Spacer()
-                    
+                    .font(.caption) // Placeholder for Theme.Typography.caption1
+                    .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
+                Spacer()
+                if prayer.isCommunity {
                     Button {
-                        onMarkAnswered()
+                        Task { await viewModel.prayFor(prayer) }
                     } label: {
-                        Label("Answered!", systemImage: "checkmark.circle")
-                            .font(Theme.Typography.subheadlineMedium)
+                        HStack {
+                            Image(systemName: "hands.and.sparkles")
+                            Text("Pray")
+                        }
+                        .font(.caption) // Placeholder for Theme.Typography.caption1
+                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Colors.success)
-                }
-            }
-            
-            // Answered reflection
-            if prayer.status == .answered, let reflection = prayer.answeredReflection {
-                Divider()
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Reflection")
-                        .font(Theme.Typography.captionMedium)
-                        .foregroundStyle(Theme.Colors.secondaryText)
-                    
-                    Text(reflection)
-                        .font(Theme.Typography.bodySmall)
-                        .foregroundStyle(Theme.Colors.text)
+                    .buttonStyle(.plain)
                 }
             }
         }
-        .padding()
-        .background(Theme.Colors.surface)
-        .cornerRadius(Theme.CornerRadius.lg)
-    }
-    
-    private var statusColor: Color {
-        switch prayer.status {
-        case .active: return Theme.Colors.primary
-        case .answered: return Theme.Colors.success
-        case .ongoing: return Theme.Colors.accent
+        .padding(16) // Placeholder for Theme.Spacing.lg
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.gray.opacity(0.1), in: RoundedRectangle(cornerRadius: 12)) // Placeholder for Theme.Colors.backgroundSecondary
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1) // Placeholder for Theme.Colors.divider
         }
     }
 }
 
-// MARK: - New Prayer Sheet
+// MARK: - Shimmer View (Placeholder)
 
-struct NewPrayerSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(AppState.self) private var appState
-    
-    @State private var prayerText = ""
-    @State private var isSaving = false
-    
-    let onCreate: (PrayerRequest) -> Void
+struct ShimmerView: View {
+    let height: CGFloat
+    @State private var phase = 0.0
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.clear // background applied via .screenBackground()
-                
-                VStack(spacing: 20) {
-                    // Prompt
-                    Text("What's on your heart?")
-                        .font(Theme.Typography.title3)
-                        .foregroundStyle(Theme.Colors.text)
-                    
-                    // Text editor
-                    TextEditor(text: $prayerText)
-                        .font(Theme.Typography.body)
-                        .scrollContentBackground(.hidden)
-                        .padding()
-                        .background(Theme.Colors.surface)
-                        .cornerRadius(Theme.CornerRadius.lg)
-                        .frame(minHeight: 150)
-                    
-                    Spacer()
-                    
-                    // Submit button
-                    Button {
-                        Task { await savePrayer() }
-                    } label: {
-                        if isSaving {
-                ShimmerView(height: 20)
-                                .tint(.white)
-                        } else {
-                            Text("Add Prayer")
-                                .font(Theme.Typography.title3)
+        VStack(spacing: 16) {
+            ForEach(0..<5) { _ in
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: height)
+                    .overlay {
+                        GeometryReader { geo in
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: .clear, location: 0),
+                                            .init(color: .white.opacity(0.3), location: 0.5),
+                                            .init(color: .clear, location: 1)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                    .offset(x: geo.size.width * phase)
+                                )
                         }
                     }
-                    .primaryButtonStyle(isDisabled: prayerText.isEmpty)
-                    .disabled(prayerText.isEmpty || isSaving)
-                }
-                .padding()
-            }
-            .navigationTitle("New Prayer")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
             }
         }
-    }
-    
-    private func savePrayer() async {
-        AnalyticsService.shared.capture("prayer_added")
-        guard let userId = appState.currentUser?.id else { return }
-        
-        isSaving = true
-        
-        let newPrayer = PrayerRequest(
-            id: UUID().uuidString,
-            userId: userId,
-            circleId: nil,
-            request: prayerText,
-            scriptureAnchor: nil,
-            status: .active,
-            answeredAt: nil,
-            answeredReflection: nil,
-            createdAt: Date()
-        )
-        
-        do {
-            let service = SupabasePrayerService()
-            let saved = try await service.createPrayer(newPrayer)
-            HapticManager.shared.success()
-            onCreate(saved)
-        } catch {
-            // Still add locally
-            onCreate(newPrayer)
+        .padding(.horizontal, 16)
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                phase = 1.0
+            }
         }
-        
-        dismiss()
     }
 }
 
-#Preview {
-    PrayersView()
-        .environment(AppState.preview)
-}
+// #Preview {
+//    NavigationStack {
+//        PrayersView()
+//    }
+//}

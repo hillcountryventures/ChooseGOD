@@ -130,7 +130,7 @@ final class NotificationService: NSObject, NotificationServiceProtocol, UNUserNo
             // Always schedule prayer reminder at noon
             try await schedulePrayerReminder()
         } catch {
-            AppLogger.notifications.error("Error scheduling: \(error)")
+            Logger(subsystem: "com.choosegod.app", category: "notifications").error("Error scheduling: \(error)")
         }
     }
     

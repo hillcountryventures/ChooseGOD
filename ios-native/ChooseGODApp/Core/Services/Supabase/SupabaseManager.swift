@@ -73,8 +73,8 @@ final class SupabaseManager {
             throw ConfigError.invalidURL(urlString)
         }
         
-        AppLogger.network.info("SupabaseManager URL: SET")
-        AppLogger.network.info("SupabaseManager Anon Key: SET")
+        Logger(subsystem: "com.choosegod.app", category: "network").info("SupabaseManager URL: SET")
+        Logger(subsystem: "com.choosegod.app", category: "network").info("SupabaseManager Anon Key: SET")
         
         client = SupabaseClient(
             supabaseURL: url,

@@ -4,6 +4,14 @@ import Supabase
 /// Supabase-backed Bible service for fetching verses
 final class SupabaseBibleService: BibleServiceProtocol {
     
+    /// Sanitize search query to prevent SQL injection
+    private func sanitizeSearchQuery(_ query: String) -> String {
+        query
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "%", with: "\\%")
+            .replacingOccurrences(of: "_", with: "\\_")
+    }
+    
     private func requireSupabase() throws -> SupabaseClient {
         try SupabaseManager.shared.requireClient()
     }
@@ -39,7 +47,7 @@ final class SupabaseBibleService: BibleServiceProtocol {
             .from("bible_verses")
             .select()
             .eq("translation", value: translation.rawValue)
-            .ilike("text", pattern: "%\(InputSanitizer.sanitizeSearchQuery(query))%")
+            .ilike("text", pattern: "%\(sanitizeSearchQuery(query))%")
             .limit(limit)
             .execute()
             .value

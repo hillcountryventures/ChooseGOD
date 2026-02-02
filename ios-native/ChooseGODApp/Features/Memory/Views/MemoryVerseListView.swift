@@ -13,9 +13,13 @@ struct MemoryVerseListView: View {
                 ShimmerView(height: 20)
                     .tint(Theme.Colors.primary)
             } else if let error = viewModel.error, viewModel.verses.isEmpty {
-                ErrorRetryView(message: error) {
-                    viewModel.error = nil
-                    Task { await viewModel.fetchVerses() }
+                VStack {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                    Button("Retry") {
+                        viewModel.error = nil
+                        Task { await viewModel.fetchVerses() }
+                    }
                 }
             } else if viewModel.verses.isEmpty {
                 emptyState
@@ -44,7 +48,10 @@ struct MemoryVerseListView: View {
             // TODO: Set userId from auth state
             await viewModel.fetchVerses()
         }
-        .onAppear { AnalyticsService.shared.screen("memory_verse_list") }
+        .onAppear { 
+            // TODO: Add analytics when service is properly imported
+            // AnalyticsService.shared.screen("memory_verse_list") 
+        }
     }
     
     // MARK: - Verse List

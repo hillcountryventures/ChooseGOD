@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -130,6 +130,7 @@
 		AAADF2898B735417C8E79C0A /* InputSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FDDF1CB37383911E705E475 /* InputSanitizer.swift */; };
 		AC0064B34EFE649E50C28BEF /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C1E2F957C5EB196499A2CA /* View+Extensions.swift */; };
 		AC1E568E4C6EADD63A1E5B6C /* ShareCardPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBD93C14643A943961D6C21 /* ShareCardPickerView.swift */; };
+		AEFD538F2F31515E005E422D /* NoSeedsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFD538E2F31515E005E422D /* NoSeedsView.swift */; };
 		AF98B82B19587E7B49BAD5B6 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FF6B935B639421FD376DEC3 /* AnalyticsService.swift */; };
 		B0021A135EC8B0D3F7470D6E /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0CB650BC43E30085BC5EF65 /* TimelineView.swift */; };
 		B1D30BCAF09B7BBF9E0DB131 /* InsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60BF8D989549433DEEFE1485 /* InsightsViewModel.swift */; };
@@ -302,7 +303,7 @@
 		9019114CF20D444B399C899D /* PrayerCirclesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerCirclesView.swift; sourceTree = "<group>"; };
 		92EB294DC289664A0576872D /* SeriesDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesDetailView.swift; sourceTree = "<group>"; };
 		9484DC0CDBB9F0AA4E6D83FF /* fix_packages.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = fix_packages.rb; sourceTree = "<group>"; };
-		95D9ECDD5447582E6F887F86 /* AppIcon.svg */ = {isa = PBXFileReference; path = AppIcon.svg; sourceTree = "<group>"; };
+		95D9ECDD5447582E6F887F86 /* AppIcon.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppIcon.svg; sourceTree = "<group>"; };
 		999A97164CD3EDB2F964BCFD /* SourceVerseCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVerseCard.swift; sourceTree = "<group>"; };
 		9B5081574E6A93E29C1FA8AA /* VerseComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseComplication.swift; sourceTree = "<group>"; };
 		9DF507A6A57619ED723E4668 /* BookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkManager.swift; sourceTree = "<group>"; };
@@ -322,6 +323,7 @@
 		AB72E76051DFE602582E0245 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		AB9DDC8EFFF494BA37551D10 /* project.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = project.yml; sourceTree = "<group>"; };
 		AC90D87CE48E476AD787A14E /* SyncQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueue.swift; sourceTree = "<group>"; };
+		AEFD538E2F31515E005E422D /* NoSeedsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoSeedsView.swift; sourceTree = "<group>"; };
 		B03D51CAD6F02E70AD3F848C /* GiftSubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftSubscriptionView.swift; sourceTree = "<group>"; };
 		B1AE6B78B5C630C562AAD17D /* NotificationCategories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategories.swift; sourceTree = "<group>"; };
 		B363BF16216957BC8BCA064E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -1016,6 +1018,13 @@
 			path = Bible;
 			sourceTree = "<group>";
 		};
+		AEFD53892F314F9B005E422D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		B10DCED75CA68C03DB441ACB /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -1045,6 +1054,7 @@
 				9731E2C55FC43DE448232C9A /* Core */,
 				90719BDAA352A7FBC1980457 /* Features */,
 				268D02CD6A217B7A4B4CE593 /* Resources */,
+				AEFD538E2F31515E005E422D /* NoSeedsView.swift */,
 			);
 			path = ChooseGODApp;
 			sourceTree = "<group>";
@@ -1324,8 +1334,13 @@
 				7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 				FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = AEFD53892F314F9B005E422D /* Products */;
+					ProjectRef = 82FE3A4B1A300628D867D018 /* ChooseGOD.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				5D9F0899D8E50F532D6A824E /* ChooseGOD */,
@@ -1360,6 +1375,7 @@
 			files = (
 				CC7304E13E0A90CCE0CFC838 /* Accessibility.swift in Sources */,
 				7DF90DB96A2DDA2478795659 /* AddMemoryVerseSheet.swift in Sources */,
+				AEFD538F2F31515E005E422D /* NoSeedsView.swift in Sources */,
 				AF98B82B19587E7B49BAD5B6 /* AnalyticsService.swift in Sources */,
 				EB715CDE4C16F745637AFAAF /* Animations.swift in Sources */,
 				9EF7228B92165B9FB9CDDC8B /* AppIconPreview.swift in Sources */,

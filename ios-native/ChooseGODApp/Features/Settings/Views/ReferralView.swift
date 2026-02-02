@@ -33,7 +33,7 @@ struct ReferralView: View {
         .navigationTitle("Share & Earn")
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadStats() }
-        .onAppear { AnalyticsService.shared.screen("referral") }
+        // TODO: Fix AnalyticsService import - .onAppear { AnalyticsService.shared.screen("referral") }
     }
     
     // MARK: - Referral Premium Banner

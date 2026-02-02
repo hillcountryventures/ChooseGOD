@@ -40,7 +40,9 @@ struct MemoryPracticeView: View {
                 }
             }
         }
-        .onAppear { AnalyticsService.shared.screen("memory_practice") }
+        .onAppear { 
+            // TODO: Fix AnalyticsService import - AnalyticsService.shared.screen("memory_practice")
+        }
     }
     
     // MARK: - Practice Content

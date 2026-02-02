@@ -201,7 +201,7 @@ final class LectioViewModel: ObservableObject {
             responses["oratio"].map { "*Prayer response:* \($0)" } ?? "",
         ].filter { !$0.isEmpty }.joined(separator: "\n")
         
-        AppLogger.journal.info("LectioDivina saving reflection")
+        Logger(subsystem: "com.choosegod.app", category: "journal").info("LectioDivina saving reflection")
     }
     
     deinit {
