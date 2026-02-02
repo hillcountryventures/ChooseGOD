@@ -5,7 +5,7 @@ struct AppIconPreview: View {
     var body: some View {
         VStack(spacing: 40) {
             Text("ChooseGOD App Icon Concepts")
-                .font(.title2.bold())
+                .font(Theme.Typography.title2)
             
             HStack(spacing: 30) {
                 // Concept 1: Cross + Book with Glass
@@ -36,7 +36,7 @@ struct AppIconPreview: View {
             }
             
             Text("Recommended: Concept 5 (Crown)")
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
         }
         .padding(40)
@@ -66,12 +66,12 @@ struct AppIconConcept1: View {
             // Book icon
             VStack(spacing: -4) {
                 Image(systemName: "book.fill")
-                    .font(.system(size: 44, weight: .medium))
+                    .font(Theme.Typography.iconLarge)
                     .foregroundStyle(.white)
                 
                 // Small cross
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 16))
+                    .font(Theme.Typography.body)
                     .foregroundStyle(.white.opacity(0.9))
             }
             
@@ -105,7 +105,7 @@ struct AppIconConcept2: View {
             
             // Cross with glow
             Image(systemName: "cross.fill")
-                .font(.system(size: 50, weight: .bold))
+                .font(Theme.Typography.display)
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.white, Color(hex: "A78BFA")],
@@ -137,12 +137,12 @@ struct AppIconConcept3: View {
             // Stylized "G" with cross
             ZStack {
                 Text("G")
-                    .font(.system(size: 60, weight: .bold, design: .serif))
+                    .font(Theme.Typography.displayRounded)
                     .foregroundStyle(.white)
                 
                 // Small cross accent
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(.white)
                     .offset(x: 18, y: -18)
             }
@@ -168,7 +168,7 @@ struct AppIconConcept4: View {
             
             // Dove/Spirit symbol
             Image(systemName: "bird.fill")
-                .font(.system(size: 44))
+                .font(Theme.Typography.iconLarge)
                 .foregroundStyle(.white)
                 .rotationEffect(.degrees(-15))
             
@@ -218,7 +218,7 @@ struct AppIconConcept5: View {
             VStack(spacing: -8) {
                 // Crown
                 Image(systemName: "crown.fill")
-                    .font(.system(size: 32, weight: .medium))
+                    .font(Theme.Typography.chapterTitle)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Color(hex: "FCD34D"), Color(hex: "F59E0B")],
@@ -230,7 +230,7 @@ struct AppIconConcept5: View {
                 
                 // Cross beneath crown
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 36, weight: .bold))
+                    .font(Theme.Typography.display)
                     .foregroundStyle(.white)
                     .shadow(color: .white.opacity(0.3), radius: 5)
             }
@@ -267,7 +267,7 @@ struct AppIconConcept6: View {
             
             // Sparkle burst
             Image(systemName: "sparkles")
-                .font(.system(size: 50, weight: .medium))
+                .font(Theme.Typography.display)
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: "A78BFA"), Color(hex: "8B5CF6"), Color(hex: "6D28D9")],
@@ -279,7 +279,7 @@ struct AppIconConcept6: View {
             
             // Subtle cross in center
             Image(systemName: "plus")
-                .font(.system(size: 20, weight: .bold))
+                .font(Theme.Typography.title3)
                 .foregroundStyle(.white.opacity(0.8))
         }
         .clipShape(RoundedRectangle(cornerRadius: 26))

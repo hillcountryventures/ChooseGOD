@@ -64,6 +64,9 @@ struct MainTabView: View {
                     .tag(Tab.prayers)
             }
             .environment(appState)
+            .onChange(of: selectedTab) { _, _ in
+                HapticManager.shared.selectionChanged()
+            }
             
             // Frosted Glass Tab Bar
             GlassTabBar(selectedTab: $selectedTab)
@@ -78,6 +81,8 @@ struct MainTabView: View {
                     GlassFAB(icon: "bubble.left.fill", color: Theme.Colors.accent) {
                         showChat = true
                     }
+                    .accessibilityLabel("Open AI chat companion")
+                    .accessibilityHint("Double tap to start a conversation")
                     .padding(.trailing, 20)
                     .padding(.bottom, 110)
                 }
@@ -110,8 +115,8 @@ struct GlassTabBar: View {
                 }
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 12)
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.top, Theme.Spacing.mds)
         .padding(.bottom, 28)
         .background {
             Rectangle()
@@ -145,18 +150,20 @@ struct GlassTabBar: View {
                     }
                     
                     Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.icon)
-                        .font(.system(size: 20, weight: selectedTab == tab ? .semibold : .regular))
+                        .font(selectedTab == tab ? Theme.Typography.title3 : Theme.Typography.body)
                         .foregroundStyle(selectedTab == tab ? Theme.Colors.primary : Theme.Colors.textTertiary)
                 }
                 .frame(height: 44)
                 
                 Text(tab.title)
-                    .font(.caption2.weight(selectedTab == tab ? .semibold : .regular))
+                    .font(selectedTab == tab ? Theme.Typography.captionSemibold : Theme.Typography.caption2)
                     .foregroundStyle(selectedTab == tab ? Theme.Colors.primary : Theme.Colors.textTertiary)
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(AccessibilityLabels.tab(tab.title, selected: selectedTab == tab))
+        .accessibilityHint("Double tap to switch to \(tab.title) tab")
     }
     
     private func glassBibleButton(tab: MainTabView.Tab) -> some View {
@@ -203,20 +210,22 @@ struct GlassTabBar: View {
                         .frame(width: 56, height: 56)
                     
                     Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.icon)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(.white)
                 }
                 .offset(y: -16)
                 .shadow(color: Theme.Colors.primary.opacity(0.5), radius: 12, y: 6)
                 
                 Text(tab.title)
-                    .font(.caption2.weight(.semibold))
+                    .font(Theme.Typography.captionSemibold)
                     .foregroundStyle(selectedTab == tab ? Theme.Colors.primary : Theme.Colors.textTertiary)
                     .offset(y: -12)
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(AccessibilityLabels.tab(tab.title, selected: selectedTab == tab))
+        .accessibilityHint("Double tap to open Bible reader")
     }
 }
 

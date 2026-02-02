@@ -1,6 +1,6 @@
+import os
 import Foundation
-
-// TODO: Add PostHog SDK via SPM and replace stub implementation
+import PostHog
 
 // MARK: - Analytics Protocol
 
@@ -20,52 +20,83 @@ final class AnalyticsService: AnalyticsProvider {
     
     private var isInitialized = false
     
+    /// Reads consent state from UserDefaults (matches ConsentManagementView's @AppStorage key)
+    private var consentGranted: Bool {
+        UserDefaults.standard.bool(forKey: "consent_analytics")
+    }
+    
     private init() {}
     
     // MARK: - Setup
     
     func initialize(apiKey: String) {
         guard !apiKey.isEmpty else {
-            print("[Analytics] ⚠️ Empty API key — skipping initialization")
+            AppLogger.analytics.warning("Empty API key — skipping initialization")
             return
         }
         
-        // TODO: Replace with PostHog SDK initialization
-        // PostHogSDK.shared.setup(PHGPostHogConfiguration(apiKey: apiKey, host: "https://app.posthog.com"))
+        let config = PostHogConfig(apiKey: apiKey)
+        config.host = "https://app.posthog.com"
+        PostHogSDK.shared.setup(config)
         isInitialized = true
         
+        // Set global context properties
+        setSuperProperties()
+        
         #if DEBUG
-        print("[Analytics] ✅ Initialized with key: \(apiKey.prefix(8))...")
+        AppLogger.analytics.info("PostHog initialized with key: \(apiKey.prefix(8))...")
         #endif
     }
     
     // MARK: - Tracking
     
     func screen(_ name: String) {
-        // TODO: PostHogSDK.shared.screen(name)
+        guard consentGranted else { return }
+        PostHogSDK.shared.screen(name)
         #if DEBUG
-        print("[Analytics] 📱 Screen: \(name)")
+        AppLogger.analytics.debug("Screen: \(name)")
         #endif
     }
     
     func capture(_ event: String, properties: [String: Any]? = nil) {
-        // TODO: PostHogSDK.shared.capture(event, properties: properties)
+        guard consentGranted else { return }
+        PostHogSDK.shared.capture(event, properties: properties)
         #if DEBUG
-        print("[Analytics] 📊 Event: \(event) | \(properties ?? [:])")
+        AppLogger.analytics.debug("Event: \(event)")
         #endif
     }
     
     func identify(_ userId: String, properties: [String: String]? = nil) {
-        // TODO: PostHogSDK.shared.identify(userId, userProperties: properties)
+        guard consentGranted else { return }
+        PostHogSDK.shared.identify(userId, userProperties: properties)
         #if DEBUG
-        print("[Analytics] 👤 Identify: \(userId) | \(properties ?? [:])")
+        AppLogger.analytics.debug("Identify: \(userId)")
         #endif
     }
     
     func reset() {
-        // TODO: PostHogSDK.shared.reset()
+        PostHogSDK.shared.reset()
         #if DEBUG
-        print("[Analytics] 🔄 Reset (logout)")
+        AppLogger.analytics.debug("Reset (logout)")
+        #endif
+    }
+    
+    // MARK: - Super Properties
+    
+    func setSuperProperties() {
+        guard consentGranted else { return }
+        
+        let properties: [String: Any] = [
+            "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
+            "platform": "ios",
+            "subscription_tier": "free", // TODO: Update based on actual subscription status
+            "onboarding_complete": UserDefaults.standard.bool(forKey: "onboarding_complete")
+        ]
+        
+        PostHogSDK.shared.register(properties)
+        
+        #if DEBUG
+        AppLogger.analytics.debug("Super properties set: \(properties)")
         #endif
     }
 }

@@ -35,8 +35,8 @@ struct GlassButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            .padding(.horizontal, Theme.Spacing.mdl)
+            .padding(.vertical, Theme.Spacing.mds)
             .background {
                 if isProminent {
                     Capsule()
@@ -67,9 +67,9 @@ struct FrostedTabBar<Content: View>: View {
     
     var body: some View {
         content
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 34)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.top, Theme.Spacing.mds)
+            .padding(.bottom, Theme.Spacing.xl)
             .background {
                 Rectangle()
                     .fill(.ultraThinMaterial)
@@ -157,7 +157,7 @@ struct GlassFAB: View {
                 
                 // Icon
                 Image(systemName: icon)
-                    .font(.title2.weight(.semibold))
+                    .font(Theme.Typography.title2)
                     .foregroundStyle(.white)
             }
         }
@@ -178,10 +178,10 @@ struct GlassVerseCard: View {
         VStack(alignment: .leading, spacing: 16) {
             // Reference with glass pill
             Text(reference)
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.mds)
+                .padding(.vertical, Theme.Spacing.sm)
                 .background {
                     Capsule()
                         .fill(.white.opacity(0.2))
@@ -190,7 +190,7 @@ struct GlassVerseCard: View {
             
             // Verse text
             Text(text)
-                .font(.system(.title3, design: .serif))
+                .font(Theme.Typography.subheadlineSerif)
                 .foregroundStyle(.white)
                 .lineSpacing(6)
             
@@ -202,7 +202,7 @@ struct GlassVerseCard: View {
                 Spacer()
             }
         }
-        .padding(24)
+        .padding(Theme.Spacing.lg)
         .background {
             RoundedRectangle(cornerRadius: 24)
                 .fill(gradient)
@@ -235,7 +235,7 @@ struct GlassIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.body.weight(.medium))
+                .font(Theme.Typography.label)
                 .foregroundStyle(.white.opacity(0.9))
                 .frame(width: 40, height: 40)
                 .background {
@@ -265,20 +265,20 @@ struct GlassStatCard: View {
                     .blur(radius: 8)
                 
                 Image(systemName: icon)
-                    .font(.title2)
+                    .font(Theme.Typography.title2)
                     .foregroundStyle(color)
             }
             
             Text(value)
-                .font(.title.bold())
+                .font(Theme.Typography.title1)
                 .foregroundStyle(Theme.Colors.text)
             
             Text(label)
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, Theme.Spacing.mdl)
         .glassCard(cornerRadius: 16)
     }
 }

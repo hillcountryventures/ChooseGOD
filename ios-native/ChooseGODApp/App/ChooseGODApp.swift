@@ -58,7 +58,6 @@ struct ChooseGODApp: App {
         
         if url.scheme == "choosegod" {
             // choosegod://invite/CODE or choosegod://verse/John/3/16
-            // host is the first path segment, pathComponents has the rest
             var parts: [String] = []
             if let host = url.host { parts.append(host) }
             parts.append(contentsOf: url.pathComponents.filter { $0 != "/" })
@@ -111,8 +110,8 @@ struct ChooseGODApp: App {
         // Fix 6: Initialize AnalyticsService with consent gating
         let analyticsConsent = UserDefaults.standard.bool(forKey: "consent_analytics")
         if analyticsConsent {
-            // TODO: Replace empty string with real PostHog API key
-            AnalyticsService.shared.initialize(apiKey: "")
+            let posthogKey = Bundle.main.infoDictionary?["POSTHOG_API_KEY"] as? String ?? ""
+            AnalyticsService.shared.initialize(apiKey: posthogKey)
         }
 
         // 1. Initialize Supabase
@@ -147,7 +146,23 @@ struct ChooseGODApp: App {
         // 4. Initialize RevenueCat
         await appState.subscriptionService.configure(userId: appState.currentUser?.id)
         
-        // 5. Mark as initialized
+        // 5. Track session count & check review milestone
+        ReviewRequestManager.shared.incrementSession()
+        ReviewRequestManager.shared.requestIfSessionMilestone()
+        
+        // 6. Sync referral earned days → premium access
+        if let userId = appState.currentUser?.id {
+            if let stats = await ReferralService.shared.getOrCreateStats(userId: userId) {
+                ReferralService.shared.redeemEarnedDays(for: stats)
+            }
+            
+            // Grant streak freeze to premium or referral-premium users
+            if appState.subscriptionService.isPremium || ReferralService.shared.hasReferralPremium {
+                StreakManager.shared.grantStreakFreeze()
+            }
+        }
+        
+        // 7. Mark as initialized
         withAnimation(.easeOut(duration: 0.3)) {
             isInitialized = true
         }
