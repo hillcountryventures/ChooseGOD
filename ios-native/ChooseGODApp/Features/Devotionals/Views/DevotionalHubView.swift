@@ -15,7 +15,7 @@ struct DevotionalHubView: View {
                     .ignoresSafeArea()
                 
                 if isLoading {
-                    ProgressView()
+                ShimmerView(height: 20)
                 } else {
                     ScrollView {
                         VStack(spacing: 24) {
@@ -55,11 +55,12 @@ struct DevotionalHubView: View {
     private func currentSeriesSection(_ enrollment: UserSeriesEnrollment) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Continue Your Journey")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             if let series = enrollment.series {
                 NavigationLink {
+                        // devotional link
                     DailyDevotionalView(enrollment: enrollment)
                 } label: {
                     CurrentSeriesCard(enrollment: enrollment, series: series)
@@ -72,7 +73,7 @@ struct DevotionalHubView: View {
     private func otherEnrollmentsSection(_ enrollments: [UserSeriesEnrollment]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Also In Progress")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             ForEach(enrollments) { enrollment in
@@ -91,7 +92,7 @@ struct DevotionalHubView: View {
     private var browseSeriesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Explore Series")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -143,11 +144,11 @@ struct CurrentSeriesCard: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Day \(enrollment.currentDay) of \(series.totalDays)")
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(.white.opacity(0.8))
                     
                     Text(series.title)
-                        .font(.title2.bold())
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(.white)
                 }
                 
@@ -164,7 +165,7 @@ struct CurrentSeriesCard: View {
                         .rotationEffect(.degrees(-90))
                     
                     Text("\(Int(enrollment.progressPercentage * 100))%")
-                        .font(.caption.bold())
+                        .font(Theme.Typography.captionBold)
                         .foregroundStyle(.white)
                 }
                 .frame(width: 50, height: 50)
@@ -173,18 +174,19 @@ struct CurrentSeriesCard: View {
             // Continue button
             HStack {
                 Text("Continue")
-                    .font(.subheadline.weight(.semibold))
+                            .accessibilityLabel("Continue devotional")
+                    .font(Theme.Typography.subheadlineSemibold)
                 Image(systemName: "arrow.right")
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.smd)
             .background(.white.opacity(0.2))
-            .cornerRadius(20)
+            .cornerRadius(Theme.CornerRadius.xl)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .background(series.gradient)
-        .cornerRadius(16)
+        .cornerRadius(Theme.CornerRadius.xl)
     }
 }
 
@@ -203,29 +205,29 @@ struct SmallSeriesCard: View {
                     .frame(width: 44, height: 44)
                 
                 Text("\(enrollment.currentDay)")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(.white)
             }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(series.title)
-                    .font(.subheadline.weight(.medium))
+                    .font(Theme.Typography.subheadlineMedium)
                     .foregroundStyle(Theme.Colors.text)
                 
                 Text("Day \(enrollment.currentDay) of \(series.totalDays)")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.secondaryText)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
         .padding()
         .background(Theme.Colors.surface)
-        .cornerRadius(12)
+        .cornerRadius(Theme.CornerRadius.lg)
     }
 }
 
@@ -237,29 +239,29 @@ struct SeriesBrowseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Gradient header
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.md)
                 .fill(series.gradient)
                 .frame(height: 60)
                 .overlay(
                     Text("\(series.totalDays) days")
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(.white)
-                        .padding(8),
+                        .padding(Theme.Spacing.sm),
                     alignment: .bottomTrailing
                 )
             
             Text(series.title)
-                .font(.subheadline.weight(.medium))
+                .font(Theme.Typography.subheadlineMedium)
                 .foregroundStyle(Theme.Colors.text)
                 .lineLimit(2)
             
             Text(series.difficultyLevel.displayName)
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
-        .padding(12)
+        .padding(Theme.Spacing.mds)
         .background(Theme.Colors.surface)
-        .cornerRadius(12)
+        .cornerRadius(Theme.CornerRadius.lg)
     }
 }
 
@@ -278,14 +280,14 @@ struct SeriesDetailSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.xl)
                         .fill(series.gradient)
                         .frame(height: 150)
                         .overlay(
                             VStack {
                                 Spacer()
                                 Text(series.title)
-                                    .font(.title.bold())
+                                    .font(Theme.Typography.title1)
                                     .foregroundStyle(.white)
                                     .padding()
                             }
@@ -298,23 +300,23 @@ struct SeriesDetailSheet: View {
                             Spacer()
                             Label(series.difficultyLevel.displayName, systemImage: "chart.bar")
                         }
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.secondaryText)
                         
                         Text(series.description)
-                            .font(.body)
+                            .font(Theme.Typography.body)
                             .foregroundStyle(Theme.Colors.text)
                         
                         // Topics
                         FlowLayout(spacing: 8) {
                             ForEach(series.topics, id: \.self) { topic in
                                 Text(topic)
-                                    .font(.caption)
-                                    .padding(.horizontal, 10)
+                                    .font(Theme.Typography.caption)
+                                    .padding(.horizontal, Theme.Spacing.smd)
                                     .padding(.vertical, 5)
                                     .background(Theme.Colors.primary.opacity(0.2))
                                     .foregroundStyle(Theme.Colors.primary)
-                                    .cornerRadius(12)
+                                    .cornerRadius(Theme.CornerRadius.lg)
                             }
                         }
                     }
@@ -329,17 +331,17 @@ struct SeriesDetailSheet: View {
                     Task { await enroll() }
                 } label: {
                     if isEnrolling {
-                        ProgressView().tint(.white)
+                        ShimmerView(height: 20)
                     } else {
                         Text("Start Journey")
-                            .font(.headline)
+                            .font(Theme.Typography.title3)
                     }
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
                 .background(Theme.Colors.primary)
-                .cornerRadius(16)
+                .cornerRadius(Theme.CornerRadius.xl)
                 .padding()
                 .background(Theme.Colors.background)
             }

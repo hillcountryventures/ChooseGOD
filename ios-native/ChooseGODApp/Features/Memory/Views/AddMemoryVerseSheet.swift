@@ -32,9 +32,9 @@ struct AddMemoryVerseSheet: View {
                             .pickerStyle(.menu)
                             .tint(Theme.Colors.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(12)
+                            .padding(Theme.Spacing.mds)
                             .background(Theme.Colors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
                         }
                         
                         // Chapter & Verses
@@ -62,9 +62,9 @@ struct AddMemoryVerseSheet: View {
                                 .scrollContentBackground(.hidden)
                                 .foregroundStyle(Theme.Colors.text)
                                 .frame(minHeight: 120)
-                                .padding(12)
+                                .padding(Theme.Spacing.mds)
                                 .background(Theme.Colors.surface)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
                         }
                     }
                     .padding()
@@ -113,7 +113,7 @@ struct AddMemoryVerseSheet: View {
     @ViewBuilder
     private func label(_ text: String) -> some View {
         Text(text)
-            .font(.caption.bold())
+            .font(Theme.Typography.captionBold)
             .foregroundStyle(Theme.Colors.textSecondary)
             .textCase(.uppercase)
     }
@@ -125,9 +125,9 @@ struct AddMemoryVerseSheet: View {
             TextField(placeholder.isEmpty ? title : placeholder, text: text)
                 .keyboardType(.numberPad)
                 .foregroundStyle(Theme.Colors.text)
-                .padding(12)
+                .padding(Theme.Spacing.mds)
                 .background(Theme.Colors.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
         }
     }
 }

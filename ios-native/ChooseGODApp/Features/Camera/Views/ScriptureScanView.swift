@@ -43,9 +43,11 @@ struct ScriptureScanView: View {
     
     private var header: some View {
         HStack {
-            Button { dismiss() } label: {
+            Button { dismiss() }
+                    .accessibilityLabel("Close scanner")
+                    //  label: {
                 Image(systemName: "xmark")
-                    .font(.title2.weight(.semibold))
+                    .font(Theme.Typography.title2)
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
             }
@@ -53,7 +55,7 @@ struct ScriptureScanView: View {
             Spacer()
             
             Text("Scripture Scan")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundColor(.white)
             
             Spacer()
@@ -61,7 +63,7 @@ struct ScriptureScanView: View {
             Color.clear.frame(width: 44, height: 44)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, Theme.Spacing.sm)
         .background(.black.opacity(0.5))
     }
     
@@ -70,15 +72,15 @@ struct ScriptureScanView: View {
     private var instructions: some View {
         VStack(spacing: 6) {
             Image(systemName: "viewfinder")
-                .font(.system(size: 28))
+                .font(Theme.Typography.title1)
                 .foregroundColor(.white.opacity(0.9))
             
             Text("Point camera at any text")
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundColor(.white)
             
             Text("Books, signs, quotes — discover what the Bible says")
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundColor(.white.opacity(0.7))
         }
         .padding()
@@ -90,9 +92,12 @@ struct ScriptureScanView: View {
     private var controls: some View {
         HStack {
             // Flip camera
-            Button { camera.toggleFacing() } label: {
+            Button { camera.toggleFacing() }
+                    .accessibilityLabel("Flip camera")
+                    //  label: {
+                    
                 Image(systemName: "camera.rotate")
-                    .font(.system(size: 24))
+                    .font(Theme.Typography.title2)
                     .foregroundColor(.white)
                     .frame(width: 60, height: 60)
             }
@@ -100,7 +105,10 @@ struct ScriptureScanView: View {
             Spacer()
             
             // Capture
-            Button { captureAndScan() } label: {
+            Button { captureAndScan() }
+                    .accessibilityLabel("Capture and scan scripture")
+                    //  label: {
+                    
                 ZStack {
                     Circle()
                         .fill(.white)
@@ -116,8 +124,8 @@ struct ScriptureScanView: View {
             
             Color.clear.frame(width: 60, height: 60)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 32)
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.bottom, Theme.Spacing.xl)
         .background(.black.opacity(0.5))
     }
     
@@ -127,14 +135,14 @@ struct ScriptureScanView: View {
         ZStack {
             Color.black.opacity(0.85).ignoresSafeArea()
             VStack(spacing: 16) {
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(.white)
                     .scaleEffect(1.5)
                 Text("Reading text...")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundColor(.white)
                 Text("Finding biblical insights")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundColor(.white.opacity(0.7))
             }
         }

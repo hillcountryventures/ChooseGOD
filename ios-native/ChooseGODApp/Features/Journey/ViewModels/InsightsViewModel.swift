@@ -89,7 +89,7 @@ final class InsightsViewModel {
         let calendar = Calendar.current
         let dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         weeklyActivity = (0..<7).reversed().map { daysAgo in
-            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date())!
+            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
             let dateStr = ISO8601DateFormatter().string(from: date).prefix(10)
             let weekday = calendar.component(.weekday, from: date) - 1
             return DailyActivity(
@@ -111,7 +111,7 @@ final class InsightsViewModel {
         
         // Sentiment trend
         sentimentTrend = (0..<30).map { daysAgo in
-            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date())!
+            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
             let score = 0.3 + Double.random(in: -0.3...0.4) + Double(30 - daysAgo) * 0.01 // slight upward trend
             return SentimentDataPoint(date: date, score: min(max(score, -1), 1), label: "")
         }.reversed().map { $0 }
@@ -130,7 +130,7 @@ final class InsightsViewModel {
         growthInsight = GrowthInsight(
             id: "insight-1",
             userId: "",
-            periodStart: calendar.date(byAdding: .day, value: -30, to: Date())!,
+            periodStart: calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date(),
             periodEnd: Date(),
             insightType: .monthly,
             title: "Monthly Growth Summary",
@@ -181,7 +181,7 @@ final class InsightsViewModel {
         
         timelineItems = (0..<20).map { i in
             let type = types[i % types.count]
-            let date = calendar.date(byAdding: .hour, value: -i * Int.random(in: 4...12), to: Date())!
+            let date = calendar.date(byAdding: .hour, value: -i * Int.random(in: 4...12), to: Date()) ?? Date()
             return TimelineItem(
                 id: "timeline-\(i)",
                 type: type,

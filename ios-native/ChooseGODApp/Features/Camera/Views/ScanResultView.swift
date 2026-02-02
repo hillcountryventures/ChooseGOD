@@ -49,7 +49,7 @@ struct ScanResultView: View {
             Image(systemName: confidenceIcon)
                 .foregroundColor(confidenceColor)
             Text("Confidence: \(Int(result.confidence * 100))%")
-                .font(.caption.weight(.medium))
+                .font(Theme.Typography.captionMedium)
                 .foregroundColor(Theme.Colors.textSecondary)
             
             Spacer()
@@ -57,13 +57,13 @@ struct ScanResultView: View {
             if result.hasVerseReferences {
                 Label("\(result.verseReferences.count) verse\(result.verseReferences.count == 1 ? "" : "s") found",
                       systemImage: "book.fill")
-                    .font(.caption.weight(.medium))
+                    .font(Theme.Typography.captionMedium)
                     .foregroundColor(Theme.Colors.primary)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .modifier(GlassCard(cornerRadius: 12))
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.smd)
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.lg))
     }
     
     private var confidenceIcon: String {
@@ -81,15 +81,15 @@ struct ScanResultView: View {
     private var scannedTextCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Scanned Text", systemImage: "doc.text.viewfinder")
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundColor(Theme.Colors.text)
             
             highlightedText
-                .font(.body)
+                .font(Theme.Typography.body)
                 .lineSpacing(4)
         }
-        .padding(16)
-        .modifier(GlassCard(cornerRadius: 16))
+        .padding(Theme.Spacing.md)
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl))
     }
     
     /// Build attributed text with highlighted verse references
@@ -139,7 +139,7 @@ struct ScanResultView: View {
     private var verseReferencesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Verse References", systemImage: "bookmark.fill")
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundColor(Theme.Colors.text)
             
             ForEach(result.verseReferences) { ref in
@@ -150,21 +150,21 @@ struct ScanResultView: View {
                         Image(systemName: "book.fill")
                             .foregroundColor(Theme.Colors.accent)
                         Text(ref.displayString)
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.Typography.subheadlineMedium)
                             .foregroundColor(Theme.Colors.text)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundColor(Theme.Colors.textTertiary)
                     }
-                    .padding(12)
+                    .padding(Theme.Spacing.mds)
                     .background(Theme.Colors.surfaceElevated)
-                    .cornerRadius(10)
+                    .cornerRadius(Theme.CornerRadius.md)
                 }
             }
         }
-        .padding(16)
-        .modifier(GlassCard(cornerRadius: 16))
+        .padding(Theme.Spacing.md)
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl))
     }
     
     // MARK: - Action Buttons
@@ -213,16 +213,16 @@ struct ScanResultView: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(Theme.Typography.title3)
                     .foregroundColor(color)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(Theme.Typography.subheadlineSemibold)
                         .foregroundColor(Theme.Colors.text)
                     if let subtitle {
                         Text(subtitle)
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundColor(Theme.Colors.textSecondary)
                     }
                 }
@@ -230,11 +230,11 @@ struct ScanResultView: View {
                 Spacer()
                 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundColor(Theme.Colors.textTertiary)
             }
-            .padding(14)
-            .modifier(GlassCard(cornerRadius: 14))
+            .padding(Theme.Spacing.mds)
+            .modifier(GlassCard(cornerRadius: Theme.CornerRadius.lg))
         }
     }
 }

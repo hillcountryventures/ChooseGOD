@@ -47,7 +47,7 @@ struct CreateCircleSheet: View {
                     .blur(radius: 8)
                 
                 Image(systemName: "person.3.fill")
-                    .font(.system(size: 32))
+                    .font(Theme.Typography.chapterTitle)
                     .foregroundStyle(Theme.Colors.primary)
             }
             .padding(.top, Theme.Spacing.lg)
@@ -83,7 +83,7 @@ struct CreateCircleSheet: View {
             } label: {
                 Group {
                     if viewModel.isCreating {
-                        ProgressView()
+                        ShimmerView(height: 20)
                             .tint(.white)
                     } else {
                         Text("Create Circle")
@@ -125,7 +125,7 @@ struct CreateCircleSheet: View {
                     .blur(radius: 10)
                 
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 56))
+                    .font(Theme.Typography.iconXXL)
                     .foregroundStyle(Theme.Colors.success)
             }
             
@@ -147,11 +147,11 @@ struct CreateCircleSheet: View {
                         .foregroundStyle(Theme.Colors.accent)
                     
                     Image(systemName: "doc.on.doc")
-                        .font(.body)
+                        .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.accent.opacity(0.7))
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.vertical, Theme.Spacing.mds)
                 .glassCard(cornerRadius: Theme.CornerRadius.lg)
             }
             

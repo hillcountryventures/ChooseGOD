@@ -29,13 +29,13 @@ struct MemoryPracticeView: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Memory Practice")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if !viewModel.dueVerses.isEmpty {
                     Text("\(viewModel.currentIndex + 1)/\(viewModel.dueVerses.count)")
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
@@ -51,10 +51,10 @@ struct MemoryPracticeView: View {
             // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.xxs)
                         .fill(Theme.Colors.surface)
                         .frame(height: 4)
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.xxs)
                         .fill(Theme.Colors.primary)
                         .frame(width: geo.size.width * viewModel.progress, height: 4)
                         .animation(.easeInOut(duration: 0.3), value: viewModel.progress)
@@ -67,14 +67,14 @@ struct MemoryPracticeView: View {
             
             // Flashcard
             flashcard(verse: verse)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Theme.Spacing.mdl)
             
             Spacer()
             
             // Actions
             actionButtons(verse: verse)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
+                .padding(.horizontal, Theme.Spacing.mdl)
+                .padding(.bottom, Theme.Spacing.xl)
         }
     }
     
@@ -88,15 +88,15 @@ struct MemoryPracticeView: View {
                 Image(systemName: "book.fill")
                     .foregroundStyle(Theme.Colors.primary)
                 Text(verse.reference)
-                    .font(.title3.bold())
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
             }
             
             // Translation badge
             Text(verse.translation.uppercased())
-                .font(.caption.bold())
+                .font(Theme.Typography.captionBold)
                 .foregroundStyle(Theme.Colors.primary)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, Theme.Spacing.smd)
                 .padding(.vertical, 4)
                 .background(Theme.Colors.primaryAlpha(0.2))
                 .clipShape(Capsule())
@@ -129,14 +129,14 @@ struct MemoryPracticeView: View {
             // Review count
             HStack(spacing: 4) {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                 Text("Reviewed \(verse.reviewCount) time\(verse.reviewCount == 1 ? "" : "s")")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
             }
             .foregroundStyle(Theme.Colors.textTertiary)
             .frame(maxWidth: .infinity)
         }
-        .padding(24)
+        .padding(Theme.Spacing.lg)
         .modifier(GlassCard())
         .scaleEffect(cardScale)
     }
@@ -146,28 +146,28 @@ struct MemoryPracticeView: View {
         VStack(spacing: 16) {
             if viewModel.showHint {
                 Text("First-letter hint:")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.textTertiary)
                 Text(verse.hint)
-                    .font(.body.monospaced())
+                    .font(Theme.Typography.monoMedium)
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             } else {
                 Image(systemName: "questionmark.circle")
-                    .font(.system(size: 44))
+                    .font(Theme.Typography.iconLarge)
                     .foregroundStyle(Theme.Colors.textTertiary)
                 Text("Can you recall this verse?")
-                    .font(.body)
+                    .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 
                 Button {
                     withAnimation { viewModel.showHint = true }
                 } label: {
                     Label("Show hint", systemImage: "lightbulb")
-                        .font(.subheadline.weight(.medium))
+                        .font(Theme.Typography.subheadlineMedium)
                         .foregroundStyle(Theme.Colors.accent)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .padding(.vertical, Theme.Spacing.sm)
                         .background(Theme.Colors.surface)
                         .clipShape(Capsule())
                 }
@@ -180,7 +180,7 @@ struct MemoryPracticeView: View {
     private func answerSide(verse: MemoryVerse) -> some View {
         VStack(spacing: 16) {
             Text(verse.text)
-                .font(.title3)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
                 .multilineTextAlignment(.center)
                 .lineSpacing(6)
@@ -188,17 +188,17 @@ struct MemoryPracticeView: View {
             if let mnemonic = verse.mnemonic {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Memory aid:")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textTertiary)
                     Text(mnemonic)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .italic()
                 }
-                .padding(12)
+                .padding(Theme.Spacing.mds)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Theme.Colors.surface.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
             }
         }
         .frame(maxWidth: .infinity)
@@ -214,26 +214,28 @@ struct MemoryPracticeView: View {
             } label: {
                 HStack(spacing: 10) {
                     Text("Reveal Answer")
-                        .font(.headline)
+                        .font(Theme.Typography.title3)
                     Image(systemName: "eye.fill")
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .padding(.vertical, Theme.Spacing.md)
                 .background(Theme.Colors.primary)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
             }
         } else {
             VStack(spacing: 12) {
                 Text("How well did you remember?")
-                    .font(.subheadline)
+                    .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 
                 HStack(spacing: 12) {
                     ratingButton(rating: .again, icon: "xmark.circle.fill", color: Theme.Colors.error, label: "Again")
+                        .accessibilityLabel("Rate as again, need more practice")
                     ratingButton(rating: .hard, icon: "exclamationmark.circle.fill", color: Theme.Colors.warning, label: "Hard")
                     ratingButton(rating: .good, icon: "checkmark.circle.fill", color: Theme.Colors.success, label: "Good")
                     ratingButton(rating: .easy, icon: "star.fill", color: Theme.Colors.primary, label: "Easy")
+                        .accessibilityLabel("Rate as easy, well memorized")
                 }
             }
         }
@@ -246,19 +248,19 @@ struct MemoryPracticeView: View {
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.title2)
+                    .font(Theme.Typography.title2)
                     .foregroundStyle(color)
                 Text(label)
-                    .font(.caption.bold())
+                    .font(Theme.Typography.captionBold)
                     .foregroundStyle(color)
                 Text("\(viewModel.nextInterval(for: rating))d")
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, Theme.Spacing.mds)
             .background(Theme.Colors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
         }
     }
     
@@ -267,38 +269,38 @@ struct MemoryPracticeView: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
+                .font(Theme.Typography.iconMassive)
                 .foregroundStyle(Theme.Colors.success)
             Text("All Caught Up!")
-                .font(.title2.bold())
+                .font(Theme.Typography.title2)
                 .foregroundStyle(Theme.Colors.text)
             Text("No verses are due for review right now.\nAdd verses from the Bible screen to start memorizing.")
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
             Button("Done") { dismiss() }
                 .buttonStyle(GlassButtonStyle(isProminent: true))
-                .padding(.top, 8)
+                .padding(.top, Theme.Spacing.sm)
         }
-        .padding(40)
+        .padding(Theme.Spacing.xxl)
     }
     
     private var completionState: some View {
         VStack(spacing: 16) {
             Image(systemName: "trophy.fill")
-                .font(.system(size: 64))
+                .font(Theme.Typography.iconMassive)
                 .foregroundStyle(Theme.Colors.accent)
             Text("Session Complete!")
-                .font(.title.bold())
+                .font(Theme.Typography.title1)
                 .foregroundStyle(Theme.Colors.text)
             Text("You reviewed \(viewModel.reviewedCount) verse\(viewModel.reviewedCount == 1 ? "" : "s") today.")
-                .font(.body)
+                .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textSecondary)
             Button("Finish") { dismiss() }
                 .buttonStyle(GlassButtonStyle(isProminent: true))
-                .padding(.top, 8)
+                .padding(.top, Theme.Spacing.sm)
         }
-        .padding(40)
+        .padding(Theme.Spacing.xxl)
     }
     
     private var celebrationOverlay: some View {
@@ -306,15 +308,15 @@ struct MemoryPracticeView: View {
             Color.black.opacity(0.6).ignoresSafeArea()
             VStack(spacing: 20) {
                 Image(systemName: "hands.clap.fill")
-                    .font(.system(size: 60))
+                    .font(Theme.Typography.iconHuge)
                     .foregroundStyle(Theme.Colors.primary)
                 Text("Well Done!")
-                    .font(.largeTitle.bold())
+                    .font(Theme.Typography.display)
                     .foregroundStyle(Theme.Colors.text)
                 Text("\(viewModel.reviewedCount) verse\(viewModel.reviewedCount == 1 ? "" : "s") reviewed")
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
-            .padding(40)
+            .padding(Theme.Spacing.xxl)
             .modifier(GlassCard())
         }
         .transition(.opacity)

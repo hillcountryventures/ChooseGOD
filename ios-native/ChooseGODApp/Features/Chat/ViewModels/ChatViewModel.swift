@@ -22,9 +22,9 @@ final class ChatViewModel {
     
     // MARK: - Computed
     
-    var seedsRemaining: Int { quotaManager.seedsRemaining }
-    var totalSeeds: Int { ChatQuotaManager.totalSeeds }
-    var showFinalSeedInterstitial: Bool { quotaManager.showFinalSeedInterstitial }
+    var chatsRemaining: Int { quotaManager.chatsRemaining }
+    var dailyFreeLimit: Int { ChatQuotaManager.dailyFreeLimit }
+    var showUpgradePrompt: Bool { quotaManager.showUpgradePrompt }
     
     var contextDescription: String? {
         if let bible = context.bibleContext {
@@ -43,33 +43,51 @@ final class ChatViewModel {
     // MARK: - Actions
     
     func sendMessage(_ text: String? = nil, isPremium: Bool = false) {
-        let trimmed = (text ?? inputText).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        let rawInput = (text ?? inputText).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !rawInput.isEmpty else { return }
         
         // Check quota
         guard quotaManager.canSendMessage(isPremium: isPremium) else {
-            errorMessage = quotaManager.getSeedMessage(isPremium: isPremium)
+            errorMessage = quotaManager.getQuotaMessage(isPremium: isPremium)
             return
         }
         
-        // Use a seed
-        let allowed = quotaManager.useSeed(isPremium: isPremium)
+        // Use a chat
+        let allowed = quotaManager.useChat(isPremium: isPremium)
         guard allowed else { return }
         
-        // Add user message
+        // Strip prompt injection patterns before sending
+        let sanitized = TheologicalGuardrails.stripInjectionPatterns(rawInput)
+        
+        // Add user message (show original text to user, send sanitized to AI)
+        HapticManager.shared.tap()
         AnalyticsService.shared.capture("chat_message_sent")
-        let userMessage = ChatMessage(role: .user, content: trimmed)
+        let userMessage = ChatMessage(role: .user, content: rawInput)
         messages.append(userMessage)
         inputText = ""
         isLoading = true
         errorMessage = nil
         suggestedActions = []
         
+        // Client-side crisis detection on user INPUT — show 988 resource immediately
+        let crisisDetected = TheologicalGuardrails.detectCrisisInInput(rawInput)
+        if crisisDetected {
+            let crisisMsg = ChatMessage(
+                role: .assistant,
+                content: TheologicalGuardrails.crisisMessage
+            )
+            messages.append(crisisMsg)
+            AnalyticsService.shared.capture("crisis_detected_client", properties: ["source": "user_input"])
+        }
+        
+        // Still send to AI for a full response (use sanitized text)
+        let messageToSend = sanitized.isEmpty ? rawInput : sanitized
+        
         Task { @MainActor in
             let startTime = Date()
             do {
                 let response = try await companionService.sendMessage(
-                    message: trimmed,
+                    message: messageToSend,
                     conversationHistory: messages,
                     contextMode: currentMode,
                     verseContext: context.bibleContext
@@ -79,32 +97,41 @@ final class ChatViewModel {
                 let validation = TheologicalGuardrails.validate(response.response)
                 let safeContent = validation.isValid ? response.response : validation.sanitized
                 
-                let aiMessage = ChatMessage(
-                    role: .assistant,
-                    content: safeContent,
-                    sources: validation.isValid ? response.sources : [],
-                    mode: currentMode,
-                    toolsUsed: validation.isValid ? response.toolsUsed : nil,
-                    celebration: validation.isValid ? response.celebration : nil,
-                    suggestedActions: validation.isValid ? response.suggestedActions : nil
-                )
-                messages.append(aiMessage)
-                suggestedActions = response.suggestedActions ?? []
+                // If we already showed crisis message from input detection,
+                // skip duplicate crisis message from AI response validation
+                let skipAIResponse = crisisDetected && validation.flags.contains("crisis_detected")
+                
+                if !skipAIResponse {
+                    let aiMessage = ChatMessage(
+                        role: .assistant,
+                        content: safeContent,
+                        sources: validation.isValid ? response.sources : [],
+                        mode: currentMode,
+                        toolsUsed: validation.isValid ? response.toolsUsed : nil,
+                        celebration: validation.isValid ? response.celebration : nil,
+                        suggestedActions: validation.isValid ? response.suggestedActions : nil
+                    )
+                    messages.append(aiMessage)
+                    suggestedActions = response.suggestedActions ?? []
+                }
                 
                 // Log analytics
                 let elapsed = Int(Date().timeIntervalSince(startTime) * 1000)
                 companionService.logInteraction(
-                    query: trimmed,
+                    query: messageToSend,
                     response: response.response,
                     sources: response.sources,
                     responseTimeMs: elapsed
                 )
             } catch {
-                let errorMsg = ChatMessage(
-                    role: .assistant,
-                    content: "I'm having trouble connecting right now. Please try again in a moment."
-                )
-                messages.append(errorMsg)
+                // Only show error if we didn't already show crisis message
+                if !crisisDetected {
+                    let errorMsg = ChatMessage(
+                        role: .assistant,
+                        content: "I'm having trouble connecting right now. Please try again in a moment."
+                    )
+                    messages.append(errorMsg)
+                }
                 self.errorMessage = error.localizedDescription
                 AnalyticsService.shared.capture("error", properties: ["source": "chat", "message": error.localizedDescription])
             }
@@ -139,8 +166,8 @@ final class ChatViewModel {
         errorMessage = nil
     }
     
-    func dismissFinalSeedInterstitial() {
-        quotaManager.dismissFinalSeedInterstitial()
+    func dismissUpgradePrompt() {
+        quotaManager.dismissUpgradePrompt()
     }
     
     /// Process any pending message from context

@@ -11,13 +11,13 @@ struct ConsentManagementView: View {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Your Privacy Matters")
-                        .font(.headline)
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.text)
                     Text("We respect your data. Choose which optional services you'd like to enable. These are OFF by default and the app works fully without them.")
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.secondaryText)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, Theme.Spacing.sm)
             }
             
             Section("Optional Data Sharing") {
@@ -26,7 +26,7 @@ struct ConsentManagementView: View {
                         Text("Analytics")
                             .foregroundStyle(Theme.Colors.text)
                         Text("Help us improve by sharing anonymous usage data")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
                 }
@@ -37,7 +37,7 @@ struct ConsentManagementView: View {
                         Text("Crash Reporting")
                             .foregroundStyle(Theme.Colors.text)
                         Text("Send crash reports to help us fix bugs faster")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
                 }
@@ -45,13 +45,13 @@ struct ConsentManagementView: View {
             }
             
             Section {
-                Link(destination: URL(string: "https://choosegod.app/privacy")!) {
+                Link(destination: AppURLs.privacy) {
                     HStack {
                         Image(systemName: "hand.raised")
                         Text("Privacy Policy")
                         Spacer()
                         Image(systemName: "arrow.up.right.square")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
                 }

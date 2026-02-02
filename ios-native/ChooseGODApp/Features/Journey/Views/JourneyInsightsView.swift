@@ -62,10 +62,10 @@ struct JourneyInsightsView: View {
                     }
                 } label: {
                     Text(period.rawValue)
-                        .font(.caption.weight(.semibold))
+                        .font(Theme.Typography.captionSemibold)
                         .foregroundStyle(viewModel.selectedPeriod == period ? .white : Theme.Colors.textSecondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, Theme.Spacing.mds)
+                        .padding(.vertical, Theme.Spacing.sm)
                         .background {
                             if viewModel.selectedPeriod == period {
                                 Capsule()
@@ -87,14 +87,14 @@ struct JourneyInsightsView: View {
         VStack(spacing: 16) {
             HStack {
                 Text("Spiritual Health")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.spiritualHealth.change >= 0 ? "arrow.up.right" : "arrow.down.right")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                     Text("\(abs(viewModel.spiritualHealth.change))%")
-                        .font(.caption.bold())
+                        .font(Theme.Typography.captionBold)
                 }
                 .foregroundStyle(viewModel.spiritualHealth.change >= 0 ? Theme.Colors.success : Theme.Colors.error)
             }
@@ -118,10 +118,10 @@ struct JourneyInsightsView: View {
                 
                 VStack(spacing: 2) {
                     Text("\(viewModel.spiritualHealth.score)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.displayRounded)
                         .foregroundStyle(Theme.Colors.text)
                     Text("/ 100")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
@@ -133,24 +133,24 @@ struct JourneyInsightsView: View {
             }
             
             Text(viewModel.spiritualHealth.message)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
     private func miniStat(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.primary)
             Text(value)
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             Text(label)
-                .font(.caption2)
+                .font(Theme.Typography.caption2)
                 .foregroundStyle(Theme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity)
@@ -162,12 +162,12 @@ struct JourneyInsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Prayer Activity")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
                 let avg = viewModel.weeklyActivity.isEmpty ? 0 : viewModel.weeklyActivity.map(\.prayerMinutes).reduce(0, +) / max(viewModel.weeklyActivity.count, 1)
                 Text("Avg \(avg) min/day")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
             
@@ -183,13 +183,13 @@ struct JourneyInsightsView: View {
                         endPoint: .top
                     )
                 )
-                .cornerRadius(6)
+                .cornerRadius(Theme.CornerRadius.sm)
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { value in
                     AxisValueLabel {
                         Text("\(value.as(Int.self) ?? 0)m")
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.textTertiary)
                     }
                 }
@@ -198,14 +198,14 @@ struct JourneyInsightsView: View {
                 AxisMarks { value in
                     AxisValueLabel {
                         Text(value.as(String.self) ?? "")
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.textSecondary)
                     }
                 }
             }
             .frame(height: 160)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -215,7 +215,7 @@ struct JourneyInsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Sentiment Trend")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
                 Image(systemName: "face.smiling")
@@ -223,7 +223,7 @@ struct JourneyInsightsView: View {
             }
             
             Text("How your journal entries reflect your emotional journey")
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.textSecondary)
             
             Chart(viewModel.sentimentTrend) { point in
@@ -252,14 +252,14 @@ struct JourneyInsightsView: View {
                     AxisValueLabel {
                         let v = value.as(Double.self) ?? 0
                         Text(v > 0 ? "😊" : v < 0 ? "😔" : "😐")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                     }
                 }
             }
             .chartXAxis(.hidden)
             .frame(height: 140)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -268,32 +268,32 @@ struct JourneyInsightsView: View {
     private var topicsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Topics Explored")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             ForEach(viewModel.topicsExplored) { topic in
                 HStack(spacing: 12) {
                     Text(topic.emoji)
-                        .font(.title2)
+                        .font(Theme.Typography.title2)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Text(topic.label)
-                                .font(.subheadline.weight(.medium))
+                                .font(Theme.Typography.subheadlineMedium)
                                 .foregroundStyle(Theme.Colors.text)
                             Spacer()
                             Text("\(topic.chatCount) chats")
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                                 .foregroundStyle(Theme.Colors.textSecondary)
                         }
                         
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 4)
+                                RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                                     .fill(Theme.Colors.surface)
                                     .frame(height: 6)
                                 
-                                RoundedRectangle(cornerRadius: 4)
+                                RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                                     .fill(Color(hex: topic.color))
                                     .frame(width: geo.size.width * topic.percentage / 100, height: 6)
                             }
@@ -303,7 +303,7 @@ struct JourneyInsightsView: View {
                 }
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -315,29 +315,29 @@ struct JourneyInsightsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("💡")
-                            .font(.title2)
-                            .padding(8)
+                            .font(Theme.Typography.title2)
+                            .padding(Theme.Spacing.sm)
                             .background(Theme.Colors.success.opacity(0.2))
                             .clipShape(Circle())
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(insight.title)
-                                .font(.headline)
+                                .font(Theme.Typography.title3)
                                 .foregroundStyle(Theme.Colors.text)
                             Text(insight.insightType.rawValue.capitalized)
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                                 .foregroundStyle(Theme.Colors.textSecondary)
                         }
                     }
                     
                     Text(insight.narrative)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textSecondary)
                     
                     if !insight.keyMoments.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Key Moments")
-                                .font(.caption.weight(.semibold))
+                                .font(Theme.Typography.captionSemibold)
                                 .foregroundStyle(Theme.Colors.text)
                             ForEach(insight.keyMoments, id: \.self) { moment in
                                 HStack(spacing: 8) {
@@ -345,14 +345,14 @@ struct JourneyInsightsView: View {
                                         .fill(Theme.Colors.success)
                                         .frame(width: 6, height: 6)
                                     Text(moment)
-                                        .font(.caption)
+                                        .font(Theme.Typography.caption)
                                         .foregroundStyle(Theme.Colors.textSecondary)
                                 }
                             }
                         }
                     }
                 }
-                .padding(20)
+                .padding(Theme.Spacing.mdl)
                 .background(
                     LinearGradient(
                         colors: [Theme.Colors.success.opacity(0.08), Theme.Colors.success.opacity(0.15), Theme.Colors.success.opacity(0.08)],
@@ -373,40 +373,40 @@ struct JourneyInsightsView: View {
                 Image(systemName: "sparkles")
                     .foregroundStyle(Theme.Colors.accent)
                 Text("AI Growth Analysis")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
             }
             
             if let summary = viewModel.aiSummary {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(summary.summary)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textSecondary)
                     
                     if let scripture = summary.scriptureConnection {
                         HStack(alignment: .top, spacing: 8) {
                             Image(systemName: "book.fill")
                                 .foregroundStyle(Theme.Colors.primary)
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                             Text(scripture)
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                                 .foregroundStyle(Theme.Colors.text)
                                 .italic()
                         }
-                        .padding(10)
+                        .padding(Theme.Spacing.smd)
                         .background(Theme.Colors.primary.opacity(0.1))
-                        .cornerRadius(8)
+                        .cornerRadius(Theme.CornerRadius.md)
                     }
                     
                     if let prediction = summary.growthPrediction {
                         Label(prediction, systemImage: "chart.line.uptrend.xyaxis")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.success)
                     }
                     
                     if let encouragement = summary.encouragement {
                         Text("💛 \(encouragement)")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.accent)
                     }
                 }
@@ -416,20 +416,20 @@ struct JourneyInsightsView: View {
                 } label: {
                     HStack {
                         if viewModel.isGeneratingInsight {
-                            ProgressView()
+                ShimmerView(height: 20)
                                 .tint(Theme.Colors.accent)
                         }
                         Text(viewModel.isGeneratingInsight ? "Analyzing your journey..." : "Generate AI Insight")
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.Typography.subheadlineMedium)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, Theme.Spacing.mds)
                 }
                 .buttonStyle(GlassButtonStyle(isProminent: true))
                 .disabled(viewModel.isGeneratingInsight)
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -439,15 +439,15 @@ struct JourneyInsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Milestones")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
                 HStack(spacing: 4) {
                     Text("\(viewModel.achievedMilestones.count) earned")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.accent)
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
@@ -457,20 +457,20 @@ struct JourneyInsightsView: View {
                     ForEach(viewModel.achievedMilestones.prefix(4)) { milestone in
                         VStack(spacing: 8) {
                             Text(milestone.emoji)
-                                .font(.largeTitle)
+                                .font(Theme.Typography.display)
                             Text(milestone.title)
-                                .font(.caption.weight(.semibold))
+                                .font(Theme.Typography.captionSemibold)
                                 .foregroundStyle(Theme.Colors.text)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(width: 100, height: 100)
                         .background(Theme.Colors.surface)
-                        .cornerRadius(16)
+                        .cornerRadius(Theme.CornerRadius.xl)
                     }
                 }
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -478,15 +478,15 @@ struct JourneyInsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Activity Timeline")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
                 HStack(spacing: 4) {
                     Text("See all")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.accent)
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
@@ -499,10 +499,10 @@ struct JourneyInsightsView: View {
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.title)
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.Typography.subheadlineMedium)
                             .foregroundStyle(Theme.Colors.text)
                         Text(item.content)
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.textSecondary)
                             .lineLimit(1)
                     }
@@ -510,12 +510,12 @@ struct JourneyInsightsView: View {
                     Spacer()
                     
                     Text(item.createdAt, style: .relative)
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                         .foregroundStyle(Theme.Colors.textTertiary)
                 }
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -523,11 +523,11 @@ struct JourneyInsightsView: View {
     
     private var loadingView: some View {
         VStack(spacing: 16) {
-            ProgressView()
+                ShimmerView(height: 20)
                 .tint(Theme.Colors.accent)
                 .scaleEffect(1.5)
             Text("Loading your journey...")
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
         }
     }

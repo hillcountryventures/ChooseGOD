@@ -1,3 +1,4 @@
+import os
 import Foundation
 
 /// Unified Bible audio service combining AudioTreasure (free KJV) and Bible Brain API
@@ -130,7 +131,7 @@ final class BibleAudioService {
                 )
             }
         } catch {
-            print("[BibleAudioService] Failed to fetch timestamps: \(error)")
+            AppLogger.audio.error("BibleAudioService failed to fetch timestamps: \(error)")
             return []
         }
     }
@@ -173,7 +174,7 @@ final class BibleAudioService {
                 duration: file.duration
             )
         } catch {
-            print("[BibleAudioService] Bible Brain error: \(error)")
+            AppLogger.audio.error("BibleAudioService Bible Brain error: \(error)")
             return nil
         }
     }

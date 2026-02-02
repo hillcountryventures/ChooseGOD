@@ -39,7 +39,7 @@ struct AppIconPreview: View {
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(40)
+        .padding(Theme.Spacing.xxl)
         .background(Color.black)
     }
 }
@@ -295,6 +295,6 @@ struct AppIconConcept6: View {
 #Preview("Recommended Icon - Large") {
     AppIconConcept5()
         .frame(width: 200, height: 200)
-        .padding(50)
+        .padding(50) // Keep custom large padding for preview
         .background(Color.black)
 }

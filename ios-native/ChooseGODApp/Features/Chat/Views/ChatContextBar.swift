@@ -14,12 +14,12 @@ struct ChatContextBar: View {
             if let description = contextDescription {
                 HStack(spacing: 6) {
                     Image(systemName: contextIcon)
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                     Text(description)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                 }
                 .foregroundStyle(Theme.Colors.primary)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, Theme.Spacing.smd)
                 .padding(.vertical, 6)
                 .background(Theme.Colors.primary.opacity(0.12))
                 .clipShape(Capsule())
@@ -33,14 +33,14 @@ struct ChatContextBar: View {
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: currentMode.icon)
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                     Text(currentMode.displayName)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                     Image(systemName: "chevron.down")
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                 }
                 .foregroundStyle(Theme.Colors.secondaryText)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, Theme.Spacing.smd)
                 .padding(.vertical, 6)
                 .background(Theme.Colors.surface)
                 .clipShape(Capsule())
@@ -79,9 +79,9 @@ struct ChatContextBar: View {
     private var modePickerContent: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Chat Mode")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .padding(.horizontal)
-                .padding(.top, 12)
+                .padding(.top, Theme.Spacing.mds)
             
             ForEach(ChatMode.allCases, id: \.self) { mode in
                 Button {
@@ -100,13 +100,13 @@ struct ChatContextBar: View {
                     }
                     .foregroundStyle(Theme.Colors.text)
                     .padding(.horizontal)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, Theme.Spacing.smd)
                     .background(mode == currentMode ? Theme.Colors.primary.opacity(0.08) : .clear)
                 }
             }
         }
         .frame(minWidth: 220)
-        .padding(.bottom, 8)
+        .padding(.bottom, Theme.Spacing.sm)
     }
 }
 

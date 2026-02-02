@@ -24,18 +24,18 @@ struct BibleReaderView: View {
                     .ignoresSafeArea()
                 
                 if isLoading {
-                    ProgressView("Loading...")
+                    VStack(spacing: 16) { ShimmerCard(); ShimmerCard() }.padding()
                 } else {
                     VStack(spacing: 0) {
                         ScrollView {
                             VStack(alignment: .leading, spacing: 0) {
                                 // Chapter header
                                 Text("\(selectedBook) \(selectedChapter)")
-                                    .font(.system(size: 32, weight: .bold, design: .serif))
+                                    .font(Theme.Typography.chapterTitle)
                                     .foregroundStyle(Theme.Colors.text)
                                     .padding(.horizontal)
-                                    .padding(.top, 8)
-                                    .padding(.bottom, 24)
+                                    .padding(.top, Theme.Spacing.sm)
+                                    .padding(.bottom, Theme.Spacing.lg)
                                 
                                 // Verses
                                 ForEach(verses) { verse in
@@ -52,6 +52,9 @@ struct BibleReaderView: View {
                             // Extra padding at bottom for audio bar
                             .padding(.bottom, audioPlayer.playbackState.currentTrack != nil ? 70 : 0)
                         }
+                        .refreshable {
+                            await loadChapter()
+                        }
                         
                         // Sticky audio player bar
                         AudioPlayerBar()
@@ -67,12 +70,14 @@ struct BibleReaderView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Text("\(selectedBook) \(selectedChapter)")
-                                .font(.headline)
+                                .font(Theme.Typography.title3)
                             Image(systemName: "chevron.down")
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                         }
                         .foregroundStyle(Theme.Colors.primary)
                     }
+                    .accessibilityLabel("Translation: \(appState.preferences.preferredTranslation.rawValue)")
+                    .accessibilityHint("Double tap to change Bible translation")
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
@@ -82,6 +87,8 @@ struct BibleReaderView: View {
                     ) {
                         Task { await loadAudio() }
                     }
+                    .accessibilityLabel(audioPlayer.playbackState.currentTrack != nil ? "Audio playing" : "Listen to chapter")
+                    .accessibilityHint("Double tap to play audio for this chapter")
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -102,7 +109,7 @@ struct BibleReaderView: View {
                         }
                     } label: {
                         Text(appState.preferences.preferredTranslation.rawValue)
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.Typography.subheadlineMedium)
                             .foregroundStyle(Theme.Colors.primary)
                     }
                 }
@@ -173,21 +180,22 @@ struct VerseRow: View {
     var isHighlightedByAudio: Bool = false
     var onCrossRefTap: (() -> Void)?
     @State private var isBookmarked = false
+    @State private var showShareCard = false
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(verse.verse)")
-                .font(.system(size: 14, weight: .bold, design: .serif))
+                .font(Theme.Typography.verseNumber)
                 .foregroundStyle(isHighlightedByAudio ? Theme.Colors.accent : Theme.Colors.primary)
                 .frame(width: 28, alignment: .trailing)
             
             Text(verse.text)
-                .font(.system(.body, design: .serif))
+                .font(Theme.Typography.bodySerif)
                 .foregroundStyle(Theme.Colors.text)
                 .lineSpacing(6)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, Theme.Spacing.sm)
         .background(
             isHighlightedByAudio
                 ? Theme.Colors.primaryAlpha(0.12)
@@ -195,9 +203,13 @@ struct VerseRow: View {
         )
         .animation(Theme.Animation.fast, value: isHighlightedByAudio)
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Verse \(verse.verse). \(verse.text)")
+        .accessibilityHint("Long press for options like bookmark, cross-references, copy, and share")
         .contextMenu {
             Button {
                 isBookmarked.toggle()
+                HapticManager.shared.impact()
             } label: {
                 Label(isBookmarked ? "Remove Bookmark" : "Bookmark", systemImage: isBookmarked ? "bookmark.fill" : "bookmark")
             }
@@ -215,8 +227,20 @@ struct VerseRow: View {
             }
             
             ShareLink(item: "\(verse.reference)\n\n\(verse.text)") {
-                Label("Share", systemImage: "square.and.arrow.up")
+                Label("Share Text", systemImage: "square.and.arrow.up")
             }
+            
+            Button {
+                showShareCard = true
+            } label: {
+                Label("Share as Card", systemImage: "photo")
+            }
+        }
+        .sheet(isPresented: $showShareCard) {
+            ShareCardPickerView(
+                verseText: verse.text,
+                reference: "\(verse.reference) \(verse.translation)"
+            )
         }
     }
 }
@@ -280,6 +304,7 @@ struct BookPickerView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityLabel("Cancel book selection")
                 }
             }
         }
@@ -316,12 +341,14 @@ struct ChapterPickerView: View {
                         onSelect()
                     } label: {
                         Text("\(chapter)")
-                            .font(.headline)
+                            .font(Theme.Typography.title3)
                             .foregroundStyle(chapter == selectedChapter ? .white : Theme.Colors.text)
                             .frame(width: 56, height: 56)
                             .background(chapter == selectedChapter ? Theme.Colors.primary : Theme.Colors.surface)
-                            .cornerRadius(8)
+                            .cornerRadius(Theme.CornerRadius.md)
                     }
+                    .accessibilityLabel("Chapter \(chapter)\(chapter == selectedChapter ? ", selected" : "")")
+                    .accessibilityHint("Double tap to read chapter \(chapter)")
                 }
             }
             .padding()

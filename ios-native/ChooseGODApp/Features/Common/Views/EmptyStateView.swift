@@ -15,7 +15,7 @@ struct EmptyStateView: View {
         VStack(spacing: Theme.Spacing.lg) {
             // Icon
             Image(systemName: icon)
-                .font(.system(size: 56))
+                .font(Theme.Typography.iconXXL)
                 .foregroundStyle(Theme.Colors.primary.opacity(0.6))
                 .scaleEffect(appeared ? 1 : (reduceMotion ? 1 : 0.7))
                 .opacity(appeared ? 1 : 0)
@@ -39,7 +39,7 @@ struct EmptyStateView: View {
                         .font(ScaledFont.button)
                         .foregroundStyle(.white)
                         .padding(.horizontal, 28)
-                        .padding(.vertical, 14)
+                        .padding(.vertical, Theme.Spacing.mds)
                 }
                 .buttonStyle(GlassButtonStyle(isProminent: true))
             }

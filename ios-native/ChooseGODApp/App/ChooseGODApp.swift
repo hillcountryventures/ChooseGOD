@@ -180,14 +180,14 @@ struct SplashView: View {
             Theme.Colors.background
                 .ignoresSafeArea()
             
-            VStack(spacing: 24) {
+            VStack(spacing: Theme.Spacing.lg) {
                 // App icon or logo
                 Image(systemName: "book.closed.fill")
-                    .font(.system(size: 80))
+                    .font(.system(size: 80)) // Keep custom size for splash logo
                     .foregroundStyle(Theme.Colors.primary)
                 
                 Text("ChooseGOD")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .font(Theme.Typography.display)
                     .foregroundStyle(Theme.Colors.text)
                 
                 ShimmerView(height: 20)

@@ -7,24 +7,40 @@ struct JourneyView: View {
     @State private var recentActivity: [ActivityItem] = []
     @State private var isLoading = true
     
+    private var isEmpty: Bool {
+        stats.totalDaysActive == 0 && recentActivity.isEmpty
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 Theme.Colors.background
                     .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Streak card
-                        streakCard
-                        
-                        // Stats grid
-                        statsGrid
-                        
-                        // Recent activity
-                        activitySection
+                if isLoading {
+                    ProgressView()
+                } else if isEmpty {
+                    EmptyStateView(
+                        icon: "chart.line.uptrend.xyaxis",
+                        title: "Your Journey Awaits",
+                        description: "Start reading Scripture, journaling, or praying to see your spiritual growth here.",
+                        actionTitle: "Start Reading",
+                        action: nil
+                    )
+                } else {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            // Streak card
+                            streakCard
+                            
+                            // Stats grid
+                            statsGrid
+                            
+                            // Recent activity
+                            activitySection
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
             }
             .navigationTitle("Journey")
@@ -42,7 +58,7 @@ struct JourneyView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Current Streak")
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.secondaryText)
                     
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -51,7 +67,7 @@ struct JourneyView: View {
                             .foregroundStyle(Theme.Colors.text)
                         
                         Text("days")
-                            .font(.title3)
+                            .font(Theme.Typography.title3)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
                 }
@@ -88,11 +104,11 @@ struct JourneyView: View {
             // Best streak
             if stats.longestStreak > stats.currentStreak {
                 Text("Best: \(stats.longestStreak) days")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.secondaryText)
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .background(Theme.Colors.surface)
         .cornerRadius(16)
     }
@@ -102,7 +118,7 @@ struct JourneyView: View {
     private var statsGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Your Progress")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -156,12 +172,12 @@ struct JourneyView: View {
     private var activitySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Recent Activity")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             if recentActivity.isEmpty {
                 Text("Start reading to see your activity here")
-                    .font(.subheadline)
+                    .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.secondaryText)
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -209,6 +225,11 @@ struct JourneyView: View {
             ActivityItem(type: .prayer, title: "Prayer Answered!", subtitle: "Job interview guidance", date: Date().addingTimeInterval(-86400)),
             ActivityItem(type: .verse, title: "Highlighted verse", subtitle: "Philippians 4:13", date: Date().addingTimeInterval(-172800)),
         ]
+        
+        // Streak milestone haptic
+        if stats.currentStreak > 0 && stats.currentStreak % 7 == 0 {
+            HapticManager.shared.streakMilestone()
+        }
         
         isLoading = false
     }
@@ -282,7 +303,7 @@ struct StatBox: View {
         VStack(spacing: 8) {
             HStack {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(color)
                 
                 Spacer()
@@ -295,7 +316,7 @@ struct StatBox: View {
                         .foregroundStyle(Theme.Colors.text)
                     
                     Text(label)
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.secondaryText)
                 }
                 
@@ -317,7 +338,7 @@ struct ActivityRow: View {
         HStack(spacing: 12) {
             // Icon
             Image(systemName: item.type.icon)
-                .font(.title3)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(item.type.color)
                 .frame(width: 32)
             
@@ -328,7 +349,7 @@ struct ActivityRow: View {
                     .foregroundStyle(Theme.Colors.text)
                 
                 Text(item.subtitle)
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.secondaryText)
             }
             
@@ -336,7 +357,7 @@ struct ActivityRow: View {
             
             // Date
             Text(item.date, style: .relative)
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
         .padding()

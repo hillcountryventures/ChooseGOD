@@ -46,10 +46,10 @@ struct MilestonesView: View {
             HStack(spacing: 20) {
                 VStack(spacing: 4) {
                     Text("\(achieved.count)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.displayRounded)
                         .foregroundStyle(Theme.Colors.accent)
                     Text("Earned")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
                 
@@ -57,10 +57,10 @@ struct MilestonesView: View {
                 
                 VStack(spacing: 4) {
                     Text("\(milestones.count)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.displayRounded)
                         .foregroundStyle(Theme.Colors.text)
                     Text("Total")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
                 
@@ -69,17 +69,17 @@ struct MilestonesView: View {
                 if let next = upcoming.first {
                     VStack(spacing: 4) {
                         Text("\(Int(next.progress * 100))%")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .font(Theme.Typography.displayRounded)
                             .foregroundStyle(Theme.Colors.primary)
                         Text("Next")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.textSecondary)
                     }
                 }
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .modifier(GlassCard())
     }
     
@@ -88,7 +88,7 @@ struct MilestonesView: View {
     private var achievedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("🏆 Achievements Unlocked")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -118,26 +118,26 @@ struct MilestonesView: View {
         
         return VStack(spacing: 10) {
             Text(milestone.emoji)
-                .font(.system(size: 44))
+                .font(Theme.Typography.iconLarge)
                 .shadow(color: Theme.Colors.accent.opacity(0.5), radius: 10)
             
             Text(milestone.title)
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundStyle(Theme.Colors.text)
                 .multilineTextAlignment(.center)
             
             Text(milestone.description)
-                .font(.caption2)
+                .font(Theme.Typography.caption2)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
             
             if let date = milestone.achievedAt {
                 Text(date, style: .date)
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity, minHeight: 150)
         .background(
             LinearGradient(
@@ -156,7 +156,7 @@ struct MilestonesView: View {
     private var upcomingSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("🎯 In Progress")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
             ForEach(upcoming) { milestone in
@@ -168,29 +168,29 @@ struct MilestonesView: View {
     private func upcomingRow(_ milestone: Milestone) -> some View {
         HStack(spacing: 14) {
             Text(milestone.emoji)
-                .font(.title)
+                .font(Theme.Typography.title1)
                 .frame(width: 50, height: 50)
                 .background(Theme.Colors.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
             
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(milestone.title)
-                        .font(.subheadline.weight(.medium))
+                        .font(Theme.Typography.subheadlineMedium)
                         .foregroundStyle(Theme.Colors.text)
                     Spacer()
                     Text("\(milestone.current)/\(milestone.target)")
-                        .font(.caption.weight(.semibold))
+                        .font(Theme.Typography.captionSemibold)
                         .foregroundStyle(Theme.Colors.primary)
                 }
                 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                             .fill(Theme.Colors.surface)
                             .frame(height: 6)
                         
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                             .fill(
                                 LinearGradient(
                                     colors: [Theme.Colors.primary, Theme.Colors.accent],
@@ -204,12 +204,12 @@ struct MilestonesView: View {
                 .frame(height: 6)
                 
                 Text(milestone.scriptureRef)
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .italic()
             }
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .modifier(GlassCard())
     }
     
@@ -226,43 +226,43 @@ struct MilestonesView: View {
             if let id = celebratingId, let milestone = milestones.first(where: { $0.id == id }) {
                 VStack(spacing: 20) {
                     Text(milestone.emoji)
-                        .font(.system(size: 80))
+                        .font(Theme.Typography.iconMassive)
                         .shadow(color: Theme.Colors.accent.opacity(0.8), radius: 20)
                         .scaleEffect(celebratingId != nil ? 1 : 0.3)
                     
                     Text(milestone.title)
-                        .font(.title2.bold())
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(Theme.Colors.text)
                     
                     Text(milestone.description)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textSecondary)
                     
                     VStack(spacing: 8) {
                         Text("\"\(milestone.scripture)\"")
-                            .font(.subheadline)
+                            .font(Theme.Typography.bodySmall)
                             .foregroundStyle(Theme.Colors.text)
                             .italic()
                             .multilineTextAlignment(.center)
                         
                         Text("— \(milestone.scriptureRef)")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.accent)
                     }
                     .padding()
                     .background(Theme.Colors.primary.opacity(0.1))
-                    .cornerRadius(12)
+                    .cornerRadius(Theme.CornerRadius.lg)
                     
                     // Confetti-style emojis
                     HStack(spacing: 20) {
                         ForEach(["🎉", "⭐", "🙌", "✨", "🎊"], id: \.self) { emoji in
                             Text(emoji)
-                                .font(.title)
+                                .font(Theme.Typography.title1)
                                 .rotationEffect(.degrees(Double.random(in: -20...20)))
                         }
                     }
                 }
-                .padding(30)
+                .padding(Theme.Spacing.xl)
                 .modifier(GlassCard())
                 .padding(.horizontal, 30)
                 .transition(.scale.combined(with: .opacity))

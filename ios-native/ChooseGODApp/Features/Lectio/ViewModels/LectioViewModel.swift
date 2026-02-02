@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 import Combine
 
@@ -200,7 +201,7 @@ final class LectioViewModel: ObservableObject {
             responses["oratio"].map { "*Prayer response:* \($0)" } ?? "",
         ].filter { !$0.isEmpty }.joined(separator: "\n")
         
-        print("[LectioDivina] Saving reflection: \(content.prefix(100))...")
+        AppLogger.journal.info("LectioDivina saving reflection")
     }
     
     deinit {

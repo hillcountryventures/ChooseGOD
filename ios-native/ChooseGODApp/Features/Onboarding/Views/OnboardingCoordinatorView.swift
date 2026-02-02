@@ -5,6 +5,7 @@ import SwiftUI
 struct OnboardingCoordinatorView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = OnboardingViewModel()
+    @State private var showPaywallSheet = false
     
     var body: some View {
         ZStack {
@@ -39,11 +40,20 @@ struct OnboardingCoordinatorView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     
                 case .paywall:
-                    OnboardingPaywallView {
-                        viewModel.advance()
-                    } onSkip: {
-                        viewModel.advance()
-                    }
+                    OnboardingPaywallView(
+                        onSubscribe: {
+                            showPaywallSheet = true
+                        },
+                        onSkip: {
+                            viewModel.advance()
+                        },
+                        onRestore: {
+                            Task {
+                                _ = try? await RevenueCatService.shared.restorePurchases()
+                                viewModel.advance()
+                            }
+                        }
+                    )
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     
                 case .notificationSetup:
@@ -58,6 +68,11 @@ struct OnboardingCoordinatorView: View {
             .animation(Theme.Animation.spring, value: viewModel.currentStep)
         }
         .onAppear { AnalyticsService.shared.screen("onboarding_coordinator") }
+        .sheet(isPresented: $showPaywallSheet) {
+            PaywallView()
+                .environment(appState)
+                .onDisappear { viewModel.advance() }
+        }
     }
     
     private func completeOnboarding() {
@@ -94,7 +109,7 @@ struct OnboardingNotificationSetupView: View {
                     )
                 
                 Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 44))
+                    .font(Theme.Typography.iconLarge)
                     .foregroundStyle(Theme.Colors.accent)
             }
             .scaleEffect(appeared ? 1 : 0.7)
@@ -119,8 +134,9 @@ struct OnboardingNotificationSetupView: View {
                 Button(action: onEnable) {
                     HStack(spacing: 8) {
                         Image(systemName: "bell.fill")
-                            .font(.system(size: 14))
+                            .font(Theme.Typography.bodySmall)
                         Text("Enable Notifications")
+                        .accessibilityLabel("Enable push notifications")
                             .font(Theme.Typography.button)
                     }
                     .foregroundColor(.white)
@@ -165,7 +181,7 @@ struct AgeGateView: View {
             Spacer()
             
             Image(systemName: "person.crop.circle.badge.checkmark")
-                .font(.system(size: 60))
+                .font(Theme.Typography.iconHuge)
                 .foregroundStyle(Theme.Colors.primary)
                 .scaleEffect(appeared ? 1 : 0.7)
                 .opacity(appeared ? 1 : 0)
@@ -186,14 +202,14 @@ struct AgeGateView: View {
             if showBlockedMessage {
                 VStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.title)
+                        .font(Theme.Typography.title1)
                         .foregroundStyle(.orange)
                     Text("Sorry, you must be 13 or older to use this app.")
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
                         .multilineTextAlignment(.center)
                     Text("This is required by the Children's Online Privacy Protection Act (COPPA).")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
@@ -242,11 +258,13 @@ struct AgeGateView: View {
 struct OnboardingPaywallView: View {
     let onSubscribe: () -> Void
     let onSkip: () -> Void
+    var onRestore: (() -> Void)? = nil
     
     @State private var appeared = false
+    @State private var isRestoring = false
     
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 24) {
             Spacer()
             
             ZStack {
@@ -263,7 +281,7 @@ struct OnboardingPaywallView: View {
                     )
                 
                 Image(systemName: "crown.fill")
-                    .font(.system(size: 44))
+                    .font(Theme.Typography.iconLarge)
                     .foregroundStyle(Theme.Colors.primary)
             }
             .scaleEffect(appeared ? 1 : 0.7)
@@ -289,16 +307,16 @@ struct OnboardingPaywallView: View {
                 PaywallFeatureRow(icon: "hands.sparkles.fill", text: "Guided prayer journaling")
                 PaywallFeatureRow(icon: "chart.line.uptrend.xyaxis", text: "Advanced spiritual growth tracking")
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, Theme.Spacing.xl)
             .opacity(appeared ? 1 : 0)
             
             Spacer()
             
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 Button(action: onSubscribe) {
                     HStack(spacing: 8) {
                         Image(systemName: "crown.fill")
-                            .font(.system(size: 14))
+                            .font(Theme.Typography.bodySmall)
                         Text("Start Free Trial")
                             .font(Theme.Typography.button)
                     }
@@ -315,6 +333,41 @@ struct OnboardingPaywallView: View {
                     .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
                 }
                 
+                // Auto-renewal disclosure (always visible per App Store guidelines)
+                Text("Subscription automatically renews. Cancel anytime in App Store Settings at least 24 hours before the end of the current period.")
+                    .font(Theme.Typography.caption2)
+                    .foregroundStyle(Theme.Colors.textSecondary.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.Spacing.md)
+                
+                // Restore Purchases
+                Button {
+                    if let onRestore {
+                        isRestoring = true
+                        onRestore()
+                        isRestoring = false
+                    }
+                } label: {
+                    if isRestoring {
+                        ShimmerView(height: 20)
+                    } else {
+                        Text("Restore Purchases")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+                }
+                
+                // Terms of Service & Privacy Policy links
+                HStack(spacing: 4) {
+                    Link("Terms of Service", destination: AppURLs.terms)
+                        .font(Theme.Typography.caption2)
+                    Text("and")
+                        .font(Theme.Typography.caption2)
+                        .foregroundStyle(Theme.Colors.textSecondary.opacity(0.6))
+                    Link("Privacy Policy", destination: AppURLs.privacy)
+                        .font(Theme.Typography.caption2)
+                }
+                
                 Button(action: onSkip) {
                     Text("Continue with Free Plan")
                         .font(Theme.Typography.bodySmall)
@@ -322,7 +375,7 @@ struct OnboardingPaywallView: View {
                 }
             }
             .padding(.horizontal, Theme.Spacing.lg)
-            .padding(.bottom, 50)
+            .padding(.bottom, 40)
         }
         .onAppear {
             withAnimation(Theme.Animation.springGentle.delay(0.2)) {
@@ -339,7 +392,7 @@ struct PaywallFeatureRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16))
+                .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.primary)
                 .frame(width: 24)
             Text(text)

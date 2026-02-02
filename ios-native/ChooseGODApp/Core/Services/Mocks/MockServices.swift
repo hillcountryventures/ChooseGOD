@@ -86,8 +86,6 @@ final class MockBibleService: BibleServiceProtocol {
 
 final class MockSubscriptionService: SubscriptionServiceProtocol {
     var isPremium: Bool = true
-    var seedsRemaining: Int = 3
-    var seedsUsedToday: Int = 0
     
     func configure(userId: String?) async {}
     
@@ -102,16 +100,6 @@ final class MockSubscriptionService: SubscriptionServiceProtocol {
     
     func restorePurchases() async throws -> Bool {
         true
-    }
-    
-    func useSeed() -> Bool {
-        if isPremium { return true }
-        if seedsRemaining > 0 {
-            seedsRemaining -= 1
-            seedsUsedToday += 1
-            return true
-        }
-        return false
     }
 }
 
@@ -137,14 +125,11 @@ protocol BibleServiceProtocol {
 
 protocol SubscriptionServiceProtocol {
     var isPremium: Bool { get }
-    var seedsRemaining: Int { get }
-    var seedsUsedToday: Int { get }
     
     func configure(userId: String?) async
     func checkPremiumStatus() async -> Bool
     func purchase(package: SubscriptionPackage) async throws -> Bool
     func restorePurchases() async throws -> Bool
-    func useSeed() -> Bool
 }
 
 protocol NotificationServiceProtocol {

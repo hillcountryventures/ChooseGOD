@@ -10,8 +10,13 @@ struct MemoryVerseListView: View {
             Theme.Colors.background.ignoresSafeArea()
             
             if viewModel.isLoading && viewModel.verses.isEmpty {
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(Theme.Colors.primary)
+            } else if let error = viewModel.error, viewModel.verses.isEmpty {
+                ErrorRetryView(message: error) {
+                    viewModel.error = nil
+                    Task { await viewModel.fetchVerses() }
+                }
             } else if viewModel.verses.isEmpty {
                 emptyState
             } else {
@@ -59,6 +64,9 @@ struct MemoryVerseListView: View {
             }
             .padding()
         }
+        .refreshable {
+            await viewModel.fetchVerses()
+        }
     }
     
     private var dueBanner: some View {
@@ -68,15 +76,15 @@ struct MemoryVerseListView: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "brain.head.profile")
-                    .font(.title2)
+                    .font(Theme.Typography.title2)
                     .foregroundStyle(Theme.Colors.primary)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(viewModel.dueVerses.count) verse\(viewModel.dueVerses.count == 1 ? "" : "s") due")
-                        .font(.headline)
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.text)
                     Text("Tap to start practice")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
                 
@@ -85,7 +93,7 @@ struct MemoryVerseListView: View {
                 Image(systemName: "chevron.right")
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
-            .padding(16)
+            .padding(Theme.Spacing.md)
             .modifier(GlassCard())
         }
     }
@@ -94,22 +102,22 @@ struct MemoryVerseListView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(verse.reference)
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 
                 Spacer()
                 
                 Text(verse.translation.uppercased())
-                    .font(.caption2.bold())
+                    .font(Theme.Typography.captionBold)
                     .foregroundStyle(Theme.Colors.primary)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, 3)
                     .background(Theme.Colors.primaryAlpha(0.2))
                     .clipShape(Capsule())
             }
             
             Text(verse.text)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .lineLimit(2)
             
@@ -117,10 +125,10 @@ struct MemoryVerseListView: View {
                 Label(reviewDateText(verse.nextReview), systemImage: "clock")
                 Label("\(verse.reviewCount) reviews", systemImage: "arrow.triangle.2.circlepath")
             }
-            .font(.caption)
+            .font(Theme.Typography.caption)
             .foregroundStyle(Theme.Colors.textTertiary)
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .modifier(GlassCard())
         .contextMenu {
             Button(role: .destructive) {

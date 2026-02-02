@@ -48,7 +48,7 @@ struct WelcomeView: View {
                         )
                     
                     Image(systemName: "cross.fill")
-                        .font(.system(size: 48, weight: .medium))
+                        .font(Theme.Typography.iconXL)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Theme.Colors.primaryLight, Theme.Colors.primary],
@@ -68,7 +68,7 @@ struct WelcomeView: View {
                         .offset(y: showTitle ? 0 : 20)
                     
                     Text("ChooseGOD")
-                        .font(.system(size: 42, weight: .bold, design: .serif))
+                        .font(Theme.Typography.display)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Theme.Colors.text, Theme.Colors.primaryLight],
@@ -93,9 +93,11 @@ struct WelcomeView: View {
                 Button(action: onContinue) {
                     HStack(spacing: 12) {
                         Text("Begin Your Journey")
+                            .accessibilityLabel("Begin your journey with ChooseGOD")
+                            .accessibilityHint("Double tap to start")
                             .font(Theme.Typography.button)
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.label)
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

@@ -56,7 +56,7 @@ final class MemoryViewModel: ObservableObject {
         do {
             verses = try await service.fetchVerses(userId: userId)
         } catch {
-            self.error = error.localizedDescription
+            self.error = "Unable to load memory verses. Please try again."
         }
         
         isLoading = false
@@ -83,9 +83,11 @@ final class MemoryViewModel: ObservableObject {
                 translation: translation
             )
             verses.append(verse)
+            HapticManager.shared.success()
             return true
         } catch {
-            self.error = error.localizedDescription
+            self.error = "Couldn't add verse. Please check your connection."
+            HapticManager.shared.error()
             return false
         }
     }
@@ -122,11 +124,14 @@ final class MemoryViewModel: ObservableObject {
             
             if currentIndex + 1 >= dueVerses.count {
                 showCelebration = true
+                HapticManager.shared.celebration()
             } else {
                 currentIndex += 1
+                HapticManager.shared.success()
             }
         } catch {
-            self.error = error.localizedDescription
+            self.error = "Couldn't save review. Please try again."
+            HapticManager.shared.error()
         }
     }
     
@@ -134,8 +139,10 @@ final class MemoryViewModel: ObservableObject {
         do {
             try await service.deleteVerse(verseId: verse.id)
             verses.removeAll { $0.id == verse.id }
+            HapticManager.shared.impact()
         } catch {
-            self.error = error.localizedDescription
+            self.error = "Couldn't delete verse. Please try again."
+            HapticManager.shared.error()
         }
     }
     

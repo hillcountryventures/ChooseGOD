@@ -16,12 +16,12 @@ enum AppStrings {
         static let clearChat = "Clear Chat"
         static let close = "Close"
 
-        // Seeds / Quota
-        static func seedsRemaining(_ count: Int) -> String {
-            "\(count) seeds remaining"
+        // Chat Quota
+        static func chatsRemaining(_ count: Int) -> String {
+            "\(count) chats remaining today"
         }
-        static let seedsExhaustedTitle = "Seeds Planted for Today"
-        static let seedsExhaustedBody = "You've used all 3 daily seeds. Come back tomorrow for more, or upgrade to Premium for unlimited conversations."
+        static let quotaExhaustedTitle = "Daily Chats Used"
+        static let quotaExhaustedBody = "You've used all 3 free chats for today. Upgrade for unlimited AI companion access, or come back tomorrow!"
         static let unlockUnlimited = "Unlock Unlimited"
         static let maybeLater = "Maybe Later"
 
@@ -30,11 +30,20 @@ enum AppStrings {
         static let promptJohn316 = "Help me understand John 3:16"
         static let promptEncouragement = "I need encouragement today"
         static let promptSermon = "Explain the Sermon on the Mount"
+        static let promptSermonFull = "Can you explain the Sermon on the Mount?"
 
         // Context
         static func readingContext(_ reference: String) -> String {
             "Reading: \(reference)"
         }
+
+        // Accessibility
+        static let closeChatHint = "Double tap to close the chat"
+        static let clearChatHint = "Double tap to delete all messages"
+        static let unlockHint = "Double tap to view premium options"
+        static let messageInputHint = "Type your message here"
+        static let sendMessage = "Send message"
+        static let sendMessageHint = "Double tap to send your message"
     }
 
     // MARK: - Home
@@ -100,6 +109,14 @@ enum AppStrings {
 
         // Validation
         static let passwordsMismatch = "Passwords don't match"
+
+        // Accessibility
+        static let signInHint = "Double tap to sign in"
+        static let signInLabel = "Sign in to your account"
+        static let forgotPasswordHint = "Double tap to reset your password"
+        static let forgotPasswordLabel = "Forgot password"
+        static let createAccountLabel = "Create new account"
+        static let createAccountHint = "Double tap to create an account"
     }
 
     // MARK: - Paywall
@@ -138,7 +155,12 @@ enum AppStrings {
 
         // Legal
         static let legalPrefix = "By subscribing, you agree to our"
+        static let legalAnd = "and"
         static let legalSuffix = "Your subscription supports faithful Bible tools for everyone."
+
+        // Accessibility
+        static let restoreLabel = "Restore previous purchases"
+        static let restoreHint = "Double tap to restore your subscription"
     }
 
     // MARK: - Settings
@@ -183,6 +205,13 @@ enum AppStrings {
         static let unlockPremiumBody = "Get unlimited Scripture Companion questions, remove ads, and access exclusive content."
         static let annualPrice = "$29.99/year"
         static let monthlyPrice = "$4.99/month"
+        static let save50 = "Save 50%"
+
+        // Accessibility
+        static let signOutLabel = "Sign out of your account"
+        static let signOutHint = "Double tap to sign out"
+        static let deleteAccountLabel = "Delete your account"
+        static let deleteAccountHint = "Double tap to permanently delete your account"
     }
 
     // MARK: - Prayers
@@ -280,4 +309,14 @@ enum AppStrings {
     enum Splash {
         static let appName = "ChooseGOD"
     }
+}
+
+// MARK: - App URLs (pre-validated, safe to force unwrap)
+enum AppURLs {
+    // swiftlint:disable force_unwrapping
+    static let privacy = URL(string: "https://choosegod.app/privacy")!
+    static let terms = URL(string: "https://choosegod.app/terms")!
+    static let support = URL(string: "mailto:support@choosegod.app")!
+    static let website = URL(string: "https://choosegod.app")!
+    // swiftlint:enable force_unwrapping
 }

@@ -15,9 +15,8 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background
-                Theme.Colors.background
-                    .ignoresSafeArea()
+                // Background applied via .screenBackground()
+                Color.clear
                 
                 ScrollView {
                     VStack(spacing: Theme.Spacing.xl) {
@@ -48,6 +47,7 @@ struct LoginView: View {
                     .padding(.top, Theme.Spacing.xxl)
                 }
             }
+            .screenBackground()
             .navigationBarHidden(true)
             .sheet(isPresented: $showSignUp) {
                 SignUpView()
@@ -55,10 +55,10 @@ struct LoginView: View {
             .sheet(isPresented: $showForgotPassword) {
                 ForgotPasswordView()
             }
-            .alert("Error", isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
+            .alert(AppStrings.Errors.genericTitle, isPresented: $viewModel.showError) {
+                Button(AppStrings.Errors.ok, role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                Text(viewModel.errorMessage ?? AppStrings.Errors.genericBody)
             }
             .overlay {
                 if viewModel.isLoading {
@@ -75,14 +75,14 @@ struct LoginView: View {
         VStack(spacing: Theme.Spacing.md) {
             // Logo/Icon
             Image(systemName: "book.closed.fill")
-                .font(.system(size: 60))
+                .font(Theme.Typography.iconHuge)
                 .foregroundStyle(Theme.Colors.primary)
             
-            Text("Welcome Back")
+            Text(AppStrings.Auth.welcomeBack)
                 .font(Theme.Typography.title1)
                 .foregroundStyle(Theme.Colors.text)
             
-            Text("Sign in to continue your journey")
+            Text(AppStrings.Auth.signInSubtitle)
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textSecondary)
         }
@@ -115,7 +115,7 @@ struct LoginView: View {
                 .fill(Theme.Colors.textTertiary.opacity(0.3))
                 .frame(height: 1)
             
-            Text("or continue with email")
+            Text(AppStrings.Auth.orContinueWithEmail)
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.textTertiary)
             
@@ -132,11 +132,11 @@ struct LoginView: View {
         VStack(spacing: Theme.Spacing.md) {
             // Email Field
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Email")
+                Text(AppStrings.Auth.email)
                     .font(Theme.Typography.label)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 
-                TextField("Enter your email", text: $email)
+                TextField(AppStrings.Auth.emailPlaceholder, text: $email)
                     .textFieldStyle(ChooseGODTextFieldStyle())
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
@@ -146,16 +146,16 @@ struct LoginView: View {
             
             // Password Field
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Password")
+                Text(AppStrings.Auth.password)
                     .font(Theme.Typography.label)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 
                 HStack {
                     Group {
                         if showPassword {
-                            TextField("Enter your password", text: $password)
+                            TextField(AppStrings.Auth.passwordPlaceholder, text: $password)
                         } else {
-                            SecureField("Enter your password", text: $password)
+                            SecureField(AppStrings.Auth.passwordPlaceholder, text: $password)
                         }
                     }
                     .textContentType(.password)
@@ -180,13 +180,10 @@ struct LoginView: View {
                 await signInWithEmail()
             }
         } label: {
-            Text("Sign In")
-                .font(Theme.Typography.button)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: Theme.Dimensions.buttonHeight)
-                .background(Theme.Colors.primary)
-                .cornerRadius(Theme.CornerRadius.lg)
+            Text(AppStrings.Auth.signIn)
+                        .accessibilityLabel(AppStrings.Auth.signInLabel)
+                        .accessibilityHint(AppStrings.Auth.signInHint)
+                .primaryButtonStyle()
         }
         .disabled(email.isEmpty || password.isEmpty || viewModel.isLoading)
         .opacity(email.isEmpty || password.isEmpty ? 0.6 : 1.0)
@@ -198,7 +195,9 @@ struct LoginView: View {
         Button {
             showForgotPassword = true
         } label: {
-            Text("Forgot Password?")
+            Text(AppStrings.Auth.forgotPassword)
+                        .accessibilityLabel(AppStrings.Auth.forgotPasswordLabel)
+                        .accessibilityHint(AppStrings.Auth.forgotPasswordHint)
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.primary)
         }
@@ -208,14 +207,16 @@ struct LoginView: View {
     
     private var signUpLink: some View {
         HStack(spacing: Theme.Spacing.xs) {
-            Text("Don't have an account?")
+            Text(AppStrings.Auth.noAccount)
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textSecondary)
             
             Button {
                 showSignUp = true
             } label: {
-                Text("Sign Up")
+                Text(AppStrings.Auth.signUp)
+                        .accessibilityLabel(AppStrings.Auth.createAccountLabel)
+                        .accessibilityHint(AppStrings.Auth.createAccountHint)
                     .font(Theme.Typography.body)
                     .fontWeight(.semibold)
                     .foregroundStyle(Theme.Colors.primary)
@@ -281,11 +282,11 @@ struct LoadingOverlay: View {
                 .ignoresSafeArea()
             
             VStack(spacing: Theme.Spacing.md) {
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(Theme.Colors.primary)
                     .scaleEffect(1.5)
                 
-                Text("Please wait...")
+                Text(AppStrings.Errors.pleaseWait)
                     .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.text)
             }

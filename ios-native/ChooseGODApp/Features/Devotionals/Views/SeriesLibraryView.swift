@@ -55,16 +55,16 @@ struct SeriesLibraryView: View {
                 // Search bar
                 searchBar
                     .padding(.horizontal)
-                    .padding(.top, 8)
+                    .padding(.top, Theme.Spacing.sm)
                 
                 // Filter chips
                 filterChips
-                    .padding(.vertical, 12)
+                    .padding(.vertical, Theme.Spacing.mds)
                 
                 // Grid
                 if isLoading {
                     Spacer()
-                    ProgressView()
+                ShimmerView(height: 20)
                     Spacer()
                 } else if filteredSeries.isEmpty {
                     Spacer()
@@ -104,7 +104,7 @@ struct SeriesLibraryView: View {
                 }
             }
         }
-        .padding(12)
+        .padding(Theme.Spacing.mds)
         .background {
             RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                 .fill(.ultraThinMaterial)
@@ -129,8 +129,8 @@ struct SeriesLibraryView: View {
                         Text(filter.rawValue)
                             .font(Theme.Typography.label)
                             .foregroundStyle(activeFilter == filter ? .white : Theme.Colors.textSecondary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, Theme.Spacing.md)
+                            .padding(.vertical, Theme.Spacing.sm)
                             .background {
                                 Capsule()
                                     .fill(activeFilter == filter ? Theme.Colors.primary : Theme.Colors.surface)
@@ -161,7 +161,7 @@ struct SeriesLibraryView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.bottom, 32)
+            .padding(.bottom, Theme.Spacing.xl)
         }
         .refreshable { await loadData() }
     }
@@ -171,7 +171,7 @@ struct SeriesLibraryView: View {
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
+                .font(Theme.Typography.iconXL)
                 .foregroundStyle(Theme.Colors.textTertiary)
             Text("No devotionals found")
                 .font(Theme.Typography.body)
@@ -219,12 +219,12 @@ struct SeriesGradientCard: View {
                     if isEnrolled {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.caption2)
+                                .font(Theme.Typography.caption2)
                             Text("Enrolled")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(Theme.Typography.caption2)
                         }
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, 3)
                         .background(.white.opacity(0.25))
                         .clipShape(Capsule())
@@ -234,7 +234,7 @@ struct SeriesGradientCard: View {
                     
                     if series.isSeasonal {
                         Image(systemName: "calendar")
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(.white)
                             .frame(width: 24, height: 24)
                             .background(.white.opacity(0.25))
@@ -246,20 +246,20 @@ struct SeriesGradientCard: View {
                 
                 // Title + meta
                 Text(series.title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(Theme.Typography.subheadlineSemibold)
                     .foregroundStyle(.white)
                     .lineLimit(2)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, Theme.Spacing.xs)
                 
                 HStack(spacing: 4) {
                     Text("\(series.totalDays) days")
                     Circle().fill(.white.opacity(0.5)).frame(width: 3, height: 3)
                     Text(series.difficultyLevel.displayName)
                 }
-                .font(.caption2)
+                .font(Theme.Typography.caption2)
                 .foregroundStyle(.white.opacity(0.8))
             }
-            .padding(12)
+            .padding(Theme.Spacing.mds)
         }
         .frame(height: 160)
         .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))

@@ -8,16 +8,22 @@ struct JournalListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.Colors.background.ignoresSafeArea()
+                Color.clear
                 
                 if viewModel.isLoading && viewModel.moments.isEmpty {
                     loadingView
+                } else if let error = viewModel.errorMessage {
+                    ErrorRetryView(message: error) {
+                        viewModel.errorMessage = nil
+                        Task { await viewModel.loadMoments() }
+                    }
                 } else if viewModel.filteredMoments.isEmpty {
                     emptyView
                 } else {
                     momentsList
                 }
             }
+            .screenBackground()
             .navigationTitle("Journal")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -29,6 +35,8 @@ struct JournalListView: View {
                     } label: {
                         Image(systemName: "square.and.pencil")
                             .foregroundStyle(Theme.Colors.primary)
+                            .accessibilityLabel("New journal entry")
+                            .accessibilityHint("Double tap to write a new journal entry")
                     }
                 }
             }
@@ -57,7 +65,7 @@ struct JournalListView: View {
                             .font(Theme.Typography.caption)
                             .fontWeight(viewModel.activeFilter == filter ? .semibold : .regular)
                             .foregroundStyle(viewModel.activeFilter == filter ? .white : Theme.Colors.textSecondary)
-                            .padding(.horizontal, 14)
+                            .padding(.horizontal, Theme.Spacing.mds)
                             .padding(.vertical, 7)
                             .background {
                                 Capsule()
@@ -78,7 +86,7 @@ struct JournalListView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 filterBar
-                    .padding(.vertical, 8)
+                    .padding(.vertical, Theme.Spacing.sm)
                 
                 ForEach(viewModel.filteredMoments) { moment in
                     NavigationLink {
@@ -111,7 +119,7 @@ struct JournalListView: View {
     
     private var loadingView: some View {
         VStack(spacing: 12) {
-            ProgressView()
+                ShimmerView(height: 20)
                 .tint(Theme.Colors.primary)
             Text("Loading entries...")
                 .font(Theme.Typography.caption)
@@ -131,13 +139,15 @@ struct MomentRowView: View {
             HStack {
                 Label {
                     Text(moment.momentType.rawValue.capitalized)
-                        .font(.caption2.weight(.semibold))
+                        .font(Theme.Typography.caption2)
                 } icon: {
                     Image(systemName: iconForType(moment.momentType))
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                 }
                 .foregroundStyle(Theme.Colors.primary)
-                .padding(.horizontal, 8)
+                            .accessibilityLabel("New journal entry")
+                            .accessibilityHint("Double tap to write a new journal entry")
+                .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, 4)
                 .background(Theme.Colors.primaryAlpha(0.15), in: Capsule())
                 
@@ -158,8 +168,10 @@ struct MomentRowView: View {
             if !moment.linkedVerses.isEmpty {
                 HStack(spacing: 6) {
                     Image(systemName: "book")
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                         .foregroundStyle(Theme.Colors.primary)
+                            .accessibilityLabel("New journal entry")
+                            .accessibilityHint("Double tap to write a new journal entry")
                     
                     Text(moment.linkedVerses.map(\.reference).joined(separator: ", "))
                         .font(Theme.Typography.caption)
@@ -173,9 +185,9 @@ struct MomentRowView: View {
                 HStack(spacing: 6) {
                     ForEach(moment.themes.prefix(3), id: \.self) { theme in
                         Text(theme)
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.textSecondary)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, Theme.Spacing.sm)
                             .padding(.vertical, 3)
                             .background(Theme.Colors.surfaceElevated, in: Capsule())
                     }
@@ -184,8 +196,8 @@ struct MomentRowView: View {
         }
         .padding()
         .background(Theme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .modifier(GlassCard(cornerRadius: 16, opacity: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl, opacity: 0.5))
         .padding(.horizontal)
         .padding(.vertical, 4)
     }

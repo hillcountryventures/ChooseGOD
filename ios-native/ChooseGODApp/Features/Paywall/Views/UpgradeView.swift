@@ -1,55 +1,54 @@
 import SwiftUI
 
-/// Shown when free daily seeds (AI queries) run out — upsell to premium
-struct NoSeedsView: View {
+/// Shown when free daily AI chats run out — upsell to premium
+struct UpgradeView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
     @State private var showPaywall = false
-    @State private var plantScale: CGFloat = 0.8
-    @State private var plantOpacity: Double = 0
+    @State private var iconScale: CGFloat = 0.8
+    @State private var iconOpacity: Double = 0
     
-    /// Seeds used today
-    let seedsUsed: Int
-    /// Total free seeds per day
-    let seedsTotal: Int
+    /// Chats used today
+    let chatsUsed: Int
+    /// Total free chats per day
+    let chatsTotal: Int
     
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
             
-            // Wilted plant illustration
+            // Crown illustration
             ZStack {
                 Circle()
                     .fill(Theme.Colors.accent.opacity(0.1))
                     .frame(width: 120, height: 120)
                 
-                Image(systemName: "leaf.fill")
+                Image(systemName: "crown.fill")
                     .font(Theme.Typography.iconXXL)
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Theme.Colors.accent.opacity(0.5), Theme.Colors.accent.opacity(0.2)],
+                            colors: [Theme.Colors.primary, Theme.Colors.accent],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    .rotationEffect(.degrees(-15))
-                    .scaleEffect(plantScale)
-                    .opacity(plantOpacity)
+                    .scaleEffect(iconScale)
+                    .opacity(iconOpacity)
             }
             
             VStack(spacing: 12) {
-                Text("Your Seeds for Today")
+                Text("Upgrade for Unlimited Access")
                     .font(Theme.Typography.title2)
                     .foregroundStyle(.white)
                 
-                // Seed dots
+                // Chat dots
                 HStack(spacing: 8) {
-                    ForEach(0..<seedsTotal, id: \.self) { i in
+                    ForEach(0..<chatsTotal, id: \.self) { i in
                         Circle()
-                            .fill(i < seedsUsed ? Theme.Colors.textTertiary : Theme.Colors.accent)
+                            .fill(i < chatsUsed ? Theme.Colors.textTertiary : Theme.Colors.accent)
                             .frame(width: 12, height: 12)
                             .overlay {
-                                if i < seedsUsed {
+                                if i < chatsUsed {
                                     Image(systemName: "xmark")
                                         .font(Theme.Typography.caption2)
                                         .foregroundStyle(.white.opacity(0.5))
@@ -58,21 +57,21 @@ struct NoSeedsView: View {
                     }
                 }
                 
-                Text("You've planted all \(seedsTotal) free seeds today.\nUpgrade for unlimited conversations, or come back tomorrow!")
+                Text("You've used all \(chatsTotal) free chats today.\nUpgrade for unlimited AI companion access!")
                     .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Theme.Spacing.lg)
             }
             
-            // Premium benefits peek
+            // Premium benefits
             VStack(spacing: 10) {
                 benefitRow(icon: "infinity", text: "Unlimited AI conversations")
                 benefitRow(icon: "sparkles", text: "10+ spiritual practice modes")
                 benefitRow(icon: "crown.fill", text: "7-day free trial")
             }
-            .padding(20)
-            .glassCard(cornerRadius: 16)
+            .padding(Theme.Spacing.mdl)
+            .glassCard(cornerRadius: Theme.CornerRadius.xl)
             
             Spacer()
             
@@ -84,7 +83,7 @@ struct NoSeedsView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "crown.fill")
                             .font(Theme.Typography.bodySmall)
-                        Text("Unlock Unlimited Seeds")
+                        Text("Unlock Unlimited Access")
                             .font(Theme.Typography.title3)
                     }
                     .foregroundStyle(.white)
@@ -109,8 +108,8 @@ struct NoSeedsView: View {
                 .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textTertiary)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 32)
+            .padding(.horizontal, Theme.Spacing.mdl)
+            .padding(.bottom, Theme.Spacing.xl)
         }
         .background {
             LinearGradient(
@@ -125,8 +124,8 @@ struct NoSeedsView: View {
         }
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.6)) {
-                plantScale = 1.0
-                plantOpacity = 1.0
+                iconScale = 1.0
+                iconOpacity = 1.0
             }
         }
     }
@@ -148,6 +147,6 @@ struct NoSeedsView: View {
 // MARK: - Preview
 
 #Preview {
-    NoSeedsView(seedsUsed: 3, seedsTotal: 3)
+    UpgradeView(chatsUsed: 3, chatsTotal: 3)
         .environment(AppState.preview)
 }

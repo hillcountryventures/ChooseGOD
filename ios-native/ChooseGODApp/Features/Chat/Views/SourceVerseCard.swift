@@ -8,34 +8,34 @@ struct SourceVerseCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "book.closed")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                 Text("Sources")
-                    .font(.caption.weight(.semibold))
+                    .font(Theme.Typography.captionSemibold)
             }
             .foregroundStyle(Theme.Colors.secondaryText)
             
             ForEach(sources) { source in
                 HStack(alignment: .top, spacing: 8) {
                     Text(source.reference)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(Theme.Colors.primary)
                         .frame(minWidth: 80, alignment: .leading)
                     
                     if let text = source.text {
                         Text(text)
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                             .lineLimit(2)
                     }
                 }
-                .padding(8)
+                .padding(Theme.Spacing.sm)
                 .background(Theme.Colors.surface.opacity(0.6))
-                .cornerRadius(8)
+                .cornerRadius(Theme.CornerRadius.md)
             }
         }
-        .padding(12)
+        .padding(Theme.Spacing.mds)
         .background(Theme.Colors.primary.opacity(0.06))
-        .cornerRadius(12)
+        .cornerRadius(Theme.CornerRadius.lg)
     }
 }
 
@@ -48,9 +48,9 @@ struct SourceVersePills: View {
             HStack(spacing: 6) {
                 ForEach(sources) { source in
                     Text(source.reference)
-                        .font(.caption2.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(Theme.Colors.primary)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, 4)
                         .background(Theme.Colors.primary.opacity(0.1))
                         .clipShape(Capsule())

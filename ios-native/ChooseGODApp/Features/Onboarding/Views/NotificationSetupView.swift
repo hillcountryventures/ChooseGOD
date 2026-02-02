@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 
 /// Onboarding screen for notification permission request
@@ -27,7 +28,7 @@ struct NotificationSetupView: View {
                         .frame(width: 100, height: 100)
                     
                     Image(systemName: "bell.badge.fill")
-                        .font(.system(size: 44))
+                        .font(Theme.Typography.iconLarge)
                         .foregroundStyle(Theme.Colors.primary)
                         .symbolEffect(.bounce, value: isRequesting)
                 }
@@ -42,7 +43,7 @@ struct NotificationSetupView: View {
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                        .padding(.horizontal, Theme.Spacing.xl)
                 }
                 
                 // Notification type previews
@@ -56,7 +57,7 @@ struct NotificationSetupView: View {
                         )
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Theme.Spacing.lg)
                 
                 Spacer()
                 
@@ -71,14 +72,16 @@ struct NotificationSetupView: View {
                                 .font(Theme.Typography.bodySmall)
                                 .foregroundStyle(granted ? Theme.Colors.success : Theme.Colors.textSecondary)
                         }
-                        .padding(.bottom, 8)
+                        .padding(.bottom, Theme.Spacing.sm)
                         
                         Button(action: onContinue) {
                             Text("Continue")
+                        .accessibilityLabel("Continue")
+                        .accessibilityHint("Double tap to proceed")
                                 .font(Theme.Typography.button)
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
+                                .padding(.vertical, Theme.Spacing.md)
                                 .background(Theme.Colors.primary, in: Capsule())
                         }
                     } else {
@@ -86,7 +89,7 @@ struct NotificationSetupView: View {
                         Button(action: requestPermission) {
                             HStack(spacing: 8) {
                                 if isRequesting {
-                                    ProgressView()
+                                    ShimmerView(height: 20)
                                         .tint(.white)
                                 } else {
                                     Image(systemName: "bell.fill")
@@ -96,7 +99,7 @@ struct NotificationSetupView: View {
                             .font(Theme.Typography.button)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
+                            .padding(.vertical, Theme.Spacing.md)
                             .background(Theme.Colors.primary, in: Capsule())
                         }
                         .disabled(isRequesting)
@@ -108,8 +111,8 @@ struct NotificationSetupView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 32)
+                .padding(.horizontal, Theme.Spacing.xl)
+                .padding(.bottom, Theme.Spacing.xl)
             }
         }
         .onAppear { AnalyticsService.shared.screen("onboarding_notifications") }
@@ -121,12 +124,12 @@ struct NotificationSetupView: View {
     private func notificationPreviewRow(icon: String, title: String, description: String, color: Color) -> some View {
         HStack(spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(color)
             }
             
@@ -142,8 +145,8 @@ struct NotificationSetupView: View {
             
             Spacer()
         }
-        .padding(14)
-        .modifier(GlassCard(cornerRadius: 16, opacity: 0.5))
+        .padding(Theme.Spacing.mds)
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl, opacity: 0.5))
     }
     
     // MARK: - Actions
@@ -176,6 +179,6 @@ struct NotificationSetupView: View {
 
 #Preview {
     NotificationSetupView {
-        print("Continue tapped")
+        AppLogger.onboarding.debug("Notification setup continue tapped")
     }
 }

@@ -1,3 +1,4 @@
+import os
 import Foundation
 import AVFoundation
 import Observation
@@ -36,7 +37,7 @@ final class AudioPlayerManager {
             try session.setCategory(.playback, mode: .spokenAudio, options: [.allowAirPlay])
             try session.setActive(true)
         } catch {
-            print("[AudioPlayer] Audio session error: \(error)")
+            AppLogger.audio.error("Audio session error: \(error)")
         }
     }
     

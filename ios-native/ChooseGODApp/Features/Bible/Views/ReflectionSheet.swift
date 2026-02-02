@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 
 /// Quick reflection modal after reading a verse
@@ -51,7 +52,7 @@ struct ReflectionSheet: View {
                                     .font(Theme.Typography.body)
                                     .foregroundStyle(Theme.Colors.textTertiary)
                                     .padding(Theme.Spacing.md)
-                                    .padding(.top, 8)
+                                    .padding(.top, Theme.Spacing.sm)
                                     .allowsHitTesting(false)
                             }
                         }
@@ -101,7 +102,7 @@ struct ReflectionSheet: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack(spacing: Theme.Spacing.xs) {
                 Image(systemName: "book")
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.primary)
                 
                 Text(verseRef)
@@ -159,8 +160,8 @@ struct ReflectionSheet: View {
             Text(tag)
                 .font(Theme.Typography.labelSmall)
                 .foregroundStyle(isSelected ? .white : Theme.Colors.textSecondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.mds)
+                .padding(.vertical, Theme.Spacing.sm)
                 .background(
                     Capsule().fill(isSelected ? Theme.Colors.primary : Theme.Colors.surface)
                 )
@@ -177,7 +178,7 @@ struct ReflectionSheet: View {
         isSaving = true
         
         // TODO: Save to Supabase journal/spiritual_moments
-        print("[Reflection] Saved for \(verseRef): \(reflection.prefix(50))... tags: \(selectedTags)")
+        AppLogger.journal.info("Reflection saved for \(verseRef)")
         
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)

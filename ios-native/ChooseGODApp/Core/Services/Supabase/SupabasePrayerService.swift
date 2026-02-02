@@ -20,11 +20,8 @@ protocol PrayerServiceProtocol {
 /// Supabase-backed prayer service
 final class SupabasePrayerService: PrayerServiceProtocol {
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     // MARK: - Prayers
@@ -220,7 +217,7 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     
     private func generateInviteCode() -> String {
         let letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-        return String((0..<8).map { _ in letters.randomElement()! })
+        return String((0..<8).map { _ in letters.randomElement() ?? Character("A") })
     }
 }
 

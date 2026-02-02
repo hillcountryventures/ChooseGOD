@@ -53,3 +53,8 @@ supabase/.branches/
 # Marketing site (untracked)
 marketing-site/
 coverage/
+
+# xcconfig with secrets
+ios-native/Configuration/*.xcconfig
+ios-native/ChooseGODApp/*.xcconfig
+ios-native/.build/

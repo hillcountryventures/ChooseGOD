@@ -20,11 +20,8 @@ protocol DevotionalServiceProtocol {
 /// Supabase-backed devotional service
 final class SupabaseDevotionalService: DevotionalServiceProtocol {
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     // MARK: - Series

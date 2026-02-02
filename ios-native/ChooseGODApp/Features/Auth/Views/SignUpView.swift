@@ -17,8 +17,7 @@ struct SignUpView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.Colors.background
-                    .ignoresSafeArea()
+                Color.clear // background via .screenBackground()
                 
                 ScrollView {
                     VStack(spacing: Theme.Spacing.xl) {
@@ -46,19 +45,20 @@ struct SignUpView: View {
                     .padding(.top, Theme.Spacing.lg)
                 }
             }
+            .screenBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(AppStrings.Auth.cancel) {
                         dismiss()
                     }
                     .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
-            .alert("Error", isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
+            .alert(AppStrings.Errors.genericTitle, isPresented: $viewModel.showError) {
+                Button(AppStrings.Errors.ok, role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                Text(viewModel.errorMessage ?? AppStrings.Errors.genericBody)
             }
             .overlay {
                 if viewModel.isLoading {
@@ -73,11 +73,13 @@ struct SignUpView: View {
     
     private var headerSection: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            Text("Create Account")
+            Text(AppStrings.Auth.createAccount)
+                        .accessibilityLabel(AppStrings.Auth.createAccountLabel)
+                        .accessibilityHint(AppStrings.Auth.createAccountHint)
                 .font(Theme.Typography.title1)
                 .foregroundStyle(Theme.Colors.text)
             
-            Text("Start your spiritual journey today")
+            Text(AppStrings.Auth.startJourney)
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textSecondary)
         }
@@ -109,7 +111,7 @@ struct SignUpView: View {
                 .fill(Theme.Colors.textTertiary.opacity(0.3))
                 .frame(height: 1)
             
-            Text("or sign up with email")
+            Text(AppStrings.Auth.orSignUpWithEmail)
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.textTertiary)
             
@@ -126,9 +128,9 @@ struct SignUpView: View {
         VStack(spacing: Theme.Spacing.md) {
             // Name Field
             FormField(
-                label: "Full Name",
+                label: AppStrings.Auth.fullName,
                 text: $name,
-                placeholder: "Enter your name",
+                placeholder: AppStrings.Auth.namePlaceholder,
                 error: viewModel.nameError,
                 contentType: .name
             )
@@ -138,9 +140,9 @@ struct SignUpView: View {
             
             // Email Field
             FormField(
-                label: "Email",
+                label: AppStrings.Auth.email,
                 text: $email,
-                placeholder: "Enter your email",
+                placeholder: AppStrings.Auth.emailPlaceholder,
                 error: viewModel.emailError,
                 contentType: .emailAddress,
                 keyboardType: .emailAddress
@@ -151,9 +153,9 @@ struct SignUpView: View {
             
             // Password Field
             FormField(
-                label: "Password",
+                label: AppStrings.Auth.password,
                 text: $password,
-                placeholder: "Create a password",
+                placeholder: AppStrings.Auth.createPasswordPlaceholder,
                 error: viewModel.passwordError,
                 isSecure: !showPassword,
                 contentType: .newPassword
@@ -164,17 +166,17 @@ struct SignUpView: View {
             
             // Confirm Password
             FormField(
-                label: "Confirm Password",
+                label: AppStrings.Auth.confirmPassword,
                 text: $confirmPassword,
-                placeholder: "Confirm your password",
-                error: password != confirmPassword && !confirmPassword.isEmpty ? "Passwords don't match" : nil,
+                placeholder: AppStrings.Auth.confirmPasswordPlaceholder,
+                error: password != confirmPassword && !confirmPassword.isEmpty ? AppStrings.Auth.passwordsMismatch : nil,
                 isSecure: !showPassword,
                 contentType: .newPassword
             )
             
             // Show password toggle
             Toggle(isOn: $showPassword) {
-                Text("Show passwords")
+                Text(AppStrings.Auth.showPasswords)
                     .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
@@ -186,13 +188,13 @@ struct SignUpView: View {
     
     private var termsSection: some View {
         Toggle(isOn: $agreeToTerms) {
-            Text("I agree to the ")
+            Text(AppStrings.Auth.agreePrefix)
                 .foregroundStyle(Theme.Colors.textSecondary)
-            + Text("Terms of Service")
+            + Text(AppStrings.Auth.termsOfService)
                 .foregroundStyle(Theme.Colors.primary)
-            + Text(" and ")
+            + Text(AppStrings.Auth.andText)
                 .foregroundStyle(Theme.Colors.textSecondary)
-            + Text("Privacy Policy")
+            + Text(AppStrings.Auth.privacyPolicy)
                 .foregroundStyle(Theme.Colors.primary)
         }
         .font(Theme.Typography.bodySmall)
@@ -207,13 +209,8 @@ struct SignUpView: View {
                 await createAccount()
             }
         } label: {
-            Text("Create Account")
-                .font(Theme.Typography.button)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: Theme.Dimensions.buttonHeight)
-                .background(isFormValid ? Theme.Colors.primary : Theme.Colors.primary.opacity(0.5))
-                .cornerRadius(Theme.CornerRadius.lg)
+            Text(AppStrings.Auth.createAccount)
+                .primaryButtonStyle(isDisabled: !isFormValid)
         }
         .disabled(!isFormValid || viewModel.isLoading)
     }

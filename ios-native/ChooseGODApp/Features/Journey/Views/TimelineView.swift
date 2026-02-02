@@ -75,10 +75,10 @@ struct TimelineView: View {
             }
         } label: {
             Text(label)
-                .font(.caption.weight(.semibold))
+                .font(Theme.Typography.captionSemibold)
                 .foregroundStyle(filterType == type ? .white : Theme.Colors.textSecondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.mds)
+                .padding(.vertical, Theme.Spacing.sm)
                 .background {
                     if filterType == type {
                         Capsule().fill(Theme.Colors.primary)
@@ -94,9 +94,9 @@ struct TimelineView: View {
     private func dateSection(date: String, items: [TimelineItem]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(date)
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.Typography.subheadlineSemibold)
                 .foregroundStyle(Theme.Colors.textSecondary)
-                .padding(.bottom, 12)
+                .padding(.bottom, Theme.Spacing.mds)
             
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 HStack(alignment: .top, spacing: 0) {
@@ -120,7 +120,7 @@ struct TimelineView: View {
                     // Content card
                     timelineCard(item)
                         .padding(.leading, 12)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, Theme.Spacing.mds)
                         .onAppear {
                             withAnimation(.spring(response: 0.4).delay(Double(index) * 0.05)) {
                                 _ = appearedIds.insert(item.id)
@@ -140,18 +140,18 @@ struct TimelineView: View {
                     .foregroundStyle(Color(hex: item.type.displayColor))
                 
                 Text(item.type.displayLabel)
-                    .font(.caption.weight(.semibold))
+                    .font(Theme.Typography.captionSemibold)
                     .foregroundStyle(Color(hex: item.type.displayColor))
                 
                 Spacer()
                 
                 Text(item.createdAt, style: .time)
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
             
             Text(item.content)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.text)
                 .lineLimit(3)
             
@@ -159,12 +159,12 @@ struct TimelineView: View {
                 HStack(spacing: 6) {
                     ForEach(item.linkedVerses, id: \.self) { verse in
                         Text(verse)
-                            .font(.caption2.weight(.medium))
+                            .font(Theme.Typography.captionMedium)
                             .foregroundStyle(Theme.Colors.primary)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, Theme.Spacing.sm)
                             .padding(.vertical, 4)
                             .background(Theme.Colors.primary.opacity(0.15))
-                            .cornerRadius(6)
+                            .cornerRadius(Theme.CornerRadius.sm)
                     }
                 }
             }
@@ -173,15 +173,15 @@ struct TimelineView: View {
                 HStack(spacing: 6) {
                     ForEach(item.themes, id: \.self) { theme in
                         Text("#\(theme)")
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.textTertiary)
                     }
                 }
             }
         }
-        .padding(14)
+        .padding(Theme.Spacing.mds)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .modifier(GlassCard(cornerRadius: 14))
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.lg))
     }
     
     // MARK: - Empty State
@@ -189,16 +189,16 @@ struct TimelineView: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Text("📖")
-                .font(.system(size: 48))
+                .font(Theme.Typography.iconXL)
             Text("No activity yet")
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             Text("Start reading, praying, or journaling to see your timeline come alive.")
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(40)
+        .padding(Theme.Spacing.xxl)
     }
 }
 

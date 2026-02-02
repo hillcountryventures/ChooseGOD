@@ -1,3 +1,4 @@
+import os
 import Foundation
 import CryptoKit
 import Supabase
@@ -70,7 +71,7 @@ final class ReferralService {
                 daysEarned: 0
             )
         } catch {
-            print("ReferralService: Error loading stats: \(error)")
+            AppLogger.referral.error("Error loading stats: \(error)")
             return nil
         }
     }
@@ -119,7 +120,7 @@ final class ReferralService {
             
             return true
         } catch {
-            print("ReferralService: Error applying code: \(error)")
+            AppLogger.referral.error("Error applying code: \(error)")
             return false
         }
     }
@@ -157,4 +158,56 @@ private struct ReferralRedemption: Codable {
     let referred_user_id: String
     let referral_code: String
     let reward_days: Int
+}
+
+// MARK: - Premium Day Redemption
+
+extension ReferralService {
+    
+    private static let premiumExpiryKey = "referral_premiumExpiry"
+    private static let redeemedDaysKey = "referral_totalRedeemedDays"
+    
+    /// Check if user has referral-granted premium time remaining
+    var hasReferralPremium: Bool {
+        guard let expiry = UserDefaults.standard.object(forKey: Self.premiumExpiryKey) as? Date else {
+            return false
+        }
+        return expiry > Date()
+    }
+    
+    /// Expiry date for referral premium, if any
+    var referralPremiumExpiry: Date? {
+        UserDefaults.standard.object(forKey: Self.premiumExpiryKey) as? Date
+    }
+    
+    /// Total days redeemed (for display)
+    var totalRedeemedDays: Int {
+        UserDefaults.standard.integer(forKey: Self.redeemedDaysKey)
+    }
+    
+    /// Redeem earned referral days into premium access time.
+    /// Call after fetching stats to sync Supabase days_earned → local premium.
+    func redeemEarnedDays(for stats: ReferralStats) {
+        let alreadyRedeemed = totalRedeemedDays
+        let newDays = stats.daysEarned - alreadyRedeemed
+        
+        guard newDays > 0 else { return }
+        
+        // Extend premium from now (or from current expiry if still active)
+        let startDate: Date
+        if let currentExpiry = referralPremiumExpiry, currentExpiry > Date() {
+            startDate = currentExpiry
+        } else {
+            startDate = Date()
+        }
+        
+        let newExpiry = Calendar.current.date(byAdding: .day, value: newDays, to: startDate) ?? startDate
+        UserDefaults.standard.set(newExpiry, forKey: Self.premiumExpiryKey)
+        UserDefaults.standard.set(stats.daysEarned, forKey: Self.redeemedDaysKey)
+        
+        // Grant streak freeze as a premium perk
+        StreakManager.shared.grantStreakFreeze()
+        
+        AppLogger.referral.info("Redeemed \(newDays) referral days. Premium until \(newExpiry)")
+    }
 }

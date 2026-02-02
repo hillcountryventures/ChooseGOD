@@ -1,3 +1,4 @@
+import os
 import Foundation
 import Supabase
 
@@ -7,11 +8,8 @@ final class CompanionService {
     static let shared = CompanionService()
     private init() {}
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     
     /// Send a message to the companion AI
@@ -22,7 +20,7 @@ final class CompanionService {
         verseContext: ChatBibleContext? = nil
     ) async throws -> CompanionResponse {
         // Get current user ID
-        let session = try await supabase.auth.session
+        let session = try await requireSupabase().auth.session
         let userId = session.user.id.uuidString
         
         // Build conversation history payload
@@ -49,7 +47,7 @@ final class CompanionService {
             verseContext: versePayload
         )
         
-        let response: CompanionResponse = try await supabase.functions.invoke(
+        let response: CompanionResponse = try await requireSupabase().functions.invoke(
             "companion",
             options: .init(body: request)
         )
@@ -61,7 +59,7 @@ final class CompanionService {
     func logInteraction(query: String, response: String, sources: [VerseSource]?, responseTimeMs: Int) {
         Task {
             do {
-                let session = try await supabase.auth.session
+                let session = try await requireSupabase().auth.session
                 let userId = session.user.id.uuidString
                 
                 let payload: [String: AnyEncodable] = [
@@ -73,10 +71,10 @@ final class CompanionService {
                     "created_at": AnyEncodable(ISO8601DateFormatter().string(from: Date()))
                 ]
                 
-                try await supabase.from("chat_logs").insert(payload).execute()
+                try await requireSupabase().from("chat_logs").insert(payload).execute()
             } catch {
                 // Silently fail — analytics should not disrupt UX
-                print("[CompanionService] Analytics log failed: \(error.localizedDescription)")
+                AppLogger.ai.error("CompanionService analytics log failed: \(error.localizedDescription)")
             }
         }
     }

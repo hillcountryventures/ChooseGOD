@@ -61,22 +61,30 @@ final class SyncQueue {
         }
     }
 
-    // MARK: - Internals
+    // MARK: - Fix 3: Wired execute() to actual Supabase services
 
     private func execute(_ op: SyncOperation) async throws {
+        let bibleService = SupabaseBibleService()
+        let journalService = SupabaseJournalService()
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
         switch op.kind {
         case .bookmark:
-            // TODO: Call SupabaseBibleService.addBookmark with op.payload
-            break
+            let bookmark = try decoder.decode(VerseBookmark.self, from: op.payload)
+            try await bibleService.saveBookmark(bookmark)
+
         case .highlight:
-            // TODO: Call SupabaseBibleService.addHighlight with op.payload
-            break
+            let highlight = try decoder.decode(VerseHighlight.self, from: op.payload)
+            try await bibleService.saveHighlight(highlight)
+
         case .note:
-            // TODO: Call SupabaseBibleService.addNote with op.payload
-            break
+            let note = try decoder.decode(VerseNote.self, from: op.payload)
+            try await bibleService.saveNote(note)
+
         case .journalEntry:
-            // TODO: Call SupabaseJournalService.saveEntry with op.payload
-            break
+            let moment = try decoder.decode(SpiritualMoment.self, from: op.payload)
+            _ = try await journalService.createMoment(moment)
         }
     }
 

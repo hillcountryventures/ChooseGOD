@@ -75,8 +75,9 @@ struct SeriesDetailView: View {
                 // Nav bar
                 HStack {
                     Button { dismiss() } label: {
+                        // close button
                         Image(systemName: "arrow.left")
-                            .font(.body.weight(.semibold))
+                            .font(Theme.Typography.button)
                             .foregroundStyle(.white)
                             .frame(width: 40, height: 40)
                             .background(.white.opacity(0.2))
@@ -88,36 +89,36 @@ struct SeriesDetailView: View {
                     if series.isSeasonal {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                             Text("Seasonal")
-                                .font(.caption.weight(.semibold))
+                                .font(Theme.Typography.captionSemibold)
                         }
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, Theme.Spacing.smd)
                         .padding(.vertical, 6)
                         .background(.white.opacity(0.2))
                         .clipShape(Capsule())
                     }
                 }
                 .padding(.top, 56)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Theme.Spacing.mdl)
                 
                 Spacer()
                 
                 // Title + meta
                 VStack(alignment: .leading, spacing: 12) {
                     Text(series.title)
-                        .font(.system(size: 32, weight: .bold, design: .serif))
+                        .font(Theme.Typography.chapterTitle)
                         .foregroundStyle(.white)
                     
                     HStack(spacing: 16) {
                         Label("\(series.totalDays) days", systemImage: "calendar.badge.clock")
                         Label(series.difficultyLevel.displayName, systemImage: "speedometer")
                     }
-                    .font(.subheadline)
+                    .font(Theme.Typography.bodySmall)
                     .foregroundStyle(.white.opacity(0.9))
                 }
-                .padding(20)
+                .padding(Theme.Spacing.mdl)
             }
             .frame(height: 280)
         }
@@ -148,7 +149,7 @@ struct SeriesDetailView: View {
                             Text(topic)
                                 .font(Theme.Typography.labelSmall)
                                 .foregroundStyle(Theme.Colors.primary)
-                                .padding(.horizontal, 12)
+                                .padding(.horizontal, Theme.Spacing.mds)
                                 .padding(.vertical, 6)
                                 .background(Theme.Colors.primary.opacity(0.15))
                                 .clipShape(Capsule())
@@ -170,7 +171,7 @@ struct SeriesDetailView: View {
             // Day-by-day overview
             section("Day-by-Day Overview") {
                 if isLoadingDays {
-                    HStack { Spacer(); ProgressView(); Spacer() }
+                    ShimmerView(height: 20)
                 } else if days.isEmpty {
                     Text("Days will be revealed as you progress.")
                         .font(Theme.Typography.bodySmall)
@@ -192,7 +193,7 @@ struct SeriesDetailView: View {
             // Spacer for footer
             Color.clear.frame(height: 100)
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
     }
     
     // MARK: - Components
@@ -203,7 +204,7 @@ struct SeriesDetailView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(Theme.Colors.success)
                 Text("You're Enrolled")
-                    .font(.subheadline.weight(.semibold))
+                    .font(Theme.Typography.subheadlineSemibold)
                     .foregroundStyle(Theme.Colors.success)
             }
             
@@ -214,7 +215,7 @@ struct SeriesDetailView: View {
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.textSecondary)
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .background {
             RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                 .fill(.ultraThinMaterial)
@@ -228,7 +229,7 @@ struct SeriesDetailView: View {
     private func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.headline)
+                .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             content()
         }
@@ -237,7 +238,7 @@ struct SeriesDetailView: View {
     private func featureRow(icon: String, text: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.body)
+                .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.primary)
                 .frame(width: 40, height: 40)
                 .background(Theme.Colors.primary.opacity(0.12))
@@ -260,11 +261,11 @@ struct SeriesDetailView: View {
                 
                 if isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.caption.weight(.bold))
+                        .font(Theme.Typography.captionBold)
                         .foregroundStyle(.white)
                 } else {
                     Text("\(day.dayNumber)")
-                        .font(.caption.weight(.semibold))
+                        .font(Theme.Typography.captionSemibold)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
@@ -274,15 +275,15 @@ struct SeriesDetailView: View {
                     .font(Theme.Typography.labelSmall)
                     .foregroundStyle(Theme.Colors.textTertiary)
                 Text(day.title)
-                    .font(.subheadline.weight(.medium))
+                    .font(Theme.Typography.subheadlineMedium)
                     .foregroundStyle(Theme.Colors.text)
                     .lineLimit(1)
             }
             
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.mds)
     }
     
     // MARK: - Footer CTA
@@ -298,12 +299,12 @@ struct SeriesDetailView: View {
         } label: {
             HStack(spacing: 8) {
                 if isEnrolling {
-                    ProgressView().tint(.white)
+                    ShimmerView(height: 20)
                 } else {
                     Text(isEnrolled ? "Continue Journey" : "Start This Journey")
                         .font(Theme.Typography.button)
                     Image(systemName: "arrow.right")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Theme.Typography.subheadlineSemibold)
                 }
             }
             .foregroundStyle(.white)
@@ -319,8 +320,8 @@ struct SeriesDetailView: View {
             .themeShadow(Theme.Shadows.md)
         }
         .disabled(isEnrolling)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
+        .padding(.horizontal, Theme.Spacing.mdl)
+        .padding(.bottom, Theme.Spacing.mdl)
         .background(
             LinearGradient(
                 colors: [Theme.Colors.background.opacity(0), Theme.Colors.background],

@@ -31,20 +31,20 @@ struct EnrollmentConfirmView: View {
                         .themeShadow(Theme.Shadows.lg)
                     
                     Image(systemName: "party.popper.fill")
-                        .font(.system(size: 52))
+                        .font(Theme.Typography.iconXXL)
                         .foregroundStyle(.white)
                 }
                 .scaleEffect(showIcon ? 1 : 0.3)
                 .opacity(showIcon ? 1 : 0)
-                .padding(.bottom, 32)
+                .padding(.bottom, Theme.Spacing.xl)
                 
                 // Title
                 Text("You're Enrolled!")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .font(Theme.Typography.chapterTitle)
                     .foregroundStyle(Theme.Colors.text)
                     .opacity(showTitle ? 1 : 0)
                     .offset(y: showTitle ? 0 : 20)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, Theme.Spacing.sm)
                 
                 Text(series.title)
                     .font(Theme.Typography.bodyLarge)
@@ -52,13 +52,13 @@ struct EnrollmentConfirmView: View {
                     .multilineTextAlignment(.center)
                     .opacity(showTitle ? 1 : 0)
                     .offset(y: showTitle ? 0 : 20)
-                    .padding(.bottom, 32)
+                    .padding(.bottom, Theme.Spacing.xl)
                 
                 // Series info card
                 seriesInfoCard
                     .opacity(showDetails ? 1 : 0)
                     .offset(y: showDetails ? 0 : 30)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Theme.Spacing.lg)
                 
                 Spacer()
                 
@@ -70,7 +70,7 @@ struct EnrollmentConfirmView: View {
                         Text("Start Day 1")
                             .font(Theme.Typography.button)
                         Image(systemName: "arrow.right")
-                            .font(.subheadline.weight(.semibold))
+                            .font(Theme.Typography.subheadlineSemibold)
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -86,7 +86,7 @@ struct EnrollmentConfirmView: View {
                 }
                 .opacity(showButton ? 1 : 0)
                 .scaleEffect(showButton ? 1 : 0.9)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Theme.Spacing.lg)
                 .padding(.bottom, 40)
             }
         }
@@ -110,7 +110,7 @@ struct EnrollmentConfirmView: View {
                         Text(topic)
                             .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.primary)
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, Theme.Spacing.smd)
                             .padding(.vertical, 4)
                             .background(Theme.Colors.primary.opacity(0.15))
                             .clipShape(Capsule())
@@ -118,7 +118,7 @@ struct EnrollmentConfirmView: View {
                 }
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.mdl)
         .background {
             RoundedRectangle(cornerRadius: Theme.CornerRadius.xl)
                 .fill(.ultraThinMaterial)
@@ -132,7 +132,7 @@ struct EnrollmentConfirmView: View {
     private func infoItem(icon: String, label: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.accent)
             Text(label)
                 .font(Theme.Typography.label)

@@ -28,9 +28,9 @@ struct ChatView: View {
                         )
                     }
                     
-                    // Seed quota indicator (free users)
+                    // Chat quota indicator (free users)
                     if !isPremium {
-                        seedIndicator
+                        quotaIndicator
                     }
                     
                     // Messages
@@ -82,28 +82,28 @@ struct ChatView: View {
                     inputBar
                 }
                 
-                // Final seed interstitial overlay
-                if viewModel.showFinalSeedInterstitial {
-                    seedInterstitialOverlay
+                // Upgrade prompt overlay
+                if viewModel.showUpgradePrompt {
+                    upgradePromptOverlay
                 }
             }
             .screenBackground()
-            .navigationTitle("Ask the Bible")
+            .navigationTitle(AppStrings.Chat.navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                        .accessibilityLabel("Close chat")
-                        .accessibilityHint("Double tap to close the chat")
+                    Button(AppStrings.Chat.close) { dismiss() }
+                        .accessibilityLabel(AppStrings.Chat.close)
+                        .accessibilityHint(AppStrings.Chat.closeChatHint)
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button(role: .destructive) {
                             viewModel.clearConversation()
                         } label: {
-                            Label("Clear Chat", systemImage: "trash")
-                                .accessibilityLabel("Clear conversation")
-                                .accessibilityHint("Double tap to delete all messages")
+                            Label(AppStrings.Chat.clearChat, systemImage: "trash")
+                                .accessibilityLabel(AppStrings.Chat.clearChat)
+                                .accessibilityHint(AppStrings.Chat.clearChatHint)
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -128,16 +128,16 @@ struct ChatView: View {
         appState.currentUser?.isPremium ?? false
     }
     
-    // MARK: - Seed Indicator
+    // MARK: - Quota Indicator
     
-    private var seedIndicator: some View {
+    private var quotaIndicator: some View {
         HStack(spacing: 6) {
-            ForEach(0..<ChatQuotaManager.totalSeeds, id: \.self) { index in
-                Image(systemName: index < viewModel.seedsRemaining ? "leaf.fill" : "leaf")
+            ForEach(0..<ChatQuotaManager.dailyFreeLimit, id: \.self) { index in
+                Image(systemName: index < viewModel.chatsRemaining ? "bubble.left.fill" : "bubble.left")
                     .font(Theme.Typography.caption)
-                    .foregroundStyle(index < viewModel.seedsRemaining ? Theme.Colors.primary : Theme.Colors.secondaryText.opacity(0.4))
+                    .foregroundStyle(index < viewModel.chatsRemaining ? Theme.Colors.primary : Theme.Colors.secondaryText.opacity(0.4))
             }
-            Text("\(viewModel.seedsRemaining) seeds remaining")
+            Text(AppStrings.Chat.chatsRemaining(viewModel.chatsRemaining))
                 .font(Theme.Typography.caption2)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
@@ -146,49 +146,47 @@ struct ChatView: View {
         .background(Theme.Colors.surface.opacity(0.5))
     }
     
-    // MARK: - Seed Interstitial
+    // MARK: - Upgrade Prompt
     
-    private var seedInterstitialOverlay: some View {
+    private var upgradePromptOverlay: some View {
         ZStack {
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
-                .onTapGesture { viewModel.dismissFinalSeedInterstitial() }
+                .onTapGesture { viewModel.dismissUpgradePrompt() }
             
             VStack(spacing: 20) {
-                Image(systemName: "leaf.circle.fill")
+                Image(systemName: "crown.fill")
                     .font(Theme.Typography.iconXXL)
                     .foregroundStyle(Theme.Colors.primary)
                 
-                Text("Seeds Planted for Today")
+                Text(AppStrings.Chat.quotaExhaustedTitle)
                     .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
                 
-                Text("You've used all 3 daily seeds. Come back tomorrow for more, or upgrade to Premium for unlimited conversations.")
+                Text(AppStrings.Chat.quotaExhaustedBody)
                     .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
                 
                 Button {
-                    // TODO: Navigate to premium
-                    viewModel.dismissFinalSeedInterstitial()
+                    viewModel.dismissUpgradePrompt()
                 } label: {
-                    Text("Unlock Unlimited")
+                    Text(AppStrings.Chat.unlockUnlimited)
                         .primaryButtonStyle()
                 }
-                .accessibilityLabel("Unlock unlimited conversations")
-                .accessibilityHint("Double tap to view premium options")
+                .accessibilityLabel(AppStrings.Chat.unlockUnlimited)
+                .accessibilityHint(AppStrings.Chat.unlockHint)
                 
-                Button("Maybe Later") {
-                    viewModel.dismissFinalSeedInterstitial()
+                Button(AppStrings.Chat.maybeLater) {
+                    viewModel.dismissUpgradePrompt()
                 }
-                .accessibilityLabel("Dismiss")
                 .secondaryButtonStyle()
                 .foregroundStyle(Theme.Colors.secondaryText)
             }
-            .padding(32)
+            .padding(Theme.Spacing.xl)
             .background(Theme.Colors.background)
-            .cornerRadius(24)
-            .padding(32)
+            .cornerRadius(Theme.CornerRadius.xl)
+            .padding(Theme.Spacing.xl)
         }
     }
     
@@ -200,11 +198,11 @@ struct ChatView: View {
                 .font(Theme.Typography.iconLarge)
                 .foregroundStyle(Theme.Colors.primary)
             
-            Text("Hi! I'm your Bible companion")
+            Text(AppStrings.Chat.welcomeTitle)
                 .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
             
-            Text("Ask me anything about Scripture, faith, or life. I'll help you find wisdom in God's Word.")
+            Text(AppStrings.Chat.welcomeBody)
                 .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.secondaryText)
                 .multilineTextAlignment(.center)
@@ -212,17 +210,17 @@ struct ChatView: View {
             if let ctx = verseContext {
                 HStack(spacing: 8) {
                     Image(systemName: "book.closed")
-                    Text("Reading: \(ctx.reference)")
+                    Text(AppStrings.Chat.readingContext(ctx.reference))
                 }
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.primary)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.Spacing.mds)
                 .padding(.vertical, 6)
                 .background(Theme.Colors.primary.opacity(0.1))
-                .cornerRadius(12)
+                .cornerRadius(Theme.CornerRadius.lg)
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xl)
     }
     
     // MARK: - Suggested Actions
@@ -246,24 +244,24 @@ struct ChatView: View {
     private var quickPrompts: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                QuickPromptChip(text: "What does the Bible say about anxiety?") {
-                    viewModel.sendMessage("What does the Bible say about anxiety?", isPremium: isPremium)
+                QuickPromptChip(text: AppStrings.Chat.promptAnxiety) {
+                    viewModel.sendMessage(AppStrings.Chat.promptAnxiety, isPremium: isPremium)
                 }
                 
-                QuickPromptChip(text: "Help me understand John 3:16") {
-                    viewModel.sendMessage("Help me understand John 3:16", isPremium: isPremium)
+                QuickPromptChip(text: AppStrings.Chat.promptJohn316) {
+                    viewModel.sendMessage(AppStrings.Chat.promptJohn316, isPremium: isPremium)
                 }
                 
-                QuickPromptChip(text: "I need encouragement today") {
-                    viewModel.sendMessage("I need encouragement today", isPremium: isPremium)
+                QuickPromptChip(text: AppStrings.Chat.promptEncouragement) {
+                    viewModel.sendMessage(AppStrings.Chat.promptEncouragement, isPremium: isPremium)
                 }
                 
-                QuickPromptChip(text: "Explain the Sermon on the Mount") {
-                    viewModel.sendMessage("Can you explain the Sermon on the Mount?", isPremium: isPremium)
+                QuickPromptChip(text: AppStrings.Chat.promptSermon) {
+                    viewModel.sendMessage(AppStrings.Chat.promptSermonFull, isPremium: isPremium)
                 }
             }
             .padding(.horizontal)
-            .padding(.bottom, 8)
+            .padding(.bottom, Theme.Spacing.sm)
         }
     }
     
@@ -281,14 +279,14 @@ struct ChatView: View {
                 }
                 .frame(width: 44, height: 44)
                 
-                TextField("Ask anything...", text: $viewModel.inputText, axis: .vertical)
+                TextField(AppStrings.Chat.inputPlaceholder, text: $viewModel.inputText, axis: .vertical)
                     .textFieldStyle(.plain)
                     .inputFieldStyle()
                     .focused($isInputFocused)
                     .lineLimit(1...5)
                     
-                    .accessibilityLabel("Message input")
-                    .accessibilityHint("Type your message here")
+                    .accessibilityLabel(AppStrings.Chat.inputPlaceholder)
+                    .accessibilityHint(AppStrings.Chat.messageInputHint)
                     .onSubmit {
                         viewModel.sendMessage(isPremium: isPremium)
                     }
@@ -301,8 +299,8 @@ struct ChatView: View {
                         .foregroundStyle(viewModel.inputText.isEmpty ? Theme.Colors.secondaryText : Theme.Colors.primary)
                 }
                 .disabled(viewModel.inputText.isEmpty || viewModel.isLoading)
-                .accessibilityLabel("Send message")
-                .accessibilityHint("Double tap to send your message")
+                .accessibilityLabel(AppStrings.Chat.sendMessage)
+                .accessibilityHint(AppStrings.Chat.sendMessageHint)
             }
             .padding()
         }
@@ -320,10 +318,10 @@ struct MessageBubble: View {
             if message.role == .user { Spacer(minLength: 60) }
             
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                Text((try? AttributedString(markdown: message.content)) ?? AttributedString(message.content))
+                Text(try! AttributedString(markdown: message.content))
                     .font(Theme.Typography.body)
                     .foregroundStyle(message.role == .user ? .white : Theme.Colors.text)
-                    .padding(12)
+                    .padding(Theme.Spacing.mds)
                     .background(message.role == .user ? Theme.Colors.primary : Theme.Colors.surface)
                     .cornerRadius(16, corners: message.role == .user ? [.topLeft, .topRight, .bottomLeft] : [.topLeft, .topRight, .bottomRight])
                 
@@ -350,10 +348,10 @@ struct QuickPromptChip: View {
             Text(text)
                 .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.primary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.mds)
+                .padding(.vertical, Theme.Spacing.sm)
                 .background(Theme.Colors.primary.opacity(0.1))
-                .cornerRadius(16)
+                .cornerRadius(Theme.CornerRadius.xl)
         }
         .accessibilityLabel(text)
         .accessibilityHint("Double tap to ask this question")
@@ -375,9 +373,9 @@ struct TypingIndicator: View {
                         .opacity(phase == index ? 1 : 0.4)
                 }
             }
-            .padding(12)
+            .padding(Theme.Spacing.mds)
             .background(Theme.Colors.surface)
-            .cornerRadius(16)
+            .cornerRadius(Theme.CornerRadius.xl)
             
             Spacer()
         }

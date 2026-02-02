@@ -14,7 +14,7 @@ struct PrayerCirclesView: View {
                     .ignoresSafeArea()
                 
                 if viewModel.isLoadingCircles {
-                    ProgressView()
+                ShimmerView(height: 20)
                         .tint(Theme.Colors.primary)
                 } else if viewModel.circles.isEmpty {
                     emptyState
@@ -90,7 +90,7 @@ struct PrayerCirclesView: View {
                     .blur(radius: 10)
                 
                 Image(systemName: "person.3.fill")
-                    .font(.system(size: 44))
+                    .font(Theme.Typography.iconLarge)
                     .foregroundStyle(Theme.Colors.primary.opacity(0.6))
             }
             
@@ -112,6 +112,8 @@ struct PrayerCirclesView: View {
                         .foregroundStyle(.white)
                 }
                 .buttonStyle(GlassButtonStyle(isProminent: true))
+                .accessibilityLabel("Create prayer circle")
+                .accessibilityHint("Double tap to create a new prayer circle")
                 
                 Button {
                     showJoinSheet = true
@@ -121,6 +123,8 @@ struct PrayerCirclesView: View {
                         .foregroundStyle(.white)
                 }
                 .buttonStyle(GlassButtonStyle())
+                .accessibilityLabel("Join prayer circle")
+                .accessibilityHint("Double tap to join an existing circle with an invite code")
             }
             
             Spacer()
@@ -149,7 +153,7 @@ struct CircleCardRow: View {
                     .frame(width: 50, height: 50)
                 
                 Text(circleInitials)
-                    .font(.system(size: 18, weight: .bold))
+                    .font(Theme.Typography.bodyLarge)
                     .foregroundStyle(.white)
             }
             
@@ -176,7 +180,7 @@ struct CircleCardRow: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.caption)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.textTertiary)
         }
         .padding()

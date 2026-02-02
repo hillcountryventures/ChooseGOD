@@ -10,7 +10,7 @@ struct ChurchCodeView: View {
             Spacer()
             
             Image(systemName: "building.columns.fill")
-                .font(.system(size: 56))
+                .font(.system(size: 56)) // Keep custom size for church icon
                 .foregroundStyle(.blue)
             
             Text(group.name)
@@ -28,7 +28,7 @@ struct ChurchCodeView: View {
                     .foregroundStyle(.secondary)
                 
                 Text(group.inviteCode)
-                    .font(.system(size: 48, weight: .bold, design: .monospaced))
+                    .font(.system(size: 48, weight: .bold, design: .monospaced)) // Keep custom monospaced font for code
                     .kerning(6)
                     .foregroundStyle(.primary)
             }
@@ -66,7 +66,7 @@ struct ChurchCodeView: View {
             Spacer()
             
             Text("Members enter this code in the app to join your group.")
-                .font(.footnote)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)

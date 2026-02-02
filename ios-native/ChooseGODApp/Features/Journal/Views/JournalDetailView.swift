@@ -35,9 +35,9 @@ struct JournalDetailView: View {
                             .scrollContentBackground(.hidden)
                             .frame(minHeight: 200)
                             .padding()
-                            .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: 16))
+                            .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: Theme.CornerRadius.xl)
                                     .stroke(Theme.Colors.surfaceElevated, lineWidth: 1)
                             )
                     } else {
@@ -89,7 +89,7 @@ struct JournalDetailView: View {
                         Text(isSaving ? "Saving..." : "Save")
                             .fontWeight(.semibold)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
+                            .padding(.horizontal, Theme.Spacing.mds)
                             .padding(.vertical, 6)
                             .background(Theme.Colors.primary, in: Capsule())
                     }
@@ -129,12 +129,12 @@ struct JournalDetailView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(photos) { _ in
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                                 .fill(Theme.Colors.surfaceElevated)
                                 .frame(width: 160, height: 160)
                                 .overlay {
                                     Image(systemName: "photo")
-                                        .font(.largeTitle)
+                                        .font(Theme.Typography.display)
                                         .foregroundStyle(Theme.Colors.textTertiary)
                                 }
                         }
@@ -145,7 +145,7 @@ struct JournalDetailView: View {
             ForEach(voices) { voice in
                 HStack(spacing: 12) {
                     Image(systemName: "waveform")
-                        .font(.title3)
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.primary)
                     
                     VStack(alignment: .leading) {
@@ -162,12 +162,12 @@ struct JournalDetailView: View {
                     Spacer()
                     
                     Image(systemName: "play.circle.fill")
-                        .font(.title2)
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(Theme.Colors.primary)
                 }
                 .padding()
-                .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
+                .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
+                .overlay(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
             }
         }
     }
@@ -184,14 +184,14 @@ struct JournalDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "book")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.primary)
                         Text(verse.reference)
                             .font(Theme.Typography.body.weight(.semibold))
                             .foregroundStyle(Theme.Colors.primary)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.textTertiary)
                     }
                     
@@ -204,8 +204,8 @@ struct JournalDetailView: View {
                     }
                 }
                 .padding()
-                .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
+                .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
+                .overlay(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
             }
         }
     }
@@ -221,9 +221,9 @@ struct JournalDetailView: View {
             FlowLayout(spacing: 8) {
                 ForEach(moment.themes, id: \.self) { theme in
                     Text(theme.capitalized)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(Theme.Colors.primary)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, Theme.Spacing.mds)
                         .padding(.vertical, 6)
                         .background(Theme.Colors.primaryAlpha(0.2), in: Capsule())
                 }
@@ -254,7 +254,7 @@ struct JournalDetailView: View {
                 Divider().background(Theme.Colors.surfaceElevated)
                 
                 Text("Reflection Questions")
-                    .font(.caption.weight(.semibold))
+                    .font(Theme.Typography.captionSemibold)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 
                 ForEach(questions, id: \.self) { q in
@@ -266,8 +266,8 @@ struct JournalDetailView: View {
             }
         }
         .padding()
-        .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
+        .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.xl))
+        .overlay(RoundedRectangle(cornerRadius: Theme.CornerRadius.xl).stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
     }
     
     // MARK: - Actions
@@ -282,8 +282,8 @@ struct JournalDetailView: View {
                 Label("Share", systemImage: "square.and.arrow.up")
                     .font(Theme.Typography.caption.weight(.medium))
                     .foregroundStyle(Theme.Colors.primary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.smd)
                     .background(Theme.Colors.surface, in: Capsule())
                     .overlay(Capsule().stroke(Theme.Colors.surfaceElevated, lineWidth: 1))
             }
@@ -294,15 +294,15 @@ struct JournalDetailView: View {
                 Label("Delete", systemImage: "trash")
                     .font(Theme.Typography.caption.weight(.medium))
                     .foregroundStyle(Theme.Colors.error)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.smd)
                     .background(Theme.Colors.surface, in: Capsule())
                     .overlay(Capsule().stroke(Theme.Colors.error.opacity(0.3), lineWidth: 1))
             }
             
             Spacer()
         }
-        .padding(.top, 12)
+        .padding(.top, Theme.Spacing.mds)
     }
     
     private var cancelEditButton: some View {
@@ -311,10 +311,11 @@ struct JournalDetailView: View {
             isEditing = false
         } label: {
             Text("Cancel")
+                        .accessibilityLabel("Cancel")
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, Theme.Spacing.mds)
         }
     }
     

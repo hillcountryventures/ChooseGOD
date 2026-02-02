@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 import RevenueCat
 import Observation
@@ -50,7 +51,7 @@ final class PaywallViewModel {
     // MARK: - Feature Comparison
     
     static let comparisonRows: [(feature: String, free: String, premium: String)] = [
-        ("Daily AI Questions", "3 seeds", "Unlimited"),
+        ("Daily AI Chats", "3/day", "Unlimited"),
         ("Spiritual Practices", "3 basic", "10+ modes"),
         ("Devotional Series", "1 active", "Unlimited"),
         ("Verse Card Designs", "3", "12+"),
@@ -100,7 +101,7 @@ final class PaywallViewModel {
                 }
             }
         } catch {
-            print("PaywallVM: Failed to load offerings: \(error)")
+            AppLogger.subscription.error("PaywallVM failed to load offerings: \(error)")
         }
     }
     

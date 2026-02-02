@@ -19,7 +19,7 @@ struct DailyDevotionalView: View {
                 .ignoresSafeArea()
             
             if isLoading {
-                ProgressView()
+                ShimmerView(height: 20)
             } else if let day = day {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
@@ -59,11 +59,11 @@ struct DailyDevotionalView: View {
     private func dayHeader(_ day: DevotionalDay) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Day \(day.dayNumber)")
-                .font(.subheadline.weight(.medium))
+                .font(Theme.Typography.subheadlineMedium)
                 .foregroundStyle(Theme.Colors.primary)
             
             Text(day.title)
-                .font(.title.bold())
+                .font(Theme.Typography.title1)
                 .foregroundStyle(Theme.Colors.text)
             
             // Progress
@@ -82,18 +82,18 @@ struct DailyDevotionalView: View {
                     .foregroundStyle(Theme.Colors.primary)
                 
                 Text(day.scriptureRefs.map { $0.reference }.joined(separator: ", "))
-                    .font(.subheadline.weight(.medium))
+                    .font(Theme.Typography.subheadlineMedium)
                     .foregroundStyle(Theme.Colors.primary)
             }
             
             // Scripture text
             Text(scriptureText.isEmpty ? day.contentPrompt : scriptureText)
-                .font(.system(.body, design: .serif))
+                .font(Theme.Typography.bodySerif)
                 .foregroundStyle(Theme.Colors.text)
                 .lineSpacing(6)
                 .padding()
                 .background(Theme.Colors.surface)
-                .cornerRadius(12)
+                .cornerRadius(Theme.CornerRadius.lg)
         }
     }
     
@@ -104,7 +104,7 @@ struct DailyDevotionalView: View {
                     .foregroundStyle(Theme.Colors.accent)
                 
                 Text("Reflection Questions")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
             }
             
@@ -112,18 +112,18 @@ struct DailyDevotionalView: View {
                 ForEach(Array(day.reflectionQuestions.enumerated()), id: \.offset) { index, question in
                     HStack(alignment: .top, spacing: 12) {
                         Text("\(index + 1).")
-                            .font(.subheadline.weight(.bold))
+                            .font(Theme.Typography.subheadlineSemibold)
                             .foregroundStyle(Theme.Colors.primary)
                         
                         Text(question)
-                            .font(.subheadline)
+                            .font(Theme.Typography.bodySmall)
                             .foregroundStyle(Theme.Colors.text)
                     }
                 }
             }
             .padding()
             .background(Theme.Colors.surface)
-            .cornerRadius(12)
+            .cornerRadius(Theme.CornerRadius.lg)
         }
     }
     
@@ -134,17 +134,17 @@ struct DailyDevotionalView: View {
                     .foregroundStyle(Theme.Colors.prayer)
                 
                 Text("Prayer Focus")
-                    .font(.headline)
+                    .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
             }
             
             Text(prayerFocus)
-                .font(.subheadline)
+                .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.text)
                 .italic()
                 .padding()
                 .background(Theme.Colors.prayer.opacity(0.1))
-                .cornerRadius(12)
+                .cornerRadius(Theme.CornerRadius.lg)
         }
     }
     
@@ -153,20 +153,22 @@ struct DailyDevotionalView: View {
             Task { await completeDay() }
         } label: {
             if isCompleting {
-                ProgressView().tint(.white)
+                ShimmerView(height: 20)
             } else {
                 HStack {
                     Text("Complete Day \(enrollment.currentDay)")
+                            .accessibilityLabel("Complete day \(enrollment.currentDay)")
+                            .accessibilityHint("Double tap to mark this day as complete")
                     Image(systemName: "checkmark.circle.fill")
                 }
-                .font(.headline)
+                .font(Theme.Typography.title3)
             }
         }
         .foregroundColor(.white)
         .frame(maxWidth: .infinity)
         .frame(height: 56)
         .background(Theme.Colors.primary)
-        .cornerRadius(16)
+        .cornerRadius(Theme.CornerRadius.xl)
         .padding()
         .background(Theme.Colors.background)
     }
@@ -196,7 +198,7 @@ struct DailyDevotionalView: View {
                 
                 // Filter to specific verses
                 let filtered = verses.filter { verse in
-                    verse.verse >= ref.verseStart && (ref.verseEnd == nil || verse.verse <= ref.verseEnd!)
+                    verse.verse >= ref.verseStart && (ref.verseEnd == nil || verse.verse <= (ref.verseEnd ?? ref.verseStart))
                 }
                 scriptureText = filtered.map { "\($0.verse). \($0.text)" }.joined(separator: " ")
             }

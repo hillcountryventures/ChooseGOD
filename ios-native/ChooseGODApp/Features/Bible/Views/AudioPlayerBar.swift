@@ -16,7 +16,7 @@ struct AudioPlayerBar: View {
             }
             .glassCard(cornerRadius: isExpanded ? 24 : 16)
             .padding(.horizontal, isExpanded ? 0 : 12)
-            .padding(.bottom, 4)
+            .padding(.bottom, Theme.Spacing.xs)
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(Theme.Animation.spring, value: isExpanded)
         }
@@ -44,27 +44,27 @@ struct AudioPlayerBar: View {
             
             // Progress pill
             Text(audioPlayer.playbackState.positionText)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(Theme.Typography.monoSmall)
                 .foregroundStyle(Theme.Colors.textSecondary)
             
             // Controls
             HStack(spacing: 8) {
                 Button { audioPlayer.skipBackward(15) } label: {
                     Image(systemName: "gobackward.15")
-                        .font(.body)
+                        .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
                 }
                 
                 Button { audioPlayer.togglePlayPause() } label: {
                     Image(systemName: audioPlayer.playbackState.status == .playing ? "pause.fill" : "play.fill")
-                        .font(.title3)
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.primary)
                         .frame(width: 36, height: 36)
                 }
                 
                 Button { audioPlayer.skipForward(15) } label: {
                     Image(systemName: "goforward.15")
-                        .font(.body)
+                        .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
                 }
             }
@@ -72,12 +72,12 @@ struct AudioPlayerBar: View {
             // Expand button
             Button { withAnimation { isExpanded = true } } label: {
                 Image(systemName: "chevron.up")
-                    .font(.caption.weight(.bold))
+                    .font(Theme.Typography.captionBold)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.smd)
         .contentShape(Rectangle())
         .onTapGesture { withAnimation { isExpanded = true } }
         // Mini progress bar
@@ -96,10 +96,10 @@ struct AudioPlayerBar: View {
     private var expandedView: some View {
         VStack(spacing: 16) {
             // Drag handle
-            RoundedRectangle(cornerRadius: 3)
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.xs)
                 .fill(Theme.Colors.textTertiary.opacity(0.5))
                 .frame(width: 40, height: 5)
-                .padding(.top, 12)
+                .padding(.top, Theme.Spacing.mds)
                 .onTapGesture { withAnimation { isExpanded = false } }
             
             // Track title
@@ -120,7 +120,7 @@ struct AudioPlayerBar: View {
                 Text("Verse \(verse)")
                     .font(Theme.Typography.labelSmall)
                     .foregroundStyle(Theme.Colors.primary)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, Theme.Spacing.mds)
                     .padding(.vertical, 4)
                     .background(
                         Capsule().fill(Theme.Colors.primaryAlpha(0.2))
@@ -143,17 +143,17 @@ struct AudioPlayerBar: View {
                     Spacer()
                     Text("-\(audioPlayer.playbackState.remainingText)")
                 }
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(Theme.Typography.monoSmall)
                 .foregroundStyle(Theme.Colors.textTertiary)
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, Theme.Spacing.sm)
             
             // Main controls
             HStack(spacing: 32) {
                 // Speed control
                 Button { audioPlayer.cyclePlaybackRate() } label: {
                     Text(String(format: "%.2gx", audioPlayer.playbackState.playbackRate))
-                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        .font(Theme.Typography.monoMedium)
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .frame(width: 40, height: 40)
                         .background(Circle().fill(Theme.Colors.surface))
@@ -161,7 +161,7 @@ struct AudioPlayerBar: View {
                 
                 Button { audioPlayer.skipBackward(15) } label: {
                     Image(systemName: "gobackward.15")
-                        .font(.title2)
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(Theme.Colors.text)
                 }
                 
@@ -173,29 +173,29 @@ struct AudioPlayerBar: View {
                             .frame(width: 56, height: 56)
                         
                         Image(systemName: audioPlayer.playbackState.status == .playing ? "pause.fill" : "play.fill")
-                            .font(.title2.weight(.semibold))
+                            .font(Theme.Typography.title2)
                             .foregroundStyle(.white)
                     }
                 }
                 
                 Button { audioPlayer.skipForward(15) } label: {
                     Image(systemName: "goforward.15")
-                        .font(.title2)
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(Theme.Colors.text)
                 }
                 
                 // Stop
                 Button { audioPlayer.stop() } label: {
                     Image(systemName: "xmark")
-                        .font(.body.weight(.medium))
+                        .font(Theme.Typography.subheadlineMedium)
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .frame(width: 40, height: 40)
                         .background(Circle().fill(Theme.Colors.surface))
                 }
             }
-            .padding(.bottom, 16)
+            .padding(.bottom, Theme.Spacing.md)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Spacing.md)
     }
 }
 
@@ -209,7 +209,7 @@ struct AudioLoadingButton: View {
     var body: some View {
         Button(action: action) {
             if isLoading {
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(Theme.Colors.primary)
             } else {
                 Image(systemName: hasAudio ? "speaker.wave.2.fill" : "speaker.wave.2")

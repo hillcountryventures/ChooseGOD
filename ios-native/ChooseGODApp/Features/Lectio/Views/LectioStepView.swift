@@ -20,7 +20,7 @@ struct LectioStepView: View {
                         .frame(width: 56, height: 56)
                     
                     Image(systemName: step.icon)
-                        .font(.system(size: 24))
+                        .font(Theme.Typography.title2)
                         .foregroundStyle(step.color)
                 }
                 
@@ -57,13 +57,13 @@ struct LectioStepView: View {
                             .frame(width: 56, height: 56)
                         
                         Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                            .font(.system(size: 22))
+                            .font(Theme.Typography.scriptureLarge)
                             .foregroundStyle(step.color)
                     }
                 }
                 
                 Text(timeRemaining)
-                    .font(.system(size: 32, weight: .bold, design: .monospaced))
+                    .font(Theme.Typography.chapterTitle)
                     .monospacedDigit()
                     .foregroundStyle(step.color)
                 
@@ -91,14 +91,14 @@ struct LectioStepView: View {
                                 .font(Theme.Typography.body)
                                 .foregroundStyle(Theme.Colors.textTertiary)
                                 .padding(Theme.Spacing.md)
-                                .padding(.top, 8)
+                                .padding(.top, Theme.Spacing.sm)
                                 .allowsHitTesting(false)
                         }
                     }
             }
         }
         .padding(Theme.Spacing.lg)
-        .modifier(GlassCard(cornerRadius: 20))
+        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.xl))
         .onAppear {
             if step.id == "contemplatio" {
                 startBreathing()

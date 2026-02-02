@@ -40,7 +40,7 @@ struct CircleDetailView: View {
                 // Content
                 if viewModel.isLoadingDetail {
                     Spacer()
-                    ProgressView()
+                ShimmerView(height: 20)
                         .tint(Theme.Colors.primary)
                     Spacer()
                 } else {
@@ -97,7 +97,8 @@ struct CircleDetailView: View {
         }
         .alert("Leave Circle?", isPresented: $showLeaveAlert) {
             Button("Cancel", role: .cancel) {}
-            Button("Leave", role: .destructive) {
+            Button("Leave", role: .destructive)
+                .accessibilityLabel("Leave this prayer circle") {
                 Task {
                     guard let userId = appState.currentUser?.id else { return }
                     await viewModel.leaveCircle(circleId: circle.id, userId: userId)
@@ -139,12 +140,12 @@ struct CircleDetailView: View {
             // Invite code pill
             HStack(spacing: 6) {
                 Image(systemName: "key.fill")
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                 Text(circle.inviteCode)
                     .font(.system(.caption, design: .monospaced).weight(.semibold))
             }
             .foregroundStyle(Theme.Colors.accent)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Theme.Spacing.mds)
             .padding(.vertical, 6)
             .background {
                 Capsule()
@@ -168,7 +169,7 @@ struct CircleDetailView: View {
                 VStack(spacing: 12) {
                     Spacer()
                     Image(systemName: "hands.sparkles")
-                        .font(.system(size: 40))
+                        .font(Theme.Typography.iconLarge)
                         .foregroundStyle(Theme.Colors.primary.opacity(0.4))
                     Text("No prayers yet")
                         .font(Theme.Typography.body)
@@ -264,6 +265,7 @@ struct CircleDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { showAddPrayer = false }
+                .accessibilityLabel("Cancel adding prayer")
                 }
             }
         }
@@ -303,7 +305,7 @@ struct CirclePrayerCard: View {
             if let scripture = prayer.scriptureAnchor {
                 HStack(spacing: 6) {
                     Image(systemName: "book.closed")
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                     Text(scripture.reference)
                         .font(Theme.Typography.caption)
                 }

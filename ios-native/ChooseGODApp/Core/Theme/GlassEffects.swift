@@ -175,7 +175,7 @@ struct GlassVerseCard: View {
     var gradient: LinearGradient = LinearGradient(colors: [Theme.Colors.primary, Theme.Colors.primaryDark], startPoint: .topLeading, endPoint: .bottomTrailing)
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             // Reference with glass pill
             Text(reference)
                 .font(Theme.Typography.subheadlineSemibold)
@@ -195,7 +195,7 @@ struct GlassVerseCard: View {
                 .lineSpacing(6)
             
             // Actions row
-            HStack(spacing: 16) {
+            HStack(spacing: Theme.Spacing.md) {
                 GlassIconButton(icon: "square.and.arrow.up", action: {})
                 GlassIconButton(icon: "bookmark", action: {})
                 GlassIconButton(icon: "highlighter", action: {})
@@ -256,7 +256,7 @@ struct GlassStatCard: View {
     let color: Color
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 12) { // Keep precise spacing for glass stat card
             // Icon with glow
             ZStack {
                 Circle()
@@ -312,13 +312,13 @@ extension View {
         .ignoresSafeArea()
         
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Theme.Spacing.lg) {
                 GlassVerseCard(
                     reference: "John 3:16",
                     text: "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."
                 )
                 
-                HStack(spacing: 12) {
+                HStack(spacing: Theme.Spacing.sm) { // 12 ≈ sm
                     GlassStatCard(value: "7", label: "Day Streak", icon: "flame.fill", color: .orange)
                     GlassStatCard(value: "23", label: "Chapters", icon: "book.fill", color: .blue)
                 }

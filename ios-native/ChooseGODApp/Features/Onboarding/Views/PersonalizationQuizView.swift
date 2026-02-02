@@ -37,7 +37,7 @@ struct PersonalizationQuizView: View {
             HStack(spacing: 16) {
                 Button(action: { viewModel.goBack() }) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(Theme.Typography.button)
                         .foregroundColor(Theme.Colors.textSecondary)
                         .frame(width: 52, height: 52)
                         .background(.ultraThinMaterial)
@@ -49,7 +49,7 @@ struct PersonalizationQuizView: View {
                         Text(viewModel.currentStep == .quizLifeStage ? "See Recommendations" : "Continue")
                             .font(Theme.Typography.button)
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.label)
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -76,11 +76,11 @@ struct PersonalizationQuizView: View {
         
         return GeometryReader { geo in
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                     .fill(Theme.Colors.surface)
                     .frame(height: 6)
                 
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                     .fill(
                         LinearGradient(colors: [Theme.Colors.primary, Theme.Colors.primaryLight], startPoint: .leading, endPoint: .trailing)
                     )
@@ -202,7 +202,7 @@ private struct QuizQuestionLayout<Content: View>: View {
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
-            .padding(.top, 32)
+            .padding(.top, Theme.Spacing.xl)
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 15)
             
@@ -244,7 +244,7 @@ private struct QuizOptionCard: View {
                         .frame(width: 48, height: 48)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 20))
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(isSelected ? accent : Theme.Colors.textSecondary)
                 }
                 
@@ -256,8 +256,8 @@ private struct QuizOptionCard: View {
                     .minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .padding(.horizontal, 8)
+            .padding(.vertical, Theme.Spacing.md)
+            .padding(.horizontal, Theme.Spacing.sm)
             .background(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                     .fill(isSelected ? accent.opacity(0.08) : Theme.Colors.surface.opacity(0.6))
@@ -269,7 +269,8 @@ private struct QuizOptionCard: View {
             .scaleEffect(isSelected ? 1.02 : 1.0)
             .animation(Theme.Animation.spring, value: isSelected)
         }
-        .buttonStyle(.plain)
+        .accessibilityLabel(option)
+                    .buttonStyle(.plain)
     }
 }
 
@@ -291,7 +292,7 @@ private struct QuizOptionRow: View {
                         .frame(width: 48, height: 48)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 20))
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(isSelected ? Theme.Colors.primary : Theme.Colors.textSecondary)
                 }
                 
@@ -309,12 +310,12 @@ private struct QuizOptionRow: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 22))
+                        .font(Theme.Typography.scriptureLarge)
                         .foregroundStyle(Theme.Colors.primary)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
-            .padding(16)
+            .padding(Theme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                     .fill(isSelected ? Theme.Colors.primary.opacity(0.08) : Theme.Colors.surface.opacity(0.6))

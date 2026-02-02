@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 
 /// Animated microphone button with waveform visualization
@@ -32,7 +33,7 @@ struct VoiceInputButton: View {
                     .frame(width: 40, height: 40)
                     .overlay {
                         Image(systemName: voiceService.isListening ? "stop.fill" : "mic.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(Theme.Typography.button)
                             .foregroundColor(voiceService.isListening ? .white : Theme.Colors.primary)
                     }
             }
@@ -108,28 +109,28 @@ struct VoiceTranscriptOverlay: View {
                             .fill(Theme.Colors.error)
                             .frame(width: 8, height: 8)
                         Text("Listening...")
-                            .font(.caption.weight(.medium))
+                            .font(Theme.Typography.captionMedium)
                             .foregroundColor(Theme.Colors.textSecondary)
                     }
                 }
                 
                 if !voiceService.interimTranscript.isEmpty {
                     Text(voiceService.interimTranscript)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundColor(Theme.Colors.text.opacity(0.7))
                         .italic()
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, Theme.Spacing.mds)
                         .padding(.vertical, 6)
-                        .modifier(GlassCard(cornerRadius: 10, opacity: 0.5))
+                        .modifier(GlassCard(cornerRadius: Theme.CornerRadius.md, opacity: 0.5))
                 }
                 
                 if let error = voiceService.error {
                     Text(error)
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                         .foregroundColor(Theme.Colors.error)
                 }
             }
-            .padding(8)
+            .padding(Theme.Spacing.sm)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
@@ -139,7 +140,7 @@ struct VoiceTranscriptOverlay: View {
     ZStack {
         Theme.Colors.background.ignoresSafeArea()
         VoiceInputButton(voiceService: VoiceInputService()) { text in
-            print(text)
+            AppLogger.general.debug("Voice input: \(text)")
         }
     }
 }

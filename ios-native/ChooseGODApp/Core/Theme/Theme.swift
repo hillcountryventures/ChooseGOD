@@ -180,6 +180,27 @@ enum Theme {
         static let labelSmall = Font.system(size: 12, weight: .medium)
         static let button = Font.system(size: 16, weight: .semibold)
         static let caption = Font.system(size: 12, weight: .regular)
+        static let caption2 = Font.system(size: 11, weight: .regular)
+        static let captionBold = Font.system(size: 12, weight: .bold)
+        static let captionSemibold = Font.system(size: 12, weight: .semibold)
+        static let captionMedium = Font.system(size: 12, weight: .medium)
+        static let headline = Font.system(size: 17, weight: .semibold)
+        static let subheadline = Font.system(size: 15, weight: .regular)
+        static let subheadlineMedium = Font.system(size: 15, weight: .medium)
+        static let subheadlineSemibold = Font.system(size: 15, weight: .semibold)
+        static let monoSmall = Font.system(size: 11, weight: .medium, design: .monospaced)
+        static let monoMedium = Font.system(size: 13, weight: .semibold, design: .monospaced)
+        static let calloutSerif = Font.system(.callout, design: .serif)
+        static let subheadlineSerif = Font.system(size: 15, weight: .semibold, design: .serif)
+        static let bodySerif = Font.system(.body, design: .serif)
+        static let verseNumber = Font.system(size: 14, weight: .bold, design: .serif)
+        static let displayRounded = Font.system(size: 36, weight: .bold, design: .rounded)
+        static let chapterTitle = Font.system(size: 32, weight: .bold, design: .serif)
+        static let iconLarge = Font.system(size: 44)
+        static let iconXL = Font.system(size: 48)
+        static let iconXXL = Font.system(size: 56)
+        static let iconHuge = Font.system(size: 60)
+        static let iconMassive = Font.system(size: 64)
     }
     
     // MARK: - Spacing
@@ -188,7 +209,10 @@ enum Theme {
         static let xxs: CGFloat = 2
         static let xs: CGFloat = 4
         static let sm: CGFloat = 8
+        static let smd: CGFloat = 10
+        static let mds: CGFloat = 12
         static let md: CGFloat = 16
+        static let mdl: CGFloat = 20
         static let lg: CGFloat = 24
         static let xl: CGFloat = 32
         static let xxl: CGFloat = 48
@@ -197,6 +221,8 @@ enum Theme {
     // MARK: - Corner Radius
     
     enum CornerRadius {
+        static let xxs: CGFloat = 2
+        static let xs: CGFloat = 3
         static let sm: CGFloat = 4
         static let md: CGFloat = 8
         static let lg: CGFloat = 12

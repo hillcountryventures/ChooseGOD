@@ -1,3 +1,4 @@
+import os
 import Foundation
 import RevenueCat
 
@@ -8,36 +9,28 @@ final class RevenueCatService: SubscriptionServiceProtocol {
     
     static let shared = RevenueCatService()
     
-    // MARK: - Configuration
-    
-    /// RevenueCat API key from App Store Connect
-    private static let apiKey = "appl_YdofSCNUFqkTUNzuOTwwrvdZtJF"
-    
     // MARK: - Properties
     
     private(set) var isPremium: Bool = false
-    private(set) var seedsRemaining: Int = 3
-    private(set) var seedsUsedToday: Int = 0
-    
-    private let freeSeeds = 3
-    private let seedsKey = "dailySeedsRemaining"
-    private let lastResetKey = "lastSeedResetDate"
     
     // MARK: - Initialization
     
-    private init() {
-        loadSeedState()
-    }
+    private init() {}
     
     // MARK: - Configuration
     
     func configure(userId: String?) async {
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String, !apiKey.isEmpty else {
+            AppLogger.subscription.warning("REVENUECAT_API_KEY not found in Info.plist")
+            return
+        }
+        
         Purchases.logLevel = .debug
         
         if let userId = userId {
-            Purchases.configure(withAPIKey: Self.apiKey, appUserID: userId)
+            Purchases.configure(withAPIKey: apiKey, appUserID: userId)
         } else {
-            Purchases.configure(withAPIKey: Self.apiKey)
+            Purchases.configure(withAPIKey: apiKey)
         }
         
         // Check initial premium status
@@ -52,7 +45,7 @@ final class RevenueCatService: SubscriptionServiceProtocol {
             isPremium = customerInfo.entitlements["premium"]?.isActive == true
             return isPremium
         } catch {
-            print("RevenueCat: Failed to check premium status: \(error)")
+            AppLogger.subscription.error("Failed to check premium status: \(error)")
             return false
         }
     }
@@ -96,59 +89,8 @@ final class RevenueCatService: SubscriptionServiceProtocol {
         return isPremium
     }
     
-    // MARK: - Seed Management (Freemium Feature Gating)
-    
-    func useSeed() -> Bool {
-        // Premium users have unlimited seeds
-        if isPremium { return true }
-        
-        // Check if we need to reset seeds (new day)
-        checkDailyReset()
-        
-        // Check if seeds available
-        if seedsRemaining > 0 {
-            seedsRemaining -= 1
-            seedsUsedToday += 1
-            saveSeedState()
-            return true
-        }
-        
-        return false
-    }
-    
-    private func checkDailyReset() {
-        let today = Calendar.current.startOfDay(for: Date())
-        
-        if let lastReset = UserDefaults.standard.object(forKey: lastResetKey) as? Date {
-            let lastResetDay = Calendar.current.startOfDay(for: lastReset)
-            
-            if today > lastResetDay {
-                // New day - reset seeds
-                seedsRemaining = freeSeeds
-                seedsUsedToday = 0
-                UserDefaults.standard.set(today, forKey: lastResetKey)
-                saveSeedState()
-            }
-        } else {
-            // First time - set today as last reset
-            UserDefaults.standard.set(today, forKey: lastResetKey)
-        }
-    }
-    
-    private func loadSeedState() {
-        seedsRemaining = UserDefaults.standard.integer(forKey: seedsKey)
-        if seedsRemaining == 0 && !UserDefaults.standard.bool(forKey: "seedsInitialized") {
-            seedsRemaining = freeSeeds
-            UserDefaults.standard.set(true, forKey: "seedsInitialized")
-        }
-        seedsUsedToday = freeSeeds - seedsRemaining
-        checkDailyReset()
-    }
-    
-    private func saveSeedState() {
-        UserDefaults.standard.set(seedsRemaining, forKey: seedsKey)
-    }
 }
+
 
 // MARK: - Errors
 

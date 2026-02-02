@@ -47,7 +47,7 @@ struct JoinCircleSheet: View {
                     .blur(radius: 8)
                 
                 Image(systemName: "person.badge.plus")
-                    .font(.system(size: 32))
+                    .font(Theme.Typography.chapterTitle)
                     .foregroundStyle(Theme.Colors.accent)
             }
             .padding(.top, Theme.Spacing.lg)
@@ -90,7 +90,7 @@ struct JoinCircleSheet: View {
             } label: {
                 Group {
                     if viewModel.isJoining {
-                        ProgressView()
+                        ShimmerView(height: 20)
                             .tint(.white)
                     } else {
                         Text("Join Circle")
@@ -131,7 +131,7 @@ struct JoinCircleSheet: View {
                     .blur(radius: 10)
                 
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 56))
+                    .font(Theme.Typography.iconXXL)
                     .foregroundStyle(Theme.Colors.success)
             }
             

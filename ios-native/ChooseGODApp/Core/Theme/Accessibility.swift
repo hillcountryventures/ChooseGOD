@@ -57,8 +57,6 @@ extension View {
     @ViewBuilder
     func motionSafe<V: Equatable>(animation: Animation, value: V) -> some View {
         self.animation(animation, value: value)
-        // Note: SwiftUI automatically respects accessibilityReduceMotion
-        // for many built-in animations. This is for custom cases.
     }
     
     /// Conditional transition respecting Reduce Motion
@@ -69,18 +67,36 @@ extension View {
 
 // MARK: - High Contrast Support
 
-enum HighContrastColors {
-    @Environment(\.colorSchemeContrast) static var contrast
+/// View-level high contrast color helper. Use inside a View body where
+/// @Environment(\.colorSchemeContrast) is available.
+struct HighContrastColors {
+    let contrast: ColorSchemeContrast
     
-    static func text(for baseColor: Color) -> Color {
-        // SwiftUI auto-adjusts for high contrast when using semantic colors.
-        // For custom colors, bump opacity to 1.0 in high contrast mode.
-        baseColor
+    init(contrast: ColorSchemeContrast) {
+        self.contrast = contrast
     }
     
-    static func border(normal: Color = .white.opacity(0.2)) -> Color {
-        // In high contrast, use stronger borders
-        normal
+    var isHighContrast: Bool {
+        contrast == .increased
+    }
+    
+    func text(for baseColor: Color) -> Color {
+        isHighContrast ? baseColor.opacity(1.0) : baseColor
+    }
+    
+    func border(normal: Color = .white.opacity(0.2)) -> Color {
+        isHighContrast ? .white.opacity(0.5) : normal
+    }
+}
+
+/// Environment key for convenient access
+private struct HighContrastColorsKey: EnvironmentKey {
+    static let defaultValue = HighContrastColors(contrast: .standard)
+}
+
+extension EnvironmentValues {
+    var highContrastColors: HighContrastColors {
+        get { HighContrastColors(contrast: colorSchemeContrast) }
     }
 }
 

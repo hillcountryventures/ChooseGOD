@@ -14,7 +14,7 @@ struct JournalComposeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.Colors.background.ignoresSafeArea()
+                Color.clear
                 
                 VStack(spacing: 0) {
                     // Prompts carousel
@@ -26,7 +26,8 @@ struct JournalComposeView: View {
                     // Main text area
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            TextEditor(text: $viewModel.composeContent)
+                            TextEditor(
+text: $viewModel.composeContent)
                                 .font(Theme.Typography.body)
                                 .foregroundStyle(Theme.Colors.text)
                                 .scrollContentBackground(.hidden)
@@ -42,8 +43,8 @@ struct JournalComposeView: View {
                                     .font(Theme.Typography.body)
                                     .foregroundStyle(Theme.Colors.textTertiary)
                                     .allowsHitTesting(false)
-                                    .padding(.top, 8)
-                                    .padding(.leading, 5)
+                                    .padding(.top, Theme.Spacing.sm)
+                                    .padding(.leading, Theme.Spacing.xs)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .offset(y: -216)
                             }
@@ -65,6 +66,7 @@ struct JournalComposeView: View {
                     mediaBar
                 }
             }
+            .screenBackground()
             .navigationTitle("Journal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -90,7 +92,7 @@ struct JournalComposeView: View {
                         Text(viewModel.isSaving ? "Saving..." : "Post")
                             .fontWeight(.semibold)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, Theme.Spacing.md)
                             .padding(.vertical, 6)
                             .background(Theme.Colors.primary.opacity(viewModel.canPost ? 1 : 0.5), in: Capsule())
                     }
@@ -158,7 +160,7 @@ struct JournalComposeView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: prompt.icon)
-                                    .font(.body)
+                                    .font(Theme.Typography.body)
                                     .foregroundStyle(Theme.Colors.primary)
                                     .frame(width: 32, height: 32)
                                     .background(Theme.Colors.primaryAlpha(0.15), in: Circle())
@@ -166,21 +168,21 @@ struct JournalComposeView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     let parts = prompt.text.split(separator: ":", maxSplits: 1)
                                     Text(parts.first.map(String.init) ?? "")
-                                        .font(.caption.weight(.bold))
+                                        .font(Theme.Typography.captionBold)
                                         .foregroundStyle(Theme.Colors.primary)
                                     if parts.count > 1 {
                                         Text(parts[1].trimmingCharacters(in: .whitespaces))
-                                            .font(.caption2)
+                                            .font(Theme.Typography.caption2)
                                             .foregroundStyle(Theme.Colors.textSecondary)
                                             .lineLimit(2)
                                     }
                                 }
                             }
-                            .padding(10)
+                            .padding(Theme.Spacing.smd)
                             .frame(minWidth: 180, alignment: .leading)
-                            .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: 12))
+                            .background(Theme.Colors.surface, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                                     .stroke(Theme.Colors.surfaceElevated, lineWidth: 1)
                             )
                         }
@@ -189,7 +191,7 @@ struct JournalComposeView: View {
                 .padding(.horizontal)
             }
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, Theme.Spacing.smd)
         .background(Theme.Colors.surface.opacity(0.5))
     }
     
@@ -200,20 +202,20 @@ struct JournalComposeView: View {
             ForEach(Array(viewModel.composeLinkedVerses.enumerated()), id: \.element.id) { idx, verse in
                 HStack(spacing: 4) {
                     Image(systemName: "book")
-                        .font(.caption2)
+                        .font(Theme.Typography.caption2)
                         .foregroundStyle(Theme.Colors.primary)
                     Text(verse.reference)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(Theme.Colors.primary)
                     Button {
                         viewModel.removeVerse(at: idx)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.caption2)
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.textTertiary)
                     }
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, Theme.Spacing.smd)
                 .padding(.vertical, 6)
                 .background(Theme.Colors.primaryAlpha(0.2), in: Capsule())
             }
@@ -227,12 +229,12 @@ struct JournalComposeView: View {
             HStack(spacing: 8) {
                 ForEach(viewModel.composeMedia) { media in
                     ZStack(alignment: .topTrailing) {
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                             .fill(Theme.Colors.surfaceElevated)
                             .frame(width: 80, height: 80)
                             .overlay {
                                 Image(systemName: media.type == .photo ? "photo" : "waveform")
-                                    .font(.title2)
+                                    .font(Theme.Typography.title2)
                                     .foregroundStyle(Theme.Colors.textTertiary)
                             }
                         
@@ -240,7 +242,7 @@ struct JournalComposeView: View {
                             viewModel.removeMedia(media.id)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                                 .foregroundStyle(.white)
                                 .background(Circle().fill(.black.opacity(0.6)))
                         }
@@ -292,11 +294,11 @@ struct JournalComposeView: View {
                 
                 // Word count
                 Text("\(viewModel.wordCount) words")
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .padding(.trailing)
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, Theme.Spacing.sm)
             .background(Theme.Colors.background)
         }
     }
@@ -305,7 +307,7 @@ struct JournalComposeView: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.body)
+                    .font(Theme.Typography.body)
                     .foregroundStyle(bgColor != nil ? .white : color)
                     .frame(width: 40, height: 40)
                     .background(
@@ -314,7 +316,7 @@ struct JournalComposeView: View {
                             .overlay(Circle().stroke(bgColor != nil ? .clear : Theme.Colors.surfaceElevated, lineWidth: 1))
                     )
                 Text(label)
-                    .font(.caption2)
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
         }

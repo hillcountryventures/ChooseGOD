@@ -25,10 +25,24 @@ enum TheologicalGuardrails {
         #"\bI'm\s+Jesus\b"#,
         #"\bI'm\s+Christ\b"#,
         #"\bI'm\s+the\s+Lord\b"#,
+        #"\bI\s+am\s+the\s+Lord\b"#,
         #"\bI'm\s+the\s+Holy\s+Spirit\b"#,
         #"\bI'm\s+your\s+savior\b"#,
+        #"\bI\s+am\s+your\s+savior\b"#,
         #"\bI'm\s+divine\b"#,
+        #"\bI\s+am\s+divine\b"#,
+        #"\bworship\s+me\b"#,
+        #"\bpray\s+to\s+me\b"#,
+        #"\bI\s+am\s+the\s+Messiah\b"#,
+        #"\bI'm\s+the\s+Messiah\b"#,
+        #"\bI\s+am\s+the\s+Alpha\s+and\s+(the\s+)?Omega\b"#,
         #"\bBible's\s+wrong\b"#,
+        // R3 additions
+        #"\bI\s+am\s+the\s+way\b"#,
+        #"\bI\s+am\s+the\s+truth\b"#,
+        #"\bI\s+am\s+the\s+light\b"#,
+        #"\bI\s+am\s+your\s+God\b"#,
+        #"\bI\s+created\s+you\b"#,
     ]
     
     // MARK: - Crisis Patterns
@@ -36,10 +50,33 @@ enum TheologicalGuardrails {
     private static let crisisPatterns: [String] = [
         #"\b(suicide|suicidal)\b"#,
         #"\bkill\s+my\s*self\b"#,
-        #"\bend\s+(my|it\s+all)\s*life\b"#,
+        #"\bend\s+(my\s+life|it\s+all)\b"#,
         #"\bself[\s-]*harm\b"#,
         #"\bwant\s+to\s+die\b"#,
         #"\bdon'?t\s+want\s+to\s+live\b"#,
+        #"\bhurting\s+my\s*self\b"#,
+        #"\bno\s+reason\s+to\s+live\b"#,
+        // R3 additions
+        #"\bcut\s+my\s*self\b"#,
+        #"\bcutting\s+my\s*self\b"#,
+        #"\boverdose\b"#,
+        #"\bjump\s+off\b"#,
+        #"\bhang\s+my\s*self\b"#,
+    ]
+    
+    // MARK: - Prompt Injection Patterns
+    
+    private static let injectionPatterns: [String] = [
+        #"(?i)ignore\s+(all\s+)?previous\s+instructions"#,
+        #"(?i)ignore\s+(all\s+)?prior\s+instructions"#,
+        #"(?i)forget\s+(all\s+)?your\s+instructions"#,
+        #"(?i)disregard\s+(all\s+)?previous"#,
+        #"(?i)^system\s*:"#,
+        #"(?i)you\s+are\s+now\b"#,
+        #"(?i)new\s+prompt\s*:"#,
+        #"(?i)act\s+as\s+if\s+you\s+have\s+no\s+rules"#,
+        #"(?i)override\s+(your\s+)?(system|instructions)"#,
+        #"(?i)pretend\s+(you\s+are|to\s+be)\s+(?!praying|reading)"#,
     ]
     
     // MARK: - Validation
@@ -75,5 +112,42 @@ enum TheologicalGuardrails {
         }
         
         return (isValid: true, sanitized: trimmed, flags: flags)
+    }
+    
+    // MARK: - Input Pre-screening
+    
+    /// Check if user input contains crisis language (call BEFORE sending to AI)
+    /// - Parameter text: The user's message
+    /// - Returns: true if crisis patterns detected
+    static func detectCrisisInInput(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        for pattern in crisisPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+               regex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)) != nil {
+                return true
+            }
+        }
+        return false
+    }
+    
+    /// Strip prompt injection attempts from user input
+    /// - Parameter text: The raw user message
+    /// - Returns: Sanitized message with injection patterns removed
+    static func stripInjectionPatterns(_ text: String) -> String {
+        var result = text
+        for pattern in injectionPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                result = regex.stringByReplacingMatches(
+                    in: result,
+                    range: NSRange(result.startIndex..., in: result),
+                    withTemplate: ""
+                )
+            }
+        }
+        // Collapse multiple spaces left by stripping
+        while result.contains("  ") {
+            result = result.replacingOccurrences(of: "  ", with: " ")
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

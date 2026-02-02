@@ -53,7 +53,7 @@ struct ForgotPasswordView: View {
         VStack(spacing: Theme.Spacing.xl) {
             // Icon
             Image(systemName: "key.fill")
-                .font(.system(size: 50))
+                .font(Theme.Typography.iconXL)
                 .foregroundStyle(Theme.Colors.primary)
                 .padding(.top, Theme.Spacing.xxl)
             
@@ -111,7 +111,7 @@ struct ForgotPasswordView: View {
             
             // Success Icon
             Image(systemName: "envelope.badge.fill")
-                .font(.system(size: 60))
+                .font(Theme.Typography.iconHuge)
                 .foregroundStyle(Theme.Colors.success)
             
             // Message
@@ -141,6 +141,7 @@ struct ForgotPasswordView: View {
                 dismiss()
             } label: {
                 Text("Done")
+                        .accessibilityLabel("Done")
                     .font(Theme.Typography.button)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)

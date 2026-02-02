@@ -21,7 +21,7 @@ struct SettingsView: View {
                                 .frame(width: 60, height: 60)
                             
                             Text(appState.currentUser?.displayName.prefix(1).uppercased() ?? "?")
-                                .font(Theme.Typography.title2)
+                                .font(Theme.Typography.title2.bold())
                                 .foregroundStyle(Theme.Colors.primary)
                         }
                         
@@ -38,8 +38,8 @@ struct SettingsView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "crown.fill")
                                         .font(Theme.Typography.caption)
-                                    Text("Premium")
-                                        .font(Theme.Typography.captionMedium)
+                                    Text(AppStrings.Settings.premium)
+                                        .font(Theme.Typography.caption.weight(.medium))
                                 }
                                 .foregroundStyle(.yellow)
                             }
@@ -47,7 +47,7 @@ struct SettingsView: View {
                         
                         Spacer()
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, Theme.Spacing.sm)
                 }
                 
                 // Subscription & Referral
@@ -59,7 +59,7 @@ struct SettingsView: View {
                             HStack {
                                 Image(systemName: "crown.fill")
                                     .foregroundStyle(.yellow)
-                                Text("Upgrade to Premium")
+                                Text(AppStrings.Settings.upgradeToPremium)
                                     .foregroundStyle(Theme.Colors.text)
                             }
                         }
@@ -71,15 +71,26 @@ struct SettingsView: View {
                         HStack {
                             Image(systemName: "gift.fill")
                                 .foregroundStyle(Theme.Colors.accent)
-                            Text("Share & Earn Free Days")
+                            Text(AppStrings.Settings.shareAndEarn)
+                                .foregroundStyle(Theme.Colors.text)
+                        }
+                    }
+                    
+                    NavigationLink {
+                        GiftSubscriptionView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "gift.circle.fill")
+                                .foregroundStyle(.yellow)
+                            Text("Gift ChooseGOD")
                                 .foregroundStyle(Theme.Colors.text)
                         }
                     }
                 }
                 
                 // Reading Preferences
-                Section("Reading") {
-                    Picker("Translation", selection: Binding(
+                Section(AppStrings.Settings.reading) {
+                    Picker(AppStrings.Settings.translation, selection: Binding(
                         get: { appState.preferences.preferredTranslation },
                         set: { 
                             appState.preferences.preferredTranslation = $0
@@ -91,7 +102,7 @@ struct SettingsView: View {
                         }
                     }
                     
-                    Picker("Font Size", selection: Binding(
+                    Picker(AppStrings.Settings.fontSize, selection: Binding(
                         get: { appState.preferences.fontSize },
                         set: {
                             appState.preferences.fontSize = $0
@@ -105,8 +116,8 @@ struct SettingsView: View {
                 }
                 
                 // Notifications
-                Section("Notifications") {
-                    Toggle("Morning Reminder", isOn: Binding(
+                Section(AppStrings.Settings.notifications) {
+                    Toggle(AppStrings.Settings.morningReminder, isOn: Binding(
                         get: { appState.preferences.morningNotificationEnabled },
                         set: {
                             appState.preferences.morningNotificationEnabled = $0
@@ -114,7 +125,7 @@ struct SettingsView: View {
                         }
                     ))
                     
-                    Toggle("Evening Reminder", isOn: Binding(
+                    Toggle(AppStrings.Settings.eveningReminder, isOn: Binding(
                         get: { appState.preferences.eveningNotificationEnabled },
                         set: {
                             appState.preferences.eveningNotificationEnabled = $0
@@ -122,7 +133,7 @@ struct SettingsView: View {
                         }
                     ))
                     
-                    Toggle("Haptic Feedback", isOn: Binding(
+                    Toggle(AppStrings.Settings.hapticFeedback, isOn: Binding(
                         get: { appState.preferences.hapticFeedbackEnabled },
                         set: {
                             appState.preferences.hapticFeedbackEnabled = $0
@@ -132,14 +143,14 @@ struct SettingsView: View {
                 }
                 
                 // Privacy & Data
-                Section("Privacy & Data") {
+                Section(AppStrings.Settings.privacyAndData) {
                     NavigationLink {
                         ConsentManagementView()
                     } label: {
                         HStack {
                             Image(systemName: "hand.raised.fill")
                                 .foregroundStyle(Theme.Colors.primary)
-                            Text("Privacy Settings")
+                            Text(AppStrings.Settings.privacySettings)
                                 .foregroundStyle(Theme.Colors.text)
                         }
                     }
@@ -150,32 +161,32 @@ struct SettingsView: View {
                         HStack {
                             Image(systemName: "square.and.arrow.up")
                                 .foregroundStyle(Theme.Colors.accent)
-                            Text("Export My Data")
+                            Text(AppStrings.Settings.exportMyData)
                                 .foregroundStyle(Theme.Colors.text)
                         }
                     }
                 }
                 
                 // Support
-                Section("Support") {
+                Section(AppStrings.Settings.support) {
                     Link(destination: AppURLs.support) {
                         HStack {
                             Image(systemName: "envelope")
-                            Text("Contact Support")
+                            Text(AppStrings.Settings.contactSupport)
                         }
                     }
                     
                     Link(destination: AppURLs.privacy) {
                         HStack {
                             Image(systemName: "hand.raised")
-                            Text("Privacy Policy")
+                            Text(AppStrings.Auth.privacyPolicy)
                         }
                     }
                     
                     Link(destination: AppURLs.terms) {
                         HStack {
                             Image(systemName: "doc.text")
-                            Text("Terms of Service")
+                            Text(AppStrings.Auth.termsOfService)
                         }
                     }
                 }
@@ -187,9 +198,9 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
-                            Text("Sign Out")
-                        .accessibilityLabel("Sign out of your account")
-                        .accessibilityHint("Double tap to sign out")
+                            Text(AppStrings.Settings.signOut)
+                        .accessibilityLabel(AppStrings.Settings.signOutLabel)
+                        .accessibilityHint(AppStrings.Settings.signOutHint)
                         }
                         .foregroundStyle(.orange)
                     }
@@ -199,9 +210,9 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "trash")
-                            Text("Delete Account")
-                        .accessibilityLabel("Delete your account")
-                        .accessibilityHint("Double tap to permanently delete your account")
+                            Text(AppStrings.Settings.deleteAccount)
+                        .accessibilityLabel(AppStrings.Settings.deleteAccountLabel)
+                        .accessibilityHint(AppStrings.Settings.deleteAccountHint)
                         }
                         .foregroundStyle(.red)
                     }
@@ -210,31 +221,31 @@ struct SettingsView: View {
                 // App Info
                 Section {
                     HStack {
-                        Text("Version")
+                        Text(AppStrings.Settings.version)
                         Spacer()
                         Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
                 }
             }
-            .navigationTitle("Settings")
-            .alert("Sign Out", isPresented: $showSignOutConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Sign Out", role: .destructive) {
+            .navigationTitle(AppStrings.Settings.title)
+            .alert(AppStrings.Settings.signOut, isPresented: $showSignOutConfirmation) {
+                Button(AppStrings.Errors.cancel, role: .cancel) {}
+                Button(AppStrings.Settings.signOut, role: .destructive) {
                     Task { await appState.signOut() }
                 }
             } message: {
-                Text("Are you sure you want to sign out?")
+                Text(AppStrings.Settings.signOutConfirmation)
             }
-            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
+            .alert(AppStrings.Settings.deleteAccount, isPresented: $showDeleteConfirmation) {
+                Button(AppStrings.Errors.cancel, role: .cancel) {}
+                Button(AppStrings.Settings.deleteAccount, role: .destructive) {
                     Task {
                         try? await appState.authService.deleteAccount()
                     }
                 }
             } message: {
-                Text("This action cannot be undone. All your data will be permanently deleted.")
+                Text(AppStrings.Settings.deleteAccountWarning)
             }
             .sheet(isPresented: $showExportShare) {
                 if let exportURL {
@@ -320,6 +331,18 @@ struct SettingsView: View {
     }
 }
 
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 // MARK: - Subscription View
 
 struct SubscriptionView: View {
@@ -332,14 +355,14 @@ struct SubscriptionView: View {
             // Header
             VStack(spacing: 16) {
                 Image(systemName: "crown.fill")
-                    .font(Theme.Typography.iconHuge)
+                    .font(.system(size: 60)) // Keep custom size for icon
                     .foregroundStyle(.yellow)
                 
-                Text("Unlock Premium")
-                    .font(Theme.Typography.title1)
+                Text(AppStrings.Settings.unlockPremium)
+                    .font(Theme.Typography.title1.bold())
                     .foregroundStyle(Theme.Colors.text)
                 
-                Text("Get unlimited AI questions, remove ads, and access exclusive content.")
+                Text(AppStrings.Settings.unlockPremiumBody)
                     .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
@@ -352,8 +375,8 @@ struct SubscriptionView: View {
                 PackageCard(
                     package: .annual,
                     isSelected: selectedPackage == .annual,
-                    price: "$29.99/year",
-                    savings: "Save 50%"
+                    price: AppStrings.Settings.annualPrice,
+                    savings: AppStrings.Settings.save50
                 ) {
                     selectedPackage = .annual
                 }
@@ -361,7 +384,7 @@ struct SubscriptionView: View {
                 PackageCard(
                     package: .monthly,
                     isSelected: selectedPackage == .monthly,
-                    price: "$4.99/month",
+                    price: AppStrings.Settings.monthlyPrice,
                     savings: nil
                 ) {
                     selectedPackage = .monthly
@@ -379,7 +402,7 @@ struct SubscriptionView: View {
                     ShimmerView(height: 20)
                         .tint(.white)
                 } else {
-                    Text("Subscribe Now")
+                    Text(AppStrings.Paywall.subscribeNow)
                         .font(Theme.Typography.title3)
                 }
             }
@@ -388,7 +411,7 @@ struct SubscriptionView: View {
             .disabled(isPurchasing)
             
             // Restore
-            Button("Restore Purchases") {
+            Button(AppStrings.Paywall.restorePurchases) {
                 Task {
                     try? await appState.subscriptionService.restorePurchases()
                 }
@@ -397,7 +420,7 @@ struct SubscriptionView: View {
             .padding(.bottom, 32)
         }
         .screenBackground()
-        .navigationTitle("Premium")
+        .navigationTitle(AppStrings.Settings.premium)
         .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -432,9 +455,9 @@ struct PackageCard: View {
                         
                         if let savings = savings {
                             Text(savings)
-                                .font(Theme.Typography.captionMedium)
+                                .font(Theme.Typography.caption.weight(.medium))
                                 .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
+                                .padding(.horizontal, Theme.Spacing.sm)
                                 .padding(.vertical, 4)
                                 .background(Color.green)
                                 .cornerRadius(8)

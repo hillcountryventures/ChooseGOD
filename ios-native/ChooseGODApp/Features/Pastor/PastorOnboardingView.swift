@@ -80,11 +80,11 @@ struct PastorOnboardingView: View {
             Spacer()
             
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 72))
+                .font(.system(size: 72)) // Keep custom size for success icon
                 .foregroundStyle(.green)
             
             Text("Church Created!")
-                .font(.title.bold())
+                .font(Theme.Typography.title1.bold())
             
             Text(group.name)
                 .font(Theme.Typography.title3)
@@ -95,7 +95,7 @@ struct PastorOnboardingView: View {
                     .font(Theme.Typography.subheadline)
                     .foregroundStyle(.secondary)
                 Text(group.inviteCode)
-                    .font(.system(size: 36, weight: .bold, design: .monospaced))
+                    .font(.system(size: 36, weight: .bold, design: .monospaced)) // Keep custom monospaced font for invite code
                     .kerning(4)
             }
             .padding()

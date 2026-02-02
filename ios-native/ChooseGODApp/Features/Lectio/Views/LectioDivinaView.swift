@@ -103,9 +103,11 @@ struct LectioDivinaView: View {
     
     private var header: some View {
         HStack {
-            Button { dismiss() } label: {
+            Button { dismiss() }
+                .accessibilityLabel("Close Lectio Divina")
+                //  label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 18, weight: .medium))
+                    .font(Theme.Typography.bodyLarge)
                     .foregroundStyle(Theme.Colors.text)
                     .frame(width: 44, height: 44)
             }
@@ -128,10 +130,10 @@ struct LectioDivinaView: View {
     private var progressBar: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.xxs)
                     .fill(Theme.Colors.surface)
                 
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.xxs)
                     .fill(Theme.Colors.primary)
                     .frame(width: geo.size.width * viewModel.progress)
                     .animation(.easeInOut(duration: 0.3), value: viewModel.progress)
@@ -153,7 +155,7 @@ struct LectioDivinaView: View {
                     
                     if index < viewModel.currentStepIndex {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(.white)
                     }
                 }
@@ -193,7 +195,9 @@ struct LectioDivinaView: View {
     
     private var navigationBar: some View {
         HStack {
-            Button { viewModel.goBack() } label: {
+            Button { viewModel.goBack() }
+                .accessibilityLabel("Go to previous step")
+                //  label: {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
                     Text("Previous")
@@ -214,7 +218,9 @@ struct LectioDivinaView: View {
             
             Spacer()
             
-            Button { viewModel.advanceStep() } label: {
+            Button { viewModel.advanceStep() }
+                .accessibilityLabel("Go to next step")
+                //  label: {
                 HStack(spacing: 4) {
                     Text(viewModel.currentStepIndex == viewModel.totalSteps - 1 ? "Complete" : "Next")
                     Image(systemName: viewModel.currentStepIndex == viewModel.totalSteps - 1 ? "checkmark" : "chevron.right")
@@ -240,7 +246,7 @@ struct LectioDivinaView: View {
                     .frame(width: 120, height: 120)
                 
                 Image(systemName: "leaf")
-                    .font(.system(size: 48))
+                    .font(Theme.Typography.iconXL)
                     .foregroundStyle(Theme.Colors.success)
             }
             
@@ -289,7 +295,7 @@ struct LectioDivinaView: View {
                     .font(Theme.Typography.button)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .padding(.vertical, Theme.Spacing.mds)
                     .background(Capsule().fill(Theme.Colors.primary))
             }
             .padding(.horizontal, Theme.Spacing.xxl)

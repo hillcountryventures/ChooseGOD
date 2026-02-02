@@ -11,7 +11,7 @@ struct RecommendationsView: View {
             // Header
             VStack(spacing: 8) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 28))
+                    .font(Theme.Typography.title1)
                     .foregroundStyle(Theme.Colors.accent)
                     .opacity(appeared ? 1 : 0)
                     .scaleEffect(appeared ? 1 : 0.5)
@@ -25,14 +25,14 @@ struct RecommendationsView: View {
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
-            .padding(.top, 32)
+            .padding(.top, Theme.Spacing.xl)
             .padding(.horizontal, Theme.Spacing.lg)
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 15)
             
             if viewModel.isLoadingRecommendations {
                 Spacer()
-                ProgressView()
+                ShimmerView(height: 20)
                     .tint(Theme.Colors.primary)
                     .scaleEffect(1.2)
                 Spacer()
@@ -54,8 +54,8 @@ struct RecommendationsView: View {
                         }
                     }
                     .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.top, 24)
-                    .padding(.bottom, 16)
+                    .padding(.top, Theme.Spacing.lg)
+                    .padding(.bottom, Theme.Spacing.md)
                 }
             }
             
@@ -65,7 +65,7 @@ struct RecommendationsView: View {
                     Text("Start \(viewModel.selectedSeriesIds.count == 1 ? "This Plan" : "These Plans")")
                         .font(Theme.Typography.button)
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(Theme.Typography.label)
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -109,11 +109,11 @@ private struct RecommendationCard: View {
                     // Rank badge
                     if rank == 1 {
                         Text("Best Match")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.caption2)
                             .textCase(.uppercase)
                             .tracking(0.5)
                             .foregroundStyle(Theme.Colors.accent)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, Theme.Spacing.sm)
                             .padding(.vertical, 4)
                             .background(Theme.Colors.accent.opacity(0.15))
                             .clipShape(Capsule())
@@ -133,7 +133,7 @@ private struct RecommendationCard: View {
                                 .frame(width: 24, height: 24)
                             
                             Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(Theme.Typography.captionBold)
                                 .foregroundColor(.white)
                         }
                     }
@@ -161,16 +161,16 @@ private struct RecommendationCard: View {
                 HStack(spacing: 6) {
                     ForEach(recommendation.matchReasons.prefix(2), id: \.self) { reason in
                         Text(reason)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(Theme.Typography.caption2)
                             .foregroundStyle(Theme.Colors.primaryLight)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, Theme.Spacing.sm)
                             .padding(.vertical, 3)
                             .background(Theme.Colors.primary.opacity(0.1))
                             .clipShape(Capsule())
                     }
                 }
             }
-            .padding(16)
+            .padding(Theme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                     .fill(isSelected ? Theme.Colors.primary.opacity(0.06) : Theme.Colors.surface)

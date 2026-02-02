@@ -1,3 +1,4 @@
+import os
 import Foundation
 import UserNotifications
 import UIKit
@@ -129,7 +130,7 @@ final class NotificationService: NSObject, NotificationServiceProtocol, UNUserNo
             // Always schedule prayer reminder at noon
             try await schedulePrayerReminder()
         } catch {
-            print("[NotificationService] Error scheduling: \(error)")
+            AppLogger.notifications.error("Error scheduling: \(error)")
         }
     }
     

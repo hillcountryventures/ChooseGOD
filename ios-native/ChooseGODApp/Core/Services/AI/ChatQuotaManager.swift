@@ -1,7 +1,6 @@
 import Foundation
 
-/// Manages the "3 Daily Seeds" quota for free users
-/// Premium users get unlimited access
+/// Manages daily AI chat quota: 3 free chats/day for free users, unlimited for premium
 @Observable
 final class ChatQuotaManager {
     
@@ -9,29 +8,29 @@ final class ChatQuotaManager {
     
     // MARK: - Constants
     
-    static let totalSeeds = 3
+    static let dailyFreeLimit = 3
     
     // MARK: - State
     
-    private(set) var seedsUsedToday: Int = 0
-    private(set) var showFinalSeedInterstitial = false
+    private(set) var chatsUsedToday: Int = 0
+    private(set) var showUpgradePrompt = false
     
-    var seedsRemaining: Int {
-        max(0, Self.totalSeeds - seedsUsedToday)
+    var chatsRemaining: Int {
+        max(0, Self.dailyFreeLimit - chatsUsedToday)
     }
     
-    var isOnLastSeed: Bool {
-        seedsRemaining == 1
+    var isOnLastChat: Bool {
+        chatsRemaining == 1
     }
     
-    var hasSeeds: Bool {
-        seedsRemaining > 0
+    var hasChatsAvailable: Bool {
+        chatsRemaining > 0
     }
     
     // MARK: - UserDefaults keys
     
-    private let seedsUsedKey = "chat_seeds_used_today"
-    private let lastResetDateKey = "chat_seeds_last_reset"
+    private let chatsUsedKey = "chat_quota_used_today"
+    private let lastResetDateKey = "chat_quota_last_reset"
     
     // MARK: - Init
     
@@ -42,38 +41,38 @@ final class ChatQuotaManager {
     
     // MARK: - Actions
     
-    /// Attempt to use a seed. Returns true if allowed.
-    func useSeed(isPremium: Bool) -> Bool {
+    /// Attempt to use a chat. Returns true if allowed.
+    func useChat(isPremium: Bool) -> Bool {
         if isPremium { return true }
         
-        guard hasSeeds else { return false }
+        guard hasChatsAvailable else { return false }
         
-        seedsUsedToday += 1
+        chatsUsedToday += 1
         saveState()
         
-        if seedsRemaining == 0 {
-            showFinalSeedInterstitial = true
+        if chatsRemaining == 0 {
+            showUpgradePrompt = true
         }
         
         return true
     }
     
     func canSendMessage(isPremium: Bool) -> Bool {
-        isPremium || hasSeeds
+        isPremium || hasChatsAvailable
     }
     
-    func dismissFinalSeedInterstitial() {
-        showFinalSeedInterstitial = false
+    func dismissUpgradePrompt() {
+        showUpgradePrompt = false
     }
     
-    func getSeedMessage(isPremium: Bool) -> String? {
+    func getQuotaMessage(isPremium: Bool) -> String? {
         if isPremium { return nil }
         
-        if seedsRemaining == 0 {
-            return "You've planted all your seeds for today."
+        if chatsRemaining == 0 {
+            return "You've used all your free chats for today. Upgrade for unlimited access."
         }
-        if isOnLastSeed {
-            return "This is your final daily seed. Make it a deep one."
+        if isOnLastChat {
+            return "This is your last free chat for today."
         }
         return nil
     }
@@ -85,17 +84,17 @@ final class ChatQuotaManager {
         let lastReset = defaults.object(forKey: lastResetDateKey) as? Date ?? .distantPast
         
         if !Calendar.current.isDateInToday(lastReset) {
-            seedsUsedToday = 0
+            chatsUsedToday = 0
             defaults.set(Date(), forKey: lastResetDateKey)
-            defaults.set(0, forKey: seedsUsedKey)
+            defaults.set(0, forKey: chatsUsedKey)
         }
     }
     
     private func loadState() {
-        seedsUsedToday = UserDefaults.standard.integer(forKey: seedsUsedKey)
+        chatsUsedToday = UserDefaults.standard.integer(forKey: chatsUsedKey)
     }
     
     private func saveState() {
-        UserDefaults.standard.set(seedsUsedToday, forKey: seedsUsedKey)
+        UserDefaults.standard.set(chatsUsedToday, forKey: chatsUsedKey)
     }
 }

@@ -14,11 +14,8 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         currentUser != nil
     }
     
-    private var supabase: SupabaseClient {
-        guard let client = SupabaseManager.shared.client else {
-            fatalError("Supabase client not initialized. Call SupabaseManager.shared.initialize() first.")
-        }
-        return client
+    private func requireSupabase() throws -> SupabaseClient {
+        try SupabaseManager.shared.requireClient()
     }
     private var currentNonce: String?
     
@@ -29,7 +26,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     
     func signInWithApple() async throws -> User {
         // 1. Generate nonce for security
-        let nonce = generateNonce()
+        let nonce = try generateNonce()
         currentNonce = nonce
         
         // 2. Create Apple ID request
@@ -49,7 +46,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         }
         
         // 5. Sign in with Supabase using Apple ID token
-        let session = try await supabase.auth.signInWithIdToken(
+        let session = try await requireSupabase().auth.signInWithIdToken(
             credentials: .init(
                 provider: .apple,
                 idToken: idTokenString,
@@ -96,7 +93,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     
     func signInWithEmail(email: String, password: String) async throws -> User {
         do {
-            let session = try await supabase.auth.signIn(
+            let session = try await requireSupabase().auth.signIn(
                 email: email,
                 password: password
             )
@@ -120,7 +117,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         }
         
         do {
-            let session = try await supabase.auth.signUp(
+            let session = try await requireSupabase().auth.signUp(
                 email: email,
                 password: password,
                 data: ["display_name": .string(name)]
@@ -151,7 +148,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     // MARK: - Session Management
     
     func signOut() async throws {
-        try await supabase.auth.signOut()
+        try await requireSupabase().auth.signOut()
         try KeychainManager.delete(key: .session)
         currentUser = nil
         AnalyticsService.shared.reset()
@@ -172,7 +169,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         
         // 3. Restore session with Supabase
         do {
-            let session = try await supabase.auth.setSession(
+            let session = try await requireSupabase().auth.setSession(
                 accessToken: storedSession.accessToken,
                 refreshToken: storedSession.refreshToken
             )
@@ -193,7 +190,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     }
     
     func resetPassword(email: String) async throws {
-        try await supabase.auth.resetPasswordForEmail(email)
+        try await requireSupabase().auth.resetPasswordForEmail(email)
     }
     
     func deleteAccount() async throws {
@@ -203,7 +200,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         
         // Call Supabase edge function or RPC for account deletion
         do {
-            try await supabase.rpc("delete_user_account", params: ["user_id": userId])
+            try await requireSupabase().rpc("delete_user_account", params: ["user_id": userId])
                 .execute()
         } catch {
             AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "delete_account", "message": error.localizedDescription])
@@ -230,7 +227,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         )
         
         // Upsert to profiles table
-        try await supabase.from("profiles")
+        try await requireSupabase().from("profiles")
             .upsert(profile)
             .execute()
         
@@ -245,7 +242,7 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     }
     
     private func fetchUserProfile(authUser: Supabase.User) async throws -> User {
-        let profile: UserProfile = try await supabase.from("profiles")
+        let profile: UserProfile = try await requireSupabase().from("profiles")
             .select()
             .eq("id", value: authUser.id.uuidString)
             .single()
@@ -292,12 +289,12 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
     
     // MARK: - Cryptographic Helpers for Apple Sign In
     
-    private func generateNonce(length: Int = 32) -> String {
+    private func generateNonce(length: Int = 32) throws -> String {
         precondition(length > 0)
         var randomBytes = [UInt8](repeating: 0, count: length)
         let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
         if errorCode != errSecSuccess {
-            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+            throw AuthError.unknown(NSError(domain: "Nonce", code: Int(errorCode), userInfo: [NSLocalizedDescriptionKey: "Unable to generate secure nonce"]))
         }
         
         let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
@@ -338,9 +335,11 @@ extension SupabaseAuthService: ASAuthorizationControllerDelegate {
 extension SupabaseAuthService: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         // Get the key window for presentation
+        // This delegate method cannot throw, so we use a fallback UIWindow
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else {
-            fatalError("No window available for Apple Sign In presentation")
+            // Return a new window as fallback rather than crashing
+            return UIWindow()
         }
         return window
     }

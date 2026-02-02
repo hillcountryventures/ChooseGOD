@@ -1,11 +1,11 @@
 import SwiftUI
+import StoreKit
 
 /// Celebration screen after completing a devotional day
 struct DevotionalCompleteView: View {
     let series: DevotionalSeries
     let dayNumber: Int
     let totalDays: Int
-    let streak: Int
     var onContinue: (() -> Void)?
     var onDoneForToday: (() -> Void)?
     
@@ -17,6 +17,7 @@ struct DevotionalCompleteView: View {
     @State private var showButtons = false
     @State private var progressValue: Double = 0
     @State private var showShareSheet = false
+    @State private var streak: Int = 0
     
     private var isSeriesComplete: Bool { dayNumber >= totalDays }
     
@@ -29,7 +30,7 @@ struct DevotionalCompleteView: View {
         "God sees your dedication. You're doing great!",
     ]
     
-    @State private var encouragement = encouragements.randomElement()!
+    @State private var encouragement = encouragements.randomElement() ?? "Keep pressing on in faith!"
     
     var body: some View {
         ZStack {
@@ -43,7 +44,7 @@ struct DevotionalCompleteView: View {
                 
                 // Title
                 Text(isSeriesComplete ? "Journey Complete!" : "Day Complete!")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .font(Theme.Typography.chapterTitle)
                     .foregroundStyle(Theme.Colors.text)
                     .opacity(showContent ? 1 : 0)
                     .offset(y: showContent ? 0 : 20)
@@ -63,40 +64,40 @@ struct DevotionalCompleteView: View {
                     .multilineTextAlignment(.center)
                     .opacity(showContent ? 1 : 0)
                     .padding(.top, 4)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, Theme.Spacing.md)
                 
                 // Encouragement
                 Text(encouragement)
-                    .font(.system(size: 17, weight: .regular, design: .serif))
+                    .font(Theme.Typography.scripture)
                     .italic()
                     .foregroundStyle(Theme.Colors.text)
                     .multilineTextAlignment(.center)
                     .opacity(showContent ? 1 : 0)
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 24)
+                    .padding(.horizontal, Theme.Spacing.xl)
+                    .padding(.bottom, Theme.Spacing.lg)
                 
                 // Streak card
                 if streak > 0 {
                     streakCard
                         .opacity(showContent ? 1 : 0)
                         .scaleEffect(showContent ? 1 : 0.8)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, Theme.Spacing.mdl)
                 }
                 
                 // Progress bar (non-complete)
                 if !isSeriesComplete {
                     progressSection
                         .opacity(showProgress ? 1 : 0)
-                        .padding(.horizontal, 32)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, Theme.Spacing.xl)
+                        .padding(.bottom, Theme.Spacing.mdl)
                 }
                 
                 // Series complete message
                 if isSeriesComplete {
                     completeMessage
                         .opacity(showProgress ? 1 : 0)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                        .padding(.bottom, Theme.Spacing.mdl)
                 }
                 
                 // Share button
@@ -111,7 +112,7 @@ struct DevotionalCompleteView: View {
                     .foregroundStyle(Theme.Colors.primary)
                 }
                 .opacity(showContent ? 1 : 0)
-                .padding(.bottom, 8)
+                .padding(.bottom, Theme.Spacing.sm)
                 
                 Spacer()
                 
@@ -124,7 +125,18 @@ struct DevotionalCompleteView: View {
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [shareText])
         }
-        .onAppear { runEntryAnimation() }
+        .onAppear {
+            // Record activity and get real streak
+            streak = StreakManager.shared.recordActivity()
+            
+            // Trigger review request after devotional completion
+            ReviewRequestManager.shared.requestAfterDevotionalComplete()
+            
+            // Check streak milestone too
+            ReviewRequestManager.shared.requestIfStreakMilestone(streak)
+            
+            runEntryAnimation()
+        }
     }
     
     // MARK: - Icon
@@ -137,7 +149,7 @@ struct DevotionalCompleteView: View {
                 .themeShadow(Theme.Shadows.lg)
             
             Image(systemName: isSeriesComplete ? "trophy.fill" : "checkmark.circle.fill")
-                .font(.system(size: 56))
+                .font(Theme.Typography.iconXXL)
                 .foregroundStyle(.white)
         }
         .scaleEffect(showIcon ? 1 : 0.3)
@@ -154,20 +166,20 @@ struct DevotionalCompleteView: View {
                     .fill(Theme.Colors.accent.opacity(0.15))
                     .frame(width: 56, height: 56)
                 Image(systemName: "flame.fill")
-                    .font(.title)
+                    .font(Theme.Typography.title1)
                     .foregroundStyle(Theme.Colors.accent)
             }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(streak)")
-                    .font(.system(size: 34, weight: .bold))
+                    .font(Theme.Typography.display)
                     .foregroundStyle(Theme.Colors.accent)
                 Text("Day Streak")
                     .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .background {
             RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                 .fill(.ultraThinMaterial)
@@ -184,11 +196,11 @@ struct DevotionalCompleteView: View {
         VStack(spacing: 8) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                         .fill(Theme.Colors.surfaceElevated)
                         .frame(height: 8)
                     
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.sm)
                         .fill(
                             LinearGradient(
                                 colors: [Theme.Colors.primary, Theme.Colors.primaryLight],
@@ -218,7 +230,7 @@ struct DevotionalCompleteView: View {
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .lineSpacing(4)
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .background {
             RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
                 .fill(Theme.Colors.surface)
@@ -240,7 +252,7 @@ struct DevotionalCompleteView: View {
                     Text(isSeriesComplete ? "Back to Devotionals" : "Continue to Day \(dayNumber + 1)")
                         .font(Theme.Typography.button)
                     Image(systemName: "arrow.right")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Theme.Typography.subheadlineSemibold)
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -264,12 +276,13 @@ struct DevotionalCompleteView: View {
                     }
                 } label: {
                     Text("Done for Today")
+                        .accessibilityLabel("Finish for today")
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Theme.Spacing.lg)
         .padding(.bottom, 40)
     }
     
@@ -295,7 +308,6 @@ struct DevotionalCompleteView: View {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8).delay(0.8)) {
             showProgress = true
         }
-        // Animate progress bar fill
         withAnimation(.easeOut(duration: 1.0).delay(1.0)) {
             progressValue = Double(dayNumber) / Double(totalDays)
         }
@@ -321,8 +333,7 @@ struct ShareSheet: UIViewControllerRepresentable {
     DevotionalCompleteView(
         series: .preview,
         dayNumber: 3,
-        totalDays: 7,
-        streak: 3
+        totalDays: 7
     )
     .environment(AppState.preview)
 }

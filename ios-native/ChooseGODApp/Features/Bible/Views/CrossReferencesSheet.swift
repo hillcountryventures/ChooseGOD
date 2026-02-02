@@ -10,7 +10,7 @@ struct CrossReferencesSheet: View {
     @State private var crossRefs: [CrossReference] = []
     @State private var groupedRefs: [GroupedCrossReferences] = []
     @State private var isLoading = false
-    @State private var error: String?
+    @State private var loadError: String?
     @Environment(\.dismiss) private var dismiss
     
     private let service = SupabaseCrossRefService.shared
@@ -22,14 +22,17 @@ struct CrossReferencesSheet: View {
                 
                 if isLoading {
                     VStack(spacing: 16) {
-                        ProgressView()
+                ShimmerView(height: 20)
                             .tint(Theme.Colors.primary)
                         Text("Finding cross-references...")
                             .font(Theme.Typography.bodySmall)
                             .foregroundStyle(Theme.Colors.textSecondary)
                     }
-                } else if let error {
-                    errorView(error)
+                } else if let error = loadError {
+                    ErrorRetryView(message: error) {
+                        loadError = nil
+                        Task { await loadCrossReferences() }
+                    }
                 } else if groupedRefs.isEmpty {
                     emptyView
                 } else {
@@ -67,7 +70,7 @@ struct CrossReferencesSheet: View {
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
                 .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.top, Theme.Spacing.sm)
                 
                 // Grouped references
                 ForEach(groupedRefs) { group in
@@ -93,7 +96,7 @@ struct CrossReferencesSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(ref.reference)
-                    .font(.system(.subheadline, design: .serif, weight: .semibold))
+                    .font(Theme.Typography.subheadlineSerif)
                     .foregroundStyle(Theme.Colors.primary)
                 
                 Spacer()
@@ -102,26 +105,26 @@ struct CrossReferencesSheet: View {
                 if ref.votes > 0 {
                     HStack(spacing: 2) {
                         Image(systemName: "hand.thumbsup.fill")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.caption2)
                         Text("\(ref.votes)")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.monoSmall)
                     }
                     .foregroundStyle(Theme.Colors.textTertiary)
                 }
                 
                 // Direction badge
                 Image(systemName: ref.direction == "to" ? "arrow.right" : "arrow.left")
-                    .font(.system(size: 10))
+                    .font(Theme.Typography.caption2)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
             
             Text(ref.text)
-                .font(.system(.callout, design: .serif))
+                .font(Theme.Typography.calloutSerif)
                 .foregroundStyle(Theme.Colors.text)
                 .lineSpacing(4)
         }
-        .padding(12)
-        .glassCard(cornerRadius: 12, opacity: 0.5)
+        .padding(Theme.Spacing.mds)
+        .glassCard(cornerRadius: Theme.CornerRadius.lg, opacity: 0.5)
         .padding(.horizontal)
         .contextMenu {
             Button {
@@ -141,7 +144,7 @@ struct CrossReferencesSheet: View {
     private var emptyView: some View {
         VStack(spacing: 16) {
             Image(systemName: "text.book.closed")
-                .font(.system(size: 48))
+                .font(Theme.Typography.iconXL)
                 .foregroundStyle(Theme.Colors.textTertiary)
             
             Text("No Cross-References Found")
@@ -153,37 +156,14 @@ struct CrossReferencesSheet: View {
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(32)
-    }
-    
-    private func errorView(_ message: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 48))
-                .foregroundStyle(Theme.Colors.warning)
-            
-            Text("Couldn't Load References")
-                .font(Theme.Typography.title3)
-                .foregroundStyle(Theme.Colors.text)
-            
-            Text(message)
-                .font(Theme.Typography.bodySmall)
-                .foregroundStyle(Theme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-            
-            Button("Try Again") {
-                Task { await loadCrossReferences() }
-            }
-            .buttonStyle(GlassButtonStyle(isProminent: true))
-        }
-        .padding(32)
+        .padding(Theme.Spacing.xl)
     }
     
     // MARK: - Data Loading
     
     private func loadCrossReferences() async {
         isLoading = true
-        error = nil
+        loadError = nil
         
         do {
             let refs = try await service.fetchCrossReferences(
@@ -195,7 +175,7 @@ struct CrossReferencesSheet: View {
             crossRefs = refs
             groupedRefs = service.groupByBook(refs)
         } catch {
-            self.error = error.localizedDescription
+            loadError = "Couldn't load cross-references. Please try again."
         }
         
         isLoading = false

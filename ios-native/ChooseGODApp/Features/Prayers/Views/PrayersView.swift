@@ -6,6 +6,7 @@ struct PrayersView: View {
     @State private var selectedTab: PrayerTab = .active
     @State private var prayers: [PrayerRequest] = []
     @State private var isLoading = true
+    @State private var loadError: String?
     @State private var showNewPrayerSheet = false
     
     enum PrayerTab: String, CaseIterable {
@@ -28,8 +29,7 @@ struct PrayersView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.Colors.background
-                    .ignoresSafeArea()
+                Color.clear // background applied via .screenBackground()
                 
                 VStack(spacing: 0) {
                     // Tab picker
@@ -43,7 +43,15 @@ struct PrayersView: View {
                     
                     if isLoading {
                         Spacer()
-                        ProgressView()
+                        ShimmerCard()
+                        Spacer()
+                    } else if let error = loadError {
+                        Spacer()
+                        ErrorRetryView(message: error) {
+                            loadError = nil
+                            isLoading = true
+                            Task { await loadPrayers() }
+                        }
                         Spacer()
                     } else if filteredPrayers.isEmpty {
                         emptyState
@@ -59,9 +67,13 @@ struct PrayersView: View {
                             }
                             .padding()
                         }
+                        .refreshable {
+                            await loadPrayers()
+                        }
                     }
                 }
             }
+            .screenBackground()
             .navigationTitle("Prayers")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -69,6 +81,8 @@ struct PrayersView: View {
                         showNewPrayerSheet = true
                     } label: {
                         Image(systemName: "plus")
+                        .accessibilityLabel("Add new prayer request")
+                        .accessibilityHint("Double tap to create a prayer")
                     }
                 }
             }
@@ -103,8 +117,7 @@ struct PrayersView: View {
             let service = SupabasePrayerService()
             prayers = try await service.getPrayers(userId: userId, status: nil)
         } catch {
-            // Use mock data if no real data
-            prayers = [.preview]
+            loadError = "Unable to load prayers. Please check your connection."
         }
         isLoading = false
     }
@@ -113,6 +126,7 @@ struct PrayersView: View {
         guard let index = prayers.firstIndex(where: { $0.id == prayer.id }) else { return }
         prayers[index].status = .answered
         prayers[index].answeredAt = Date()
+        HapticManager.shared.prayerAnswered()
         
         Task {
             let service = SupabasePrayerService()
@@ -132,19 +146,19 @@ struct PrayerCard: View {
             // Status badge
             HStack {
                 Label(prayer.status.displayName, systemImage: prayer.status.icon)
-                    .font(.caption.weight(.medium))
+                    .font(Theme.Typography.captionMedium)
                     .foregroundStyle(statusColor)
                 
                 Spacer()
                 
                 Text(prayer.createdAt, style: .date)
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.secondaryText)
             }
             
             // Prayer text
             Text(prayer.request)
-                .font(.body)
+                .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.text)
                 .lineLimit(4)
             
@@ -152,9 +166,9 @@ struct PrayerCard: View {
             if let scripture = prayer.scriptureAnchor {
                 HStack(spacing: 8) {
                     Image(systemName: "book.closed")
-                        .font(.caption)
+                        .font(Theme.Typography.caption)
                     Text(scripture.reference)
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                 }
                 .foregroundStyle(Theme.Colors.primary)
             }
@@ -168,7 +182,7 @@ struct PrayerCard: View {
                         onMarkAnswered()
                     } label: {
                         Label("Answered!", systemImage: "checkmark.circle")
-                            .font(.subheadline.weight(.medium))
+                            .font(Theme.Typography.subheadlineMedium)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.Colors.success)
@@ -181,18 +195,18 @@ struct PrayerCard: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Reflection")
-                        .font(.caption.weight(.medium))
+                        .font(Theme.Typography.captionMedium)
                         .foregroundStyle(Theme.Colors.secondaryText)
                     
                     Text(reflection)
-                        .font(.subheadline)
+                        .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.text)
                 }
             }
         }
         .padding()
         .background(Theme.Colors.surface)
-        .cornerRadius(12)
+        .cornerRadius(Theme.CornerRadius.lg)
     }
     
     private var statusColor: Color {
@@ -218,22 +232,21 @@ struct NewPrayerSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.Colors.background
-                    .ignoresSafeArea()
+                Color.clear // background applied via .screenBackground()
                 
                 VStack(spacing: 20) {
                     // Prompt
                     Text("What's on your heart?")
-                        .font(.title3.weight(.medium))
+                        .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.text)
                     
                     // Text editor
                     TextEditor(text: $prayerText)
-                        .font(.body)
+                        .font(Theme.Typography.body)
                         .scrollContentBackground(.hidden)
                         .padding()
                         .background(Theme.Colors.surface)
-                        .cornerRadius(12)
+                        .cornerRadius(Theme.CornerRadius.lg)
                         .frame(minHeight: 150)
                     
                     Spacer()
@@ -243,18 +256,14 @@ struct NewPrayerSheet: View {
                         Task { await savePrayer() }
                     } label: {
                         if isSaving {
-                            ProgressView()
+                ShimmerView(height: 20)
                                 .tint(.white)
                         } else {
                             Text("Add Prayer")
-                                .font(.headline)
+                                .font(Theme.Typography.title3)
                         }
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(prayerText.isEmpty ? Theme.Colors.secondaryText : Theme.Colors.primary)
-                    .cornerRadius(16)
+                    .primaryButtonStyle(isDisabled: prayerText.isEmpty)
                     .disabled(prayerText.isEmpty || isSaving)
                 }
                 .padding()
@@ -290,6 +299,7 @@ struct NewPrayerSheet: View {
         do {
             let service = SupabasePrayerService()
             let saved = try await service.createPrayer(newPrayer)
+            HapticManager.shared.success()
             onCreate(saved)
         } catch {
             // Still add locally
