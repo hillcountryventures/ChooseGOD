@@ -18,10 +18,10 @@ enum AppStrings {
 
         // Chat Quota
         static func chatsRemaining(_ count: Int) -> String {
-            "\(count) chats remaining today"
+            "\(count) remaining"
         }
-        static let quotaExhaustedTitle = "Daily Chats Used"
-        static let quotaExhaustedBody = "You've used all 3 free chats for today. Upgrade for unlimited AI companion access, or come back tomorrow!"
+        static let quotaExhaustedTitle = "Conversations Used"
+        static let quotaExhaustedBody = "You've used your 5 free AI conversations. Upgrade for unlimited access."
         static let unlockUnlimited = "Unlock Unlimited"
         static let maybeLater = "Maybe Later"
 
@@ -125,10 +125,7 @@ enum AppStrings {
         static let heroTitle = "Unlock Deeper\nCompanionship"
         static let heroSubtitle = "Premium spiritual tools for deeper Bible study, guided practices, and personalized growth."
 
-        // Social proof
-        static let believers = "Believers"
-        static let dayTrial = "day trial"
-        static func ratings(_ count: Int) -> String { "\(count) ratings" }
+        // Social proof (removed — no longer using hardcoded fake numbers)
 
         // Feature comparison
         static let featureHeader = "Feature"
@@ -203,8 +200,6 @@ enum AppStrings {
         // Subscription view
         static let unlockPremium = "Unlock Premium"
         static let unlockPremiumBody = "Get unlimited Scripture Companion questions, remove ads, and access exclusive content."
-        static let annualPrice = "$29.99/year"
-        static let monthlyPrice = "$4.99/month"
         static let save50 = "Save 50%"
 
         // Accessibility

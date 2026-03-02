@@ -63,14 +63,14 @@ struct GiftSubscriptionView: View {
                     GiftPlanCard(
                         title: "Annual",
                         subtitle: "Best value — 12 months of Premium",
-                        price: "$49.99/year",
+                        price: "$36.00/year",
                         isSelected: selectedPlan == .annual
                     ) { selectedPlan = .annual }
-                    
+
                     GiftPlanCard(
                         title: "Monthly",
                         subtitle: "1 month of Premium access",
-                        price: "$4.99/month",
+                        price: "$3.99/month",
                         isSelected: selectedPlan == .monthly
                     ) { selectedPlan = .monthly }
                 }

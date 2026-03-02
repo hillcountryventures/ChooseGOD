@@ -132,41 +132,14 @@ struct PaywallView: View {
     }
     
     // MARK: - Social Proof Bar
-    
+
     private var socialProofBar: some View {
-        HStack(spacing: 20) {
-            socialProofItem(icon: "person.2.fill", value: "\(viewModel.communityCount / 1000)K+", label: AppStrings.Paywall.believers)
-            divider
-            socialProofItem(icon: "star.fill", value: viewModel.rating, label: AppStrings.Paywall.ratings(viewModel.ratingCount))
-            divider
-            socialProofItem(icon: "heart.fill", value: "7", label: AppStrings.Paywall.dayTrial)
-        }
-        .padding(.vertical, Theme.Spacing.mds)
-        .padding(.horizontal, Theme.Spacing.md)
-        .glassCard(cornerRadius: Theme.CornerRadius.xl)
-        .opacity(headerVisible ? 1 : 0)
-    }
-    
-    private func socialProofItem(icon: String, value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.Colors.accent)
-                Text(value)
-                    .font(Theme.Typography.subheadlineSemibold)
-                    .foregroundStyle(.white)
-            }
-            Text(label)
-                .font(Theme.Typography.caption2)
-                .foregroundStyle(Theme.Colors.textTertiary)
-        }
-    }
-    
-    private var divider: some View {
-        Rectangle()
-            .fill(.white.opacity(0.15))
-            .frame(width: 1, height: 30)
+        Text("Join thousands of believers growing daily")
+            .font(Theme.Typography.subheadline)
+            .foregroundStyle(Theme.Colors.textSecondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+            .opacity(headerVisible ? 1 : 0)
     }
     
     // MARK: - Feature Comparison

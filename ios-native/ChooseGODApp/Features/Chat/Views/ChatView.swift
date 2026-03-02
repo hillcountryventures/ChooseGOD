@@ -8,6 +8,7 @@ struct ChatView: View {
     @State private var viewModel = ChatViewModel()
     @FocusState private var isInputFocused: Bool
     @State private var voiceService = VoiceInputService()
+    @State private var showPaywall = false
     
     // Initial context (optional)
     var initialPrompt: String?
@@ -29,7 +30,7 @@ struct ChatView: View {
                     }
                     
                     // Chat quota indicator (free users)
-                    if !isPremium {
+                    if !isEffectivelyPremium {
                         quotaIndicator
                     }
                     
@@ -114,25 +115,42 @@ struct ChatView: View {
                 if let ctx = verseContext {
                     viewModel.setBibleContext(book: ctx.book, chapter: ctx.chapter, selectedVerse: ctx.selectedVerse)
                 }
+                // Load chat quota from server
+                if let userId = userId {
+                    Task {
+                        try? await ChatQuotaManager.shared.loadCount(userId: userId)
+                    }
+                }
                 if let prompt = initialPrompt {
-                    viewModel.sendMessage(prompt, isPremium: isPremium)
+                    viewModel.sendMessage(prompt, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 } else {
-                    viewModel.handlePendingMessage(isPremium: isPremium)
+                    viewModel.handlePendingMessage(isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
             }
         }
         .onAppear { AnalyticsService.shared.screen("chat") }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
     
     private var isPremium: Bool {
         appState.currentUser?.isPremium ?? false
+    }
+
+    private var isEffectivelyPremium: Bool {
+        (appState.currentUser?.isPremium ?? false) || ReferralService.shared.hasReferralPremium
+    }
+
+    private var userId: String? {
+        appState.currentUser?.id
     }
     
     // MARK: - Quota Indicator
     
     private var quotaIndicator: some View {
         HStack(spacing: 6) {
-            ForEach(0..<ChatQuotaManager.dailyFreeLimit, id: \.self) { index in
+            ForEach(0..<ChatQuotaManager.lifetimeFreeLimit, id: \.self) { index in
                 Image(systemName: index < viewModel.chatsRemaining ? "bubble.left.fill" : "bubble.left")
                     .font(Theme.Typography.caption)
                     .foregroundStyle(index < viewModel.chatsRemaining ? Theme.Colors.primary : Theme.Colors.secondaryText.opacity(0.4))
@@ -170,6 +188,7 @@ struct ChatView: View {
                 
                 Button {
                     viewModel.dismissUpgradePrompt()
+                    showPaywall = true
                 } label: {
                     Text(AppStrings.Chat.unlockUnlimited)
                         .primaryButtonStyle()
@@ -230,7 +249,7 @@ struct ChatView: View {
             HStack(spacing: 8) {
                 ForEach(viewModel.suggestedActions) { action in
                     QuickPromptChip(text: action.label) {
-                        viewModel.sendMessage(action.prompt, isPremium: isPremium)
+                        viewModel.sendMessage(action.prompt, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                     }
                 }
             }
@@ -245,19 +264,19 @@ struct ChatView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 QuickPromptChip(text: AppStrings.Chat.promptAnxiety) {
-                    viewModel.sendMessage(AppStrings.Chat.promptAnxiety, isPremium: isPremium)
+                    viewModel.sendMessage(AppStrings.Chat.promptAnxiety, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
-                
+
                 QuickPromptChip(text: AppStrings.Chat.promptJohn316) {
-                    viewModel.sendMessage(AppStrings.Chat.promptJohn316, isPremium: isPremium)
+                    viewModel.sendMessage(AppStrings.Chat.promptJohn316, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
-                
+
                 QuickPromptChip(text: AppStrings.Chat.promptEncouragement) {
-                    viewModel.sendMessage(AppStrings.Chat.promptEncouragement, isPremium: isPremium)
+                    viewModel.sendMessage(AppStrings.Chat.promptEncouragement, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
-                
+
                 QuickPromptChip(text: AppStrings.Chat.promptSermon) {
-                    viewModel.sendMessage(AppStrings.Chat.promptSermonFull, isPremium: isPremium)
+                    viewModel.sendMessage(AppStrings.Chat.promptSermonFull, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
             }
             .padding(.horizontal)
@@ -284,15 +303,15 @@ struct ChatView: View {
                     .inputFieldStyle()
                     .focused($isInputFocused)
                     .lineLimit(1...5)
-                    
+
                     .accessibilityLabel(AppStrings.Chat.inputPlaceholder)
                     .accessibilityHint(AppStrings.Chat.messageInputHint)
                     .onSubmit {
-                        viewModel.sendMessage(isPremium: isPremium)
+                        viewModel.sendMessage(isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                     }
-                
+
                 Button {
-                    viewModel.sendMessage(isPremium: isPremium)
+                    viewModel.sendMessage(isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(Theme.Typography.display)

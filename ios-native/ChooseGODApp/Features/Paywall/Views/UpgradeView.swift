@@ -1,16 +1,16 @@
 import SwiftUI
 
-/// Shown when free daily AI chats run out — upsell to premium
+/// Shown when free lifetime AI conversations run out — upsell to premium
 struct UpgradeView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
     @State private var showPaywall = false
     @State private var iconScale: CGFloat = 0.8
     @State private var iconOpacity: Double = 0
-    
-    /// Chats used today
+
+    /// Chats used (lifetime)
     let chatsUsed: Int
-    /// Total free chats per day
+    /// Total lifetime free chats
     let chatsTotal: Int
     
     var body: some View {
@@ -57,7 +57,7 @@ struct UpgradeView: View {
                     }
                 }
                 
-                Text("You've used all \(chatsTotal) free chats today.\nUpgrade for unlimited AI companion access!")
+                Text("You've used all \(chatsTotal) free AI conversations.\nUpgrade for unlimited access!")
                     .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -101,10 +101,10 @@ struct UpgradeView: View {
                     .shadow(color: Theme.Colors.primary.opacity(0.3), radius: 12, y: 4)
                 }
                 
-                Button("Come Back Tomorrow") {
+                Button("Maybe Later") {
                     dismiss()
                 }
-                .accessibilityLabel("Dismiss and come back tomorrow")
+                .accessibilityLabel("Dismiss upgrade prompt")
                 .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.textTertiary)
             }
@@ -147,6 +147,6 @@ struct UpgradeView: View {
 // MARK: - Preview
 
 #Preview {
-    UpgradeView(chatsUsed: 3, chatsTotal: 3)
+    UpgradeView(chatsUsed: 5, chatsTotal: 5)
         .environment(AppState.preview)
 }

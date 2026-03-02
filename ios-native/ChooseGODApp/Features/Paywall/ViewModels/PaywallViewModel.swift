@@ -23,12 +23,7 @@ final class PaywallViewModel {
     var annualMonthlyEquivalent: String = "$3.00/mo"
     var hasFreeTrial = true
     var trialDays: Int = 7
-    
-    // Social proof
-    var communityCount: Int = 12_400
-    var rating: String = "4.9"
-    var ratingCount: String = "500+"
-    
+
     // MARK: - Testimonials
     
     static let testimonials: [(text: String, author: String)] = [
@@ -51,7 +46,7 @@ final class PaywallViewModel {
     // MARK: - Feature Comparison
     
     static let comparisonRows: [(feature: String, free: String, premium: String)] = [
-        ("Daily AI Chats", "3/day", "Unlimited"),
+        ("AI Conversations", "5 total", "Unlimited"),
         ("Spiritual Practices", "3 basic", "10+ modes"),
         ("Devotional Series", "1 active", "Unlimited"),
         ("Verse Card Designs", "3", "12+"),

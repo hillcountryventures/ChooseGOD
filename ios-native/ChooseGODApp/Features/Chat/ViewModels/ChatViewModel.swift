@@ -23,7 +23,7 @@ final class ChatViewModel {
     // MARK: - Computed
     
     var chatsRemaining: Int { quotaManager.chatsRemaining }
-    var dailyFreeLimit: Int { ChatQuotaManager.dailyFreeLimit }
+    var lifetimeFreeLimit: Int { ChatQuotaManager.lifetimeFreeLimit }
     var showUpgradePrompt: Bool { quotaManager.showUpgradePrompt }
     
     var contextDescription: String? {
@@ -42,19 +42,16 @@ final class ChatViewModel {
     
     // MARK: - Actions
     
-    func sendMessage(_ text: String? = nil, isPremium: Bool = false) {
+    func sendMessage(_ text: String? = nil, isPremium: Bool = false, hasReferralPremium: Bool = false, userId: String? = nil) {
         let rawInput = (text ?? inputText).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !rawInput.isEmpty else { return }
-        
-        // Check quota
-        guard quotaManager.canSendMessage(isPremium: isPremium) else {
-            errorMessage = quotaManager.getQuotaMessage(isPremium: isPremium)
+
+        // Check quota (server-backed)
+        guard quotaManager.canSend(isPremium: isPremium, hasReferralPremium: hasReferralPremium) else {
+            quotaManager.triggerUpgradePrompt()
+            errorMessage = quotaManager.getQuotaMessage(isPremium: isPremium, hasReferralPremium: hasReferralPremium)
             return
         }
-        
-        // Use a chat
-        let allowed = quotaManager.useChat(isPremium: isPremium)
-        guard allowed else { return }
         
         // Strip prompt injection patterns before sending
         let sanitized = TheologicalGuardrails.stripInjectionPatterns(rawInput)
@@ -123,6 +120,11 @@ final class ChatViewModel {
                     sources: response.sources,
                     responseTimeMs: elapsed
                 )
+
+                // Record sent chat on server
+                if let userId = userId {
+                    try await self.quotaManager.recordSent(userId: userId)
+                }
             } catch {
                 // Only show error if we didn't already show crisis message
                 if !crisisDetected {
@@ -171,10 +173,10 @@ final class ChatViewModel {
     }
     
     /// Process any pending message from context
-    func handlePendingMessage(isPremium: Bool) {
+    func handlePendingMessage(isPremium: Bool, hasReferralPremium: Bool = false, userId: String? = nil) {
         if let pending = context.pendingMessage {
             context.pendingMessage = nil
-            sendMessage(pending, isPremium: isPremium)
+            sendMessage(pending, isPremium: isPremium, hasReferralPremium: hasReferralPremium, userId: userId)
         }
     }
 }
