@@ -14,11 +14,11 @@ let package = Package(
     ],
     dependencies: [
         // Supabase Swift SDK
-        .package(url: "https://github.com/supabase-community/supabase-swift", from: "2.0.0"),
+        .package(url: "https://github.com/supabase-community/supabase-swift", from: "2.7.4"),
         // RevenueCat for subscriptions
-        .package(url: "https://github.com/RevenueCat/purchases-ios", from: "4.43.0"),
+        .package(url: "https://github.com/RevenueCat/purchases-ios", from: "4.41.3"),
         // PostHog for analytics
-        .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
+        // .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),  // disabled SPM conflict
     ],
     targets: [
         .target(

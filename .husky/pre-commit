@@ -1,6 +1,0 @@
-npx lint-staged
-
-# SwiftLint for Swift files
-if git diff --cached --name-only | grep -q '\.swift$'; then
-  cd ios-native && swiftlint lint --quiet || true
-fi

@@ -58,3 +58,13 @@ coverage/
 ios-native/Configuration/*.xcconfig
 ios-native/ChooseGODApp/*.xcconfig
 ios-native/.build/
+
+# iOS DerivedData / build outputs
+ios-native/buildout/
+ios-native/simbuild/
+ios-native/ChooseGODApp/build/
+
+# Migration artifacts (prevent future accumulation)
+*.rb
+*.broken
+*.bak

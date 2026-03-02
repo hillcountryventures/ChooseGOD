@@ -837,6 +837,181 @@ interface MatchedVerse {
   cross_ref_votes?: number;
 }
 
+// =====================================================
+// Tier 1 RAG Enhancements: Multi-Query, RRF, MMR
+// =====================================================
+
+/**
+ * Generate 4 semantic variants of the user message for multi-query RAG
+ * - Literal message
+ * - Emotional/thematic reframe
+ * - Faith counterpoint
+ * - Biblical category
+ */
+async function generateQueryVariants(
+  openai: OpenAI,
+  message: string
+): Promise<string[]> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `Generate 3 alternative Bible-relevant phrasings of the user's message to retrieve diverse Scripture passages. Return a JSON object with array "variants" containing 3 strings. Each should reframe the message from a different angle (emotional truth, biblical principle, or thematic category). Keep each under 15 words.`,
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+      max_tokens: 150,
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      return [message];
+    }
+
+    try {
+      // deno-lint-ignore no-explicit-any
+      const parsed: any = JSON.parse(content);
+      const variants = parsed.variants || [];
+      // Always include the literal message as the first variant
+      return [message, ...variants.slice(0, 3)];
+    } catch {
+      // Fallback: return just the literal message
+      return [message];
+    }
+  } catch (error) {
+    console.error("[Multi-Query] Error generating variants:", error);
+    return [message];
+  }
+}
+
+/**
+ * Apply Reciprocal Rank Fusion (RRF) to merge multiple ranked lists
+ * Verses appearing in multiple lists get higher scores
+ * RRF formula: score = sum(1 / (k + rank_i)) for each list i
+ */
+function applyRRF(
+  rankedLists: MatchedVerse[][],
+  k: number = 60
+): Map<string, { verse: MatchedVerse; rrfScore: number }> {
+  const rrfScores = new Map<string, { verse: MatchedVerse; rrfScore: number }>();
+
+  for (let listIdx = 0; listIdx < rankedLists.length; listIdx++) {
+    const list = rankedLists[listIdx];
+    for (let rank = 0; rank < list.length; rank++) {
+      const verse = list[rank];
+      const verseKey = `${verse.book}:${verse.chapter}:${verse.verse}`;
+      const rrfScore = 1 / (k + rank);
+
+      if (rrfScores.has(verseKey)) {
+        const existing = rrfScores.get(verseKey)!;
+        existing.rrfScore += rrfScore;
+      } else {
+        rrfScores.set(verseKey, { verse, rrfScore });
+      }
+    }
+  }
+
+  return rrfScores;
+}
+
+/**
+ * Apply Maximal Marginal Relevance (MMR) to diversify retrieved verses
+ * Penalizes verses too similar to already-selected ones
+ * Ensures cross-testament and thematic diversity
+ */
+function applyMMR(
+  verses: MatchedVerse[],
+  targetK: number = 12,
+  lambda: number = 0.7
+): MatchedVerse[] {
+  if (verses.length <= targetK) {
+    return verses;
+  }
+
+  // Compute normalized relevance scores from similarity
+  const maxSimilarity = Math.max(...verses.map((v) => v.similarity || 0));
+  const minSimilarity = Math.min(...verses.map((v) => v.similarity || 0));
+  const similarityRange = maxSimilarity - minSimilarity || 1;
+
+  const relevanceMap = new Map<string, number>();
+  for (const verse of verses) {
+    const verseKey = `${verse.book}:${verse.chapter}:${verse.verse}`;
+    const normalized =
+      (verse.similarity || 0 - minSimilarity) / similarityRange;
+    relevanceMap.set(verseKey, normalized);
+  }
+
+  // Compute pairwise cosine similarity between verses (simplified: use book distance + rank distance)
+  const similarityMatrix = new Map<string, Map<string, number>>();
+  for (let i = 0; i < verses.length; i++) {
+    const v1Key = `${verses[i].book}:${verses[i].chapter}:${verses[i].verse}`;
+    if (!similarityMatrix.has(v1Key)) {
+      similarityMatrix.set(v1Key, new Map());
+    }
+    for (let j = i + 1; j < verses.length; j++) {
+      const v2Key = `${verses[j].book}:${verses[j].chapter}:${verses[j].verse}`;
+      // Simplified similarity: same book + nearby verses = high similarity
+      const sameBook = verses[i].book === verses[j].book ? 0.8 : 0.2;
+      const verseDist = Math.abs(verses[i].verse - verses[j].verse);
+      const proximity = Math.max(0, 1 - verseDist / 50);
+      const sim = sameBook * 0.6 + proximity * 0.4;
+      similarityMatrix.get(v1Key)!.set(v2Key, sim);
+      if (!similarityMatrix.has(v2Key)) {
+        similarityMatrix.set(v2Key, new Map());
+      }
+      similarityMatrix.get(v2Key)!.set(v1Key, sim);
+    }
+  }
+
+  // Greedy MMR selection
+  const selected: MatchedVerse[] = [];
+  const remaining = new Set<string>(
+    verses.map((v) => `${v.book}:${v.chapter}:${v.verse}`)
+  );
+
+  for (let i = 0; i < targetK && remaining.size > 0; i++) {
+    let bestKey: string | null = null;
+    let bestScore = -Infinity;
+
+    for (const key of remaining) {
+      const relevance = relevanceMap.get(key) || 0;
+      let maxSim = 0;
+
+      for (const selectedVerse of selected) {
+        const selectedKey = `${selectedVerse.book}:${selectedVerse.chapter}:${selectedVerse.verse}`;
+        const sim = similarityMatrix.get(key)?.get(selectedKey) || 0;
+        maxSim = Math.max(maxSim, sim);
+      }
+
+      const mmrScore = lambda * relevance - (1 - lambda) * maxSim;
+
+      if (mmrScore > bestScore) {
+        bestScore = mmrScore;
+        bestKey = key;
+      }
+    }
+
+    if (bestKey) {
+      remaining.delete(bestKey);
+      const verse = verses.find(
+        (v) => `${v.book}:${v.chapter}:${v.verse}` === bestKey
+      );
+      if (verse) {
+        selected.push(verse);
+      }
+    }
+  }
+
+  return selected;
+}
+
 // Get relevant verses using vector similarity with optional cross-references
 async function getRelevantVerses(
   supabase: ReturnType<typeof createClient>,
@@ -846,39 +1021,87 @@ async function getRelevantVerses(
   includeCrossRefs: boolean = false
 ): Promise<string> {
   try {
-    // Generate embedding for the message
-    const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: message,
-    });
-    const queryEmbedding = embeddingResponse.data[0].embedding;
+    // Tier 1 Enhancement: Multi-Query RAG with Reciprocal Rank Fusion (Items 1+5)
+    const queryVariants = await generateQueryVariants(openai, message);
+    console.log(`[Multi-Query RAG] Generated ${queryVariants.length} query variants`);
 
-    // Search for similar verses
-    // Enhanced: Increased match_count to 18 and raised threshold to 0.42 for higher-quality matches
-    // This reduces weak matches that might tempt the model to extrapolate beyond Scripture
-    const { data: verses, error } = await supabase.rpc("match_verses", {
-      query_embedding: queryEmbedding,
-      match_count: 18,
-      filter_translation: translation.toLowerCase(),
-      similarity_threshold: 0.42,
-      include_cross_refs: includeCrossRefs,
-      cross_ref_limit: 3,  // Up to 3 cross-refs per primary match
-      min_votes: 2,        // Only include well-attested cross-refs
-    });
+    // Embed all variants in parallel
+    const embeddingPromises = queryVariants.map((variant: string) =>
+      openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: variant,
+      })
+    );
+    const embeddingResponses = await Promise.all(embeddingPromises);
+    const queryEmbeddings = embeddingResponses.map(
+      (r: { data: { embedding: number[] }[] }) => r.data[0].embedding
+    );
 
-    if (error) {
-      console.error("Error calling match_verses:", error);
+    // Call match_verses for each embedding in parallel
+    const matchVersePromises = queryEmbeddings.map(
+      (embedding: number[]) =>
+        supabase.rpc("match_verses", {
+          query_embedding: embedding,
+          match_count: 10, // Lower per-query count, will merge results
+          filter_translation: translation.toLowerCase(),
+          similarity_threshold: 0.40,
+          include_cross_refs: includeCrossRefs,
+          cross_ref_limit: 3,
+          min_votes: 2,
+        })
+    );
+
+    const matchVerseResults = await Promise.all(matchVersePromises);
+
+    // Check for errors in any of the results
+    let hasError = false;
+    for (const result of matchVerseResults) {
+      if (result.error) {
+        hasError = true;
+        console.error("Error calling match_verses:", result.error);
+      }
+    }
+
+    if (hasError) {
       return "Error retrieving verses.";
     }
 
+    // Apply RRF to merge and deduplicate results from all query variants
+    const versesByQuery = matchVerseResults.map(
+      (r: { data: MatchedVerse[] | null }) => (r.data || []) as MatchedVerse[]
+    );
+    const rrfResults = applyRRF(versesByQuery);
+
+    // Sort by RRF score and convert back to array
+    const sortedByRRF = Array.from(rrfResults.values())
+      .sort((a, b) => b.rrfScore - a.rrfScore)
+      .map((v) => v.verse);
+
+    // Tier 3 Enhancement: Apply MMR for diversity (Item 3)
+    const diversifiedVerses = applyMMR(sortedByRRF, 18, 0.7);
+    let verses = diversifiedVerses;
+
     if (!verses || verses.length === 0) {
-      return "No directly relevant verses found for this specific query. The model should inform the user that Scripture does not directly address this topic in the available verses.";
+      // Fallback to keyword search
+      const { data: keywordResults } = await supabase
+        .rpc("search_verses", {
+          search_query: message,
+          p_translation: translation.toLowerCase(),
+          p_limit: 10,
+        })
+        .catch(() => ({ data: null }));
+
+      verses = (keywordResults || []) as MatchedVerse[];
+
+      if (!verses || verses.length === 0) {
+        return "No directly relevant verses found for this specific query. The model should inform the user that Scripture does not directly address this topic in the available verses.";
+      }
     }
 
     // Separate primary matches from cross-references for formatted output
     const typedVerses = verses as MatchedVerse[];
-    const primaryVerses = typedVerses.filter(v => !v.is_cross_ref);
-    const crossRefVerses = typedVerses.filter(v => v.is_cross_ref);
+    const primaryVerses = typedVerses.filter((v: MatchedVerse) => !v.is_cross_ref);
+    const crossRefVerses = typedVerses.filter((v: MatchedVerse) => v.is_cross_ref);
 
     // Safety check: If we have fewer than 4 high-quality primary matches, flag it
     if (primaryVerses.length < 4) {
