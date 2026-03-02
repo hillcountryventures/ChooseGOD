@@ -36,7 +36,6 @@
 		3B5B0243386AEFDAE8B06068 /* MemoryVerseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */; };
 		415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CE639CB3F872386E608A6D /* NotificationService.swift */; };
 		41A9FF2B90390D6C180D4472 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */; };
-		4892D6CA1DDCA86FE361F2BA /* NoSeedsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */; };
 		48EE385549BFF5E08E46C42B /* ReferralService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F401146D99102F19E5E4F78 /* ReferralService.swift */; };
 		49FCDBC42902BD422AE30AE1 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */; };
 		4CC621D3477448F5D59DD0F7 /* ReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85AE0B29D90AC0DA0A372626 /* ReferralView.swift */; };
@@ -143,7 +142,6 @@
 		51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		523B877627A2795C6EC4B295 /* GlassEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffects.swift; sourceTree = "<group>"; };
 		5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
-		63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoSeedsView.swift; sourceTree = "<group>"; };
 		6824EA911A83402E6EA06533 /* ScanResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanResultView.swift; sourceTree = "<group>"; };
 		6CFD816912EDFF0922081830 /* Journal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journal.swift; sourceTree = "<group>"; };
 		6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthService.swift; sourceTree = "<group>"; };
@@ -516,7 +514,6 @@
 		5B379F40598E6C19D777C912 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				63B2C2E15A60E5928D7822C3 /* NoSeedsView.swift */,
 				4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */,
 			);
 			path = Views;
@@ -957,7 +954,6 @@
 				737465CEE8F01630041BE78C /* MemoryViewModel.swift in Sources */,
 				E7FA217F476ADA6120274A7F /* MilestonesView.swift in Sources */,
 				20740FE52758F679A12FF801 /* MockServices.swift in Sources */,
-				4892D6CA1DDCA86FE361F2BA /* NoSeedsView.swift in Sources */,
 				EA3520BCFAF7361EA4915451 /* NotificationCategories.swift in Sources */,
 				415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */,
 				180A6064A0584A3392C05D73 /* NotificationSetupView.swift in Sources */,
