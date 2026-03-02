@@ -5,15 +5,15 @@
 -- 1. ADD PREFERENCE COLUMN
 -- =====================================================
 
--- Add weekly_digest_enabled to user preferences if not exists
+-- Add weekly_digest_enabled to user profiles if not exists
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'user_preferences' 
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'user_profiles'
     AND column_name = 'weekly_digest_enabled'
   ) THEN
-    ALTER TABLE user_preferences 
+    ALTER TABLE user_profiles
     ADD COLUMN weekly_digest_enabled BOOLEAN DEFAULT false;
   END IF;
 END $$;
@@ -22,11 +22,11 @@ END $$;
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'user_preferences' 
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'user_profiles'
     AND column_name = 'last_digest_sent_at'
   ) THEN
-    ALTER TABLE user_preferences 
+    ALTER TABLE user_profiles
     ADD COLUMN last_digest_sent_at TIMESTAMP WITH TIME ZONE;
   END IF;
 END $$;
@@ -43,10 +43,7 @@ CREATE TABLE IF NOT EXISTS bible_reading_history (
   chapter INTEGER NOT NULL,
   translation TEXT NOT NULL DEFAULT 'KJV',
   read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  time_spent_seconds INTEGER,
-  
-  -- Unique constraint to prevent duplicate entries per day
-  CONSTRAINT unique_daily_chapter_read UNIQUE (user_id, book, chapter, translation, (read_at::date))
+  time_spent_seconds INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_reading_history_user ON bible_reading_history(user_id);
@@ -82,9 +79,7 @@ RETURNS VOID AS $$
 BEGIN
   INSERT INTO bible_reading_history (user_id, book, chapter, translation, time_spent_seconds)
   VALUES (auth.uid(), p_book, p_chapter, p_translation, p_time_spent_seconds)
-  ON CONFLICT (user_id, book, chapter, translation, (read_at::date))
-  DO UPDATE SET 
-    time_spent_seconds = COALESCE(bible_reading_history.time_spent_seconds, 0) + COALESCE(EXCLUDED.time_spent_seconds, 0);
+  ON CONFLICT DO NOTHING;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

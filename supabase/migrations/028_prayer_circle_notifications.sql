@@ -75,15 +75,14 @@ $$ LANGUAGE sql STABLE;
 -- =====================================================
 
 CREATE OR REPLACE VIEW prayer_requests_enriched AS
-SELECT 
+SELECT
   pr.*,
   get_praying_count(pr.id) as praying_count,
   user_is_praying(pr.id) as user_is_praying,
-  cm.display_name as author_name
+  up.display_name as author_name
 FROM prayer_requests pr
-LEFT JOIN circle_members cm 
-  ON cm.circle_id = pr.circle_id 
-  AND cm.user_id = pr.user_id;
+LEFT JOIN user_profiles up
+  ON up.id = pr.user_id;
 
 -- =====================================================
 -- 5. NOTIFICATION TRIGGER FUNCTION
@@ -111,12 +110,10 @@ BEGIN
     RETURN NEW;
   END IF;
   
-  -- Get responder name (from circle_members if available)
-  SELECT COALESCE(cm.display_name, 'A circle member') INTO responder_name
-  FROM circle_members cm
-  JOIN prayer_requests pr ON pr.circle_id = cm.circle_id
-  WHERE pr.id = NEW.prayer_request_id
-    AND cm.user_id = NEW.user_id
+  -- Get responder name (from user_profiles if available)
+  SELECT COALESCE(up.display_name, 'A circle member') INTO responder_name
+  FROM user_profiles up
+  WHERE up.id = NEW.user_id
   LIMIT 1;
   
   -- Get owner's push token
