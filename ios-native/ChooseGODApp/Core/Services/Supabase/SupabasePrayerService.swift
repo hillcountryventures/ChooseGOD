@@ -27,15 +27,16 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     // MARK: - Prayers
     
     func getPrayers(userId: String, status: PrayerStatus?) async throws -> [PrayerRequest] {
-        var query = supabase
+        let client = try requireSupabase()
+        var query = client
             .from("prayer_requests")
             .select()
             .eq("user_id", value: userId)
-        
+
         if let status = status {
             query = query.eq("status", value: status.rawValue)
         }
-        
+
         return try await query
             .order("created_at", ascending: false)
             .execute()
@@ -43,7 +44,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     }
     
     func createPrayer(_ prayer: PrayerRequest) async throws -> PrayerRequest {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("prayer_requests")
             .insert(prayer)
             .select()
@@ -53,7 +55,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     }
     
     func updatePrayer(_ prayer: PrayerRequest) async throws {
-        try await supabase
+        let client = try requireSupabase()
+        try await client
             .from("prayer_requests")
             .update(prayer)
             .eq("id", value: prayer.id)
@@ -61,7 +64,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     }
     
     func deletePrayer(id: String) async throws {
-        try await supabase
+        let client = try requireSupabase()
+        try await client
             .from("prayer_requests")
             .delete()
             .eq("id", value: id)
@@ -86,8 +90,9 @@ final class SupabasePrayerService: PrayerServiceProtocol {
             answeredAt: Date(),
             answeredReflection: reflection
         )
-        
-        try await supabase
+
+        let client = try requireSupabase()
+        try await client
             .from("prayer_requests")
             .update(update)
             .eq("id", value: id)
@@ -98,18 +103,19 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     
     func getCircles(userId: String) async throws -> [PrayerCircle] {
         // Get circles where user is a member
-        let memberships: [CircleMemberRow] = try await supabase
+        let client = try requireSupabase()
+        let memberships: [CircleMemberRow] = try await client
             .from("circle_members")
             .select()
             .eq("user_id", value: userId)
             .execute()
             .value
-        
+
         guard !memberships.isEmpty else { return [] }
-        
+
         let circleIds = memberships.map { $0.circleId }
-        
-        return try await supabase
+
+        return try await client
             .from("prayer_circles")
             .select()
             .in("id", values: circleIds)
@@ -134,8 +140,9 @@ final class SupabasePrayerService: PrayerServiceProtocol {
         }
         
         let newCircle = CreateCircle(name: name, createdBy: userId, inviteCode: inviteCode)
-        
-        let circle: PrayerCircle = try await supabase
+
+        let client = try requireSupabase()
+        let circle: PrayerCircle = try await client
             .from("prayer_circles")
             .insert(newCircle)
             .select()
@@ -151,7 +158,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     
     func joinCircle(inviteCode: String, userId: String) async throws -> PrayerCircle {
         // Find circle by invite code
-        let circle: PrayerCircle = try await supabase
+        let client = try requireSupabase()
+        let circle: PrayerCircle = try await client
             .from("prayer_circles")
             .select()
             .eq("invite_code", value: inviteCode.uppercased())
@@ -166,7 +174,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     }
     
     func leaveCircle(circleId: String, userId: String) async throws {
-        try await supabase
+        let client = try requireSupabase()
+        try await client
             .from("circle_members")
             .delete()
             .eq("circle_id", value: circleId)
@@ -177,7 +186,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     // MARK: - Circle Prayers & Members
     
     func getCirclePrayers(circleId: String) async throws -> [PrayerRequest] {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("prayer_requests")
             .select()
             .eq("circle_id", value: circleId)
@@ -187,7 +197,8 @@ final class SupabasePrayerService: PrayerServiceProtocol {
     }
     
     func getCircleMembers(circleId: String) async throws -> [CircleMember] {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("circle_members")
             .select()
             .eq("circle_id", value: circleId)
@@ -202,14 +213,15 @@ final class SupabasePrayerService: PrayerServiceProtocol {
         struct NewMember: Codable {
             let circleId: String
             let userId: String
-            
+
             enum CodingKeys: String, CodingKey {
                 case circleId = "circle_id"
                 case userId = "user_id"
             }
         }
-        
-        try await supabase
+
+        let client = try requireSupabase()
+        try await client
             .from("circle_members")
             .insert(NewMember(circleId: circleId, userId: userId))
             .execute()

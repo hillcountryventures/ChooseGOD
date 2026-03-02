@@ -27,7 +27,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     // MARK: - Series
     
     func getAllSeries() async throws -> [DevotionalSeries] {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("devotional_series")
             .select()
             .order("title")
@@ -36,7 +37,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     }
     
     func getSeries(id: String) async throws -> DevotionalSeries {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("devotional_series")
             .select()
             .eq("id", value: id)
@@ -46,7 +48,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     }
     
     func getSeriesBySlug(slug: String) async throws -> DevotionalSeries {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("devotional_series")
             .select()
             .eq("slug", value: slug)
@@ -58,7 +61,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     // MARK: - Days
     
     func getDay(seriesId: String, dayNumber: Int) async throws -> DevotionalDay {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("devotional_days")
             .select()
             .eq("series_id", value: seriesId)
@@ -69,7 +73,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     }
     
     func getDaysForSeries(seriesId: String) async throws -> [DevotionalDay] {
-        try await supabase
+        let client = try requireSupabase()
+        return try await client
             .from("devotional_days")
             .select()
             .eq("series_id", value: seriesId)
@@ -81,8 +86,9 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     // MARK: - Enrollments
     
     func getEnrollments(userId: String) async throws -> [UserSeriesEnrollment] {
+        let client = try requireSupabase()
         // First get enrollments
-        var enrollments: [UserSeriesEnrollment] = try await supabase
+        var enrollments: [UserSeriesEnrollment] = try await client
             .from("user_series_enrollments")
             .select()
             .eq("user_id", value: userId)
@@ -90,22 +96,22 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
             .order("is_primary", ascending: false)
             .execute()
             .value
-        
+
         // Then fetch series for each enrollment
         let seriesIds = enrollments.map { $0.seriesId }
-        let allSeries: [DevotionalSeries] = try await supabase
+        let allSeries: [DevotionalSeries] = try await client
             .from("devotional_series")
             .select()
             .in("id", values: seriesIds)
             .execute()
             .value
-        
+
         // Map series to enrollments
         let seriesMap = Dictionary(uniqueKeysWithValues: allSeries.map { ($0.id, $0) })
         for i in enrollments.indices {
             enrollments[i].series = seriesMap[enrollments[i].seriesId]
         }
-        
+
         return enrollments
     }
     
@@ -123,7 +129,7 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
             let isActive: Bool
             let isPrimary: Bool
             let reminderTime: String
-            
+
             enum CodingKeys: String, CodingKey {
                 case userId = "user_id"
                 case seriesId = "series_id"
@@ -134,17 +140,18 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
                 case reminderTime = "reminder_time"
             }
         }
-        
+
+        let client = try requireSupabase()
         // If setting as primary, unset other primaries first
         if isPrimary {
-            try await supabase
+            try await client
                 .from("user_series_enrollments")
                 .update(["is_primary": false])
                 .eq("user_id", value: userId)
                 .eq("is_primary", value: true)
                 .execute()
         }
-        
+
         let enrollment = NewEnrollment(
             userId: userId,
             seriesId: seriesId,
@@ -154,8 +161,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
             isPrimary: isPrimary,
             reminderTime: "07:00:00"
         )
-        
-        return try await supabase
+
+        return try await client
             .from("user_series_enrollments")
             .insert(enrollment)
             .select()
@@ -165,40 +172,41 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     }
     
     func completeDay(enrollmentId: String, dayNumber: Int) async throws {
+        let client = try requireSupabase()
         // Get current enrollment
-        var enrollment: UserSeriesEnrollment = try await supabase
+        var enrollment: UserSeriesEnrollment = try await client
             .from("user_series_enrollments")
             .select()
             .eq("id", value: enrollmentId)
             .single()
             .execute()
             .value
-        
+
         // Add day to completed if not already
         if !enrollment.completedDays.contains(dayNumber) {
             enrollment.completedDays.append(dayNumber)
             enrollment.completedDays.sort()
         }
-        
+
         struct UpdateData: Codable {
             let completedDays: [Int]
             let currentDay: Int
             let lastActivityAt: Date
-            
+
             enum CodingKeys: String, CodingKey {
                 case completedDays = "completed_days"
                 case currentDay = "current_day"
                 case lastActivityAt = "last_activity_at"
             }
         }
-        
+
         let update = UpdateData(
             completedDays: enrollment.completedDays,
             currentDay: dayNumber + 1,
             lastActivityAt: Date()
         )
-        
-        try await supabase
+
+        try await client
             .from("user_series_enrollments")
             .update(update)
             .eq("id", value: enrollmentId)
@@ -206,7 +214,8 @@ final class SupabaseDevotionalService: DevotionalServiceProtocol {
     }
     
     func unenroll(enrollmentId: String) async throws {
-        try await supabase
+        let client = try requireSupabase()
+        try await client
             .from("user_series_enrollments")
             .update(["is_active": false])
             .eq("id", value: enrollmentId)
