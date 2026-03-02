@@ -33,7 +33,7 @@ final class AppState {
     
     init(
         authService: AuthServiceProtocol = SupabaseAuthService(),
-        bibleService: BibleServiceProtocol = MockBibleService(),
+        bibleService: BibleServiceProtocol = BibleServiceRouter(),
         subscriptionService: SubscriptionServiceProtocol = RevenueCatService.shared,
         notificationService: NotificationServiceProtocol = NotificationService.shared
     ) {

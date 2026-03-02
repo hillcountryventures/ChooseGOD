@@ -8,35 +8,35 @@ struct MainTabView: View {
     
     enum Tab: Int, CaseIterable {
         case home
-        case devotionals
+        case discover
         case bible
         case journey
         case prayers
-        
+
         var title: String {
             switch self {
             case .home: return "Home"
-            case .devotionals: return "Devotions"
+            case .discover: return "Discover"
             case .bible: return "Bible"
             case .journey: return "Journey"
             case .prayers: return "Prayers"
             }
         }
-        
+
         var icon: String {
             switch self {
             case .home: return "house"
-            case .devotionals: return "sun.max"
+            case .discover: return "safari"
             case .bible: return "book"
             case .journey: return "chart.line.uptrend.xyaxis"
             case .prayers: return "hands.sparkles"
             }
         }
-        
+
         var selectedIcon: String {
             switch self {
             case .home: return "house.fill"
-            case .devotionals: return "sun.max.fill"
+            case .discover: return "safari.fill"
             case .bible: return "book.fill"
             case .journey: return "chart.line.uptrend.xyaxis"
             case .prayers: return "hands.sparkles.fill"
@@ -50,16 +50,16 @@ struct MainTabView: View {
             TabView(selection: $selectedTab) {
                 HomeView()
                     .tag(Tab.home)
-                
-                DevotionalHubView()
-                    .tag(Tab.devotionals)
-                
+
+                DiscoverView()
+                    .tag(Tab.discover)
+
                 BibleReaderView()
                     .tag(Tab.bible)
-                
+
                 JourneyView()
                     .tag(Tab.journey)
-                
+
                 PrayersView()
                     .tag(Tab.prayers)
             }

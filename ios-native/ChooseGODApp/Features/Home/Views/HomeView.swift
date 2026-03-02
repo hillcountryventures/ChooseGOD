@@ -33,7 +33,10 @@ struct HomeView: View {
                         
                         // Daily Verse Card (Glass)
                         dailyVerseCard
-                        
+
+                        // Hebrew Calendar Context
+                        CalendarContextCard()
+
                         // Quick Actions with glass
                         quickActionsSection
                         
