@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,8 @@ import { CrossReferencesSheet } from '../components/CrossReferencesSheet';
 import { useBibleReader } from '../hooks/useBibleReader';
 import { VerseActionBar } from '../components/bible/VerseActionBar';
 import { useTrackScreen } from '../hooks/useAnalytics';
+import { VerseImageGenerator } from '../components/share';
+import type { VerseForImage } from '../types/verseImage';
 
 export default function BibleScreen() {
   useTrackScreen('bible');
@@ -56,10 +58,29 @@ export default function BibleScreen() {
     searchResults,
     isSearching,
     fontSizes,
-    preferences: _preferences,
+    preferences,
     headerTranslateY,
     scrollViewRef,
   } = reader;
+
+  // Verse Image Generator state
+  const [showImageGenerator, setShowImageGenerator] = useState(false);
+  const [verseForImage, setVerseForImage] = useState<VerseForImage | null>(null);
+
+  // Handle share action - opens image generator
+  const handleShareImage = useCallback(() => {
+    if (!selectedVerse) return;
+    
+    setVerseForImage({
+      text: selectedVerse.text,
+      book: selectedVerse.book,
+      chapter: selectedVerse.chapter,
+      verse: selectedVerse.verse,
+      translation: preferences.preferredTranslation || 'NIV',
+      reference: `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`,
+    });
+    setShowImageGenerator(true);
+  }, [selectedVerse, preferences.preferredTranslation]);
 
   return (
     <View style={styles.container}>
@@ -178,7 +199,7 @@ export default function BibleScreen() {
             // Navigate handled by the action bar's onAIAction
           }}
           onCrossRefs={() => reader.setShowCrossRefs(true)}
-          onShare={reader.handleShare}
+          onShare={handleShareImage}
         />
       )}
 
@@ -254,6 +275,19 @@ export default function BibleScreen() {
           verse={selectedVerse.verse}
           verseText={selectedVerse.text}
           onNavigate={reader.handleCrossRefNavigate}
+        />
+      )}
+
+      {/* Verse Image Generator */}
+      {verseForImage && (
+        <VerseImageGenerator
+          visible={showImageGenerator}
+          onClose={() => {
+            setShowImageGenerator(false);
+            setVerseForImage(null);
+            reader.setSelectedVerse(null);
+          }}
+          verse={verseForImage}
         />
       )}
     </View>

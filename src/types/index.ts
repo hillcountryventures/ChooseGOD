@@ -28,5 +28,8 @@ export * from './store';
 // Devotional types (existing file)
 export * from './devotional';
 
+// Verse image sharing types
+export * from './verseImage';
+
 // Reading plan types (existing file)
 export * from './readingPlan';

@@ -1,0 +1,1 @@
+export { VerseImageGenerator } from './VerseImageGenerator';
