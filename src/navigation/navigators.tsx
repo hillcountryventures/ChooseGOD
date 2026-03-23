@@ -17,9 +17,11 @@ import SignUpScreen from '../screens/auth/SignUpScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 // Onboarding Screens
-import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
-import OnboardingCarousel from '../screens/onboarding/OnboardingCarousel';
+import EmotionalWelcomeScreen from '../screens/onboarding/EmotionalWelcomeScreen';
+import WelcomeScreen from '../screens/onboarding/WelcomeScreen'; // Legacy
+import OnboardingCarousel from '../screens/onboarding/OnboardingCarousel'; // Legacy
 import PersonalizationQuiz from '../screens/onboarding/PersonalizationQuiz';
+import TranslationSelectScreen from '../screens/onboarding/TranslationSelectScreen';
 import RecommendationsScreen from '../screens/onboarding/RecommendationsScreen';
 import AIDemoScreen from '../screens/onboarding/AIDemoScreen';
 import PaywallScreen from '../screens/onboarding/PaywallScreen';
@@ -96,6 +98,7 @@ export function AuthNavigator() {
 }
 
 export function OnboardingNavigator() {
+  // New flow: Welcome (emotional) → AI Demo → Translation → Quiz (short) → Notifications
   return (
     <OnboardingStackNav.Navigator
       screenOptions={{
@@ -103,14 +106,18 @@ export function OnboardingNavigator() {
         animation: 'slide_from_right',
       }}
     >
-      <OnboardingStackNav.Screen name="Welcome" component={WelcomeScreen} />
-      <OnboardingStackNav.Screen name="Carousel" component={OnboardingCarousel} />
+      {/* New flow */}
+      <OnboardingStackNav.Screen name="Welcome" component={EmotionalWelcomeScreen} />
+      <OnboardingStackNav.Screen name="AIDemo" component={AIDemoScreen} />
+      <OnboardingStackNav.Screen name="TranslationSelect" component={TranslationSelectScreen} />
       <OnboardingStackNav.Screen name="Quiz" component={PersonalizationQuiz} />
       <OnboardingStackNav.Screen name="Recommendations" component={RecommendationsScreen} />
-      <OnboardingStackNav.Screen name="AIDemo" component={AIDemoScreen} />
-      <OnboardingStackNav.Screen name="Paywall" component={PaywallScreen} />
       <OnboardingStackNav.Screen name="NotificationSetup" component={NotificationSetupScreen} />
       <OnboardingStackNav.Screen name="EnrollConfirm" component={EnrollmentConfirmScreen} />
+      
+      {/* Legacy screens (kept for deep links / backwards compat) */}
+      <OnboardingStackNav.Screen name="Carousel" component={OnboardingCarousel} />
+      <OnboardingStackNav.Screen name="Paywall" component={PaywallScreen} />
     </OnboardingStackNav.Navigator>
   );
 }

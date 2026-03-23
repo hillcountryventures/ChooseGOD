@@ -15,10 +15,11 @@ export type AuthStackParamList = {
 // Onboarding Stack Navigator param list
 export type OnboardingStackParamList = {
   Welcome: undefined;
-  Carousel: undefined;
-  Quiz: undefined;
+  Carousel: undefined; // Legacy - kept for backwards compat
+  Quiz: { emotionalContext?: string } | undefined;
   Recommendations: { quizResponses: OnboardingResponses };
-  AIDemo: { selectedSeriesIds: string[] };
+  AIDemo: { selectedSeriesIds?: string[]; emotionalContext?: string; skipPaywall?: boolean };
+  TranslationSelect: { emotionalContext?: string };
   Paywall: { selectedSeriesIds: string[] };
   NotificationSetup: { selectedSeriesIds?: string[] };
   EnrollConfirm: { seriesIds: string[]; primarySeriesId: string };

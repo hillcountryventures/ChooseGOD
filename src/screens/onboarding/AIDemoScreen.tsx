@@ -52,7 +52,7 @@ export default function AIDemoScreen() {
   useTrackScreen("onboarding_ai_demo");
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
-  const { selectedSeriesIds } = route.params;
+  const { selectedSeriesIds, emotionalContext, skipPaywall } = route.params || {};
 
   const [phase, setPhase] = useState<"intro" | "demo" | "try">("intro");
   const [_userQuestion, _setUserQuestion] = useState("");
@@ -96,13 +96,13 @@ export default function AIDemoScreen() {
   const handleContinue = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     startTrial(); // Begin 3-day free trial
-    // Skip paywall - go directly to notification setup
-    navigation.navigate("NotificationSetup", { selectedSeriesIds });
+    // New flow: AI Demo → Translation Select → Quiz → Notifications
+    navigation.navigate("TranslationSelect", { emotionalContext });
   };
 
   const handleSkip = () => {
     startTrial(); // Begin 3-day free trial
-    navigation.navigate("NotificationSetup", { selectedSeriesIds });
+    navigation.navigate("TranslationSelect", { emotionalContext });
   };
 
   // Intro phase - explain what they're about to see

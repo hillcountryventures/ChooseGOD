@@ -432,6 +432,62 @@ export const ONBOARDING_QUIZ: QuizQuestion[] = [
   },
 ];
 
+// Short quiz for new emotional onboarding flow (skip life_area and life_stage)
+export const SHORT_ONBOARDING_QUIZ: QuizQuestion[] = [
+  {
+    id: 'time',
+    question: 'How much time do you have for quiet time?',
+    field: 'timeAvailable',
+    isRequired: true,
+    options: [
+      {
+        value: '5-10min',
+        label: '5-10 minutes',
+        description: 'Quick but meaningful',
+        icon: 'timer-outline',
+      },
+      {
+        value: '10-20min',
+        label: '10-20 minutes',
+        description: 'A solid devotional time',
+        icon: 'time-outline',
+      },
+      {
+        value: '20+min',
+        label: '20+ minutes',
+        description: 'Deep, unhurried reflection',
+        icon: 'hourglass-outline',
+      },
+    ],
+  },
+  {
+    id: 'experience',
+    question: 'Where are you in your faith journey?',
+    field: 'experienceLevel',
+    isRequired: true,
+    options: [
+      {
+        value: 'new',
+        label: 'New to faith',
+        description: 'Just beginning or exploring',
+        icon: 'leaf-outline',
+      },
+      {
+        value: 'growing',
+        label: 'Growing & learning',
+        description: 'Building a foundation',
+        icon: 'trending-up-outline',
+      },
+      {
+        value: 'deep',
+        label: 'Going deeper',
+        description: 'Looking to mature further',
+        icon: 'compass-outline',
+      },
+    ],
+  },
+];
+
 // =====================================================
 // SERIES GRADIENTS & COLORS
 // =====================================================

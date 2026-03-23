@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "../../lib/theme";
 import {
   OnboardingStackParamList,
   OnboardingResponses,
   ONBOARDING_QUIZ,
+  SHORT_ONBOARDING_QUIZ,
   QuizOption,
 } from "../../types";
 import { useTrackScreen } from "../../hooks/useAnalytics";
@@ -27,16 +28,30 @@ type NavigationProp = NativeStackNavigationProp<
   OnboardingStackParamList,
   "Quiz"
 >;
+type RouteProps = RouteProp<OnboardingStackParamList, "Quiz">;
 
 export default function PersonalizationQuiz() {
   useTrackScreen("onboarding_personalization");
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RouteProps>();
+  const { emotionalContext } = route.params || {};
+  
+  // Use short quiz if coming from new emotional onboarding flow
+  const quizQuestions = emotionalContext ? SHORT_ONBOARDING_QUIZ : ONBOARDING_QUIZ;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [responses, setResponses] = useState<OnboardingResponses>({});
+  const [responses, setResponses] = useState<OnboardingResponses>({
+    // Pre-fill lifeAreaFocus from emotional context if available
+    lifeAreaFocus: emotionalContext === 'hurting' ? 'anxiety' 
+      : emotionalContext === 'seeking' ? 'knowing_god'
+      : emotionalContext === 'new' ? 'prayer'
+      : emotionalContext === 'returning' ? 'forgiveness'
+      : undefined,
+  });
   const slideAnim = useMemo(() => new Animated.Value(0), []);
 
-  const question = ONBOARDING_QUIZ[currentQuestion];
-  const totalQuestions = ONBOARDING_QUIZ.length;
+  const question = quizQuestions[currentQuestion];
+  const totalQuestions = quizQuestions.length;
   const progress = (currentQuestion + 1) / totalQuestions;
 
   const handleSelectOption = (option: QuizOption) => {
@@ -63,10 +78,18 @@ export default function PersonalizationQuiz() {
           }).start();
         });
       } else {
-        // All questions answered, navigate to recommendations
-        navigation.navigate("Recommendations", {
-          quizResponses: { ...responses, [field]: option.value },
-        });
+        // All questions answered
+        const finalResponses = { ...responses, [field]: option.value };
+        
+        if (emotionalContext) {
+          // New flow: Skip recommendations, go straight to notifications
+          navigation.navigate("NotificationSetup", {});
+        } else {
+          // Legacy flow: Go to recommendations
+          navigation.navigate("Recommendations", {
+            quizResponses: finalResponses,
+          });
+        }
       }
     }, 200);
   };
@@ -96,7 +119,11 @@ export default function PersonalizationQuiz() {
       if (currentQuestion < totalQuestions - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        navigation.navigate("Recommendations", { quizResponses: responses });
+        if (emotionalContext) {
+          navigation.navigate("NotificationSetup", {});
+        } else {
+          navigation.navigate("Recommendations", { quizResponses: responses });
+        }
       }
     }
   };
