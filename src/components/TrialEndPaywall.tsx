@@ -175,9 +175,10 @@ export function TrialEndPaywall({ visible, onClose, onSuccess }: TrialEndPaywall
       return {
         total: annualPkg.product.priceString,
         monthly: `$${monthlyEquiv.toFixed(2)}`,
+        savings: '50%',
       };
     }
-    return { total: '$36.00', monthly: '$3.00' };
+    return { total: '$29.99', monthly: '$2.50', savings: '50%' };
   };
 
   const annualPrice = getAnnualPrice();
@@ -275,7 +276,11 @@ export function TrialEndPaywall({ visible, onClose, onSuccess }: TrialEndPaywall
             <ActivityIndicator color={theme.colors.primary} size="large" />
           ) : (
             <View style={styles.pricingSection}>
+              {/* Price Box with savings badge */}
               <View style={styles.priceBox}>
+                <View style={styles.savingsBadge}>
+                  <Text style={styles.savingsBadgeText}>SAVE {annualPrice.savings}</Text>
+                </View>
                 <Text style={styles.priceLabel}>ChooseGOD Pro</Text>
                 <View style={styles.priceRow}>
                   <Text style={styles.priceMain}>{annualPrice.monthly}</Text>
@@ -284,25 +289,32 @@ export function TrialEndPaywall({ visible, onClose, onSuccess }: TrialEndPaywall
                 <Text style={styles.priceBilled}>
                   Billed annually as {annualPrice.total}
                 </Text>
+                <Text style={styles.priceCompare}>
+                  vs $4.99/mo billed monthly
+                </Text>
               </View>
 
-              {/* Features */}
+              {/* Features - cleaner list */}
               <View style={styles.features}>
                 <View style={styles.featureItem}>
-                  <Ionicons name="infinite" size={18} color={theme.colors.primary} />
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
                   <Text style={styles.featureText}>Unlimited AI conversations</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Ionicons name="time" size={18} color={theme.colors.primary} />
-                  <Text style={styles.featureText}>Complete spiritual history</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+                  <Text style={styles.featureText}>Streak freeze protection</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Ionicons name="library" size={18} color={theme.colors.primary} />
-                  <Text style={styles.featureText}>All devotional series</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+                  <Text style={styles.featureText}>Complete chat history</Text>
                 </View>
                 <View style={styles.featureItem}>
-                  <Ionicons name="snow" size={18} color={theme.colors.primary} />
-                  <Text style={styles.featureText}>Streak freeze (life happens)</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+                  <Text style={styles.featureText}>AI journal reflections</Text>
+                </View>
+                <View style={styles.featureItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+                  <Text style={styles.featureText}>Prayer reminders</Text>
                 </View>
               </View>
 
@@ -484,6 +496,24 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.textMuted,
     marginTop: theme.spacing.xs,
+  },
+  priceCompare: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  savingsBadge: {
+    backgroundColor: theme.colors.success,
+    paddingVertical: 4,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.full,
+    marginBottom: theme.spacing.sm,
+  },
+  savingsBadgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.bold,
+    color: '#fff',
+    letterSpacing: 0.5,
   },
   features: {
     alignSelf: 'stretch',

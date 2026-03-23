@@ -172,18 +172,19 @@ export function getJournalInsightFeatures(isPremium: boolean) {
 
 /**
  * Paywall messaging and copy - mission-aligned and encouraging.
+ * Philosophy: "We are not God, only helping others find HIM"
  */
 export const PAYWALL_CONTENT = {
   // Main headline
-  headline: 'Go Deeper with God',
+  headline: 'Unlock Your Full Spiritual Journey',
 
   // Subheadline
   subheadline:
-    'Unlock premium spiritual tools — deeper Bible study, guided practices, and personalized growth.',
+    'Everything you need to grow closer to God — unlimited conversations, deeper practices, and personalized insights.',
 
   // Social proof
   socialProof: {
-    userCount: 'Join believers going deeper',
+    userCount: 'Join thousands growing in faith',
     rating: null, // Only show when real App Store data is available
     ratingCount: null,
     testimonials: [
@@ -192,69 +193,78 @@ export const PAYWALL_CONTENT = {
         author: 'Sarah M.',
       },
       {
-        text: 'The Scripture companion feels like talking to a wise pastor who knows the Bible deeply.',
+        text: 'Like having a wise pastor available 24/7 who knows the Bible deeply.',
         author: 'James K.',
       },
     ],
   },
 
-  // Feature list for premium - organized by perceived value
+  // Feature list - organized by value perception (highest first)
   features: [
     {
-      icon: 'chatbubbles',
-      title: 'Unlimited Scripture Conversations',
-      description: 'Ask anything about Scripture—no daily limits, anytime access.',
+      icon: 'infinite',
+      title: 'Unlimited AI Conversations',
+      description: 'Ask anything about Scripture — no limits, anytime.',
+      highlight: true,
     },
     {
-      icon: 'compass',
-      title: 'Premium Spiritual Practices',
-      description: 'Lectio Divina, Evening Examen, Scripture memorization, confession, and more.',
+      icon: 'snow',
+      title: 'Streak Freeze Protection',
+      description: 'Life happens. Protect your streak when you miss a day.',
+      highlight: true,
+    },
+    {
+      icon: 'time',
+      title: 'Complete Chat History',
+      description: 'Access all your past conversations forever.',
+      highlight: false,
+    },
+    {
+      icon: 'sparkles',
+      title: 'AI Journal Reflections',
+      description: 'Personalized insights on your spiritual growth.',
+      highlight: false,
     },
     {
       icon: 'library',
       title: 'Unlimited Devotional Series',
-      description: 'Enroll in as many devotional series as you like, simultaneously.',
+      description: 'Enroll in multiple series simultaneously.',
+      highlight: false,
     },
     {
-      icon: 'color-palette',
-      title: 'Premium Verse Card Designs',
-      description: '12+ beautiful gradient backgrounds for shareable verse cards.',
-    },
-    {
-      icon: 'analytics',
-      title: 'Advanced Journal Insights',
-      description: 'Sentiment themes, growth patterns, and yearly spiritual reviews.',
-    },
-    {
-      icon: 'download',
-      title: 'Export Journal & Prayers',
-      description: 'Download your spiritual journey as a beautiful PDF testimony.',
+      icon: 'notifications',
+      title: 'Prayer Reminders',
+      description: 'Never forget to pray for what matters most.',
+      highlight: false,
     },
   ],
 
   // Trial messaging
-  trialMessage: 'Start with a 7-day free trial. Cancel anytime.',
+  trialMessage: 'Start free, cancel anytime.',
 
   // Monthly plan
   monthly: {
     label: 'Monthly',
-    price: '$3.99',
+    price: '$4.99',
     period: '/month',
-    description: 'Billed monthly after free trial',
+    description: 'Flexible monthly billing',
+    monthlyEquiv: '$4.99',
   },
 
   // Annual plan (recommended)
   annual: {
     label: 'Annual',
-    price: '$36',
+    price: '$29.99',
     period: '/year',
-    description: 'Save ~25% • Best value',
-    badge: 'BEST VALUE',
+    description: 'Just $2.50/month',
+    badge: 'SAVE 50%',
+    monthlyEquiv: '$2.50',
+    savings: '50%',
   },
 
   // Support message
   supportMessage:
-    'Your subscription supports ongoing development of this free Bible resource. Thank you for helping us share God\'s Word faithfully.',
+    'Your subscription helps us keep improving ChooseGOD and sharing God\'s Word faithfully.',
 
   // Free tier messaging (when limit reached)
   freeLimitReached: {
@@ -294,15 +304,15 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: REVENUECAT_PRODUCT_IDS.yearly,
     name: 'Annual',
-    price: '$36.00',
+    price: '$29.99',
     period: 'year',
     isRecommended: true,
-    savings: 'Save ~25%',
+    savings: 'Save 50%',
   },
   {
     id: REVENUECAT_PRODUCT_IDS.monthly,
     name: 'Monthly',
-    price: '$3.99',
+    price: '$4.99',
     period: 'month',
     isRecommended: false,
   },

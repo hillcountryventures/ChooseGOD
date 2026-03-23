@@ -218,17 +218,19 @@ export function PaywallModal({ visible, onClose, onSuccess }: PaywallModalProps)
   };
 
   // Render feature item
-  const renderFeature = (feature: { icon: string; title: string; description: string }, index: number) => (
-    <View key={index} style={styles.featureRow}>
-      <View style={styles.featureIcon}>
+  const renderFeature = (feature: { icon: string; title: string; description: string; highlight?: boolean }, index: number) => (
+    <View key={index} style={[styles.featureRow, feature.highlight && styles.featureRowHighlight]}>
+      <View style={[styles.featureIcon, feature.highlight && styles.featureIconHighlight]}>
         <Ionicons
-          name={feature.icon as keyof typeof Ionicons.glyphMap}
-          size={20}
-          color={theme.colors.accent}
+          name="checkmark-circle"
+          size={22}
+          color={feature.highlight ? theme.colors.success : theme.colors.primary}
         />
       </View>
       <View style={styles.featureText}>
-        <Text style={styles.featureTitle}>{feature.title}</Text>
+        <Text style={[styles.featureTitle, feature.highlight && styles.featureTitleHighlight]}>
+          {feature.title}
+        </Text>
         <Text style={styles.featureDescription}>{feature.description}</Text>
       </View>
     </View>
@@ -576,6 +578,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
     lineHeight: 20,
+  },
+  featureRowHighlight: {
+    backgroundColor: theme.colors.successAlpha?.[10] || 'rgba(16, 185, 129, 0.1)',
+    marginHorizontal: -theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+  },
+  featureIconHighlight: {
+    backgroundColor: theme.colors.successAlpha?.[20] || 'rgba(16, 185, 129, 0.2)',
+  },
+  featureTitleHighlight: {
+    color: theme.colors.success,
   },
   plans: {
     marginBottom: 16,
