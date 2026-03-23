@@ -55,6 +55,8 @@ import { logger } from "../utils/logger";
 import { useTrialStore } from "../store/trialStore";
 import { useIsPremium } from "../store/subscriptionStore";
 import { TrialEndPaywall } from "../components/TrialEndPaywall";
+import { StreakFreezeModal } from "../components/StreakFreezeModal";
+import { useStreakStore } from "../store/streakStore";
 
 // Extracted home section components
 import {
@@ -137,6 +139,35 @@ export default function HomeScreen() {
       return () => clearTimeout(timer);
     }
   }, [isPremium, shouldShowTrialEndPaywall]);
+
+  // Streak freeze - show when streak is at risk
+  const checkStreakStatus = useStreakStore((s) => s.checkStreakStatus);
+  const recordActivity = useStreakStore((s) => s.recordActivity);
+  const streakCurrentValue = useStreakStore((s) => s.currentStreak);
+  const [showStreakFreezeModal, setShowStreakFreezeModal] = useState(false);
+  const [streakFreezeChecked, setStreakFreezeChecked] = useState(false);
+
+  // Check streak status on mount
+  React.useEffect(() => {
+    if (streakFreezeChecked) return;
+    
+    const status = checkStreakStatus();
+    if (status === 'at_risk' && streakCurrentValue > 0) {
+      // Show freeze modal after a delay
+      const timer = setTimeout(() => {
+        setShowStreakFreezeModal(true);
+        setStreakFreezeChecked(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else if (status === 'active') {
+      setStreakFreezeChecked(true);
+    }
+  }, [checkStreakStatus, streakCurrentValue, streakFreezeChecked]);
+
+  const handleStreakLost = () => {
+    // Reset streak in store will happen naturally
+    setShowStreakFreezeModal(false);
+  };
 
   // Wayfarer handlers
   const handleStartReading = () => {
@@ -385,6 +416,14 @@ export default function HomeScreen() {
         visible={showTrialPaywall}
         onClose={() => setShowTrialPaywall(false)}
         onSuccess={() => setShowTrialPaywall(false)}
+      />
+
+      {/* Streak Freeze Modal - shows when streak is at risk */}
+      <StreakFreezeModal
+        visible={showStreakFreezeModal}
+        currentStreak={streakCurrentValue}
+        onClose={() => setShowStreakFreezeModal(false)}
+        onStreakLost={handleStreakLost}
       />
     </SafeAreaView>
   );

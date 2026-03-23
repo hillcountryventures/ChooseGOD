@@ -18,6 +18,7 @@ import {
   Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Purchases, {
@@ -254,7 +255,7 @@ export function TrialEndPaywall({ visible, onClose, onSuccess }: TrialEndPaywall
                 <View style={styles.statItem}>
                   <Ionicons name="flame" size={20} color={theme.colors.warning} />
                   <Text style={styles.statText}>
-                    {trialStats.streakDays}-day streak started 🔥
+                    {trialStats.streakDays}-day streak started
                   </Text>
                 </View>
               )}
