@@ -38,26 +38,26 @@ export function ChatEmptyState({ currentMode, isPrayerMode, contextVerse, onSend
         {isPrayerMode ? (
           <>
             <TouchableOpacity style={styles.suggestionChip} onPress={() => onSend('Guide me through ACTS prayer')}>
-              <Text style={styles.suggestionChipIcon}>🙏</Text>
+              <Ionicons name="hand-left-outline" size={16} color={theme.colors.primary} style={styles.suggestionChipIcon} />
               <Text style={styles.suggestionChipText}>ACTS Prayer</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.suggestionChip} onPress={() => onSend('Help me pray for peace and guidance')}>
-              <Text style={styles.suggestionChipIcon}>🕊️</Text>
+              <Ionicons name="leaf-outline" size={16} color={theme.colors.primary} style={styles.suggestionChipIcon} />
               <Text style={styles.suggestionChipText}>Peace & guidance</Text>
             </TouchableOpacity>
           </>
         ) : (
           <>
             <TouchableOpacity style={styles.suggestionChip} onPress={() => onSend('Help me pray through my current struggles')}>
-              <Text style={styles.suggestionChipIcon}>🙏</Text>
+              <Ionicons name="hand-left-outline" size={16} color={theme.colors.primary} style={styles.suggestionChipIcon} />
               <Text style={styles.suggestionChipText}>Pray through struggles</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.suggestionChip} onPress={() => onSend("Explain the historical context of today's verse")}>
-              <Text style={styles.suggestionChipIcon}>📖</Text>
+              <Ionicons name="book-outline" size={16} color={theme.colors.primary} style={styles.suggestionChipIcon} />
               <Text style={styles.suggestionChipText}>Historical context</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.suggestionChip} onPress={() => onSend('How can I apply Scripture to my work life?')}>
-              <Text style={styles.suggestionChipIcon}>🌱</Text>
+              <Ionicons name="trending-up-outline" size={16} color={theme.colors.primary} style={styles.suggestionChipIcon} />
               <Text style={styles.suggestionChipText}>Apply to work</Text>
             </TouchableOpacity>
           </>

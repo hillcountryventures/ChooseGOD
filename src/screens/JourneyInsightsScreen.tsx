@@ -78,7 +78,7 @@ function BibleBooksGrid({ books }: BibleBooksGridProps) {
           <Text style={styles.sectionTitle}>Most Read Books</Text>
         </View>
         <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>📚</Text>
+          <Ionicons name="library-outline" size={48} color={theme.colors.textMuted} />
           <Text style={styles.emptyText}>
             Your Bible reading journey starts here
           </Text>
@@ -101,7 +101,7 @@ function BibleBooksGrid({ books }: BibleBooksGridProps) {
             key={book.book}
             style={[styles.bookCard, { backgroundColor: book.gradient[0] }]}
           >
-            <Text style={styles.bookEmoji}>{book.emoji}</Text>
+            <Ionicons name="book" size={24} color="#fff" />
             <Text style={styles.bookName}>{book.book}</Text>
             <Text style={styles.bookCount}>{book.verseCount} verses</Text>
           </View>
@@ -196,7 +196,7 @@ function MilestonesCarousel({ milestones }: MilestonesCarouselProps) {
       <Animated.View style={[styles.milestonesSection, { opacity: fadeAnim }]}>
         <Text style={styles.sectionTitle}>Recent Milestones</Text>
         <View style={styles.emptyMilestones}>
-          <Text style={styles.emptyEmoji}>🏆</Text>
+          <Ionicons name="trophy-outline" size={48} color={theme.colors.textMuted} />
           <Text style={styles.emptyText}>
             Keep going! Your first milestone is within reach
           </Text>
@@ -221,7 +221,7 @@ function MilestonesCarousel({ milestones }: MilestonesCarouselProps) {
               { backgroundColor: milestone.gradient[0] },
             ]}
           >
-            <Text style={styles.milestoneEmoji}>{milestone.emoji}</Text>
+            <Ionicons name="ribbon" size={28} color="#fff" />
             <Text style={styles.milestoneTitle}>{milestone.title}</Text>
             <Text style={styles.milestoneDesc}>{milestone.description}</Text>
           </View>

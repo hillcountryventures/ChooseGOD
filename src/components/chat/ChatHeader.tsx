@@ -81,8 +81,9 @@ export function ChatHeader({
         ) : (
           <TouchableOpacity style={styles.freeQueriesBadge} onPress={onShowPaywall}>
             <Text style={styles.freeQueriesText}>
-              {seedsRemaining}/{totalSeeds} 🌱
+              {seedsRemaining}/{totalSeeds}
             </Text>
+            <Ionicons name="leaf" size={14} color={theme.colors.success} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         )}
       </View>

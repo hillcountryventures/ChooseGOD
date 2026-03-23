@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    borderRadius: 20,
+    borderRadius: theme.borderRadius.lg,
   },
   question: {
     fontSize: theme.fontSize.xxl,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   optionIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: theme.borderRadius.full,
     backgroundColor: theme.colors.primaryAlpha[15],
     justifyContent: 'center',
     alignItems: 'center',

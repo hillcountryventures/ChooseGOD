@@ -219,7 +219,7 @@ export default function RecommendationsScreen() {
 
           {/* Reading Plans — Start Here first */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📖 Reading Plans</Text>
+            <Text style={styles.sectionTitle}>Reading Plans</Text>
             <Text style={[styles.introText, { marginBottom: theme.spacing.md }]}>
               Guided daily readings with reflections — perfect for building a habit.
             </Text>

@@ -41,11 +41,11 @@ export function ShareConversationSheet({
   const formatConversationText = useCallback(() => {
     return messages
       .map((m) => {
-        const role = m.role === 'user' ? '🙏 You' : '✝️ Companion';
+        const role = m.role === 'user' ? 'You' : 'Companion';
         let text = `${role}:\n${m.content}`;
         if (m.sources && m.sources.length > 0) {
           const refs = m.sources.map((s) => `${s.book} ${s.chapter}:${s.verse}`).join(', ');
-          text += `\n\n📖 ${refs}`;
+          text += `\n\nScripture: ${refs}`;
         }
         return text;
       })
@@ -57,7 +57,7 @@ export function ShareConversationSheet({
     try {
       const text = formatConversationText();
       await Share.share({
-        message: `${text}\n\n✝️ Shared from ChooseGOD\nhttps://choosegod.app`,
+        message: `${text}\n\nShared from ChooseGOD\nhttps://choosegod.app`,
       });
       onClose();
     } catch (error) {

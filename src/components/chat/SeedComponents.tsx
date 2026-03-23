@@ -53,7 +53,11 @@ export function SeedIcon({
         },
       ]}
     >
-      <Text style={styles.seedEmoji}>{filled ? "🌱" : "·"}</Text>
+      <Ionicons 
+        name={filled ? "ellipse" : "ellipse-outline"} 
+        size={12} 
+        color={filled ? theme.colors.success : theme.colors.textMuted} 
+      />
     </Animated.View>
   );
 }
@@ -131,7 +135,9 @@ export function NoSeedsCard({
   return (
     <View style={styles.noSeedsCard}>
       <View style={styles.noSeedsContent}>
-        <Text style={styles.noSeedsEmoji}>🌱</Text>
+        <View style={styles.noSeedsIconContainer}>
+          <Ionicons name="leaf" size={32} color={theme.colors.success} />
+        </View>
         <Text style={styles.noSeedsTitle}>
           You&apos;ve planted all your seeds for today
         </Text>
@@ -238,8 +244,13 @@ const styles = StyleSheet.create({
   noSeedsContent: {
     alignItems: "center",
   },
-  noSeedsEmoji: {
-    fontSize: 48,
+  noSeedsIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.successAlpha?.[15] || 'rgba(16, 185, 129, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: theme.spacing.md,
   },
   noSeedsTitle: {

@@ -40,7 +40,7 @@ export function SharedPrayerCard({
       {/* Answered badge */}
       {isAnswered && (
         <View style={styles.answeredBadge}>
-          <Text style={styles.answeredIcon}>✨</Text>
+          <Ionicons name="checkmark-circle" size={16} color={theme.colors.success} />
           <Text style={styles.answeredText}>ANSWERED PRAYER</Text>
         </View>
       )}

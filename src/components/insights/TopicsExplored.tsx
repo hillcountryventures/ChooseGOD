@@ -8,7 +8,22 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../../lib/theme";
+
+// Map topic labels to icons
+const TOPIC_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  'Anxiety & Peace': 'leaf-outline',
+  'Love & Relationships': 'heart-outline',
+  'Purpose & Calling': 'compass-outline',
+  'Prayer Life': 'hand-left-outline',
+  'Faith & Doubt': 'help-circle-outline',
+  'Healing': 'medkit-outline',
+  'Forgiveness': 'refresh-outline',
+  'Gratitude': 'happy-outline',
+  'Scripture Study': 'book-outline',
+  'default': 'chatbubble-outline',
+};
 import type { TopicEngagement } from "../../hooks/useJourneyInsights";
 
 interface TopicsExploredProps {
@@ -21,7 +36,7 @@ export function TopicsExplored({ data }: TopicsExploredProps) {
       <View style={styles.container}>
         <Text style={styles.title}>Topics You&apos;ve Explored</Text>
         <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🔍</Text>
+          <Ionicons name="search-outline" size={40} color={theme.colors.textMuted} />
           <Text style={styles.emptyText}>
             Start chatting to discover your spiritual interests
           </Text>
@@ -89,7 +104,11 @@ function TopicRow({ topic, index }: TopicRowProps) {
       <View
         style={[styles.iconContainer, { backgroundColor: `${topic.color}20` }]}
       >
-        <Text style={styles.emoji}>{topic.emoji}</Text>
+        <Ionicons 
+          name={TOPIC_ICONS[topic.label] || TOPIC_ICONS.default} 
+          size={20} 
+          color={topic.color} 
+        />
       </View>
       <View style={styles.topicContent}>
         <View style={styles.topicHeader}>

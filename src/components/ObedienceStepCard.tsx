@@ -255,8 +255,8 @@ export function CompletedStepCard({
     >
       {showCelebration && (
         <View style={styles.celebrationBadge}>
-          <Text style={styles.celebrationEmoji}>🎉</Text>
-          <Text style={styles.celebrationEmoji}>✨</Text>
+          <Ionicons name="star" size={20} color={theme.colors.gold} />
+          <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
         </View>
       )}
 

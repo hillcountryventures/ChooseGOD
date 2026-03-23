@@ -260,7 +260,7 @@ export default function AIDemoScreen() {
             {typedResponse.length >= DEMO_RESPONSE.length && (
               <Animated.View style={styles.continuePrompt}>
                 <Text style={styles.continuePromptText}>
-                  ✨ This is just a taste — you can ask about anything!
+                  This is just a taste — you can ask about anything.
                 </Text>
               </Animated.View>
             )}
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   iconGradient: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: theme.borderRadius.full,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   companionAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.accentAlpha[20],
     justifyContent: "center",
     alignItems: "center",

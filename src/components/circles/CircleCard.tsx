@@ -16,14 +16,16 @@ interface CircleCardProps {
 }
 
 // Circle icons based on typical group types
-const CIRCLE_EMOJIS = ['👨‍👩‍👧‍👦', '⛪', '💛', '🙏', '✝️', '📖', '🕊️'];
+const CIRCLE_ICONS: Array<keyof typeof Ionicons.glyphMap> = [
+  'people', 'home', 'heart', 'hand-left', 'book', 'leaf', 'star'
+];
 
 export function CircleCard({ circle, onPress }: CircleCardProps) {
-  // Use a consistent emoji based on circle name hash
-  const emojiIndex = circle.name
+  // Use a consistent icon based on circle name hash
+  const iconIndex = circle.name
     .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0) % CIRCLE_EMOJIS.length;
-  const emoji = CIRCLE_EMOJIS[emojiIndex];
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0) % CIRCLE_ICONS.length;
+  const iconName = CIRCLE_ICONS[iconIndex];
 
   // Get gradient color based on index
   const gradientColors = [
@@ -42,7 +44,7 @@ export function CircleCard({ circle, onPress }: CircleCardProps) {
       activeOpacity={0.7}
     >
       <View style={[styles.iconContainer, { backgroundColor: `${colors.from}20` }]}>
-        <Text style={styles.emoji}>{emoji}</Text>
+        <Ionicons name={iconName} size={24} color={colors.from} />
       </View>
 
       <View style={styles.content}>
