@@ -23,6 +23,8 @@ import { PrayerRequest, RootStackParamList } from "../types";
 import { PrayerEntryModal } from "../components/PrayerEntryModal";
 import { AnsweredPrayerModal } from "../components/AnsweredPrayerModal";
 import { CelebrationOverlay } from "../components/CelebrationOverlay";
+import { TestimonyModal } from "../components/TestimonyModal";
+import { PrayerReminderModal } from "../components/PrayerReminderModal";
 import { useTrackScreen } from "../hooks/useAnalytics";
 
 import { TimelineView } from "./prayers/TimelineView";
@@ -75,6 +77,10 @@ export default function PrayersScreen() {
     null,
   );
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showTestimonyModal, setShowTestimonyModal] = useState(false);
+  const [reminderPrayer, setReminderPrayer] = useState<PrayerRequest | null>(null);
+  const [testimonyPrayer, setTestimonyPrayer] = useState<PrayerRequest | null>(null);
 
   const activePrayers = useStore((state) => state.activePrayers);
   const updatePrayer = useStore((state) => state.updatePrayer);
@@ -91,6 +97,16 @@ export default function PrayersScreen() {
       setSelectedPrayer(prayer);
       setShowAnsweredModal(true);
     }
+  };
+
+  const handleSetReminder = (prayer: PrayerRequest) => {
+    setReminderPrayer(prayer);
+    setShowReminderModal(true);
+  };
+
+  const handleViewTestimony = (prayer: PrayerRequest) => {
+    setTestimonyPrayer(prayer);
+    setShowTestimonyModal(true);
   };
 
   const handleConfirmAnswered = (reflection: string) => {
@@ -163,6 +179,8 @@ export default function PrayersScreen() {
           prayers={activePrayers}
           onMarkAnswered={handleMarkAnswered}
           onAddPrayer={handleAddPrayer}
+          onSetReminder={handleSetReminder}
+          onViewTestimony={handleViewTestimony}
         />
       )}
       {activeTab === "calendar" && <CalendarView prayers={activePrayers} />}
@@ -182,6 +200,26 @@ export default function PrayersScreen() {
           setSelectedPrayer(null);
         }}
         onConfirm={handleConfirmAnswered}
+      />
+
+      {/* Prayer Reminder Modal (Premium) */}
+      <PrayerReminderModal
+        visible={showReminderModal}
+        prayer={reminderPrayer}
+        onClose={() => {
+          setShowReminderModal(false);
+          setReminderPrayer(null);
+        }}
+      />
+
+      {/* Testimony Modal */}
+      <TestimonyModal
+        visible={showTestimonyModal}
+        prayer={testimonyPrayer}
+        onClose={() => {
+          setShowTestimonyModal(false);
+          setTestimonyPrayer(null);
+        }}
       />
 
       {/* Celebration Overlay */}

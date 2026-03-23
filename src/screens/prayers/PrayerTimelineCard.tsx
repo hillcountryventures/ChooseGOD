@@ -6,18 +6,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../../lib/theme";
 import { PrayerRequest, RootStackParamList } from "../../types";
 import { navigateToBibleVerse } from "../../lib/navigationHelpers";
+import { usePrayerPremiumStore } from "../../store/prayerPremiumStore";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export function PrayerTimelineCard({
   prayer,
   onMarkAnswered,
+  onSetReminder,
+  onViewTestimony,
 }: {
   prayer: PrayerRequest;
   onMarkAnswered: (id: string) => void;
+  onSetReminder?: (prayer: PrayerRequest) => void;
+  onViewTestimony?: (prayer: PrayerRequest) => void;
 }) {
   const navigation = useNavigation<NavigationProp>();
   const isAnswered = prayer.status === "answered";
+  const hasReminder = usePrayerPremiumStore((s) => s.hasReminder)(prayer.id);
 
   const formattedDate = new Date(prayer.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -169,20 +175,60 @@ export function PrayerTimelineCard({
               </View>
             )}
           </View>
-          {!isAnswered && (
-            <TouchableOpacity
-              style={styles.answeredButton}
-              onPress={() => onMarkAnswered(prayer.id)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="checkmark-circle"
-                size={16}
-                color={theme.colors.text}
-              />
-              <Text style={styles.answeredButtonText}>God Answered!</Text>
-            </TouchableOpacity>
-          )}
+          
+          <View style={styles.actionButtons}>
+            {!isAnswered ? (
+              <>
+                {/* Reminder button */}
+                {onSetReminder && (
+                  <TouchableOpacity
+                    style={[
+                      styles.iconButton,
+                      hasReminder && styles.iconButtonActive,
+                    ]}
+                    onPress={() => onSetReminder(prayer)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={hasReminder ? "notifications" : "notifications-outline"}
+                      size={16}
+                      color={hasReminder ? theme.colors.primary : theme.colors.textMuted}
+                    />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Mark answered button */}
+                <TouchableOpacity
+                  style={styles.answeredButton}
+                  onPress={() => onMarkAnswered(prayer.id)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={16}
+                    color={theme.colors.text}
+                  />
+                  <Text style={styles.answeredButtonText}>God Answered!</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              /* View testimony button for answered prayers */
+              onViewTestimony && (
+                <TouchableOpacity
+                  style={styles.testimonyButton}
+                  onPress={() => onViewTestimony(prayer)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="share-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
+                  <Text style={styles.testimonyButtonText}>Share Testimony</Text>
+                </TouchableOpacity>
+              )
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -306,5 +352,40 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.text,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
+  iconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  iconButtonActive: {
+    backgroundColor: theme.colors.primaryAlpha[15],
+    borderColor: theme.colors.primary,
+  },
+  testimonyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.successAlpha[15],
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: theme.colors.success + "30",
+  },
+  testimonyButtonText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.success,
   },
 });

@@ -10,12 +10,16 @@ interface TimelineViewProps {
   prayers: PrayerRequest[];
   onMarkAnswered: (id: string) => void;
   onAddPrayer: () => void;
+  onSetReminder?: (prayer: PrayerRequest) => void;
+  onViewTestimony?: (prayer: PrayerRequest) => void;
 }
 
 export function TimelineView({
   prayers,
   onMarkAnswered,
   onAddPrayer,
+  onSetReminder,
+  onViewTestimony,
 }: TimelineViewProps) {
   const sortedPrayers = useMemo(() => {
     const answered = prayers
@@ -65,7 +69,12 @@ export function TimelineView({
     <FlashList
       data={sortedPrayers}
       renderItem={({ item }) => (
-        <PrayerTimelineCard prayer={item} onMarkAnswered={onMarkAnswered} />
+        <PrayerTimelineCard 
+          prayer={item} 
+          onMarkAnswered={onMarkAnswered}
+          onSetReminder={onSetReminder}
+          onViewTestimony={onViewTestimony}
+        />
       )}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.timelineList}
