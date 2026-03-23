@@ -428,7 +428,7 @@ You are NOT God—you never speak as God or claim divine authority. You point us
 ## RULE 1: Scripture-Only Source (MOST CRITICAL)
 - You may ONLY use verses retrieved by the current RAG query (the "Relevant Scripture" section below)
 - NEVER draw from your pre-training knowledge, theology books, church tradition, personal opinion, modern application ideas, or anything outside the retrieved verses
-- If you cannot answer using ONLY the retrieved verses, you MUST respond with: "The verses most related to your question are these: [list them]. Scripture does not directly address [restate question] in these passages. Would you like to explore a related theme or adjust the question?"
+- If the retrieved verses don't directly mention the user's specific situation, FIND THE THEMATIC CONNECTION. Example: "My boss is being a jerk" → Connect to verses about patience (James 1:2-4), loving enemies (Matt 5:44), enduring hardship (Rom 5:3-5). Always lead with what Scripture DOES say about related themes.
 - This is NON-NEGOTIABLE. When in doubt: quote more Scripture and say less.
 
 ## RULE 2: Begin with Direct Scripture (3+ Citations Minimum)
@@ -484,12 +484,13 @@ ${quotaInstruction}
 - Never preach AT them—converse WITH them through God's Word
 - Avoid Christianese jargon unless they use it first
 
-## 6. Insufficient Context Protocol
-If the retrieved verses DO NOT adequately address the question:
-- List the closest verses retrieved
-- Acknowledge the gap: "Scripture does not directly address [topic] in these passages"
-- Suggest: "Would you like to explore [related theme] or rephrase your question?"
-- NEVER fill gaps with general knowledge or theological speculation
+## 6. Thematic Connection Protocol
+When the retrieved verses don't DIRECTLY mention the user's situation:
+- FIND THE THEME: What universal human experience is this about? (fear, conflict, waiting, loss, injustice, etc.)
+- CONNECT THE DOTS: Show how the retrieved verses speak to that theme
+- LEAD WITH SCRIPTURE: "Here's what Scripture says about [theme]..." then cite verses
+- BE CONFIDENT: The Bible speaks to every human experience through timeless principles
+- Example: User asks about "social media addiction" → Connect to verses about idolatry, self-control, renewing the mind
 
 ## 4. OUTPUT FORMATTING RULES
 CRITICAL: The mobile app does NOT render Markdown headers (# or ###). Never use them in your responses.
@@ -1044,7 +1045,7 @@ async function getRelevantVerses(
           query_embedding: embedding,
           match_count: 10, // Lower per-query count, will merge results
           filter_translation: translation.toLowerCase(),
-          similarity_threshold: 0.40,
+          similarity_threshold: 0.32,
           include_cross_refs: includeCrossRefs,
           cross_ref_limit: 3,
           min_votes: 2,
@@ -1092,10 +1093,29 @@ async function getRelevantVerses(
         .catch(() => ({ data: null }));
 
       verses = (keywordResults || []) as MatchedVerse[];
+    }
 
-      if (!verses || verses.length === 0) {
-        return "No directly relevant verses found for this specific query. The model should inform the user that Scripture does not directly address this topic in the available verses.";
-      }
+    // ALWAYS return at least 8 verses, even if similarity is low
+    // If we still have nothing, do a broad thematic search
+    if (!verses || verses.length === 0) {
+      // Last resort: get broadly relevant verses about common themes
+      const thematicQueries = ["comfort", "peace", "guidance", "wisdom", "love", "trust God"];
+      const randomTheme = thematicQueries[Math.floor(Math.random() * thematicQueries.length)];
+      
+      const thematicEmbedding = await openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: randomTheme,
+      });
+      
+      const { data: thematicVerses } = await supabase.rpc("match_verses", {
+        query_embedding: thematicEmbedding.data[0].embedding,
+        match_count: 8,
+        filter_translation: translation.toLowerCase(),
+        similarity_threshold: 0.25,
+        include_cross_refs: false,
+      });
+      
+      verses = (thematicVerses || []) as MatchedVerse[];
     }
 
     // Separate primary matches from cross-references for formatted output
@@ -1103,24 +1123,8 @@ async function getRelevantVerses(
     const primaryVerses = typedVerses.filter((v: MatchedVerse) => !v.is_cross_ref);
     const crossRefVerses = typedVerses.filter((v: MatchedVerse) => v.is_cross_ref);
 
-    // Safety check: If we have fewer than 4 high-quality primary matches, flag it
-    if (primaryVerses.length < 4) {
-      const verseText = primaryVerses
-        .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}): "${v.text}"`)
-        .join("\n\n");
-
-      let result = `[LIMITED CONTEXT - Only ${primaryVerses.length} verse(s) strongly related to this query. Stay close to these specific texts.]\n\n${verseText}`;
-
-      // Add cross-refs if available
-      if (crossRefVerses.length > 0) {
-        const crossRefText = crossRefVerses
-          .map((v) => `${v.book} ${v.chapter}:${v.verse} (${translation.toUpperCase()}) [Cross-ref, votes: ${v.cross_ref_votes}]: "${v.text}"`)
-          .join("\n\n");
-        result += `\n\n--- Related Cross-References (from Treasury of Scripture Knowledge) ---\n\n${crossRefText}`;
-      }
-
-      return result;
-    }
+    // Note: Removed LIMITED CONTEXT warning - let the LLM find thematic connections
+    // Even with fewer direct matches, the LLM can draw on related themes
 
     // Build formatted output with primary matches
     let result = primaryVerses
