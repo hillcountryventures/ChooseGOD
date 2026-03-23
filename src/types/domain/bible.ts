@@ -13,34 +13,31 @@ export interface BibleChapter {
   verses: BibleVerse[];
 }
 
-// Bible translations
-// Use AVAILABLE_TRANSLATIONS to get only translations seeded in the database
+// Bible translations - only those actually seeded in database
 export type Translation =
-  // English (Public Domain & Modern)
-  | 'KJV' | 'NIV' | 'ASV' | 'BBE' | 'WEB' | 'DARBY' | 'YLT'
+  // English
+  | 'KJV' | 'NIV' | 'ASV'
   // Spanish
   | 'RVR' | 'RVR1960'
   // Portuguese
-  | 'PAA' | 'PACF'
-  // German (Public Domain)
-  | 'LUTHER' | 'SCHLACHTER'
+  | 'PAA'
+  // German
+  | 'SCHLACHTER'
   // French
   | 'FRENCH'
   // Chinese
-  | 'CUV' | 'CNCV'
+  | 'CUV'
   // Korean
   | 'KOREAN'
-  // Russian (Public Domain)
+  // Russian
   | 'SYNODAL'
-  // Arabic (Public Domain)
-  | 'ARABIC'
-  // Greek (Public Domain)
+  // Greek
   | 'GREEK'
   // Vietnamese
   | 'VIETNAMESE'
-  // Romanian (Public Domain)
+  // Romanian
   | 'ROMANIAN'
-  // Finnish (Public Domain)
+  // Finnish
   | 'FINNISH';
 
 export interface TranslationInfo {
@@ -48,75 +45,42 @@ export interface TranslationInfo {
   name: string;
   description: string;
   language: string;
-  isAvailable: boolean; // Whether this translation is seeded in the database
 }
 
+// Only translations actually seeded in database
 export const TRANSLATIONS: TranslationInfo[] = [
   // ===== ENGLISH =====
   {
-    id: 'KJV',
-    name: 'King James Version',
-    description: 'Classic, traditional English (1611)',
-    language: 'English',
-    isAvailable: true,
-  },
-  {
     id: 'NIV',
     name: 'New International Version',
-    description: 'Modern, readable English translation',
+    description: 'Modern, easy to read',
     language: 'English',
-    isAvailable: true,
+  },
+  {
+    id: 'KJV',
+    name: 'King James Version',
+    description: 'Classic, traditional (1611)',
+    language: 'English',
   },
   {
     id: 'ASV',
     name: 'American Standard Version',
-    description: 'Literal word-for-word (1901)',
+    description: 'Literal, word-for-word',
     language: 'English',
-    isAvailable: true,
-  },
-  {
-    id: 'BBE',
-    name: 'Bible in Basic English',
-    description: 'Simple vocabulary translation (partial)',
-    language: 'English',
-    isAvailable: false, // Only 6,675 verses - incomplete
-  },
-  {
-    id: 'WEB',
-    name: 'World English Bible',
-    description: 'Modern public domain',
-    language: 'English',
-    isAvailable: false,
-  },
-  {
-    id: 'DARBY',
-    name: 'Darby Translation',
-    description: 'Literal by J.N. Darby',
-    language: 'English',
-    isAvailable: false,
-  },
-  {
-    id: 'YLT',
-    name: "Young's Literal",
-    description: 'Extremely literal translation',
-    language: 'English',
-    isAvailable: false,
   },
 
   // ===== SPANISH =====
   {
-    id: 'RVR',
-    name: 'Reina-Valera',
-    description: 'Traducción clásica en español',
-    language: 'Español',
-    isAvailable: true,
-  },
-  {
     id: 'RVR1960',
     name: 'Reina-Valera 1960',
-    description: 'Revisión 1960 en español',
+    description: 'La más popular en español',
     language: 'Español',
-    isAvailable: true,
+  },
+  {
+    id: 'RVR',
+    name: 'Reina-Valera',
+    description: 'Traducción clásica',
+    language: 'Español',
   },
 
   // ===== PORTUGUESE =====
@@ -125,39 +89,22 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Almeida Atualizada',
     description: 'Tradução portuguesa',
     language: 'Português',
-    isAvailable: true,
-  },
-  {
-    id: 'PACF',
-    name: 'Almeida Corrigida',
-    description: 'Tradução fiel',
-    language: 'Português',
-    isAvailable: false,
   },
 
   // ===== GERMAN =====
   {
-    id: 'LUTHER',
-    name: 'Luther 1912',
-    description: 'Martin Luther Übersetzung',
-    language: 'Deutsch',
-    isAvailable: false,
-  },
-  {
     id: 'SCHLACHTER',
     name: 'Schlachter',
-    description: 'Schlachter Übersetzung',
+    description: 'Deutsche Übersetzung',
     language: 'Deutsch',
-    isAvailable: true,
   },
 
   // ===== FRENCH =====
   {
     id: 'FRENCH',
-    name: 'French Bible',
+    name: 'Bible Française',
     description: 'Traduction française',
     language: 'Français',
-    isAvailable: true,
   },
 
   // ===== CHINESE =====
@@ -166,14 +113,6 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: '和合本',
     description: 'Chinese Union Version',
     language: '中文',
-    isAvailable: true,
-  },
-  {
-    id: 'CNCV',
-    name: '新译本',
-    description: 'New Contemporary',
-    language: '中文',
-    isAvailable: false,
   },
 
   // ===== KOREAN =====
@@ -182,25 +121,14 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: '한국어 성경',
     description: 'Korean Bible',
     language: '한국어',
-    isAvailable: true,
   },
 
   // ===== RUSSIAN =====
   {
     id: 'SYNODAL',
     name: 'Синодальный',
-    description: 'Synodal Translation',
+    description: 'Синодальный перевод',
     language: 'Русский',
-    isAvailable: true,
-  },
-
-  // ===== ARABIC =====
-  {
-    id: 'ARABIC',
-    name: 'الكتاب المقدس',
-    description: 'Smith & Van Dyke',
-    language: 'العربية',
-    isAvailable: false, // Not yet seeded
   },
 
   // ===== GREEK =====
@@ -209,7 +137,6 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Ελληνική Βίβλος',
     description: 'Greek Bible',
     language: 'Ελληνικά',
-    isAvailable: true,
   },
 
   // ===== VIETNAMESE =====
@@ -218,7 +145,6 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Kinh Thánh',
     description: 'Vietnamese Bible',
     language: 'Tiếng Việt',
-    isAvailable: true,
   },
 
   // ===== ROMANIAN =====
@@ -227,7 +153,6 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Cornilescu',
     description: 'Biblia Cornilescu',
     language: 'Română',
-    isAvailable: true,
   },
 
   // ===== FINNISH =====
@@ -236,12 +161,11 @@ export const TRANSLATIONS: TranslationInfo[] = [
     name: 'Raamattu',
     description: 'Finnish Bible',
     language: 'Suomi',
-    isAvailable: true,
   },
 ];
 
-// Helper to get only available translations (seeded in database)
-export const AVAILABLE_TRANSLATIONS = TRANSLATIONS.filter(t => t.isAvailable);
+// All translations are available (we removed unavailable ones)
+export const AVAILABLE_TRANSLATIONS = TRANSLATIONS;
 
 // Helper to get translations by language
 export const getTranslationsByLanguage = (language: string) =>

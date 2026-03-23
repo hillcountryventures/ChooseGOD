@@ -27,8 +27,8 @@ import { useTrackScreen } from '../../hooks/useAnalytics';
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'TranslationSelect'>;
 type RouteProps = RouteProp<OnboardingStackParamList, 'TranslationSelect'>;
 
-// English translations to show prominently
-const ENGLISH_TRANSLATIONS: Translation[] = ['KJV', 'NIV', 'ASV'];
+// English translations to show prominently (NIV first - most popular)
+const ENGLISH_TRANSLATIONS: Translation[] = ['NIV', 'KJV', 'ASV'];
 
 // Map device language to translation
 const LANGUAGE_MAP: Record<string, Translation[]> = {
@@ -51,7 +51,7 @@ export default function TranslationSelectScreen() {
   useTrackScreen('onboarding_translation');
 
   const updatePreferences = useStore((s) => s.updatePreferences);
-  const [selectedTranslation, setSelectedTranslation] = useState<Translation>('KJV');
+  const [selectedTranslation, setSelectedTranslation] = useState<Translation>('NIV');
 
   // Get device language
   const deviceLanguage = Localization.locale.split('-')[0];
@@ -59,13 +59,13 @@ export default function TranslationSelectScreen() {
 
   // Get translation info
   const availableTranslations = useMemo(() => {
-    return TRANSLATIONS.filter((t) => t.isAvailable && suggestedTranslations.includes(t.id));
+    return TRANSLATIONS.filter((t) => suggestedTranslations.includes(t.id));
   }, [suggestedTranslations]);
 
   // If device isn't English, also show English options
   const showEnglishSection = deviceLanguage !== 'en' && !['en'].includes(deviceLanguage);
   const englishTranslations = useMemo(() => {
-    return TRANSLATIONS.filter((t) => t.isAvailable && ENGLISH_TRANSLATIONS.includes(t.id));
+    return TRANSLATIONS.filter((t) => ENGLISH_TRANSLATIONS.includes(t.id));
   }, []);
 
   const handleSelect = (translation: Translation) => {
@@ -87,7 +87,7 @@ export default function TranslationSelectScreen() {
 
   const renderTranslationOption = (translationId: Translation) => {
     const info = TRANSLATIONS.find((t) => t.id === translationId);
-    if (!info || !info.isAvailable) return null;
+    if (!info) return null;
 
     const isSelected = selectedTranslation === translationId;
 
