@@ -25,6 +25,9 @@ import { SpiritualLandscape } from "./insights/SpiritualLandscape";
 import { MilestonesSection } from "./insights/MilestonesSection";
 import { ThemesSection } from "./insights/ThemesSection";
 import { AnchorVersesSection } from "./insights/AnchorVersesSection";
+import { StreakVisualization } from "./StreakVisualization";
+import { WeeklyComparison } from "./WeeklyComparison";
+import { SpiritualGoals } from "./SpiritualGoals";
 
 interface InsightsViewProps {
   moments: SpiritualMoment[];
@@ -159,6 +162,15 @@ export function InsightsView({ moments }: InsightsViewProps) {
       contentContainerStyle={styles.insightsContainer}
       showsVerticalScrollIndicator={false}
     >
+      {/* Streak Visualization - prominent at top */}
+      <StreakVisualization />
+
+      {/* Weekly Goals */}
+      <SpiritualGoals moments={moments} />
+
+      {/* Weekly Comparison */}
+      <WeeklyComparison moments={moments} />
+
       <AIInsightCard
         isPremium={isPremium}
         showPaywall={showPaywall}
