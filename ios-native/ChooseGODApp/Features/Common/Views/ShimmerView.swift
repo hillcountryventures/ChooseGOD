@@ -12,19 +12,19 @@ struct ShimmerView: View {
                     .frame(height: height)
                     .overlay {
                         GeometryReader { geo in
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(stops: [
-                                            Gradient.Stop(color: .clear, location: 0),
-                                            Gradient.Stop(color: .white.opacity(0.3), location: 0.5),
-                                            Gradient.Stop(color: .clear, location: 1)
-                                        ]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                    .offset(x: geo.size.width * phase)
-                                )
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    Gradient.Stop(color: .clear, location: 0),
+                                    Gradient.Stop(color: .white.opacity(0.3), location: 0.5),
+                                    Gradient.Stop(color: .clear, location: 1)
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .offset(x: geo.size.width * phase)
+                            .mask(
+                                RoundedRectangle(cornerRadius: 8)
+                            )
                         }
                     }
             }

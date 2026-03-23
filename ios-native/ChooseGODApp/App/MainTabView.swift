@@ -3,55 +3,17 @@ import SwiftUI
 /// Main tab bar navigation for the app
 struct MainTabView: View {
     @Environment(AppState.self) private var appState
-    @State private var selectedTab: Tab = .home
     @State private var showChat = false
-    
-    enum Tab: Int, CaseIterable {
-        case home
-        case discover
-        case bible
-        case journey
-        case prayers
-
-        var title: String {
-            switch self {
-            case .home: return "Home"
-            case .discover: return "Discover"
-            case .bible: return "Bible"
-            case .journey: return "Journey"
-            case .prayers: return "Prayers"
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .home: return "house"
-            case .discover: return "safari"
-            case .bible: return "book"
-            case .journey: return "chart.line.uptrend.xyaxis"
-            case .prayers: return "hands.sparkles"
-            }
-        }
-
-        var selectedIcon: String {
-            switch self {
-            case .home: return "house.fill"
-            case .discover: return "safari.fill"
-            case .bible: return "book.fill"
-            case .journey: return "chart.line.uptrend.xyaxis"
-            case .prayers: return "hands.sparkles.fill"
-            }
-        }
-    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
             // Tab Content
-            TabView(selection: $selectedTab) {
+            TabView(selection: Bindable(appState).selectedTab) {
                 HomeView()
                     .tag(Tab.home)
 
-                DiscoverView()
+                // DiscoverView() // TODO: Implement DiscoverView
+                Text("Discover")
                     .tag(Tab.discover)
 
                 BibleReaderView()
@@ -64,12 +26,12 @@ struct MainTabView: View {
                     .tag(Tab.prayers)
             }
             .environment(appState)
-            .onChange(of: selectedTab) { _, _ in
+            .onChange(of: appState.selectedTab) { _, _ in
                 HapticManager.shared.selectionChanged()
             }
             
             // Frosted Glass Tab Bar
-            GlassTabBar(selectedTab: $selectedTab)
+            GlassTabBar(selectedTab: Bindable(appState).selectedTab)
             
             // Floating Glass Chat Button
             VStack {
@@ -92,8 +54,20 @@ struct MainTabView: View {
         .sheet(isPresented: $showChat) {
             ChatView()
                 .environment(appState)
-                .presentationBackground(.ultraThinMaterial)
+                .presentationBackground(Material.ultraThinMaterial)
                 .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: .constant(appState.pendingGiftCode != nil)) {
+            if let code = appState.pendingGiftCode {
+                // GiftRedemptionView(code: code) // TODO: Implement GiftRedemptionView
+                Text("Gift Code: \(code)")
+                    .environment(appState)
+                    .presentationBackground(Material.ultraThinMaterial)
+                    .presentationCornerRadius(32)
+                    .onDisappear {
+                        appState.pendingGiftCode = nil
+                    }
+            }
         }
     }
 }
@@ -101,12 +75,12 @@ struct MainTabView: View {
 // MARK: - Glass Tab Bar
 
 struct GlassTabBar: View {
-    @Binding var selectedTab: MainTabView.Tab
+    @Binding var selectedTab: Tab
     @Namespace private var animation
     
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(MainTabView.Tab.allCases, id: \.self) { tab in
+            ForEach(Tab.allCases, id: \.self) { tab in
                 if tab == .bible {
                     // Center Bible button (elevated glass orb)
                     glassBibleButton(tab: tab)
@@ -134,7 +108,7 @@ struct GlassTabBar: View {
         }
     }
     
-    private func glassTabButton(tab: MainTabView.Tab) -> some View {
+    private func glassTabButton(tab: Tab) -> some View {
         Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 selectedTab = tab
@@ -166,7 +140,7 @@ struct GlassTabBar: View {
         .accessibilityHint("Double tap to switch to \(tab.title) tab")
     }
     
-    private func glassBibleButton(tab: MainTabView.Tab) -> some View {
+    private func glassBibleButton(tab: Tab) -> some View {
         Button {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
                 selectedTab = tab

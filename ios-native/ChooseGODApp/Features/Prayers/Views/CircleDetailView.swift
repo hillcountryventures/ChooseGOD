@@ -97,8 +97,7 @@ struct CircleDetailView: View {
         }
         .alert("Leave Circle?", isPresented: $showLeaveAlert) {
             Button("Cancel", role: .cancel) {}
-            Button("Leave", role: .destructive)
-                .accessibilityLabel("Leave this prayer circle") {
+            Button("Leave", role: .destructive) {
                 Task {
                     guard let userId = appState.currentUser?.id else { return }
                     await viewModel.leaveCircle(circleId: circle.id, userId: userId)

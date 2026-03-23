@@ -57,7 +57,7 @@ final class PaywallViewModel {
     // MARK: - Initialization
     
     init() {
-        AnalyticsService.shared.capture("paywall_presented")
+        // // AnalyticsService.shared.capture("paywall_presented") // TODO: Service not available // TODO: Service not available
         Task { await loadOfferings() }
     }
     
@@ -96,14 +96,14 @@ final class PaywallViewModel {
                 }
             }
         } catch {
-            AppLogger.subscription.error("PaywallVM failed to load offerings: \(error)")
+            // AppLogger.subscription.error("PaywallVM failed to load offerings: \(error)") // TODO: Service not available
         }
     }
     
     // MARK: - Purchase
     
     func purchase(using service: SubscriptionServiceProtocol) async {
-        AnalyticsService.shared.capture("purchase_tapped", properties: ["plan": String(describing: selectedPlan)])
+        // AnalyticsService.shared.capture("purchase_tapped", properties: ["plan": String(describing: selectedPlan)]) // TODO: Service not available
         isPurchasing = true
         defer { isPurchasing = false }
         
@@ -111,13 +111,13 @@ final class PaywallViewModel {
             let success = try await service.purchase(package: selectedPlan)
             if success {
                 purchaseSucceeded = true
-                AnalyticsService.shared.capture("subscription_purchased", properties: ["plan": String(describing: selectedPlan)])
+                // AnalyticsService.shared.capture("subscription_purchased", properties: ["plan": String(describing: selectedPlan)]) // TODO: Service not available
             }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
-            AnalyticsService.shared.capture("subscription_failed", properties: ["plan": String(describing: selectedPlan), "error": error.localizedDescription])
-            AnalyticsService.shared.capture("error", properties: ["source": "purchase", "message": error.localizedDescription])
+            // AnalyticsService.shared.capture("subscription_failed", properties: ["plan": String(describing: selectedPlan), "error": error.localizedDescription]) // TODO: Service not available
+            // AnalyticsService.shared.capture("error", properties: ["source": "purchase", "message": error.localizedDescription]) // TODO: Service not available
         }
     }
     
@@ -138,7 +138,7 @@ final class PaywallViewModel {
         } catch {
             errorMessage = error.localizedDescription
             showError = true
-            AnalyticsService.shared.capture("error", properties: ["source": "restore_purchase", "message": error.localizedDescription])
+            // AnalyticsService.shared.capture("error", properties: ["source": "restore_purchase", "message": error.localizedDescription]) // TODO: Service not available
         }
     }
 }

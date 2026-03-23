@@ -16,6 +16,9 @@ struct BibleReaderView: View {
     @State private var isLoadingAudio = false
     @State private var showCrossRefsForVerse: Int?
     @State private var audioPlayer = AudioPlayerManager.shared
+    @State private var bookmarkedVerseNumbers: Set<Int> = []
+    @State private var chapterHighlights: [VerseHighlight] = []
+    @State private var showSearchSheet = false
     
     var body: some View {
         NavigationStack {
@@ -24,7 +27,7 @@ struct BibleReaderView: View {
                     .ignoresSafeArea()
                 
                 if isLoading {
-                    VStack(spacing: 16) { ShimmerCard(); ShimmerCard() }.padding()
+                    ShimmerView(height: 24).padding()
                 } else {
                     VStack(spacing: 0) {
                         ScrollView {
@@ -36,26 +39,52 @@ struct BibleReaderView: View {
                                     .padding(.horizontal)
                                     .padding(.top, Theme.Spacing.sm)
                                     .padding(.bottom, Theme.Spacing.lg)
-                                
+                                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+
                                 // Verses
                                 ForEach(verses) { verse in
+                                    let isBookmarked = bookmarkedVerseNumbers.contains(verse.verse)
+                                    let highlight = chapterHighlights.first { $0.verse == verse.verse }
+
                                     VerseRow(
                                         verse: verse,
+                                        isBookmarked: isBookmarked,
+                                        highlight: highlight,
                                         isHighlightedByAudio: audioPlayer.playbackState.currentVerse == verse.verse,
+                                        onBookmarkToggle: {
+                                            Task { await toggleBookmark(verse: verse) }
+                                        },
+                                        onHighlightToggle: { color in
+                                            Task { await toggleHighlight(verse: verse, color: color) }
+                                        },
                                         onCrossRefTap: {
                                             showCrossRefsForVerse = verse.verse
                                         }
                                     )
+                                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                                 }
                             }
                             .padding(.vertical)
                             // Extra padding at bottom for audio bar
                             .padding(.bottom, audioPlayer.playbackState.currentTrack != nil ? 70 : 0)
                         }
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 50)
+                                .onEnded { value in
+                                    let h = value.translation.width
+                                    let v = value.translation.height
+                                    guard abs(h) > abs(v) else { return }
+                                    if h < -50 {
+                                        navigateToNextChapter()
+                                    } else if h > 50 {
+                                        navigateToPreviousChapter()
+                                    }
+                                }
+                        )
                         .refreshable {
                             await loadChapter()
                         }
-                        
+
                         // Sticky audio player bar
                         AudioPlayerBar()
                     }
@@ -92,25 +121,18 @@ struct BibleReaderView: View {
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ForEach(BibleTranslation.allCases) { translation in
-                            Button {
-                                appState.preferences.preferredTranslation = translation
-                                appState.preferences.save()
-                                Task { await loadChapter() }
-                            } label: {
-                                HStack {
-                                    Text(translation.displayName)
-                                    if translation == appState.preferences.preferredTranslation {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
+                    HStack(spacing: Theme.Spacing.sm) {
+                        // Search button
+                        Button {
+                            showSearchSheet = true
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(Theme.Colors.primary)
                         }
-                    } label: {
-                        Text(appState.preferences.preferredTranslation.rawValue)
-                            .font(Theme.Typography.subheadlineMedium)
-                            .foregroundStyle(Theme.Colors.primary)
+                        .accessibilityLabel("Search Bible")
+
+                        // Translation menu
+                        translationMenuView
                     }
                 }
             }
@@ -131,22 +153,84 @@ struct BibleReaderView: View {
                     translation: appState.preferences.preferredTranslation.rawValue
                 )
             }
+            .sheet(isPresented: $showSearchSheet) {
+                BibleSearchView { book, chapter in
+                    selectedBook = book
+                    selectedChapter = chapter
+                    Task { await loadChapter() }
+                }
+                .environment(appState)
+                .presentationBackground(.ultraThinMaterial)
+                .presentationCornerRadius(32)
+            }
             .task {
+                restoreOrSetDefaultPosition()
                 await loadChapter()
             }
         }
-        .onAppear { AnalyticsService.shared.screen("bible_reader")
-            AnalyticsService.shared.capture("bible_read") }
+        .onAppear {
+            // TODO: Analytics removed
+            // TODO: Analytics removed
+        }
     }
     
+    private func restoreOrSetDefaultPosition() {
+        let defaults = UserDefaults.standard
+        if let savedBook = defaults.string(forKey: "lastReadBook"),
+           defaults.integer(forKey: "lastReadChapter") > 0 {
+            selectedBook = savedBook
+            selectedChapter = defaults.integer(forKey: "lastReadChapter")
+        } else {
+            // First time — default to John 1
+            selectedBook = "John"
+            selectedChapter = 1
+            defaults.set("John", forKey: "lastReadBook")
+            defaults.set(1, forKey: "lastReadChapter")
+            defaults.set(Date(), forKey: "lastReadDate")
+        }
+    }
+
     private func loadChapter() async {
         isLoading = true
         do {
-            verses = try await appState.bibleService.fetchChapter(
+            let fetchedVerses = try await appState.bibleService.fetchChapter(
                 book: selectedBook,
                 chapter: selectedChapter,
                 translation: appState.preferences.preferredTranslation
             )
+            withAnimation(Theme.Animation.normal) {
+                verses = fetchedVerses
+            }
+
+            // Load bookmarks for this chapter
+            if let userId = appState.currentUser?.id {
+                let bookmarks = try? await BookmarkService.shared.getBookmarksForChapter(
+                    book: selectedBook,
+                    chapter: selectedChapter,
+                    userId: userId
+                )
+                bookmarkedVerseNumbers = Set(bookmarks ?? [])
+            } else {
+                bookmarkedVerseNumbers.removeAll()
+            }
+
+            // Load highlights for this chapter
+            if let userId = appState.currentUser?.id {
+                chapterHighlights = (try? await HighlightService.shared.getHighlightsForChapter(
+                    book: selectedBook,
+                    chapter: selectedChapter,
+                    userId: userId
+                )) ?? []
+            } else {
+                chapterHighlights.removeAll()
+            }
+
+            // Persist reading position and record progress
+            let defaults = UserDefaults.standard
+            defaults.set(selectedBook, forKey: "lastReadBook")
+            defaults.set(selectedChapter, forKey: "lastReadChapter")
+            defaults.set(Date(), forKey: "lastReadDate")
+            // TODO: ReadingStatsManager removed
         } catch {
             appState.handleError(error)
         }
@@ -156,7 +240,7 @@ struct BibleReaderView: View {
     private func loadAudio() async {
         isLoadingAudio = true
         let translationStr = appState.preferences.preferredTranslation.rawValue
-        
+
         if let track = await BibleAudioService.shared.getChapterAudio(
             book: selectedBook,
             chapter: selectedChapter,
@@ -171,24 +255,140 @@ struct BibleReaderView: View {
         }
         isLoadingAudio = false
     }
+
+    // MARK: - Chapter Navigation
+
+    private func navigateToNextChapter() {
+        let maxChapter = getChapterCount(for: selectedBook)
+        if selectedChapter < maxChapter {
+            selectedChapter += 1
+        } else if let idx = BIBLE_BOOKS.firstIndex(where: { $0.name == selectedBook }), idx + 1 < BIBLE_BOOKS.count {
+            selectedBook = BIBLE_BOOKS[idx + 1].name
+            selectedChapter = 1
+        }
+        HapticManager.shared.selectionChanged()
+        Task { await loadChapter() }
+    }
+
+    private func navigateToPreviousChapter() {
+        if selectedChapter > 1 {
+            selectedChapter -= 1
+        } else if let idx = BIBLE_BOOKS.firstIndex(where: { $0.name == selectedBook }), idx > 0 {
+            let prev = BIBLE_BOOKS[idx - 1]
+            selectedBook = prev.name
+            selectedChapter = prev.chapters
+        }
+        HapticManager.shared.selectionChanged()
+        Task { await loadChapter() }
+    }
+
+    // MARK: - Bookmarks
+
+    private func toggleBookmark(verse: Verse) async {
+        guard let userId = appState.currentUser?.id else { return }
+        let isCurrentlyBookmarked = bookmarkedVerseNumbers.contains(verse.verse)
+
+        do {
+            if isCurrentlyBookmarked {
+                try await BookmarkService.shared.removeBookmark(
+                    book: verse.book,
+                    chapter: verse.chapter,
+                    verse: verse.verse,
+                    translation: verse.translation,
+                    userId: userId
+                )
+                bookmarkedVerseNumbers.remove(verse.verse)
+            } else {
+                try await BookmarkService.shared.saveBookmark(verse: verse, userId: userId)
+                bookmarkedVerseNumbers.insert(verse.verse)
+            }
+        } catch {
+            appState.handleError(error)
+        }
+    }
+
+    // MARK: - Highlights
+
+    private func toggleHighlight(verse: Verse, color: HighlightColor) async {
+        guard let userId = appState.currentUser?.id else { return }
+        let existing = chapterHighlights.first { $0.verse == verse.verse }
+
+        do {
+            let result = try await HighlightService.shared.toggleHighlight(
+                verse: verse,
+                color: color,
+                userId: userId,
+                existingHighlight: existing
+            )
+            chapterHighlights.removeAll { $0.verse == verse.verse }
+            if let updated = result {
+                chapterHighlights.append(updated)
+            }
+            HapticManager.shared.impact()
+        } catch {
+            appState.handleError(error)
+        }
+    }
+
+    // MARK: - UI Helpers
+
+    @ViewBuilder
+    private var translationMenuView: some View {
+        Menu {
+            Section("Popular") {
+                translationButton(.kjv)
+                translationButton(.niv)
+            }
+            Section("All Translations") {
+                ForEach(BibleTranslation.allCases.filter { $0 != .kjv && $0 != .niv }) { translation in
+                    translationButton(translation)
+                }
+            }
+        } label: {
+            Text(appState.preferences.preferredTranslation.rawValue)
+                .font(Theme.Typography.subheadlineMedium)
+                .foregroundStyle(Theme.Colors.primary)
+        }
+    }
+
+    @ViewBuilder
+    private func translationButton(_ translation: BibleTranslation) -> some View {
+        Button {
+            appState.preferences.preferredTranslation = translation
+            appState.preferences.save()
+            Task { await loadChapter() }
+        } label: {
+            HStack {
+                Text(translation.displayName)
+                if translation == appState.preferences.preferredTranslation {
+                    Image(systemName: "checkmark")
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Verse Row
 
 struct VerseRow: View {
     let verse: Verse
+    var isBookmarked: Bool = false
+    var highlight: VerseHighlight? = nil
     var isHighlightedByAudio: Bool = false
+    var onBookmarkToggle: (() -> Void)?
+    var onHighlightToggle: ((HighlightColor) -> Void)?
     var onCrossRefTap: (() -> Void)?
-    @State private var isBookmarked = false
+
     @State private var showShareCard = false
-    
+    @State private var showReflectionSheet = false
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(verse.verse)")
                 .font(Theme.Typography.verseNumber)
                 .foregroundStyle(isHighlightedByAudio ? Theme.Colors.accent : Theme.Colors.primary)
                 .frame(width: 28, alignment: .trailing)
-            
+
             Text(verse.text)
                 .font(Theme.Typography.bodySerif)
                 .foregroundStyle(Theme.Colors.text)
@@ -197,50 +397,100 @@ struct VerseRow: View {
         .padding(.horizontal)
         .padding(.vertical, Theme.Spacing.sm)
         .background(
-            isHighlightedByAudio
-                ? Theme.Colors.primaryAlpha(0.12)
-                : Color.clear
+            Group {
+                if let h = highlight {
+                    Color(hex: h.color.color).opacity(0.25)
+                } else if isHighlightedByAudio {
+                    Theme.Colors.primaryAlpha(0.12)
+                } else {
+                    Color.clear
+                }
+            }
         )
         .animation(Theme.Animation.fast, value: isHighlightedByAudio)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Verse \(verse.verse). \(verse.text)")
-        .accessibilityHint("Long press for options like bookmark, cross-references, copy, and share")
+        .accessibilityHint("Long press for options")
         .contextMenu {
-            Button {
-                isBookmarked.toggle()
-                HapticManager.shared.impact()
-            } label: {
-                Label(isBookmarked ? "Remove Bookmark" : "Bookmark", systemImage: isBookmarked ? "bookmark.fill" : "bookmark")
+            Button(action: { onBookmarkToggle?() }) {
+                Label(
+                    isBookmarked ? "Remove Bookmark" : "Bookmark",
+                    systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
+                )
             }
-            
+
             Button {
                 onCrossRefTap?()
             } label: {
                 Label("Cross-References", systemImage: "link")
             }
-            
+
+            // Highlight menu
+            Menu {
+                ForEach(HighlightColor.allCases, id: \.self) { color in
+                    Button {
+                        onHighlightToggle?(color)
+                    } label: {
+                        Label(
+                            color.rawValue.capitalized,
+                            systemImage: highlight?.color == color ? "circle.fill" : "circle"
+                        )
+                    }
+                }
+                if highlight != nil {
+                    Divider()
+                    Button(role: .destructive) {
+                        if let h = highlight { onHighlightToggle?(h.color) }
+                    } label: {
+                        Label("Remove Highlight", systemImage: "xmark")
+                    }
+                }
+            } label: {
+                Label(
+                    highlight != nil ? "Change Highlight" : "Highlight",
+                    systemImage: "highlighter"
+                )
+            }
+
+            Button {
+                showReflectionSheet = true
+            } label: {
+                Label("Reflect", systemImage: "pencil.and.scribble")
+            }
+
             Button {
                 UIPasteboard.general.string = "\(verse.reference) - \(verse.text)"
             } label: {
                 Label("Copy", systemImage: "doc.on.doc")
             }
-            
+
             ShareLink(item: "\(verse.reference)\n\n\(verse.text)") {
                 Label("Share Text", systemImage: "square.and.arrow.up")
             }
-            
+
             Button {
                 showShareCard = true
             } label: {
                 Label("Share as Card", systemImage: "photo")
             }
         }
-        .sheet(isPresented: $showShareCard) {
-            ShareCardPickerView(
+        // .sheet(isPresented: $showShareCard) {
+        //     ShareCardPickerView(
+        //         verseText: verse.text,
+        //         reference: "\(verse.reference) \(verse.translation)"
+        //     )
+        // }
+        .sheet(isPresented: $showReflectionSheet) {
+            ReflectionSheet(
+                verseRef: verse.reference,
                 verseText: verse.text,
-                reference: "\(verse.reference) \(verse.translation)"
+                book: verse.book,
+                chapter: verse.chapter,
+                verse: verse.verse
             )
+            .presentationBackground(.ultraThinMaterial)
+            .presentationCornerRadius(32)
         }
     }
 }

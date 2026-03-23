@@ -193,7 +193,7 @@ final class LectioViewModel: ObservableObject {
     
     func saveReflection() {
         // TODO: Save to Supabase spiritual_moments
-        let content = [
+        let _ = [
             "**Lectio Divina - \(verseRef)**",
             "",
             "*Passage:* \"\(verseText)\"",

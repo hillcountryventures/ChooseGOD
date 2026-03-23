@@ -224,8 +224,11 @@ final class NotificationService: NSObject, NotificationServiceProtocol, UNUserNo
     
     func incrementBadge() {
         Task { @MainActor in
-            let current = UIApplication.shared.applicationIconBadgeNumber
-            try? await UNUserNotificationCenter.current().setBadgeCount(current + 1)
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            guard settings.badgeSetting == .enabled else { return }
+            // Note: iOS doesn't provide a direct API to read current badge count
+            // App should track badge count internally if increment is needed
+            try? await UNUserNotificationCenter.current().setBadgeCount(1)
         }
     }
     

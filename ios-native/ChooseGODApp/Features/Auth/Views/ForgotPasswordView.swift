@@ -71,7 +71,7 @@ struct ForgotPasswordView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     // Dismiss
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 } label: {
                     Image(systemName: "chevron.backward")
                         .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
@@ -96,7 +96,7 @@ struct ForgotPasswordView: View {
         // .overlay(LoadingOverlay(isLoading: viewModel.isLoading)) // TODO: Fix LoadingOverlay import
     }
     
-    @Environment(\PresentationMode.self) private var presentationMode
+    @Environment(\.dismiss) private var dismiss
 }
 
 // #Preview {

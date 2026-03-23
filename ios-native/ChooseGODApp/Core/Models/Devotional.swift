@@ -101,8 +101,9 @@ struct DevotionalDay: Identifiable, Codable {
     let contentPrompt: String
     let reflectionQuestions: [String]
     var prayerFocus: String?
+    var audioUrl: String?
     let createdAt: Date
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case seriesId = "series_id"
@@ -112,6 +113,7 @@ struct DevotionalDay: Identifiable, Codable {
         case contentPrompt = "content_prompt"
         case reflectionQuestions = "reflection_questions"
         case prayerFocus = "prayer_focus"
+        case audioUrl = "audio_url"
         case createdAt = "created_at"
     }
     
@@ -125,6 +127,7 @@ struct DevotionalDay: Identifiable, Codable {
             contentPrompt: "Today we explore what it means to truly cast our anxieties on God.",
             reflectionQuestions: ["What worries are you holding onto today?", "How can you practice releasing control to God?"],
             prayerFocus: "Lord, help me to release my worries to You.",
+            audioUrl: nil,
             createdAt: Date()
         )
     }

@@ -88,23 +88,18 @@ struct ChatView: View {
                     upgradePromptOverlay
                 }
             }
-            .screenBackground()
-            .navigationTitle(AppStrings.Chat.navTitle)
-            .navigationBarTitleDisplayMode(.inline)
+            .background(Theme.Colors.background.ignoresSafeArea())
+            .navigationTitle("Ask the Bible")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(AppStrings.Chat.close) { dismiss() }
-                        .accessibilityLabel(AppStrings.Chat.close)
-                        .accessibilityHint(AppStrings.Chat.closeChatHint)
+                    Button("Close") { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button(role: .destructive) {
                             viewModel.clearConversation()
                         } label: {
-                            Label(AppStrings.Chat.clearChat, systemImage: "trash")
-                                .accessibilityLabel(AppStrings.Chat.clearChat)
-                                .accessibilityHint(AppStrings.Chat.clearChatHint)
+                            Label("Clear Chat", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -128,7 +123,6 @@ struct ChatView: View {
                 }
             }
         }
-        .onAppear { AnalyticsService.shared.screen("chat") }
         .fullScreenCover(isPresented: $showPaywall) {
             PaywallView()
         }
@@ -155,7 +149,7 @@ struct ChatView: View {
                     .font(Theme.Typography.caption)
                     .foregroundStyle(index < viewModel.chatsRemaining ? Theme.Colors.primary : Theme.Colors.secondaryText.opacity(0.4))
             }
-            Text(AppStrings.Chat.chatsRemaining(viewModel.chatsRemaining))
+            Text("\(viewModel.chatsRemaining) remaining")
                 .font(Theme.Typography.caption2)
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
@@ -177,29 +171,30 @@ struct ChatView: View {
                     .font(Theme.Typography.iconXXL)
                     .foregroundStyle(Theme.Colors.primary)
                 
-                Text(AppStrings.Chat.quotaExhaustedTitle)
+                Text("Conversations Used")
                     .font(Theme.Typography.title3)
                     .foregroundStyle(Theme.Colors.text)
-                
-                Text(AppStrings.Chat.quotaExhaustedBody)
+
+                Text("You've used your 5 free AI conversations. Upgrade for unlimited access.")
                     .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
-                
+
                 Button {
                     viewModel.dismissUpgradePrompt()
                     showPaywall = true
                 } label: {
-                    Text(AppStrings.Chat.unlockUnlimited)
-                        .primaryButtonStyle()
+                    Text("Unlock Unlimited")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Theme.Colors.primary)
+                        .foregroundStyle(.white)
+                        .cornerRadius(12)
                 }
-                .accessibilityLabel(AppStrings.Chat.unlockUnlimited)
-                .accessibilityHint(AppStrings.Chat.unlockHint)
-                
-                Button(AppStrings.Chat.maybeLater) {
+
+                Button("Maybe Later") {
                     viewModel.dismissUpgradePrompt()
                 }
-                .secondaryButtonStyle()
                 .foregroundStyle(Theme.Colors.secondaryText)
             }
             .padding(Theme.Spacing.xl)
@@ -217,19 +212,19 @@ struct ChatView: View {
                 .font(Theme.Typography.iconLarge)
                 .foregroundStyle(Theme.Colors.primary)
             
-            Text(AppStrings.Chat.welcomeTitle)
+            Text("Hi! I'm your Bible companion")
                 .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
-            
-            Text(AppStrings.Chat.welcomeBody)
+
+            Text("Ask me anything about Scripture, faith, or life. I'll help you find wisdom in God's Word.")
                 .font(Theme.Typography.bodySmall)
                 .foregroundStyle(Theme.Colors.secondaryText)
                 .multilineTextAlignment(.center)
-            
+
             if let ctx = verseContext {
                 HStack(spacing: 8) {
                     Image(systemName: "book.closed")
-                    Text(AppStrings.Chat.readingContext(ctx.reference))
+                    Text("Reading: \(ctx.reference)")
                 }
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.primary)
@@ -263,20 +258,20 @@ struct ChatView: View {
     private var quickPrompts: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                QuickPromptChip(text: AppStrings.Chat.promptAnxiety) {
-                    viewModel.sendMessage(AppStrings.Chat.promptAnxiety, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
+                QuickPromptChip(text: "What does the Bible say about anxiety?") {
+                    viewModel.sendMessage("What does the Bible say about anxiety?", isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
 
-                QuickPromptChip(text: AppStrings.Chat.promptJohn316) {
-                    viewModel.sendMessage(AppStrings.Chat.promptJohn316, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
+                QuickPromptChip(text: "Help me understand John 3:16") {
+                    viewModel.sendMessage("Help me understand John 3:16", isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
 
-                QuickPromptChip(text: AppStrings.Chat.promptEncouragement) {
-                    viewModel.sendMessage(AppStrings.Chat.promptEncouragement, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
+                QuickPromptChip(text: "I need encouragement today") {
+                    viewModel.sendMessage("I need encouragement today", isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
 
-                QuickPromptChip(text: AppStrings.Chat.promptSermon) {
-                    viewModel.sendMessage(AppStrings.Chat.promptSermonFull, isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
+                QuickPromptChip(text: "Explain the Sermon on the Mount") {
+                    viewModel.sendMessage("Can you explain the Sermon on the Mount?", isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                 }
             }
             .padding(.horizontal)
@@ -298,14 +293,10 @@ struct ChatView: View {
                 }
                 .frame(width: 44, height: 44)
                 
-                TextField(AppStrings.Chat.inputPlaceholder, text: $viewModel.inputText, axis: .vertical)
-                    .textFieldStyle(.plain)
-                    .inputFieldStyle()
+                TextField("Ask anything...", text: $viewModel.inputText, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
                     .focused($isInputFocused)
                     .lineLimit(1...5)
-
-                    .accessibilityLabel(AppStrings.Chat.inputPlaceholder)
-                    .accessibilityHint(AppStrings.Chat.messageInputHint)
                     .onSubmit {
                         viewModel.sendMessage(isPremium: isPremium, hasReferralPremium: ReferralService.shared.hasReferralPremium, userId: userId)
                     }
@@ -318,8 +309,6 @@ struct ChatView: View {
                         .foregroundStyle(viewModel.inputText.isEmpty ? Theme.Colors.secondaryText : Theme.Colors.primary)
                 }
                 .disabled(viewModel.inputText.isEmpty || viewModel.isLoading)
-                .accessibilityLabel(AppStrings.Chat.sendMessage)
-                .accessibilityHint(AppStrings.Chat.sendMessageHint)
             }
             .padding()
         }
@@ -337,7 +326,7 @@ struct MessageBubble: View {
             if message.role == .user { Spacer(minLength: 60) }
             
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                Text(try! AttributedString(markdown: message.content))
+                Text((try? AttributedString(markdown: message.content)) ?? AttributedString(message.content))
                     .font(Theme.Typography.body)
                     .foregroundStyle(message.role == .user ? .white : Theme.Colors.text)
                     .padding(Theme.Spacing.mds)

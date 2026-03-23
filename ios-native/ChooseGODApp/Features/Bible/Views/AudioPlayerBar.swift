@@ -209,7 +209,7 @@ struct AudioLoadingButton: View {
     var body: some View {
         Button(action: action) {
             if isLoading {
-                ShimmerView(height: 20)
+                ShimmerView(height: 20.0)
                     .tint(Theme.Colors.primary)
             } else {
                 Image(systemName: hasAudio ? "speaker.wave.2.fill" : "speaker.wave.2")

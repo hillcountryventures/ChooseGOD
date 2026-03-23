@@ -1,295 +1,303 @@
 import SwiftUI
-import os
+import AuthenticationServices
 
+/// Login screen with Apple Sign In as primary option
 struct LoginView: View {
-    @Environment private var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var viewModel = AuthViewModel()
-    @State private var showSignUp = false
-    @State private var showForgotPassword = false
-    @State private var showPassword = false
+
     @State private var email = ""
     @State private var password = ""
-    
+    @State private var showPassword = false
+    @State private var showSignUp = false
+    @State private var showForgotPassword = false
+
     var body: some View {
-        ZStack {
-            Color.clear.ignoresSafeArea() // Placeholder for Theme.Colors.background
-            ScrollView {
-                ContentView(email: $email, password: $password, showPassword: $showPassword, showForgotPassword: $showForgotPassword, showSignUp: $showSignUp, viewModel: viewModel, appState: appState)
-            }
-            .navigationTitle("Welcome Back")
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    BackButton {
-                        // appState.authMode = .signUp // TODO: Fix this property
-                        showSignUp = true
+        NavigationStack {
+            ZStack {
+                // Background
+                Theme.Colors.background
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: Theme.Spacing.xl) {
+                        // Header
+                        headerSection
+
+                        // Apple Sign In (Primary)
+                        appleSignInButton
+
+                        // Divider
+                        dividerSection
+
+                        // Email/Password Form
+                        emailPasswordForm
+
+                        // Sign In Button
+                        signInButton
+
+                        // Forgot Password
+                        forgotPasswordButton
+
+                        Spacer(minLength: Theme.Spacing.xxl)
+
+                        // Sign Up Link
+                        signUpLink
                     }
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .padding(.top, Theme.Spacing.xxl)
                 }
             }
-            // TODO: Fix AnalyticsService import - AnalyticsService.shared.screen("login")
-        }
-        .navigationBarHidden(true)
-        .sheet(isPresented: $showSignUp) {
-            SignUpView()
-        }
-        .sheet(isPresented: $showForgotPassword) {
-            ForgotPasswordView()
-        }
-        // TODO: Fix AppStrings import - .alert(AppStrings.Errors.genericTitle, isPresented: $viewModel.showError) {
-        //     Button(AppStrings.Errors.ok, role: .cancel) {}
-        // } message: {
-        //     Text(viewModel.errorMessage ?? AppStrings.Errors.genericBody)
-        // }
-        .overlay {
-            if viewModel.isLoading {
-                ProgressView()
-                    .ignoresSafeArea()
-                    .background(Color.gray.opacity(0.6)) // Placeholder for Theme.Colors.background.opacity(0.6)
+            .navigationBarHidden(true)
+            .sheet(isPresented: $showSignUp) {
+                SignUpView()
+            }
+            .sheet(isPresented: $showForgotPassword) {
+                ForgotPasswordView()
+            }
+            .alert("Error", isPresented: $viewModel.showError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(viewModel.errorMessage ?? "An error occurred")
+            }
+            .overlay {
+                if viewModel.isLoading {
+                    LoadingOverlay()
+                }
             }
         }
     }
-    
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // Logo/Icon
+            Image(systemName: "book.closed.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(Theme.Colors.primary)
+
+            Text("Welcome Back")
+                .font(Theme.Typography.title1)
+                .foregroundStyle(Theme.Colors.text)
+
+            Text("Sign in to continue your journey")
+                .font(Theme.Typography.body)
+                .foregroundStyle(Theme.Colors.textSecondary)
+        }
+        .padding(.bottom, Theme.Spacing.lg)
+    }
+
+    // MARK: - Apple Sign In
+
+    private var appleSignInButton: some View {
+        SignInWithAppleButton(
+            onRequest: { request in
+                request.requestedScopes = [.fullName, .email]
+            },
+            onCompletion: { result in
+                Task {
+                    await handleAppleSignIn(result)
+                }
+            }
+        )
+        .signInWithAppleButtonStyle(.white)
+        .frame(height: Theme.Dimensions.buttonHeight)
+        .cornerRadius(Theme.CornerRadius.lg)
+    }
+
+    // MARK: - Divider
+
+    private var dividerSection: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Rectangle()
+                .fill(Theme.Colors.textTertiary.opacity(0.3))
+                .frame(height: 1)
+
+            Text("or continue with email")
+                .font(Theme.Typography.caption)
+                .foregroundStyle(Theme.Colors.textTertiary)
+
+            Rectangle()
+                .fill(Theme.Colors.textTertiary.opacity(0.3))
+                .frame(height: 1)
+        }
+        .padding(.vertical, Theme.Spacing.md)
+    }
+
+    // MARK: - Email/Password Form
+
+    private var emailPasswordForm: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // Email Field
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text("Email")
+                    .font(Theme.Typography.label)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+
+                TextField("Enter your email", text: $email)
+                    .textFieldStyle(ChooseGODTextFieldStyle())
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .autocorrectionDisabled()
+            }
+
+            // Password Field
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text("Password")
+                    .font(Theme.Typography.label)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+
+                HStack {
+                    Group {
+                        if showPassword {
+                            TextField("Enter your password", text: $password)
+                        } else {
+                            SecureField("Enter your password", text: $password)
+                        }
+                    }
+                    .textContentType(.password)
+
+                    Button {
+                        showPassword.toggle()
+                    } label: {
+                        Image(systemName: showPassword ? "eye.slash" : "eye")
+                            .foregroundStyle(Theme.Colors.textTertiary)
+                    }
+                }
+                .textFieldStyle(ChooseGODTextFieldStyle())
+            }
+        }
+    }
+
+    // MARK: - Sign In Button
+
+    private var signInButton: some View {
+        Button {
+            Task {
+                await signInWithEmail()
+            }
+        } label: {
+            Text("Sign In")
+                .font(Theme.Typography.button)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: Theme.Dimensions.buttonHeight)
+                .background(Theme.Colors.primary)
+                .cornerRadius(Theme.CornerRadius.lg)
+        }
+        .disabled(email.isEmpty || password.isEmpty || viewModel.isLoading)
+        .opacity(email.isEmpty || password.isEmpty ? 0.6 : 1.0)
+    }
+
+    // MARK: - Forgot Password
+
+    private var forgotPasswordButton: some View {
+        Button {
+            showForgotPassword = true
+        } label: {
+            Text("Forgot Password?")
+                .font(Theme.Typography.body)
+                .foregroundStyle(Theme.Colors.primary)
+        }
+    }
+
     // MARK: - Sign Up Link
-    
-    var signUpLink: some View {
-        HStack {
+
+    private var signUpLink: some View {
+        HStack(spacing: Theme.Spacing.xs) {
             Text("Don't have an account?")
-                .font(.caption) // Placeholder for Theme.Typography.body2
-                .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
+                .font(Theme.Typography.body)
+                .foregroundStyle(Theme.Colors.textSecondary)
+
             Button {
                 showSignUp = true
             } label: {
                 Text("Sign Up")
-                    .font(.caption) // Placeholder for Theme.Typography.body2
-                    .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
+                    .font(Theme.Typography.body)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Theme.Colors.primary)
             }
-            .buttonStyle(.plain)
-            Spacer()
         }
+        .padding(.bottom, Theme.Spacing.xl)
     }
-    
-    // MARK: - Back Button
-    
-    struct BackButton: View {
-        let action: () -> Void
-        
-        var body: some View {
-            Button {
-                action()
-            } label: {
-                Image(systemName: "chevron.backward")
-                    .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
 
-struct ContentView: View {
-    @Binding var email: String
-    @Binding var password: String
-    @Binding var showPassword: Bool
-    @Binding var showForgotPassword: Bool
-    @Binding var showSignUp: Bool
-    @State var viewModel: AuthViewModel
-    @Environment var appState: AppState
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Title
-            Text("Welcome Back")
-                .font(.largeTitle) // Placeholder for Theme.Typography.display
-                .foregroundColor(.primary) // Placeholder for Theme.Colors.text
-                .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
-            
-            // Subtitle
-            Text("Sign in to continue")
-                .font(.body) // Placeholder for Theme.Typography.body
-                .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
-                .padding(.bottom, 24) // Placeholder for Theme.Spacing.xl
-            
-            // Form
-            VStack(spacing: 16) { // Placeholder for Theme.Spacing.lg
-                // Email Field
-                VStack(alignment: .leading, spacing: 8) { // Placeholder for Theme.Spacing.sm
-                    Text("Email")
-                        .font(.caption) // Placeholder for Theme.Typography.label
-                        .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
-                    
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textContentType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                }
-                
-                // Password Field
-                VStack(alignment: .leading, spacing: 8) { // Placeholder for Theme.Spacing.sm
-                    Text("Password")
-                        .font(.caption) // Placeholder for Theme.Typography.label
-                        .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
-                    
-                    HStack {
-                        Group {
-                            if showPassword {
-                                TextField("Password", text: $password)
-                            } else {
-                                SecureField("Password", text: $password)
-                            }
-                        }
-                        .textContentType(.password)
-                        
-                        Button {
-                            showPassword.toggle()
-                        } label: {
-                            Image(systemName: showPassword ? "eye.slash" : "eye")
-                                .foregroundColor(.gray) // Placeholder for Theme.Colors.textTertiary
-                        }
-                    }
-                }
-                
-                // Forgot Password Link
-                Button {
-                    showForgotPassword = true
-                } label: {
-                    Text("Forgot Password?")
-                        .font(.caption) // Placeholder for Theme.Typography.caption1
-                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-                .buttonStyle(.plain)
+    // MARK: - Actions
+
+    private func handleAppleSignIn(_ result: Result<ASAuthorization, Error>) async {
+        viewModel.isLoading = true
+        defer { viewModel.isLoading = false }
+
+        do {
+            let user = try await appState.authService.signInWithApple()
+            await MainActor.run {
+                appState.currentUser = user
+                appState.isAuthenticated = true
             }
-            .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
-            
-            // Sign In Button
-            Button {
-                Task {
-                    do {
-                        let user = try await viewModel.login(email: email, password: password)
-                        appState.currentUser = user
-                        appState.isAuthenticated = true
-                    } catch {
-                        viewModel.handleError(error)
-                    }
-                }
-            } label: {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
-                } else {
-                    Text("Sign In")
-                        .font(.headline) // Placeholder for Theme.Typography.button
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.primary
-                }
-            }
-            .disabled(email.isEmpty || password.isEmpty || viewModel.isLoading)
-            .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
-            
-            // Divider with OR text
-            HStack {
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(.gray) // Placeholder for Theme.Colors.divider
-                Text("OR")
-                    .font(.caption) // Placeholder for Theme.Typography.caption1
-                    .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
-                    .padding(.horizontal, 8) // Placeholder for Theme.Spacing.sm
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(.gray) // Placeholder for Theme.Colors.divider
-            }
-            .padding(.bottom, 16) // Placeholder for Theme.Spacing.lg
-            
-            // Social Sign In Buttons
-            VStack(spacing: 12) { // Placeholder for Theme.Spacing.md
-                // Apple Sign In
-                Button {
-                    // TODO: Implement Apple Sign In
-                } label: {
-                    HStack {
-                        Image(systemName: "apple.logo")
-                            .font(.title3) // Placeholder for Theme.Typography.iconSmall
-                        Text("Continue with Apple")
-                            .font(.headline) // Placeholder for Theme.Typography.button
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(.black, in: RoundedRectangle(cornerRadius: 10))
-                }
-                
-                // Google Sign In
-                Button {
-                    // TODO: Implement Google Sign In
-                } label: {
-                    HStack {
-                        // TODO: Use Google icon asset
-                        Image(systemName: "g.circle.fill")
-                            .font(.title3) // Placeholder for Theme.Typography.iconSmall
-                        Text("Continue with Google")
-                            .font(.headline) // Placeholder for Theme.Typography.button
-                    }
-                    .foregroundColor(.primary) // Placeholder for Theme.Colors.text
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.gray.opacity(0.1), in: RoundedRectangle(cornerRadius: 10)) // Placeholder for Theme.Colors.backgroundSecondary
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1) // Placeholder for Theme.Colors.divider
-                    }
-                }
-            }
-            .padding(.bottom, 24) // Placeholder for Theme.Spacing.xl
-            
-            Spacer(minLength: 24) // Placeholder for Theme.Spacing.xxl
-            
-            // Sign Up Link
-            HStack {
-                Text("Don't have an account?")
-                    .font(.caption) // Placeholder for Theme.Typography.body2
-                    .foregroundColor(.secondary) // Placeholder for Theme.Colors.textSecondary
-                Button {
-                    showSignUp = true
-                } label: {
-                    Text("Sign Up")
-                        .font(.caption) // Placeholder for Theme.Typography.body2
-                        .foregroundColor(.blue) // Placeholder for Theme.Colors.primary
-                }
-                .buttonStyle(.plain)
-                Spacer()
-            }
+        } catch {
+            viewModel.handleError(error)
         }
-        .padding(.horizontal, 16) // Placeholder for Theme.Spacing.lg
-        .padding(.top, 24) // Placeholder for Theme.Spacing.xxl
+    }
+
+    private func signInWithEmail() async {
+        viewModel.isLoading = true
+        defer { viewModel.isLoading = false }
+
+        do {
+            let user = try await appState.authService.signInWithEmail(
+                email: email,
+                password: password
+            )
+            await MainActor.run {
+                appState.currentUser = user
+                appState.isAuthenticated = true
+            }
+        } catch {
+            viewModel.handleError(error)
+        }
     }
 }
 
 // MARK: - Custom Text Field Style
 
-struct AuthTextFieldStyle: TextFieldStyle {
+struct ChooseGODTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
-            .font(.body) // Placeholder for Theme.Typography.body
-            .foregroundColor(.primary) // Placeholder for Theme.Colors.text
-            .padding(.horizontal, 16) // Placeholder for Theme.Spacing.md
-            .padding(.vertical, 12) // Placeholder for Theme.Spacing.sm
-            .background(Color.gray.opacity(0.1), in: RoundedRectangle(cornerRadius: 8)) // Placeholder for Theme.Colors.backgroundSecondary
-            .overlay {
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1) // Placeholder for Theme.Colors.divider
-            }
+            .padding(Theme.Spacing.md)
+            .background(Theme.Colors.surface)
+            .cornerRadius(Theme.CornerRadius.lg)
+            .foregroundStyle(Theme.Colors.text)
     }
 }
 
-// #Preview {
-//    NavigationStack {
-//        LoginView()
-//            .environmentObject(AppState())
-//    }
-//}
+// MARK: - Loading Overlay
+
+struct LoadingOverlay: View {
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: Theme.Spacing.md) {
+                ProgressView()
+                    .tint(Theme.Colors.primary)
+                    .scaleEffect(1.5)
+
+                Text("Please wait...")
+                    .font(Theme.Typography.body)
+                    .foregroundStyle(Theme.Colors.text)
+            }
+            .padding(Theme.Spacing.xl)
+            .background(Theme.Colors.surface)
+            .cornerRadius(Theme.CornerRadius.xl)
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    LoginView()
+        .environment(AppState.preview)
+}

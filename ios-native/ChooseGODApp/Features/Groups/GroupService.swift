@@ -264,7 +264,7 @@ final class SupabaseGroupService: GroupServiceProtocol {
         if let parentId = parentId {
             query = query.eq("parent_id", value: parentId)
         } else {
-            query = query.is("parent_id", value: "null")
+            query = query.is("parent_id", value: nil)
         }
         
         return try await query

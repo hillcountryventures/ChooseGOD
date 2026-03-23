@@ -20,6 +20,65 @@ final class HebcalService: HebcalServiceProtocol {
 
     private init() {}
 
+    // MARK: - Parasha Descriptions (all 54 Torah portions)
+
+    private static let parashaDescriptions: [String: String] = [
+        "Parashat Bereishit": "Creation of the world, Adam and Eve, Cain and Abel",
+        "Parashat Noach": "Noah builds the ark, the great flood, and God's covenant",
+        "Parashat Lech-Lecha": "God calls Abram to leave Haran and journey to Canaan",
+        "Parashat Vayera": "Abraham hosts angels, Sodom's destruction, Isaac's birth",
+        "Parashat Chayei Sarah": "Sarah's death, Rebecca chosen as Isaac's wife",
+        "Parashat Toldot": "Isaac's twins Jacob and Esau, birthright and blessing",
+        "Parashat Vayetzei": "Jacob flees to Haran, marries Leah and Rachel, has many children",
+        "Parashat Vayishlach": "Jacob wrestles with an angel, reconciles with Esau",
+        "Parashat Vayeshev": "Joseph's dreams, sold by brothers, Potiphar's house, prison",
+        "Parashat Miketz": "Pharaoh's dreams, Joseph interprets them, becomes vizier",
+        "Parashat Vayigash": "Joseph reveals himself to his brothers, family reunites in Egypt",
+        "Parashat Vayechi": "Jacob blesses his sons and Joseph, dies in Egypt",
+        "Parashat Shemot": "Birth of Moses, burning bush, plagues begin",
+        "Parashat Va'eira": "More plagues, God hardens Pharaoh's heart",
+        "Parashat Bo": "Final plagues, Passover commandment, departure from Egypt",
+        "Parashat Beshalach": "Splitting the Red Sea, Manna and water in the desert",
+        "Parashat Yitro": "Jethro visits, Ten Commandments given at Sinai",
+        "Parashat Mishpatim": "Civil laws, Hebrew servants, murder, theft, slavery laws",
+        "Parashat Terumah": "God requests tabernacle materials and offerings",
+        "Parashat Tetzaveh": "Aaron's priestly garments, menorah, and altar of incense",
+        "Parashat Ki Tisa": "Census, bronze basin, incense recipe, golden calf sin",
+        "Parashat Vayakhel": "Tabernacle construction begins, Shabbat reminder",
+        "Parashat Pekudei": "Completion of tabernacle, accounting of materials",
+        "Parashat Vayikra": "Laws of sacrifices, burnt offerings, grain offerings",
+        "Parashat Tzav": "Instructions to Aaron about sacrificial offerings",
+        "Parashat Shemini": "Aaron's sons Nadab and Abihu die, laws of kosher animals",
+        "Parashat Tazria": "Laws of impurity after childbirth, skin diseases",
+        "Parashat Metzora": "Purification laws for skin diseases and contamination",
+        "Parashat Achrei Mot": "Yom Kippur service, prohibitions, Day of Atonement",
+        "Parashat Kedoshim": "Laws of holiness, love neighbor as yourself",
+        "Parashat Emor": "Priestly purity laws, holy days, showbread, menorah",
+        "Parashat Behar": "Jubilee year, land laws, Hebrew slaves",
+        "Parashat Bechukotai": "Blessings for obedience, curses for disobedience",
+        "Parashat Bamidbar": "Census of Israel, Levite duties, camp arrangement",
+        "Parashat Naso": "Continuation of census, Levite assignments, priestly blessings",
+        "Parashat Behaalotcha": "Menorah lighting, Passover, cloud over tabernacle",
+        "Parashat Shlach": "Twelve spies sent to Canaan, rebellion and wilderness",
+        "Parashat Korach": "Korach's rebellion against Moses, God's judgment",
+        "Parashat Chukat": "Red heifer, water from rock, Aaron's death",
+        "Parashat Balak": "Balak hires Balaam to curse Israel, Balaam's blessings",
+        "Parashat Pinchas": "Pinchas's zealous act, daughters of Zelophehad",
+        "Parashat Matot": "Vows made by men and women, war against Midian",
+        "Parashat Masei": "Journey stages in the desert, division of Canaan",
+        "Parashat Devarim": "Moses reviews Israel's wilderness journey and God's laws",
+        "Parashat Va'etchanan": "Moses pleads to enter Canaan, Shema Israel prayer",
+        "Parashat Ekev": "Blessings for obedience, warning against forgetting God",
+        "Parashat Re'eh": "Choosing blessing or curse, idolatry warning",
+        "Parashat Shoftim": "Judges, king laws, cities of refuge, war rules",
+        "Parashat Ki Tetze": "Laws of vows, divorce, firstborn rights, stoning",
+        "Parashat Ki Tavo": "First fruits offering, tithes, covenant renewal",
+        "Parashat Netzavim": "Standing before the Lord, repentance and return",
+        "Parashat Vayelech": "Moses' final charge, writing Torah, final blessing",
+        "Parashat Ha'azinu": "Song of Moses, God's faithfulness and judgment",
+        "Parashat V'Zot HaBracha": "Moses' final blessings to the tribes, his death"
+    ]
+
     // MARK: - Public API
 
     func getHebrewDate(for gregorianDate: Date) async -> HebrewDate? {
@@ -133,13 +192,15 @@ final class HebcalService: HebcalServiceProtocol {
                     let title = parshEvent.title
                     let hebrewTitle = parshEvent.hebrew ?? title
                     let id = title.lowercased().replacingOccurrences(of: " ", with: "-")
+                    let description = Self.parashaDescriptions[title]
 
                     return TorahPortion(
                         id: id,
                         name: title,
                         hebrewName: hebrewTitle,
                         date: date,
-                        aliyot: []
+                        aliyot: [],
+                        description: description
                     )
                 }
             }

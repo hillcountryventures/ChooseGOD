@@ -10,7 +10,7 @@ struct MemoryVerseListView: View {
             Theme.Colors.background.ignoresSafeArea()
             
             if viewModel.isLoading && viewModel.verses.isEmpty {
-                ShimmerView(height: 20)
+                ShimmerView(height: 20.0)
                     .tint(Theme.Colors.primary)
             } else if let error = viewModel.error, viewModel.verses.isEmpty {
                 VStack {

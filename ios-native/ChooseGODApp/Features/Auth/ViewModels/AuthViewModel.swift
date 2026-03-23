@@ -53,8 +53,20 @@ final class AuthViewModel {
         return isValid
     }
     
+    // MARK: - Password Reset
+
+    func resetPassword(email: String) async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            try await SupabaseAuthService().resetPassword(email: email)
+        } catch {
+            handleError(error)
+        }
+    }
+
     // MARK: - Error Handling
-    
+
     func handleError(_ error: Error) {
         if let authError = error as? AuthError {
             errorMessage = authError.errorDescription

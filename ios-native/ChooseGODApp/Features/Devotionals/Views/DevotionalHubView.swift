@@ -23,15 +23,18 @@ struct DevotionalHubView: View {
                             if let primary = enrollments.first(where: { $0.isPrimary }) {
                                 currentSeriesSection(primary)
                             }
-                            
+
                             // Other active enrollments
                             let others = enrollments.filter { !$0.isPrimary }
                             if !others.isEmpty {
                                 otherEnrollmentsSection(others)
                             }
-                            
+
                             // Browse all series
                             browseSeriesSection
+
+                            // Audio Devotionals
+                            audioDevotionalsSection
                         }
                         .padding()
                     }
@@ -94,7 +97,7 @@ struct DevotionalHubView: View {
             Text("Explore Series")
                 .font(Theme.Typography.title3)
                 .foregroundStyle(Theme.Colors.text)
-            
+
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(allSeries) { series in
                     Button {
@@ -104,6 +107,33 @@ struct DevotionalHubView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            }
+        }
+    }
+
+    private var audioDevotionalsSection: some View {
+        NavigationLink(destination: DevotionalSeriesListView()) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Audio Devotionals")
+                            .font(Theme.Typography.title3)
+                            .foregroundStyle(Theme.Colors.text)
+
+                        Text("Listen to devotional series")
+                            .font(Theme.Typography.bodySmall)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Theme.Colors.primary)
+                }
+                .padding(Theme.Spacing.md)
+                .background(Theme.Colors.surface)
+                .cornerRadius(Theme.CornerRadius.lg)
             }
         }
     }

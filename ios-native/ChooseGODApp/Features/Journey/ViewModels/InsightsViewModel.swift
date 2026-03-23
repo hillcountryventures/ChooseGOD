@@ -34,6 +34,16 @@ final class InsightsViewModel {
         case month = "This Month"
         case quarter = "3 Months"
         case year = "This Year"
+
+        /// Database value for storing scores (matches migration 037)
+        var databaseValue: String {
+            switch self {
+            case .week: return "week"
+            case .month: return "month"
+            case .quarter: return "quarter"
+            case .year: return "year"
+            }
+        }
     }
     
     // MARK: - Topic Categories
@@ -48,151 +58,288 @@ final class InsightsViewModel {
     ]
     
     // MARK: - Load Data
-    
-    func loadAll() async {
+
+    func loadAll(userId: String? = nil) async {
         isLoading = true
         error = nil
-        
-        // For now, use computed sample data that mirrors the RN logic
-        // In production, this would call SupabaseInsightsService
-        await computeSampleData()
-        computeMilestones()
-        computeTimeline()
-        
+
+        guard let userId else {
+            // Empty state for logged-out users
+            milestones = Milestone.definitions
+            isLoading = false
+            return
+        }
+
+        async let insightsTask = SupabaseInsightsService.shared.fetchGrowthInsights(userId: userId, period: selectedPeriod)
+        async let timelineTask = SupabaseInsightsService.shared.fetchTimeline(userId: userId, period: selectedPeriod, limit: 50)
+        async let statsTask = SupabaseInsightsService.shared.fetchJourneyStats(userId: userId, period: selectedPeriod)
+
+        let (fetchedInsights, fetchedTimeline, fetchedStats) = await (
+            (try? insightsTask) ?? [],
+            (try? timelineTask) ?? [],
+            statsTask
+        )
+
+        // Growth insight
+        growthInsight = fetchedInsights.first
+
+        // Timeline
+        timelineItems = fetchedTimeline
+
+        // Weekly activity chart — derived from timeline
+        weeklyActivity = buildWeeklyActivity(from: fetchedTimeline, period: selectedPeriod)
+
+        // Sentiment trend — derive from journal items or flat if insufficient
+        sentimentTrend = buildSentimentTrend(from: fetchedTimeline, period: selectedPeriod)
+
+        // Topics — count moment types as engagement categories
+        topicsExplored = buildTopicEngagement(from: fetchedTimeline)
+
+        // Spiritual health score
+        let streak = 0 // TODO: StreakManager.shared.currentStreak
+        let chapters = UserDefaults.standard.integer(forKey: "chaptersReadTotal")
+        var score = 0
+        score += min(streak * 10, 40)                           // +10/day, max 40
+        score += fetchedStats.prayerCount > 0 ? 20 : 0          // +20 if any prayers
+        score += fetchedStats.journalCount > 0 ? 20 : 0         // +20 if any journals
+        score += chapters > 5 ? 20 : 0                          // +20 if > 5 chapters
+
+        // Parallel: fetch prior score AND save current score
+        async let priorScore = SupabaseInsightsService.shared.fetchPriorPeriodScore(userId: userId, period: selectedPeriod)
+        Task.detached(priority: .background) {
+            let calendar = Calendar.current
+            let periodStartDate: Date
+            switch self.selectedPeriod {
+            case .week:
+                periodStartDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())) ?? Date()
+            case .month:
+                periodStartDate = calendar.date(from: calendar.dateComponents([.year, .month], from: Date())) ?? Date()
+            case .quarter:
+                let m = (calendar.component(.month, from: Date()) - 1) / 3 * 3 + 1
+                periodStartDate = calendar.date(from: DateComponents(year: calendar.component(.year, from: Date()), month: m)) ?? Date()
+            case .year:
+                periodStartDate = calendar.date(from: calendar.dateComponents([.year], from: Date())) ?? Date()
+            }
+            await SupabaseInsightsService.shared.saveHealthScore(
+                userId: userId,
+                score: min(score, 100),
+                period: self.selectedPeriod.databaseValue,
+                periodStart: periodStartDate
+            )
+        }
+
+        let prior = await priorScore
+        let change: Double? = {
+            if let prior, prior > 0 {
+                let raw = (Double(score) - prior) / prior * 100
+                // Round to 1 decimal place
+                return (raw * 10).rounded() / 10
+            } else {
+                return nil
+            }
+        }()
+
+        spiritualHealth = SpiritualHealthScore(
+            score: min(score, 100),
+            change: change,
+            prayerDays: fetchedStats.prayerCount,
+            versesRead: chapters * 26,
+            stepsCompleted: fetchedStats.devotionalDaysCount,
+            message: score > 60 ? "You're growing steadily. Keep it up!" : "Start reading and praying to see your insights grow."
+        )
+
+        // Milestones with real progress
+        let verses = chapters * 26
+        milestones = Milestone.definitions.map { m in
+            var updated = m
+            switch m.type {
+            case .streak:          updated.current = streak
+            case .verseCount:      updated.current = verses
+            case .prayerCount:     updated.current = fetchedStats.prayerCount
+            case .answeredPrayer:  updated.current = fetchedStats.answeredPrayerCount
+            case .journalCount:    updated.current = fetchedStats.journalCount
+            case .devotionalCount: updated.current = fetchedStats.devotionalDaysCount
+            case .memoryVerse:     updated.current = fetchedStats.memoryVerseCount
+            case .booksCompleted:  updated.current = chapters / 22  // ~22 chapters per book (rough)
+            }
+            updated.achieved = updated.current >= m.target
+            if updated.achieved && updated.achievedAt == nil {
+                updated.achievedAt = Date()
+            }
+            return updated
+        }
+
         isLoading = false
     }
-    
-    func refresh() async {
-        await loadAll()
+
+    func refresh(userId: String?) async {
+        await loadAll(userId: userId)
     }
     
     // MARK: - Generate AI Insight
-    
-    func generateAIInsight() async {
+
+    func generateAIInsight(userId: String? = nil) async {
         isGeneratingInsight = true
         defer { isGeneratingInsight = false }
-        
-        // In production: call SupabaseInsightsService.shared.generateAIInsight(...)
-        // For now, use a local computed insight
-        aiSummary = AIGrowthSummary(
-            summary: "Your prayer life has deepened significantly this month. You've been consistently showing up, and your journal entries reflect growing trust in God's timing.",
-            scriptureConnection: "Philippians 4:6-7 — \"Do not be anxious about anything, but in everything by prayer and petition, with thanksgiving, present your requests to God.\"",
-            growthPrediction: "At your current pace, you'll hit your 30-day streak milestone by next week. Your focus on anxiety & peace themes suggests a season of spiritual breakthrough.",
-            encouragement: "God sees every quiet moment you spend with Him. Keep pressing in — the fruit is already growing."
-        )
+
+        guard let userId else { return }
+
+        let topThemes = topicsExplored.prefix(3).map { $0.label }
+        do {
+            var summary = try await SupabaseInsightsService.shared.generateAIInsight(
+                userId: userId,
+                totalMoments: timelineItems.count,
+                prayers: timelineItems.filter { $0.type == .prayer }.count,
+                journals: timelineItems.filter { $0.type == .journal }.count,
+                devotionals: timelineItems.filter { $0.type == .devotional }.count,
+                topThemes: Array(topThemes)
+            )
+            summary.lastGeneratedAt = Date()
+            aiSummary = summary
+            saveInsightTimestamp(Date())
+        } catch {
+            // Fallback to empty/default
+            aiSummary = AIGrowthSummary(
+                summary: "Keep growing in your faith!",
+                scriptureConnection: nil,
+                growthPrediction: nil,
+                encouragement: nil,
+                lastGeneratedAt: Date()
+            )
+        }
+    }
+
+    private func saveInsightTimestamp(_ date: Date) {
+        UserDefaults.standard.set(date, forKey: "aiInsightLastGeneratedAt")
+    }
+
+    func loadInsightTimestamp() {
+        if let savedDate = UserDefaults.standard.object(forKey: "aiInsightLastGeneratedAt") as? Date {
+            if aiSummary != nil {
+                aiSummary?.lastGeneratedAt = savedDate
+            }
+        }
     }
     
-    // MARK: - Private Computation
-    
-    private func computeSampleData() async {
-        // Weekly activity
+    // MARK: - Private Helpers
+
+    private func buildWeeklyActivity(from timeline: [TimelineItem], period: Period = .month) -> [DailyActivity] {
         let calendar = Calendar.current
         let dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        weeklyActivity = (0..<7).reversed().map { daysAgo in
-            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
-            let dateStr = ISO8601DateFormatter().string(from: date).prefix(10)
-            let weekday = calendar.component(.weekday, from: date) - 1
-            return DailyActivity(
-                date: String(dateStr),
-                dayLabel: dayLabels[weekday],
-                prayerMinutes: Int.random(in: 0...25),
-                momentCount: Int.random(in: 0...5)
-            )
-        }
-        
-        // Topics
-        topicsExplored = [
-            TopicEngagement(id: "anxiety-peace", emoji: "😰", label: "Anxiety & Peace", chatCount: 12, percentage: 35, color: "8B9A7D"),
-            TopicEngagement(id: "prayer-life", emoji: "🙏", label: "Prayer Life", chatCount: 8, percentage: 24, color: "E8D5A3"),
-            TopicEngagement(id: "love-relationships", emoji: "❤️", label: "Love & Relationships", chatCount: 6, percentage: 18, color: "C9A962"),
-            TopicEngagement(id: "faith-doubt", emoji: "💪", label: "Faith & Doubt", chatCount: 5, percentage: 15, color: "6366F1"),
-            TopicEngagement(id: "purpose-calling", emoji: "🎯", label: "Purpose & Calling", chatCount: 3, percentage: 8, color: "8B7355"),
-        ]
-        
-        // Sentiment trend
-        sentimentTrend = (0..<30).map { daysAgo in
-            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
-            let score = 0.3 + Double.random(in: -0.3...0.4) + Double(30 - daysAgo) * 0.01 // slight upward trend
-            return SentimentDataPoint(date: date, score: min(max(score, -1), 1), label: "")
-        }.reversed().map { $0 }
-        
-        // Health score
-        spiritualHealth = SpiritualHealthScore(
-            score: 72,
-            change: 8,
-            prayerDays: 18,
-            versesRead: 247,
-            stepsCompleted: 5,
-            message: "You're growing beautifully! Your prayer consistency and Scripture engagement have improved significantly this month."
-        )
-        
-        // Growth insight
-        growthInsight = GrowthInsight(
-            id: "insight-1",
-            userId: "",
-            periodStart: calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date(),
-            periodEnd: Date(),
-            insightType: .monthly,
-            title: "Monthly Growth Summary",
-            narrative: "You've been exploring anxiety & peace topics more frequently, suggesting intentional seeking of God's guidance in this area.",
-            keyMoments: ["Started prayer journal", "Memorized Philippians 4:6", "30-day reading streak"],
-            themesGrowth: ["anxiety-peace": 35, "prayer-life": 24, "love-relationships": 18],
-            createdAt: Date()
-        )
-    }
-    
-    private func computeMilestones() {
-        // Sample stats — in production, computed from real data
-        let stats: [Milestone.MilestoneType: Int] = [
-            .streak: 14,
-            .verseCount: 62,
-            .prayerCount: 23,
-            .journalCount: 15,
-            .devotionalCount: 18,
-            .booksCompleted: 2,
-            .answeredPrayer: 3,
-            .memoryVerse: 8,
-        ]
-        
-        milestones = Milestone.definitions.map { def in
-            var m = def
-            m.current = stats[def.type] ?? 0
-            m.achieved = m.current >= m.target
-            if m.achieved {
-                m.achievedAt = Calendar.current.date(byAdding: .day, value: -Int.random(in: 1...30), to: Date())
+
+        var dailyData: [String: (prayers: Int, moments: Int)] = [:]
+
+        // Group timeline items by date
+        for item in timeline {
+            let dateStr = ISO8601DateFormatter().string(from: item.createdAt).prefix(10)
+            if dailyData[String(dateStr)] == nil {
+                dailyData[String(dateStr)] = (0, 0)
             }
-            return m
+            dailyData[String(dateStr)]!.moments += 1
+            if item.type == .prayer || item.type == .answeredPrayer {
+                dailyData[String(dateStr)]!.prayers += 5  // proxy: each prayer = ~5 min
+            }
         }
-    }
-    
-    private func computeTimeline() {
-        let calendar = Calendar.current
-        let types: [TimelineItem.TimelineItemType] = [.devotional, .prayer, .journal, .gratitude, .memoryPractice, .answeredPrayer]
-        let sampleContent = [
-            "Spent time meditating on Psalm 23 and its promises of provision.",
-            "Lord, give me wisdom for the decisions ahead. I trust Your plan.",
-            "Reflected on how God has been faithful through this season of waiting.",
-            "Grateful for the peace that passes understanding, even amid uncertainty.",
-            "Practiced memorizing Philippians 4:13 — I can do all things through Christ.",
-            "God answered my prayer about the job interview! His timing is perfect.",
-            "Read through Romans 8 and was struck by 'nothing can separate us from God's love.'",
-            "Journaled about surrender and what it means to truly let go and let God.",
-        ]
-        
-        timelineItems = (0..<20).map { i in
-            let type = types[i % types.count]
-            let date = calendar.date(byAdding: .hour, value: -i * Int.random(in: 4...12), to: Date()) ?? Date()
-            return TimelineItem(
-                id: "timeline-\(i)",
-                type: type,
-                title: type.displayLabel,
-                content: sampleContent[i % sampleContent.count],
-                icon: type.displayIcon,
-                color: type.displayColor,
-                linkedVerses: i % 3 == 0 ? ["Philippians 4:6-7"] : [],
-                themes: i % 2 == 0 ? ["peace", "trust"] : ["prayer"],
-                createdAt: date
+
+        // Determine number of days based on period
+        let dayCount: Int
+        switch period {
+        case .week:
+            dayCount = 7
+        case .month:
+            dayCount = 30
+        case .quarter:
+            dayCount = 90
+        case .year:
+            dayCount = 365
+        }
+
+        // Build activity view for the period
+        return (0..<dayCount).reversed().map { daysAgo in
+            let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
+            let dateStr = String(ISO8601DateFormatter().string(from: date).prefix(10))
+            let weekday = calendar.component(.weekday, from: date) - 1
+            let data = dailyData[dateStr] ?? (0, 0)
+
+            return DailyActivity(
+                date: dateStr,
+                dayLabel: dayLabels[weekday],
+                prayerMinutes: data.prayers,
+                momentCount: data.moments
             )
         }
+    }
+
+    private func buildSentimentTrend(from timeline: [TimelineItem], period: Period = .month) -> [SentimentDataPoint] {
+        let calendar = Calendar.current
+
+        // Group timeline items by date, compute sentiment proxy from content length
+        var sentimentByDate: [String: Double] = [:]
+
+        for item in timeline {
+            let dateStr = String(ISO8601DateFormatter().string(from: item.createdAt).prefix(10))
+            let contentLength = Double(item.content.count)
+            let sentiment = min(max((contentLength / 100) - 0.5, -1), 1)  // rough proxy: longer = more thoughtful = more positive
+
+            if sentimentByDate[dateStr] == nil {
+                sentimentByDate[dateStr] = sentiment
+            } else {
+                sentimentByDate[dateStr] = (sentimentByDate[dateStr]! + sentiment) / 2
+            }
+        }
+
+        // Determine number of days based on period
+        let dayCount: Int
+        switch period {
+        case .week:
+            dayCount = 7
+        case .month:
+            dayCount = 30
+        case .quarter:
+            dayCount = 90
+        case .year:
+            dayCount = 365
+        }
+
+        // Build sentiment trend for the period
+        let today = calendar.startOfDay(for: Date())
+        return (0..<dayCount).map { daysAgo in
+            let date = calendar.date(byAdding: .day, value: -daysAgo, to: today) ?? Date()
+            let dateStr = String(ISO8601DateFormatter().string(from: date).prefix(10))
+            let score = sentimentByDate[dateStr] ?? 0.0
+
+            return SentimentDataPoint(date: date, score: score, label: "")
+        }.reversed()
+    }
+
+    private func buildTopicEngagement(from timeline: [TimelineItem]) -> [TopicEngagement] {
+        var topicCounts: [String: Int] = [:]
+
+        // Count mentions by analyzing themes
+        for item in timeline {
+            for theme in item.themes {
+                topicCounts[theme, default: 0] += 1
+            }
+        }
+
+        // Map to known topics
+        var engagements: [TopicEngagement] = []
+        let totalMentions = topicCounts.values.reduce(0, +)
+
+        for (key, (emoji, _, color)) in Self.topicCategories {
+            let count = topicCounts[key] ?? 0
+            let percentage = totalMentions > 0 ? Double(count) / Double(totalMentions) * 100 : 0
+
+            engagements.append(TopicEngagement(
+                id: key,
+                emoji: emoji,
+                label: key.replacingOccurrences(of: "-", with: " ").capitalized,
+                chatCount: count,
+                percentage: percentage,
+                color: color
+            ))
+        }
+
+        return engagements.sorted { $0.chatCount > $1.chatCount }
     }
 }

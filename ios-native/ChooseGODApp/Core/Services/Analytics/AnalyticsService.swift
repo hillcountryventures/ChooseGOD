@@ -36,7 +36,6 @@ final class AnalyticsService: AnalyticsProvider {
         }
         
         let config = PostHogConfig(apiKey: apiKey)
-        config.host = "https://app.posthog.com"
         PostHogSDK.shared.setup(config)
         isInitialized = true
         

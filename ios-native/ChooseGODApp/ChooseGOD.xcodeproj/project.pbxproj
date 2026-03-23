@@ -1,1226 +1,3678 @@
-// !$*UTF8*$!
-{
-	archiveVersion = 1;
-	classes = {
-	};
-	objectVersion = 63;
-	objects = {
-
-/* Begin PBXBuildFile section */
-		0564D6F56A355D5EC896A3DD /* MemoryVerse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */; };
-		05C998752DCDFD548B495C55 /* SupabaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */; };
-		05F588442C33E7C25BBD0F37 /* SupabasePrayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */; };
-		06EFFB87CBBF73B5656183B3 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */; };
-		092D81CF2FE1E059B175F817 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40184908AA63BDAA36FF55B7 /* AuthCoordinator.swift */; };
-		0B0F09299A29676718C2FA37 /* SupabaseInsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */; };
-		0DC4E0CDA60ECB66726A60DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8510E51C673414997561A /* WelcomeView.swift */; };
-		0E5A628F6B066964B2BD5001 /* LectioDivinaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */; };
-		0F15648DFE144C8D70539F3F /* BibleAudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30295A0AA47E588B1D191CF /* BibleAudioService.swift */; };
-		0F450E562560BEE5FD520B9E /* VoiceInputButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91EC1529ADD939AF27275690 /* VoiceInputButton.swift */; };
-		1127E89E798C8D934CBB53FD /* AudioPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */; };
-		17D631C346BDC2DA4AED7C2A /* LectioViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */; };
-		180A6064A0584A3392C05D73 /* NotificationSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */; };
-		20740FE52758F679A12FF801 /* MockServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2DFA969A879D3363679D64 /* MockServices.swift */; };
-		231C3516566903585B36CB84 /* PrayerCirclesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */; };
-		256C2148D27D06E3D85E7B1D /* SourceVerseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA086B9E392679F615C1028 /* SourceVerseCard.swift */; };
-		25CA5EBC033E01B448EC8817 /* AddMemoryVerseSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */; };
-		271682A42618FA2D4B6E45C1 /* RevenueCatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60CCF8B5804C177008E7039 /* RevenueCatService.swift */; };
-		27C1623E1A85712D5890D546 /* SeriesDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */; };
-		2C171C17C24EE26CAA7917B3 /* CircleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0D2F42801462BC193929F0 /* CircleViewModel.swift */; };
-		2DE4DAD349CB288516CF262E /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751404A1AFFF501C68F138A0 /* Haptics.swift */; };
-		2DED7F4A7D99D2C51025DFE1 /* SeriesLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */; };
-		2E3652D38F2F35C15FEF283E /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */; };
-		2FD630540BE2644E3A59588E /* DevotionalCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */; };
-		3216B3FB0839726A5C120469 /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F14400814DEFCCA256D141B /* Animations.swift */; };
-		32B008D84B50E340598670F6 /* SupabaseDevotionalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */; };
-		3B5B0243386AEFDAE8B06068 /* MemoryVerseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */; };
-		415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CE639CB3F872386E608A6D /* NotificationService.swift */; };
-		41A9FF2B90390D6C180D4472 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */; };
-		48EE385549BFF5E08E46C42B /* ReferralService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F401146D99102F19E5E4F78 /* ReferralService.swift */; };
-		49FCDBC42902BD422AE30AE1 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */; };
-		4CC621D3477448F5D59DD0F7 /* ReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85AE0B29D90AC0DA0A372626 /* ReferralView.swift */; };
-		4DF3E1E5BCFB1CD1B9783680 /* JoinCircleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */; };
-		4FFD3561F1EF4FE0EE2F60EA /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8FCB5720506B6EAF0F8A2933 /* Supabase */; };
-		560B232E39299B5C0D2D96AB /* CreateCircleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */; };
-		573FCFD7F269FDE64B183453 /* JournalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5C6C5D4021205608C5924F /* JournalListView.swift */; };
-		5808E7C2336B231358484D4A /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4517E590D78084E0BB948BC4 /* AuthViewModel.swift */; };
-		596126D8149A1E56AE3A52FD /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */; };
-		5F42193E7D466EC15B087A27 /* MemoryPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */; };
-		5FF40C2A5909C31DFEF557B2 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7038CAC3C8C6D3D3C6B81 /* ForgotPasswordView.swift */; };
-		61D3C1AC286B4BF5D82BAC60 /* Prayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */; };
-		63304D9B06B762BD3479BAFA /* AuthServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D12F5A7E78BEF4C18B5A2D /* AuthServiceProtocol.swift */; };
-		646464E1096C4A1AF691689A /* InsightModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E82CF17867B6BDD94BFF556 /* InsightModels.swift */; };
-		65E2BE733BF35D7DA33A200E /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9029D26D8D40691B304F4290 /* RevenueCat */; };
-		6773EC3E4DC6E8BAFBFF91E4 /* SupabaseMemoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */; };
-		704CD9CF37E3DD33A897003F /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0DABECBB1BD945620076615 /* Date+Extensions.swift */; };
-		70FED2DC09CDDD289AFFBD4E /* JournalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E44B55166194167D5280485 /* JournalViewModel.swift */; };
-		72F67EFBA8161D4FEEAADCBE /* AudioPlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */; };
-		737465CEE8F01630041BE78C /* MemoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */; };
-		73D897D6F59396E1C6E1BC1A /* PersonalizationQuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */; };
-		75D53545BB99DE4B5CB907AD /* DailyDevotionalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */; };
-		7905CA8AFDD274591CB1AC7F /* CircleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */; };
-		7A4977AEFF3A6D1D9E3D9D61 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB45A320E27E362B2FB40E2 /* SignUpView.swift */; };
-		7E12C160F383208800654BB6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC7931D430A30CA79458C4A /* Theme.swift */; };
-		7F80519250C11919FC245A11 /* Devotional.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D424E65CF113743EA26C5F /* Devotional.swift */; };
-		864D073AA540E17C31292B5D /* JourneyInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */; };
-		8CF564D2E3FCC31BEA4E51C3 /* ReflectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */; };
-		94004EA9313DBF4C275FF36B /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F10D9ED639D90319683280 /* ShimmerView.swift */; };
-		97DBF4D8D88A64174E1CB73B /* RecommendationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A937FE76E484179CE37871E5 /* RecommendationsView.swift */; };
-		A006AAAF2ABEB2C97C3B3A5B /* ChatQuotaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298077A766F8003184A0D7FC /* ChatQuotaManager.swift */; };
-		A03BFA89E9002825A7E9DFF2 /* ChooseGODApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81ECA782F1A1FB4734D277BC /* ChooseGODApp.swift */; };
-		A0E16CEBD40217B06C747424 /* CrossReferencesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */; };
-		A215DCFD1A9BE7BA82A487AF /* ChatContextBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D515656765EB40E8B27247 /* ChatContextBar.swift */; };
-		A27FFB398D49A35C9EFB6E7A /* InsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */; };
-		A6E51377A7C8F7F1DB12D009 /* GlassEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523B877627A2795C6EC4B295 /* GlassEffects.swift */; };
-		A90C5A30D68DB8D33906B1D6 /* LectioStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28729EAA1F5A4FC698779F64 /* LectioStepView.swift */; };
-		B10D9AC2C43D51DF4BCE4057 /* Bible.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6208C410F97E16CFE92E620 /* Bible.swift */; };
-		B88EAC3ADB6D864349F150DB /* AudioModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9029DFC682065CCEBFA8605C /* AudioModels.swift */; };
-		B9A50683553A484F6FF2768D /* SupabaseJournalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */; };
-		BC3A997CF90153195FF00D3A /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9324127082C2AAA4B3F76802 /* Accessibility.swift */; };
-		BD97B9FA40308A35066E499A /* PaywallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */; };
-		BDF226EEEFA5C1AEE7E9CE37 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357CB1662D9F60FF46440911 /* User.swift */; };
-		C361483A0689EA1CC3B434F4 /* SupabaseCrossRefService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */; };
-		C4EFAD1CEACC9993AF88593C /* OnboardingCoordinatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */; };
-		CE81174A43A3F974EFD5A158 /* PrayersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25CB69F39ACFDE00A919CF /* PrayersView.swift */; };
-		CF51D50315B88D1434C28AEE /* VoiceInputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C639AD976A467A875A2E94CF /* VoiceInputService.swift */; };
-		CFA750DE2BB5EE3B497851A4 /* JournalComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */; };
-		D0D5DBF2A636235780FAF06A /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580C02325CC5152AD28D7CF /* KeychainManager.swift */; };
-		D3C5080D89A5402900A89420 /* EnrollmentConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */; };
-		D688F9B389C4A7991E9D63D1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1579DE003299235117C7177 /* HomeView.swift */; };
-		D7D5D54A01BC5A51472CFD05 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */; };
-		DB547C4A7BE809C47CC7E2DF /* SupabaseBibleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */; };
-		E0E081AA5254C7CDD1A044A1 /* ScanResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6824EA911A83402E6EA06533 /* ScanResultView.swift */; };
-		E2B1B7BC653392BEF79FEE5A /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938ACD99279445859CDF2BEF /* ChatView.swift */; };
-		E30A90A0779FC0EE0C37B498 /* Journal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFD816912EDFF0922081830 /* Journal.swift */; };
-		E52367E3A9F2A89A0B0E3A43 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF05A8BBBA005203F0CEFA9 /* AppState.swift */; };
-		E6EC62CEC27013E75CA16AD1 /* JourneyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */; };
-		E7FA217F476ADA6120274A7F /* MilestonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */; };
-		E850A120B334998301F6A776 /* ScriptureScanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73513B413900E629014CD52B /* ScriptureScanService.swift */; };
-		EA3520BCFAF7361EA4915451 /* NotificationCategories.swift in Sources */ = {isa = PBXBuildFile; fileRef = B682FCB8175CFD34862B0673 /* NotificationCategories.swift */; };
-		EF23DD7F2FC69967079DAA87 /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */; };
-		F0D59185B385E44442E48EE7 /* SupabaseOnboardingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */; };
-		F27E6848DCC2B30D145B27C7 /* ScriptureScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */; };
-		F3F101268479793C572D582B /* BibleReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */; };
-		F8406FDCECE80BD5EEA7AF6F /* DevotionalHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414B97A385B8A429F191EF4E /* DevotionalHubView.swift */; };
-		F8EF89FF01DCE2873F27679F /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */; };
-		F9D5F19706C7DE02275050B0 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */; };
-		FB17387CAA23DC74E3EF9D0E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F673CBF47C2CEB4F1955E0BC /* MainTabView.swift */; };
-		FB736D219F2AEE9778C39717 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E671A35ACE4890594409BFB /* ChatModels.swift */; };
-		FB9C3BF91185CE57F5E58F6F /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513BC8F210E916D14B93B339 /* LoginView.swift */; };
-		FC27428C7103E1B0EBE6BD2E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */; };
-		FD005896F21AE1268F6481C9 /* CompanionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9065D12448221C1D8F26416 /* CompanionService.swift */; };
-/* End PBXBuildFile section */
-
-/* Begin PBXFileReference section */
-		0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDevotionalService.swift; sourceTree = "<group>"; };
-		0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseOnboardingService.swift; sourceTree = "<group>"; };
-		0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prayer.swift; sourceTree = "<group>"; };
-		0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinCircleSheet.swift; sourceTree = "<group>"; };
-		11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalComposeView.swift; sourceTree = "<group>"; };
-		19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMemoryVerseSheet.swift; sourceTree = "<group>"; };
-		1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyView.swift; sourceTree = "<group>"; };
-		1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseCrossRefService.swift; sourceTree = "<group>"; };
-		1AE7038CAC3C8C6D3D3C6B81 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
-		1DF05A8BBBA005203F0CEFA9 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseInsightsService.swift; sourceTree = "<group>"; };
-		20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioViewModel.swift; sourceTree = "<group>"; };
-		28729EAA1F5A4FC698779F64 /* LectioStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioStepView.swift; sourceTree = "<group>"; };
-		298077A766F8003184A0D7FC /* ChatQuotaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatQuotaManager.swift; sourceTree = "<group>"; };
-		357CB1662D9F60FF46440911 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		3AD8510E51C673414997561A /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		40184908AA63BDAA36FF55B7 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
-		40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureScanView.swift; sourceTree = "<group>"; };
-		414B97A385B8A429F191EF4E /* DevotionalHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevotionalHubView.swift; sourceTree = "<group>"; };
-		42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleReaderView.swift; sourceTree = "<group>"; };
-		4517E590D78084E0BB948BC4 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryVerseListView.swift; sourceTree = "<group>"; };
-		49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
-		4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryViewModel.swift; sourceTree = "<group>"; };
-		4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
-		4DA086B9E392679F615C1028 /* SourceVerseCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVerseCard.swift; sourceTree = "<group>"; };
-		513BC8F210E916D14B93B339 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
-		523B877627A2795C6EC4B295 /* GlassEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffects.swift; sourceTree = "<group>"; };
-		5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
-		6824EA911A83402E6EA06533 /* ScanResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanResultView.swift; sourceTree = "<group>"; };
-		6CFD816912EDFF0922081830 /* Journal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journal.swift; sourceTree = "<group>"; };
-		6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthService.swift; sourceTree = "<group>"; };
-		6E82CF17867B6BDD94BFF556 /* InsightModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightModels.swift; sourceTree = "<group>"; };
-		70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerBar.swift; sourceTree = "<group>"; };
-		71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
-		73513B413900E629014CD52B /* ScriptureScanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureScanService.swift; sourceTree = "<group>"; };
-		747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinatorView.swift; sourceTree = "<group>"; };
-		751404A1AFFF501C68F138A0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
-		76D515656765EB40E8B27247 /* ChatContextBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextBar.swift; sourceTree = "<group>"; };
-		79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerManager.swift; sourceTree = "<group>"; };
-		7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryVerse.swift; sourceTree = "<group>"; };
-		7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
-		7E671A35ACE4890594409BFB /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
-		7F0D2F42801462BC193929F0 /* CircleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewModel.swift; sourceTree = "<group>"; };
-		7F14400814DEFCCA256D141B /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
-		81ECA782F1A1FB4734D277BC /* ChooseGODApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseGODApp.swift; sourceTree = "<group>"; };
-		8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
-		85AE0B29D90AC0DA0A372626 /* ReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralView.swift; sourceTree = "<group>"; };
-		88D12F5A7E78BEF4C18B5A2D /* AuthServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthServiceProtocol.swift; sourceTree = "<group>"; };
-		8E25CB69F39ACFDE00A919CF /* PrayersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayersView.swift; sourceTree = "<group>"; };
-		9029DFC682065CCEBFA8605C /* AudioModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioModels.swift; sourceTree = "<group>"; };
-		90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalizationQuizView.swift; sourceTree = "<group>"; };
-		91EC1529ADD939AF27275690 /* VoiceInputButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputButton.swift; sourceTree = "<group>"; };
-		9324127082C2AAA4B3F76802 /* Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
-		938ACD99279445859CDF2BEF /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
-		9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSetupView.swift; sourceTree = "<group>"; };
-		9E44B55166194167D5280485 /* JournalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalViewModel.swift; sourceTree = "<group>"; };
-		9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyDevotionalView.swift; sourceTree = "<group>"; };
-		9F401146D99102F19E5E4F78 /* ReferralService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralService.swift; sourceTree = "<group>"; };
-		A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerCirclesView.swift; sourceTree = "<group>"; };
-		A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPracticeView.swift; sourceTree = "<group>"; };
-		A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewModel.swift; sourceTree = "<group>"; };
-		A580C02325CC5152AD28D7CF /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
-		A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
-		A937FE76E484179CE37871E5 /* RecommendationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationsView.swift; sourceTree = "<group>"; };
-		AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevotionalCompleteView.swift; sourceTree = "<group>"; };
-		AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestonesView.swift; sourceTree = "<group>"; };
-		AEB45A320E27E362B2FB40E2 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
-		B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LectioDivinaView.swift; sourceTree = "<group>"; };
-		B0DABECBB1BD945620076615 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
-		B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesLibraryView.swift; sourceTree = "<group>"; };
-		B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCircleSheet.swift; sourceTree = "<group>"; };
-		B682FCB8175CFD34862B0673 /* NotificationCategories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCategories.swift; sourceTree = "<group>"; };
-		B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleDetailView.swift; sourceTree = "<group>"; };
-		BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossReferencesSheet.swift; sourceTree = "<group>"; };
-		BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseJournalService.swift; sourceTree = "<group>"; };
-		C1579DE003299235117C7177 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrollmentConfirmView.swift; sourceTree = "<group>"; };
-		C639AD976A467A875A2E94CF /* VoiceInputService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputService.swift; sourceTree = "<group>"; };
-		C9065D12448221C1D8F26416 /* CompanionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionService.swift; sourceTree = "<group>"; };
-		CB5C6C5D4021205608C5924F /* JournalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalListView.swift; sourceTree = "<group>"; };
-		CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBibleService.swift; sourceTree = "<group>"; };
-		D30295A0AA47E588B1D191CF /* BibleAudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleAudioService.swift; sourceTree = "<group>"; };
-		D5F10D9ED639D90319683280 /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
-		D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabasePrayerService.swift; sourceTree = "<group>"; };
-		D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyInsightsView.swift; sourceTree = "<group>"; };
-		D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
-		D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChooseGOD.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DDC7931D430A30CA79458C4A /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		E6208C410F97E16CFE92E620 /* Bible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bible.swift; sourceTree = "<group>"; };
-		E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesDetailView.swift; sourceTree = "<group>"; };
-		E6CE639CB3F872386E608A6D /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-		E7D424E65CF113743EA26C5F /* Devotional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devotional.swift; sourceTree = "<group>"; };
-		EC2DFA969A879D3363679D64 /* MockServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockServices.swift; sourceTree = "<group>"; };
-		EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionSheet.swift; sourceTree = "<group>"; };
-		EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		F60CCF8B5804C177008E7039 /* RevenueCatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatService.swift; sourceTree = "<group>"; };
-		F673CBF47C2CEB4F1955E0BC /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseMemoryService.swift; sourceTree = "<group>"; };
-		FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
-/* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		E807115BA997E5C9082CFBBD /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4FFD3561F1EF4FE0EE2F60EA /* Supabase in Frameworks */,
-				65E2BE733BF35D7DA33A200E /* RevenueCat in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXGroup section */
-		0023DD39BFA7E1E843379B71 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				41AAB0F5B7987EEA4198A016 /* ViewModels */,
-				BE7992A4DE68EF7354FE2774 /* Views */,
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
-		0192D851671A0D7A539AD7CD /* AI */ = {
-			isa = PBXGroup;
-			children = (
-				298077A766F8003184A0D7FC /* ChatQuotaManager.swift */,
-				C9065D12448221C1D8F26416 /* CompanionService.swift */,
-			);
-			path = AI;
-			sourceTree = "<group>";
-		};
-		021690EF3E5B3707B26E2C48 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C1579DE003299235117C7177 /* HomeView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		0C7E7635EBC48FCC6EFC7063 /* Notifications */ = {
-			isa = PBXGroup;
-			children = (
-				B682FCB8175CFD34862B0673 /* NotificationCategories.swift */,
-				E6CE639CB3F872386E608A6D /* NotificationService.swift */,
-			);
-			path = Notifications;
-			sourceTree = "<group>";
-		};
-		0CDB03522526B354DD0F0B25 /* RevenueCat */ = {
-			isa = PBXGroup;
-			children = (
-				F60CCF8B5804C177008E7039 /* RevenueCatService.swift */,
-			);
-			path = RevenueCat;
-			sourceTree = "<group>";
-		};
-		1038EFC0E10A7AED9E23AD16 /* Journal */ = {
-			isa = PBXGroup;
-			children = (
-				24D5EE65D1AF13036D3D8891 /* ViewModels */,
-				1040D59D7A1BF63A73C7AC31 /* Views */,
-			);
-			path = Journal;
-			sourceTree = "<group>";
-		};
-		1040D59D7A1BF63A73C7AC31 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				11BE2D309F460C353C2AFF86 /* JournalComposeView.swift */,
-				8330CB6CBC153E664026F2D3 /* JournalDetailView.swift */,
-				CB5C6C5D4021205608C5924F /* JournalListView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		126EF78DB98A49B870161B12 /* Camera */ = {
-			isa = PBXGroup;
-			children = (
-				B0AB533C81E9BC565D49A315 /* Views */,
-			);
-			path = Camera;
-			sourceTree = "<group>";
-		};
-		130A6EE5DD9608942F01E39E /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				24790E954743CBFA02D66278 /* Extensions */,
-				E15E992BAC3A36DF58B96AD5 /* Models */,
-				BC3687C136CE1DFA105F6228 /* Services */,
-				3F8956B98A12AE1AC12A0386 /* Theme */,
-				3555F7B7C8501D2E27FEBDE2 /* Utilities */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		157CCC907162CA1F972C9B67 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		1A895A5651AF6264CAE1A75F /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				F5B4D3E2F4D7813DAA469FD8 /* Views */,
-			);
-			path = Common;
-			sourceTree = "<group>";
-		};
-		1E587C40C702A52B4D1BD0C9 /* Referral */ = {
-			isa = PBXGroup;
-			children = (
-				9F401146D99102F19E5E4F78 /* ReferralService.swift */,
-			);
-			path = Referral;
-			sourceTree = "<group>";
-		};
-		1F5221618716F0AB1F6C8BD0 /* Mocks */ = {
-			isa = PBXGroup;
-			children = (
-				EC2DFA969A879D3363679D64 /* MockServices.swift */,
-			);
-			path = Mocks;
-			sourceTree = "<group>";
-		};
-		208399AF61830613FA358028 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		24790E954743CBFA02D66278 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				B0DABECBB1BD945620076615 /* Date+Extensions.swift */,
-				FCEA972E53A5FFE7086D0165 /* View+Extensions.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		24D5EE65D1AF13036D3D8891 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				9E44B55166194167D5280485 /* JournalViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		2D1389D3A13133F94936DBB7 /* Features */ = {
-			isa = PBXGroup;
-			children = (
-				614CADBB59E141D3217350E5 /* Auth */,
-				F7328A1D13B866DEE704A19F /* Bible */,
-				126EF78DB98A49B870161B12 /* Camera */,
-				DB199DFB4DB24804D507FAD2 /* Chat */,
-				1A895A5651AF6264CAE1A75F /* Common */,
-				3F0836BEFD7A3670EE980E44 /* Devotionals */,
-				5836CE6A1E50F8A5CD96F5FE /* Home */,
-				1038EFC0E10A7AED9E23AD16 /* Journal */,
-				B7A6F36D0BB4389B6E836C82 /* Journey */,
-				F53B08DAA7EB4B57CDB8E8B1 /* Lectio */,
-				5EF533FEF4ABF1BF0701DD72 /* Memory */,
-				0023DD39BFA7E1E843379B71 /* Onboarding */,
-				8E2E743DA39343AA20FE48BB /* Paywall */,
-				DE8FDFB60697543D75DF374A /* Prayers */,
-				FF3729F3DEC5A1B5426C559D /* Settings */,
-			);
-			path = Features;
-			sourceTree = "<group>";
-		};
-		2EEC8982CF1216E8EED20FB6 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		2F84DC8DB523C5F9A47EB7ED /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				85AE0B29D90AC0DA0A372626 /* ReferralView.swift */,
-				EFD857D2A5813CDFFAB2AC4A /* SettingsView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		3035FF773CF58716F28C0AD2 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				70550AE63E5C44B07A29C130 /* AudioPlayerBar.swift */,
-				42EA5B3673E10ED87D2E4642 /* BibleReaderView.swift */,
-				BC17C75B25F6F9CDF602EAB3 /* CrossReferencesSheet.swift */,
-				EEED5193F0DC3796FB63E265 /* ReflectionSheet.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		3555F7B7C8501D2E27FEBDE2 /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				A580C02325CC5152AD28D7CF /* KeychainManager.swift */,
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
-		3DD69FD8DB6B0F3C1A2B76D9 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				7F0D2F42801462BC193929F0 /* CircleViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		3F0836BEFD7A3670EE980E44 /* Devotionals */ = {
-			isa = PBXGroup;
-			children = (
-				E06383FE0D7E0681CDE73425 /* ViewModels */,
-				FF8B5FA7792E40813EC6A56E /* Views */,
-			);
-			path = Devotionals;
-			sourceTree = "<group>";
-		};
-		3F8956B98A12AE1AC12A0386 /* Theme */ = {
-			isa = PBXGroup;
-			children = (
-				9324127082C2AAA4B3F76802 /* Accessibility.swift */,
-				7F14400814DEFCCA256D141B /* Animations.swift */,
-				523B877627A2795C6EC4B295 /* GlassEffects.swift */,
-				751404A1AFFF501C68F138A0 /* Haptics.swift */,
-				DDC7931D430A30CA79458C4A /* Theme.swift */,
-			);
-			path = Theme;
-			sourceTree = "<group>";
-		};
-		41AAB0F5B7987EEA4198A016 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				A8BC2E0C7B58791727A96FCB /* OnboardingViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		42D09A59027A1FA4C330EECA /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				4517E590D78084E0BB948BC4 /* AuthViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		4928039BF23C9A91EFAB0DC7 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				76D515656765EB40E8B27247 /* ChatContextBar.swift */,
-				938ACD99279445859CDF2BEF /* ChatView.swift */,
-				4DA086B9E392679F615C1028 /* SourceVerseCard.swift */,
-				91EC1529ADD939AF27275690 /* VoiceInputButton.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		4EF36821817FCA86D2BC2FB9 /* Speech */ = {
-			isa = PBXGroup;
-			children = (
-				C639AD976A467A875A2E94CF /* VoiceInputService.swift */,
-			);
-			path = Speech;
-			sourceTree = "<group>";
-		};
-		558B1BD4E9BDD0B04F8C42F8 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				20F7FAEA9C9F995CC34FAE61 /* LectioViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		57F0874DF3BF33FF4327FEDD /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				A2D42052CD2E7069EADB0AFF /* PaywallViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		5836CE6A1E50F8A5CD96F5FE /* Home */ = {
-			isa = PBXGroup;
-			children = (
-				2EEC8982CF1216E8EED20FB6 /* ViewModels */,
-				021690EF3E5B3707B26E2C48 /* Views */,
-			);
-			path = Home;
-			sourceTree = "<group>";
-		};
-		5B379F40598E6C19D777C912 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				4BD2BA4C3100A8F9529B0E69 /* PaywallView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		5EF533FEF4ABF1BF0701DD72 /* Memory */ = {
-			isa = PBXGroup;
-			children = (
-				B773973CCC58053B8B5868BA /* ViewModels */,
-				97AB8683139E89B9054DE363 /* Views */,
-			);
-			path = Memory;
-			sourceTree = "<group>";
-		};
-		5F6F9BC1586A5A7958250772 /* Audio */ = {
-			isa = PBXGroup;
-			children = (
-				79274B575A7D0CF7661FE754 /* AudioPlayerManager.swift */,
-				D30295A0AA47E588B1D191CF /* BibleAudioService.swift */,
-			);
-			path = Audio;
-			sourceTree = "<group>";
-		};
-		614CADBB59E141D3217350E5 /* Auth */ = {
-			isa = PBXGroup;
-			children = (
-				42D09A59027A1FA4C330EECA /* ViewModels */,
-				6534EDCA6F09791F2ADF98A4 /* Views */,
-				40184908AA63BDAA36FF55B7 /* AuthCoordinator.swift */,
-			);
-			path = Auth;
-			sourceTree = "<group>";
-		};
-		6534EDCA6F09791F2ADF98A4 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				1AE7038CAC3C8C6D3D3C6B81 /* ForgotPasswordView.swift */,
-				513BC8F210E916D14B93B339 /* LoginView.swift */,
-				AEB45A320E27E362B2FB40E2 /* SignUpView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		66AB92B56579822B41628A3A /* Protocols */ = {
-			isa = PBXGroup;
-			children = (
-				88D12F5A7E78BEF4C18B5A2D /* AuthServiceProtocol.swift */,
-			);
-			path = Protocols;
-			sourceTree = "<group>";
-		};
-		7B620C36621DC5F519E038B2 /* Vision */ = {
-			isa = PBXGroup;
-			children = (
-				73513B413900E629014CD52B /* ScriptureScanService.swift */,
-			);
-			path = Vision;
-			sourceTree = "<group>";
-		};
-		8E2E743DA39343AA20FE48BB /* Paywall */ = {
-			isa = PBXGroup;
-			children = (
-				57F0874DF3BF33FF4327FEDD /* ViewModels */,
-				5B379F40598E6C19D777C912 /* Views */,
-			);
-			path = Paywall;
-			sourceTree = "<group>";
-		};
-		8F871C1628F8C389EEA79FBC /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				D8C81A1E5927039B4C0CA30F /* ChatViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		91EB79AA81D5040D74A25358 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				5EFCB1DF98F2ACF5AAABA22C /* InsightsViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		97AB8683139E89B9054DE363 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				19EEFD75EBAF999D83BB94B8 /* AddMemoryVerseSheet.swift */,
-				A0E1688D960D50E5E6B2F431 /* MemoryPracticeView.swift */,
-				49CC568D0A36F8AC3B683FBB /* MemoryVerseListView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		99BECD537428437E28DA3658 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				1DF05A8BBBA005203F0CEFA9 /* AppState.swift */,
-				81ECA782F1A1FB4734D277BC /* ChooseGODApp.swift */,
-				F673CBF47C2CEB4F1955E0BC /* MainTabView.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		9A4844F8BAE636985A3BA241 = {
-			isa = PBXGroup;
-			children = (
-				99BECD537428437E28DA3658 /* App */,
-				130A6EE5DD9608942F01E39E /* Core */,
-				2D1389D3A13133F94936DBB7 /* Features */,
-				FED599ADFF0DA84DAF767F0E /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		B0AB533C81E9BC565D49A315 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				6824EA911A83402E6EA06533 /* ScanResultView.swift */,
-				40B3E01A98D9AA3EC22D01A8 /* ScriptureScanView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		B773973CCC58053B8B5868BA /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				4A8484B3D78342EDF24D233B /* MemoryViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		B7A6F36D0BB4389B6E836C82 /* Journey */ = {
-			isa = PBXGroup;
-			children = (
-				91EB79AA81D5040D74A25358 /* ViewModels */,
-				C6DD19B47D8553213F2BC920 /* Views */,
-			);
-			path = Journey;
-			sourceTree = "<group>";
-		};
-		BC3687C136CE1DFA105F6228 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				0192D851671A0D7A539AD7CD /* AI */,
-				5F6F9BC1586A5A7958250772 /* Audio */,
-				1F5221618716F0AB1F6C8BD0 /* Mocks */,
-				0C7E7635EBC48FCC6EFC7063 /* Notifications */,
-				66AB92B56579822B41628A3A /* Protocols */,
-				1E587C40C702A52B4D1BD0C9 /* Referral */,
-				0CDB03522526B354DD0F0B25 /* RevenueCat */,
-				4EF36821817FCA86D2BC2FB9 /* Speech */,
-				F1470A83A5C653D8050B8723 /* Supabase */,
-				7B620C36621DC5F519E038B2 /* Vision */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		BE7992A4DE68EF7354FE2774 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				9679F68347F7F09ED93F0B84 /* NotificationSetupView.swift */,
-				747F6F607C4E106A17C748EF /* OnboardingCoordinatorView.swift */,
-				90DC434AA867B379BE718790 /* PersonalizationQuizView.swift */,
-				A937FE76E484179CE37871E5 /* RecommendationsView.swift */,
-				3AD8510E51C673414997561A /* WelcomeView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		C6DD19B47D8553213F2BC920 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				D879837DE29CB1FF7EB7593D /* JourneyInsightsView.swift */,
-				1A7F3302A2F89B84FF1DCD73 /* JourneyView.swift */,
-				AE0C6EA3EEC034440C29FFEB /* MilestonesView.swift */,
-				7C1B39C1547EB7F1079C2C7F /* TimelineView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		D911E61B057C4895ECBE54EE /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				B8C66923E5FC6941B90B7A01 /* CircleDetailView.swift */,
-				B3A996BD7016DBF038D0211E /* CreateCircleSheet.swift */,
-				0CF3906B59D258F5BF7AEFF6 /* JoinCircleSheet.swift */,
-				A0738CCB317F41F87CECECB8 /* PrayerCirclesView.swift */,
-				8E25CB69F39ACFDE00A919CF /* PrayersView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		DB199DFB4DB24804D507FAD2 /* Chat */ = {
-			isa = PBXGroup;
-			children = (
-				8F871C1628F8C389EEA79FBC /* ViewModels */,
-				4928039BF23C9A91EFAB0DC7 /* Views */,
-			);
-			path = Chat;
-			sourceTree = "<group>";
-		};
-		DE8FDFB60697543D75DF374A /* Prayers */ = {
-			isa = PBXGroup;
-			children = (
-				3DD69FD8DB6B0F3C1A2B76D9 /* ViewModels */,
-				D911E61B057C4895ECBE54EE /* Views */,
-			);
-			path = Prayers;
-			sourceTree = "<group>";
-		};
-		E06383FE0D7E0681CDE73425 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		E15E992BAC3A36DF58B96AD5 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				9029DFC682065CCEBFA8605C /* AudioModels.swift */,
-				E6208C410F97E16CFE92E620 /* Bible.swift */,
-				7E671A35ACE4890594409BFB /* ChatModels.swift */,
-				E7D424E65CF113743EA26C5F /* Devotional.swift */,
-				6E82CF17867B6BDD94BFF556 /* InsightModels.swift */,
-				6CFD816912EDFF0922081830 /* Journal.swift */,
-				7A982B804BE2B398263E3BD9 /* MemoryVerse.swift */,
-				0C039A7C2D6B4E5A3FDF5C38 /* Prayer.swift */,
-				357CB1662D9F60FF46440911 /* User.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		EFFE16071B7BC2F9C9CBFE54 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				B0AD4C91F2B93B3B8CE0447C /* LectioDivinaView.swift */,
-				28729EAA1F5A4FC698779F64 /* LectioStepView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		F1470A83A5C653D8050B8723 /* Supabase */ = {
-			isa = PBXGroup;
-			children = (
-				6E2E085CC36D8C393C54CBB4 /* SupabaseAuthService.swift */,
-				CCEFCF75A46633BEE619CA8D /* SupabaseBibleService.swift */,
-				1ADEBC411100737504883EDE /* SupabaseCrossRefService.swift */,
-				0896FA34BBDC42928AD223B4 /* SupabaseDevotionalService.swift */,
-				1F30A08C9D577E9A35823425 /* SupabaseInsightsService.swift */,
-				BF0EC7627C1432D2984117E9 /* SupabaseJournalService.swift */,
-				49F0B5DE384B1D9A582ECA0F /* SupabaseManager.swift */,
-				FC461C576C6B304C245F755C /* SupabaseMemoryService.swift */,
-				0BE1735056D957B68DF2A6C4 /* SupabaseOnboardingService.swift */,
-				D7597AABF210F75528E0AAE1 /* SupabasePrayerService.swift */,
-			);
-			path = Supabase;
-			sourceTree = "<group>";
-		};
-		F53B08DAA7EB4B57CDB8E8B1 /* Lectio */ = {
-			isa = PBXGroup;
-			children = (
-				558B1BD4E9BDD0B04F8C42F8 /* ViewModels */,
-				EFFE16071B7BC2F9C9CBFE54 /* Views */,
-			);
-			path = Lectio;
-			sourceTree = "<group>";
-		};
-		F5B4D3E2F4D7813DAA469FD8 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				71107FCD5CC08E5BA2E47593 /* ConfettiView.swift */,
-				51E2E02CDA4C9ECB6F42AB75 /* EmptyStateView.swift */,
-				D5F10D9ED639D90319683280 /* ShimmerView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		F7328A1D13B866DEE704A19F /* Bible */ = {
-			isa = PBXGroup;
-			children = (
-				157CCC907162CA1F972C9B67 /* ViewModels */,
-				3035FF773CF58716F28C0AD2 /* Views */,
-			);
-			path = Bible;
-			sourceTree = "<group>";
-		};
-		FED599ADFF0DA84DAF767F0E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		FF3729F3DEC5A1B5426C559D /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				208399AF61830613FA358028 /* ViewModels */,
-				2F84DC8DB523C5F9A47EB7ED /* Views */,
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
-		FF8B5FA7792E40813EC6A56E /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				9EB7112148D053595030F4A7 /* DailyDevotionalView.swift */,
-				AA7A6488787CC36C7D62EFBD /* DevotionalCompleteView.swift */,
-				414B97A385B8A429F191EF4E /* DevotionalHubView.swift */,
-				C1F228F80B9C2C5AD7D15267 /* EnrollmentConfirmView.swift */,
-				E6C7272275F8DCFA02219CCA /* SeriesDetailView.swift */,
-				B15EF392524A5A24B7CBE3A8 /* SeriesLibraryView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-/* End PBXGroup section */
-
-/* Begin PBXNativeTarget section */
-		5D9F0899D8E50F532D6A824E /* ChooseGOD */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B3D98539567280F628EEF30E /* Build configuration list for PBXNativeTarget "ChooseGOD" */;
-			buildPhases = (
-				2CF6DE80006D6C8E00B3D30E /* Sources */,
-				E807115BA997E5C9082CFBBD /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = ChooseGOD;
-			packageProductDependencies = (
-				8FCB5720506B6EAF0F8A2933 /* Supabase */,
-				9029D26D8D40691B304F4290 /* RevenueCat */,
-			);
-			productName = ChooseGOD;
-			productReference = D8FF19DA2AA7BFC3C676B447 /* ChooseGOD.app */;
-			productType = "com.apple.product-type.application";
-		};
-/* End PBXNativeTarget section */
-
-/* Begin PBXProject section */
-		2512875B75AE6E27ED67BE2F /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					5D9F0899D8E50F532D6A824E = {
-						ProvisioningStyle = Automatic;
-					};
-				};
-			};
-			buildConfigurationList = 3520A3D66DE4324C9E9545AB /* Build configuration list for PBXProject "ChooseGOD" */;
-			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				Base,
-				en,
-			);
-			mainGroup = 9A4844F8BAE636985A3BA241;
-			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */,
-				FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-			);
-			productRefGroup = FED599ADFF0DA84DAF767F0E /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			targets = (
-				5D9F0899D8E50F532D6A824E /* ChooseGOD */,
-			);
-		};
-/* End PBXProject section */
-
-/* Begin PBXSourcesBuildPhase section */
-		2CF6DE80006D6C8E00B3D30E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BC3A997CF90153195FF00D3A /* Accessibility.swift in Sources */,
-				25CA5EBC033E01B448EC8817 /* AddMemoryVerseSheet.swift in Sources */,
-				3216B3FB0839726A5C120469 /* Animations.swift in Sources */,
-				E52367E3A9F2A89A0B0E3A43 /* AppState.swift in Sources */,
-				B88EAC3ADB6D864349F150DB /* AudioModels.swift in Sources */,
-				1127E89E798C8D934CBB53FD /* AudioPlayerBar.swift in Sources */,
-				72F67EFBA8161D4FEEAADCBE /* AudioPlayerManager.swift in Sources */,
-				092D81CF2FE1E059B175F817 /* AuthCoordinator.swift in Sources */,
-				63304D9B06B762BD3479BAFA /* AuthServiceProtocol.swift in Sources */,
-				5808E7C2336B231358484D4A /* AuthViewModel.swift in Sources */,
-				B10D9AC2C43D51DF4BCE4057 /* Bible.swift in Sources */,
-				0F15648DFE144C8D70539F3F /* BibleAudioService.swift in Sources */,
-				F3F101268479793C572D582B /* BibleReaderView.swift in Sources */,
-				A215DCFD1A9BE7BA82A487AF /* ChatContextBar.swift in Sources */,
-				FB736D219F2AEE9778C39717 /* ChatModels.swift in Sources */,
-				A006AAAF2ABEB2C97C3B3A5B /* ChatQuotaManager.swift in Sources */,
-				E2B1B7BC653392BEF79FEE5A /* ChatView.swift in Sources */,
-				596126D8149A1E56AE3A52FD /* ChatViewModel.swift in Sources */,
-				A03BFA89E9002825A7E9DFF2 /* ChooseGODApp.swift in Sources */,
-				7905CA8AFDD274591CB1AC7F /* CircleDetailView.swift in Sources */,
-				2C171C17C24EE26CAA7917B3 /* CircleViewModel.swift in Sources */,
-				FD005896F21AE1268F6481C9 /* CompanionService.swift in Sources */,
-				41A9FF2B90390D6C180D4472 /* ConfettiView.swift in Sources */,
-				560B232E39299B5C0D2D96AB /* CreateCircleSheet.swift in Sources */,
-				A0E16CEBD40217B06C747424 /* CrossReferencesSheet.swift in Sources */,
-				75D53545BB99DE4B5CB907AD /* DailyDevotionalView.swift in Sources */,
-				704CD9CF37E3DD33A897003F /* Date+Extensions.swift in Sources */,
-				7F80519250C11919FC245A11 /* Devotional.swift in Sources */,
-				2FD630540BE2644E3A59588E /* DevotionalCompleteView.swift in Sources */,
-				F8406FDCECE80BD5EEA7AF6F /* DevotionalHubView.swift in Sources */,
-				49FCDBC42902BD422AE30AE1 /* EmptyStateView.swift in Sources */,
-				D3C5080D89A5402900A89420 /* EnrollmentConfirmView.swift in Sources */,
-				5FF40C2A5909C31DFEF557B2 /* ForgotPasswordView.swift in Sources */,
-				A6E51377A7C8F7F1DB12D009 /* GlassEffects.swift in Sources */,
-				2DE4DAD349CB288516CF262E /* Haptics.swift in Sources */,
-				D688F9B389C4A7991E9D63D1 /* HomeView.swift in Sources */,
-				646464E1096C4A1AF691689A /* InsightModels.swift in Sources */,
-				A27FFB398D49A35C9EFB6E7A /* InsightsViewModel.swift in Sources */,
-				4DF3E1E5BCFB1CD1B9783680 /* JoinCircleSheet.swift in Sources */,
-				E30A90A0779FC0EE0C37B498 /* Journal.swift in Sources */,
-				CFA750DE2BB5EE3B497851A4 /* JournalComposeView.swift in Sources */,
-				EF23DD7F2FC69967079DAA87 /* JournalDetailView.swift in Sources */,
-				573FCFD7F269FDE64B183453 /* JournalListView.swift in Sources */,
-				70FED2DC09CDDD289AFFBD4E /* JournalViewModel.swift in Sources */,
-				864D073AA540E17C31292B5D /* JourneyInsightsView.swift in Sources */,
-				E6EC62CEC27013E75CA16AD1 /* JourneyView.swift in Sources */,
-				D0D5DBF2A636235780FAF06A /* KeychainManager.swift in Sources */,
-				0E5A628F6B066964B2BD5001 /* LectioDivinaView.swift in Sources */,
-				A90C5A30D68DB8D33906B1D6 /* LectioStepView.swift in Sources */,
-				17D631C346BDC2DA4AED7C2A /* LectioViewModel.swift in Sources */,
-				FB9C3BF91185CE57F5E58F6F /* LoginView.swift in Sources */,
-				FB17387CAA23DC74E3EF9D0E /* MainTabView.swift in Sources */,
-				5F42193E7D466EC15B087A27 /* MemoryPracticeView.swift in Sources */,
-				0564D6F56A355D5EC896A3DD /* MemoryVerse.swift in Sources */,
-				3B5B0243386AEFDAE8B06068 /* MemoryVerseListView.swift in Sources */,
-				737465CEE8F01630041BE78C /* MemoryViewModel.swift in Sources */,
-				E7FA217F476ADA6120274A7F /* MilestonesView.swift in Sources */,
-				20740FE52758F679A12FF801 /* MockServices.swift in Sources */,
-				EA3520BCFAF7361EA4915451 /* NotificationCategories.swift in Sources */,
-				415CE80806A12632EA8F0F5D /* NotificationService.swift in Sources */,
-				180A6064A0584A3392C05D73 /* NotificationSetupView.swift in Sources */,
-				C4EFAD1CEACC9993AF88593C /* OnboardingCoordinatorView.swift in Sources */,
-				06EFFB87CBBF73B5656183B3 /* OnboardingViewModel.swift in Sources */,
-				D7D5D54A01BC5A51472CFD05 /* PaywallView.swift in Sources */,
-				BD97B9FA40308A35066E499A /* PaywallViewModel.swift in Sources */,
-				73D897D6F59396E1C6E1BC1A /* PersonalizationQuizView.swift in Sources */,
-				61D3C1AC286B4BF5D82BAC60 /* Prayer.swift in Sources */,
-				231C3516566903585B36CB84 /* PrayerCirclesView.swift in Sources */,
-				CE81174A43A3F974EFD5A158 /* PrayersView.swift in Sources */,
-				97DBF4D8D88A64174E1CB73B /* RecommendationsView.swift in Sources */,
-				48EE385549BFF5E08E46C42B /* ReferralService.swift in Sources */,
-				4CC621D3477448F5D59DD0F7 /* ReferralView.swift in Sources */,
-				8CF564D2E3FCC31BEA4E51C3 /* ReflectionSheet.swift in Sources */,
-				271682A42618FA2D4B6E45C1 /* RevenueCatService.swift in Sources */,
-				E0E081AA5254C7CDD1A044A1 /* ScanResultView.swift in Sources */,
-				E850A120B334998301F6A776 /* ScriptureScanService.swift in Sources */,
-				F27E6848DCC2B30D145B27C7 /* ScriptureScanView.swift in Sources */,
-				27C1623E1A85712D5890D546 /* SeriesDetailView.swift in Sources */,
-				2DED7F4A7D99D2C51025DFE1 /* SeriesLibraryView.swift in Sources */,
-				FC27428C7103E1B0EBE6BD2E /* SettingsView.swift in Sources */,
-				94004EA9313DBF4C275FF36B /* ShimmerView.swift in Sources */,
-				7A4977AEFF3A6D1D9E3D9D61 /* SignUpView.swift in Sources */,
-				256C2148D27D06E3D85E7B1D /* SourceVerseCard.swift in Sources */,
-				05C998752DCDFD548B495C55 /* SupabaseAuthService.swift in Sources */,
-				DB547C4A7BE809C47CC7E2DF /* SupabaseBibleService.swift in Sources */,
-				C361483A0689EA1CC3B434F4 /* SupabaseCrossRefService.swift in Sources */,
-				32B008D84B50E340598670F6 /* SupabaseDevotionalService.swift in Sources */,
-				0B0F09299A29676718C2FA37 /* SupabaseInsightsService.swift in Sources */,
-				B9A50683553A484F6FF2768D /* SupabaseJournalService.swift in Sources */,
-				F8EF89FF01DCE2873F27679F /* SupabaseManager.swift in Sources */,
-				6773EC3E4DC6E8BAFBFF91E4 /* SupabaseMemoryService.swift in Sources */,
-				F0D59185B385E44442E48EE7 /* SupabaseOnboardingService.swift in Sources */,
-				05F588442C33E7C25BBD0F37 /* SupabasePrayerService.swift in Sources */,
-				7E12C160F383208800654BB6 /* Theme.swift in Sources */,
-				2E3652D38F2F35C15FEF283E /* TimelineView.swift in Sources */,
-				BDF226EEEFA5C1AEE7E9CE37 /* User.swift in Sources */,
-				F9D5F19706C7DE02275050B0 /* View+Extensions.swift in Sources */,
-				0F450E562560BEE5FD520B9E /* VoiceInputButton.swift in Sources */,
-				CF51D50315B88D1434C28AEE /* VoiceInputService.swift in Sources */,
-				0DC4E0CDA60ECB66726A60DE /* WelcomeView.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
-
-/* Begin XCBuildConfiguration section */
-		1D08A5199E6213993282EDD5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Resources/ChooseGOD.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HWV3Q7B59G;
-				INFOPLIST_FILE = Resources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.choosegod.app;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		65B13AB13B1BA4F271856E5E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Resources/ChooseGOD.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HWV3Q7B59G;
-				INFOPLIST_FILE = Resources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.choosegod.app;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		677F11B212F0497183DBCE6E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.9;
-			};
-			name = Release;
-		};
-		C5092A16BC3D31B8C9FB35C2 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"DEBUG=1",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.9;
-			};
-			name = Debug;
-		};
-/* End XCBuildConfiguration section */
-
-/* Begin XCConfigurationList section */
-		3520A3D66DE4324C9E9545AB /* Build configuration list for PBXProject "ChooseGOD" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C5092A16BC3D31B8C9FB35C2 /* Debug */,
-				677F11B212F0497183DBCE6E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		B3D98539567280F628EEF30E /* Build configuration list for PBXNativeTarget "ChooseGOD" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				1D08A5199E6213993282EDD5 /* Debug */,
-				65B13AB13B1BA4F271856E5E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-/* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.44.2;
-			};
-		};
-		FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase-community/supabase-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.40.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		8FCB5720506B6EAF0F8A2933 /* Supabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB6ECECAED681290F554FAF2 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Supabase;
-		};
-		9029D26D8D40691B304F4290 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 7A725699E14D16A113FBD413 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-/* End XCSwiftPackageProductDependency section */
-	};
-	rootObject = 2512875B75AE6E27ED67BE2F /* Project object */;
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>archiveVersion</key>
+	<string>1</string>
+	<key>classes</key>
+	<dict/>
+	<key>objectVersion</key>
+	<string>63</string>
+	<key>objects</key>
+	<dict>
+		<key>0023DD39BFA7E1E843379B71</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>41AAB0F5B7987EEA4198A016</string>
+				<string>BE7992A4DE68EF7354FE2774</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Onboarding</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0192D851671A0D7A539AD7CD</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>298077A766F8003184A0D7FC</string>
+				<string>C9065D12448221C1D8F26416</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>AI</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>021690EF3E5B3707B26E2C48</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>C1579DE003299235117C7177</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0287D26D68394255B4BC0A33</key>
+		<dict>
+			<key>fileRef</key>
+			<string>568F14F5128C433FB2CC28F8</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>03E2D5462BA443F6B05CFC39</key>
+		<dict>
+			<key>fileRef</key>
+			<string>85C600557DB04982B08CBF57</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0564D6F56A355D5EC896A3DD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7A982B804BE2B398263E3BD9</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>05C998752DCDFD548B495C55</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6E2E085CC36D8C393C54CBB4</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>05F588442C33E7C25BBD0F37</key>
+		<dict>
+			<key>fileRef</key>
+			<string>D7597AABF210F75528E0AAE1</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>06EFFB87CBBF73B5656183B3</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A8BC2E0C7B58791727A96FCB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0896FA34BBDC42928AD223B4</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseDevotionalService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>092D81CF2FE1E059B175F817</key>
+		<dict>
+			<key>fileRef</key>
+			<string>40184908AA63BDAA36FF55B7</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0B0F09299A29676718C2FA37</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1F30A08C9D577E9A35823425</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0BE1735056D957B68DF2A6C4</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseOnboardingService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0C039A7C2D6B4E5A3FDF5C38</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Prayer.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0C7E7635EBC48FCC6EFC7063</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B682FCB8175CFD34862B0673</string>
+				<string>E6CE639CB3F872386E608A6D</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Notifications</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0CDB03522526B354DD0F0B25</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>F60CCF8B5804C177008E7039</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>RevenueCat</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0CF3906B59D258F5BF7AEFF6</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JoinCircleSheet.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>0DC4E0CDA60ECB66726A60DE</key>
+		<dict>
+			<key>fileRef</key>
+			<string>3AD8510E51C673414997561A</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0E5A628F6B066964B2BD5001</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B0AD4C91F2B93B3B8CE0447C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0F15648DFE144C8D70539F3F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>D30295A0AA47E588B1D191CF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0F450E562560BEE5FD520B9E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>91EC1529ADD939AF27275690</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>0F7EE8F6939D48E7AC7C1AF9</key>
+		<dict>
+			<key>fileRef</key>
+			<string>38BECBD0591949B98364E628</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>1038EFC0E10A7AED9E23AD16</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>24D5EE65D1AF13036D3D8891</string>
+				<string>1040D59D7A1BF63A73C7AC31</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Journal</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1040D59D7A1BF63A73C7AC31</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>11BE2D309F460C353C2AFF86</string>
+				<string>8330CB6CBC153E664026F2D3</string>
+				<string>CB5C6C5D4021205608C5924F</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1127E89E798C8D934CBB53FD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>70550AE63E5C44B07A29C130</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>11BE2D309F460C353C2AFF86</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JournalComposeView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>126EF78DB98A49B870161B12</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B0AB533C81E9BC565D49A315</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Camera</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>130A6EE5DD9608942F01E39E</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>24790E954743CBFA02D66278</string>
+				<string>E15E992BAC3A36DF58B96AD5</string>
+				<string>BC3687C136CE1DFA105F6228</string>
+				<string>3F8956B98A12AE1AC12A0386</string>
+				<string>3555F7B7C8501D2E27FEBDE2</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Core</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>131AFC30A5924F73A593C8A8</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1C3D9D08EABA4B9CBC9E9FF2</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>157CCC907162CA1F972C9B67</key>
+		<dict>
+			<key>children</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>17D631C346BDC2DA4AED7C2A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>20F7FAEA9C9F995CC34FAE61</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>180A6064A0584A3392C05D73</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9679F68347F7F09ED93F0B84</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>1962E19563534B5F93AF1D8F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Home/Views/LaunchAnimationView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>19EEFD75EBAF999D83BB94B8</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AddMemoryVerseSheet.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1A7F3302A2F89B84FF1DCD73</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JourneyView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1A895A5651AF6264CAE1A75F</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>F5B4D3E2F4D7813DAA469FD8</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Common</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1ADEBC411100737504883EDE</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseCrossRefService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1AE7038CAC3C8C6D3D3C6B81</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ForgotPasswordView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1D08A5199E6213993282EDD5</key>
+		<dict>
+			<key>buildSettings</key>
+			<dict>
+				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
+				<string>AppIcon</string>
+				<key>ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME</key>
+				<string>AccentColor</string>
+				<key>CODE_SIGN_ENTITLEMENTS</key>
+				<string>Resources/ChooseGOD.entitlements</string>
+				<key>CODE_SIGN_IDENTITY</key>
+				<string>iPhone Developer</string>
+				<key>CODE_SIGN_STYLE</key>
+				<string>Automatic</string>
+				<key>DEVELOPMENT_TEAM</key>
+				<string>HWV3Q7B59G</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Resources/Info.plist</string>
+				<key>LD_RUNPATH_SEARCH_PATHS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>@executable_path/Frameworks</string>
+				</array>
+				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
+				<string>com.choosegod.app</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Debug</string>
+		</dict>
+		<key>1DF05A8BBBA005203F0CEFA9</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AppState.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1E587C40C702A52B4D1BD0C9</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9F401146D99102F19E5E4F78</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Referral</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1F30A08C9D577E9A35823425</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseInsightsService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>1F5221618716F0AB1F6C8BD0</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>EC2DFA969A879D3363679D64</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Mocks</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>20740FE52758F679A12FF801</key>
+		<dict>
+			<key>fileRef</key>
+			<string>EC2DFA969A879D3363679D64</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>208399AF61830613FA358028</key>
+		<dict>
+			<key>children</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>20F7FAEA9C9F995CC34FAE61</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>LectioViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>231C3516566903585B36CB84</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A0738CCB317F41F87CECECB8</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>24790E954743CBFA02D66278</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B0DABECBB1BD945620076615</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Extensions</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>24D5EE65D1AF13036D3D8891</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9E44B55166194167D5280485</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>2512875B75AE6E27ED67BE2F</key>
+		<dict>
+			<key>attributes</key>
+			<dict>
+				<key>BuildIndependentTargetsInParallel</key>
+				<string>YES</string>
+				<key>LastUpgradeCheck</key>
+				<string>1430</string>
+				<key>TargetAttributes</key>
+				<dict>
+					<key>5D9F0899D8E50F532D6A824E</key>
+					<dict>
+						<key>ProvisioningStyle</key>
+						<string>Automatic</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>buildConfigurationList</key>
+			<string>3520A3D66DE4324C9E9545AB</string>
+			<key>compatibilityVersion</key>
+			<string>Xcode 14.0</string>
+			<key>developmentRegion</key>
+			<string>en</string>
+			<key>hasScannedForEncodings</key>
+			<string>0</string>
+			<key>isa</key>
+			<string>PBXProject</string>
+			<key>knownRegions</key>
+			<array>
+				<string>Base</string>
+				<string>en</string>
+			</array>
+			<key>mainGroup</key>
+			<string>9A4844F8BAE636985A3BA241</string>
+			<key>minimizedProjectReferenceProxies</key>
+			<string>1</string>
+			<key>packageReferences</key>
+			<array>
+				<string>7A725699E14D16A113FBD413</string>
+				<string>FB6ECECAED681290F554FAF2</string>
+			</array>
+			<key>productRefGroup</key>
+			<string>FED599ADFF0DA84DAF767F0E</string>
+			<key>projectDirPath</key>
+			<string></string>
+			<key>projectRoot</key>
+			<string></string>
+			<key>targets</key>
+			<array>
+				<string>5D9F0899D8E50F532D6A824E</string>
+			</array>
+		</dict>
+		<key>256C2148D27D06E3D85E7B1D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>4DA086B9E392679F615C1028</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>25CA5EBC033E01B448EC8817</key>
+		<dict>
+			<key>fileRef</key>
+			<string>19EEFD75EBAF999D83BB94B8</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>271682A42618FA2D4B6E45C1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>F60CCF8B5804C177008E7039</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>27C1623E1A85712D5890D546</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E6C7272275F8DCFA02219CCA</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>28729EAA1F5A4FC698779F64</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>LectioStepView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>28E559FA9401494DB57C443B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>17CBAAB4A14B4A3D97A1F701</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>298077A766F8003184A0D7FC</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChatQuotaManager.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>2AF4E774EE934691BB7D6E86</key>
+		<dict>
+			<key>fileRef</key>
+			<string>4F89B091A7DA4AF9A254C4DF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>2C171C17C24EE26CAA7917B3</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7F0D2F42801462BC193929F0</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>2CF6DE80006D6C8E00B3D30E</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>BC3A997CF90153195FF00D3A</string>
+				<string>25CA5EBC033E01B448EC8817</string>
+				<string>3216B3FB0839726A5C120469</string>
+				<string>E52367E3A9F2A89A0B0E3A43</string>
+				<string>B88EAC3ADB6D864349F150DB</string>
+				<string>1127E89E798C8D934CBB53FD</string>
+				<string>72F67EFBA8161D4FEEAADCBE</string>
+				<string>092D81CF2FE1E059B175F817</string>
+				<string>63304D9B06B762BD3479BAFA</string>
+				<string>5808E7C2336B231358484D4A</string>
+				<string>B10D9AC2C43D51DF4BCE4057</string>
+				<string>0F15648DFE144C8D70539F3F</string>
+				<string>F3F101268479793C572D582B</string>
+				<string>A215DCFD1A9BE7BA82A487AF</string>
+				<string>FB736D219F2AEE9778C39717</string>
+				<string>A006AAAF2ABEB2C97C3B3A5B</string>
+				<string>E2B1B7BC653392BEF79FEE5A</string>
+				<string>596126D8149A1E56AE3A52FD</string>
+				<string>A03BFA89E9002825A7E9DFF2</string>
+				<string>7905CA8AFDD274591CB1AC7F</string>
+				<string>2C171C17C24EE26CAA7917B3</string>
+				<string>FD005896F21AE1268F6481C9</string>
+				<string>41A9FF2B90390D6C180D4472</string>
+				<string>560B232E39299B5C0D2D96AB</string>
+				<string>A0E16CEBD40217B06C747424</string>
+				<string>75D53545BB99DE4B5CB907AD</string>
+				<string>704CD9CF37E3DD33A897003F</string>
+				<string>7F80519250C11919FC245A11</string>
+				<string>2FD630540BE2644E3A59588E</string>
+				<string>F8406FDCECE80BD5EEA7AF6F</string>
+				<string>49FCDBC42902BD422AE30AE1</string>
+				<string>D3C5080D89A5402900A89420</string>
+				<string>5FF40C2A5909C31DFEF557B2</string>
+				<string>A6E51377A7C8F7F1DB12D009</string>
+				<string>2DE4DAD349CB288516CF262E</string>
+				<string>D688F9B389C4A7991E9D63D1</string>
+				<string>646464E1096C4A1AF691689A</string>
+				<string>A27FFB398D49A35C9EFB6E7A</string>
+				<string>4DF3E1E5BCFB1CD1B9783680</string>
+				<string>E30A90A0779FC0EE0C37B498</string>
+				<string>CFA750DE2BB5EE3B497851A4</string>
+				<string>EF23DD7F2FC69967079DAA87</string>
+				<string>573FCFD7F269FDE64B183453</string>
+				<string>70FED2DC09CDDD289AFFBD4E</string>
+				<string>864D073AA540E17C31292B5D</string>
+				<string>E6EC62CEC27013E75CA16AD1</string>
+				<string>D0D5DBF2A636235780FAF06A</string>
+				<string>0E5A628F6B066964B2BD5001</string>
+				<string>A90C5A30D68DB8D33906B1D6</string>
+				<string>17D631C346BDC2DA4AED7C2A</string>
+				<string>FB9C3BF91185CE57F5E58F6F</string>
+				<string>FB17387CAA23DC74E3EF9D0E</string>
+				<string>5F42193E7D466EC15B087A27</string>
+				<string>0564D6F56A355D5EC896A3DD</string>
+				<string>3B5B0243386AEFDAE8B06068</string>
+				<string>737465CEE8F01630041BE78C</string>
+				<string>E7FA217F476ADA6120274A7F</string>
+				<string>20740FE52758F679A12FF801</string>
+				<string>EA3520BCFAF7361EA4915451</string>
+				<string>415CE80806A12632EA8F0F5D</string>
+				<string>180A6064A0584A3392C05D73</string>
+				<string>C4EFAD1CEACC9993AF88593C</string>
+				<string>06EFFB87CBBF73B5656183B3</string>
+				<string>D7D5D54A01BC5A51472CFD05</string>
+				<string>BD97B9FA40308A35066E499A</string>
+				<string>73D897D6F59396E1C6E1BC1A</string>
+				<string>61D3C1AC286B4BF5D82BAC60</string>
+				<string>231C3516566903585B36CB84</string>
+				<string>CE81174A43A3F974EFD5A158</string>
+				<string>97DBF4D8D88A64174E1CB73B</string>
+				<string>48EE385549BFF5E08E46C42B</string>
+				<string>4CC621D3477448F5D59DD0F7</string>
+				<string>8CF564D2E3FCC31BEA4E51C3</string>
+				<string>271682A42618FA2D4B6E45C1</string>
+				<string>E0E081AA5254C7CDD1A044A1</string>
+				<string>E850A120B334998301F6A776</string>
+				<string>F27E6848DCC2B30D145B27C7</string>
+				<string>27C1623E1A85712D5890D546</string>
+				<string>2DED7F4A7D99D2C51025DFE1</string>
+				<string>FC27428C7103E1B0EBE6BD2E</string>
+				<string>94004EA9313DBF4C275FF36B</string>
+				<string>7A4977AEFF3A6D1D9E3D9D61</string>
+				<string>256C2148D27D06E3D85E7B1D</string>
+				<string>05C998752DCDFD548B495C55</string>
+				<string>DB547C4A7BE809C47CC7E2DF</string>
+				<string>C361483A0689EA1CC3B434F4</string>
+				<string>32B008D84B50E340598670F6</string>
+				<string>0B0F09299A29676718C2FA37</string>
+				<string>B9A50683553A484F6FF2768D</string>
+				<string>F8EF89FF01DCE2873F27679F</string>
+				<string>6773EC3E4DC6E8BAFBFF91E4</string>
+				<string>F0D59185B385E44442E48EE7</string>
+				<string>05F588442C33E7C25BBD0F37</string>
+				<string>7E12C160F383208800654BB6</string>
+				<string>2E3652D38F2F35C15FEF283E</string>
+				<string>BDF226EEEFA5C1AEE7E9CE37</string>
+				<string>F9D5F19706C7DE02275050B0</string>
+				<string>0F450E562560BEE5FD520B9E</string>
+				<string>CF51D50315B88D1434C28AEE</string>
+				<string>0DC4E0CDA60ECB66726A60DE</string>
+				<string>8118F2A758A142E9ADB01FA9</string>
+				<string>0287D26D68394255B4BC0A33</string>
+				<string>28E559FA9401494DB57C443B</string>
+				<string>DB6DAB331A0E4680ABA33CFF</string>
+				<string>131AFC30A5924F73A593C8A8</string>
+				<string>03E2D5462BA443F6B05CFC39</string>
+				<string>8EA540BD5AF34552BC535BFD</string>
+				<string>CFB991BF5EC94F6C9E8BB71B</string>
+				<string>65E0BE9779E641E88034E8CB</string>
+				<string>0F7EE8F6939D48E7AC7C1AF9</string>
+				<string>A5E353871C2645569471FB0F</string>
+				<string>8DD3BFBC913D4DCE91D9DED6</string>
+				<string>7B5BA2914816431481204BCF</string>
+				<string>E9788CE38BE149698752D28C</string>
+				<string>E2966CF6D75B43A08347F1EE</string>
+				<string>2AF4E774EE934691BB7D6E86</string>
+				<string>3BACD09C926E4FBCB6C47546</string>
+				<string>83E1F61172E44C38942FBFE4</string>
+				<string>441EBDDE072046FD9C97B742</string>
+				<string>AB937765035648C4B0C5B16E</string>
+				<string>4162B0619F6041E2BC958D31</string>
+				<string>757E69C8359641C7A910EB17</string>
+				<string>F3F63F94F1D84CCF97BBA9C1</string>
+				<string>835E9D8370334892BBBDEA1C</string>
+				<string>739314E4929A4B5D9414BC24</string>
+				<string>D8815D421D4F4F5980595BE3</string>
+			</array>
+			<key>isa</key>
+			<string>PBXSourcesBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>2D1389D3A13133F94936DBB7</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>614CADBB59E141D3217350E5</string>
+				<string>F7328A1D13B866DEE704A19F</string>
+				<string>126EF78DB98A49B870161B12</string>
+				<string>DB199DFB4DB24804D507FAD2</string>
+				<string>1A895A5651AF6264CAE1A75F</string>
+				<string>3F0836BEFD7A3670EE980E44</string>
+				<string>5836CE6A1E50F8A5CD96F5FE</string>
+				<string>1038EFC0E10A7AED9E23AD16</string>
+				<string>B7A6F36D0BB4389B6E836C82</string>
+				<string>F53B08DAA7EB4B57CDB8E8B1</string>
+				<string>5EF533FEF4ABF1BF0701DD72</string>
+				<string>0023DD39BFA7E1E843379B71</string>
+				<string>8E2E743DA39343AA20FE48BB</string>
+				<string>DE8FDFB60697543D75DF374A</string>
+				<string>FF3729F3DEC5A1B5426C559D</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Features</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>2DE4DAD349CB288516CF262E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>751404A1AFFF501C68F138A0</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>2DED7F4A7D99D2C51025DFE1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B15EF392524A5A24B7CBE3A8</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>2E3652D38F2F35C15FEF283E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7C1B39C1547EB7F1079C2C7F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>2EEC8982CF1216E8EED20FB6</key>
+		<dict>
+			<key>children</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>2F84DC8DB523C5F9A47EB7ED</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>85AE0B29D90AC0DA0A372626</string>
+				<string>EFD857D2A5813CDFFAB2AC4A</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>2FD630540BE2644E3A59588E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>AA7A6488787CC36C7D62EFBD</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>3035FF773CF58716F28C0AD2</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>70550AE63E5C44B07A29C130</string>
+				<string>42EA5B3673E10ED87D2E4642</string>
+				<string>BC17C75B25F6F9CDF602EAB3</string>
+				<string>EEED5193F0DC3796FB63E265</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>3216B3FB0839726A5C120469</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7F14400814DEFCCA256D141B</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>32B008D84B50E340598670F6</key>
+		<dict>
+			<key>fileRef</key>
+			<string>0896FA34BBDC42928AD223B4</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>3520A3D66DE4324C9E9545AB</key>
+		<dict>
+			<key>buildConfigurations</key>
+			<array>
+				<string>C5092A16BC3D31B8C9FB35C2</string>
+				<string>677F11B212F0497183DBCE6E</string>
+			</array>
+			<key>defaultConfigurationIsVisible</key>
+			<string>0</string>
+			<key>defaultConfigurationName</key>
+			<string>Debug</string>
+			<key>isa</key>
+			<string>XCConfigurationList</string>
+		</dict>
+		<key>3555F7B7C8501D2E27FEBDE2</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>A580C02325CC5152AD28D7CF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Utilities</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>357CB1662D9F60FF46440911</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>User.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>3A21E98D21B6446AB1276C84</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Core/Services/Supabase/HighlightService.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>3AD8510E51C673414997561A</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>WelcomeView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>3B5B0243386AEFDAE8B06068</key>
+		<dict>
+			<key>fileRef</key>
+			<string>49CC568D0A36F8AC3B683FBB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>3BACD09C926E4FBCB6C47546</key>
+		<dict>
+			<key>fileRef</key>
+			<string>8870867A0E4741989A1404FE</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>3DD69FD8DB6B0F3C1A2B76D9</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>7F0D2F42801462BC193929F0</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>3E9E4EDC8EBA4F43A7F17DC1</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Bible/Views/BibleSearchView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>3F0836BEFD7A3670EE980E44</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>E06383FE0D7E0681CDE73425</string>
+				<string>FF8B5FA7792E40813EC6A56E</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Devotionals</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>3F8956B98A12AE1AC12A0386</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9324127082C2AAA4B3F76802</string>
+				<string>7F14400814DEFCCA256D141B</string>
+				<string>523B877627A2795C6EC4B295</string>
+				<string>751404A1AFFF501C68F138A0</string>
+				<string>DDC7931D430A30CA79458C4A</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Theme</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>40184908AA63BDAA36FF55B7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AuthCoordinator.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>40B3E01A98D9AA3EC22D01A8</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ScriptureScanView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>414B97A385B8A429F191EF4E</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>DevotionalHubView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>415CE80806A12632EA8F0F5D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E6CE639CB3F872386E608A6D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4162B0619F6041E2BC958D31</key>
+		<dict>
+			<key>fileRef</key>
+			<string>70BD920647644D72A1729CE3</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>41A9FF2B90390D6C180D4472</key>
+		<dict>
+			<key>fileRef</key>
+			<string>71107FCD5CC08E5BA2E47593</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>41AAB0F5B7987EEA4198A016</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>A8BC2E0C7B58791727A96FCB</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>42D09A59027A1FA4C330EECA</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>4517E590D78084E0BB948BC4</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>42EA5B3673E10ED87D2E4642</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>BibleReaderView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>441EBDDE072046FD9C97B742</key>
+		<dict>
+			<key>fileRef</key>
+			<string>3A21E98D21B6446AB1276C84</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4517E590D78084E0BB948BC4</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AuthViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>48EE385549BFF5E08E46C42B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9F401146D99102F19E5E4F78</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4928039BF23C9A91EFAB0DC7</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>76D515656765EB40E8B27247</string>
+				<string>938ACD99279445859CDF2BEF</string>
+				<string>4DA086B9E392679F615C1028</string>
+				<string>91EC1529ADD939AF27275690</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>49CC568D0A36F8AC3B683FBB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MemoryVerseListView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>49F0B5DE384B1D9A582ECA0F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseManager.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>49FCDBC42902BD422AE30AE1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>51E2E02CDA4C9ECB6F42AB75</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4A8484B3D78342EDF24D233B</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MemoryViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4BD2BA4C3100A8F9529B0E69</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>PaywallView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4CC621D3477448F5D59DD0F7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>85AE0B29D90AC0DA0A372626</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4DA086B9E392679F615C1028</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SourceVerseCard.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4DF3E1E5BCFB1CD1B9783680</key>
+		<dict>
+			<key>fileRef</key>
+			<string>0CF3906B59D258F5BF7AEFF6</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>4EF36821817FCA86D2BC2FB9</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>C639AD976A467A875A2E94CF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Speech</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>4F89B091A7DA4AF9A254C4DF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>App/Tab.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>4FFD3561F1EF4FE0EE2F60EA</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>productRef</key>
+			<string>8FCB5720506B6EAF0F8A2933</string>
+		</dict>
+		<key>513BC8F210E916D14B93B339</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>LoginView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>51E2E02CDA4C9ECB6F42AB75</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>EmptyStateView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>523B877627A2795C6EC4B295</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>GlassEffects.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>558B1BD4E9BDD0B04F8C42F8</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>20F7FAEA9C9F995CC34FAE61</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>560B232E39299B5C0D2D96AB</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B3A996BD7016DBF038D0211E</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>573FCFD7F269FDE64B183453</key>
+		<dict>
+			<key>fileRef</key>
+			<string>CB5C6C5D4021205608C5924F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>57F0874DF3BF33FF4327FEDD</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>A2D42052CD2E7069EADB0AFF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5808E7C2336B231358484D4A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>4517E590D78084E0BB948BC4</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>5836CE6A1E50F8A5CD96F5FE</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>2EEC8982CF1216E8EED20FB6</string>
+				<string>021690EF3E5B3707B26E2C48</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Home</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>596126D8149A1E56AE3A52FD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>D8C81A1E5927039B4C0CA30F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>5B379F40598E6C19D777C912</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>4BD2BA4C3100A8F9529B0E69</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5D9F0899D8E50F532D6A824E</key>
+		<dict>
+			<key>buildConfigurationList</key>
+			<string>B3D98539567280F628EEF30E</string>
+			<key>buildPhases</key>
+			<array>
+				<string>2CF6DE80006D6C8E00B3D30E</string>
+				<string>E807115BA997E5C9082CFBBD</string>
+			</array>
+			<key>buildRules</key>
+			<array/>
+			<key>dependencies</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXNativeTarget</string>
+			<key>name</key>
+			<string>ChooseGOD</string>
+			<key>packageProductDependencies</key>
+			<array>
+				<string>8FCB5720506B6EAF0F8A2933</string>
+				<string>9029D26D8D40691B304F4290</string>
+			</array>
+			<key>productName</key>
+			<string>ChooseGOD</string>
+			<key>productReference</key>
+			<string>D8FF19DA2AA7BFC3C676B447</string>
+			<key>productType</key>
+			<string>com.apple.product-type.application</string>
+		</dict>
+		<key>5EF533FEF4ABF1BF0701DD72</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B773973CCC58053B8B5868BA</string>
+				<string>97AB8683139E89B9054DE363</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Memory</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5EFCB1DF98F2ACF5AAABA22C</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>InsightsViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5F42193E7D466EC15B087A27</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A0E1688D960D50E5E6B2F431</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>5F6F9BC1586A5A7958250772</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>79274B575A7D0CF7661FE754</string>
+				<string>D30295A0AA47E588B1D191CF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Audio</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>5FF40C2A5909C31DFEF557B2</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1AE7038CAC3C8C6D3D3C6B81</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>614CADBB59E141D3217350E5</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>42D09A59027A1FA4C330EECA</string>
+				<string>6534EDCA6F09791F2ADF98A4</string>
+				<string>40184908AA63BDAA36FF55B7</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Auth</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>61D3C1AC286B4BF5D82BAC60</key>
+		<dict>
+			<key>fileRef</key>
+			<string>0C039A7C2D6B4E5A3FDF5C38</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>63304D9B06B762BD3479BAFA</key>
+		<dict>
+			<key>fileRef</key>
+			<string>88D12F5A7E78BEF4C18B5A2D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>646464E1096C4A1AF691689A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6E82CF17867B6BDD94BFF556</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>6534EDCA6F09791F2ADF98A4</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>1AE7038CAC3C8C6D3D3C6B81</string>
+				<string>513BC8F210E916D14B93B339</string>
+				<string>AEB45A320E27E362B2FB40E2</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>65B13AB13B1BA4F271856E5E</key>
+		<dict>
+			<key>buildSettings</key>
+			<dict>
+				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
+				<string>AppIcon</string>
+				<key>ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME</key>
+				<string>AccentColor</string>
+				<key>CODE_SIGN_ENTITLEMENTS</key>
+				<string>Resources/ChooseGOD.entitlements</string>
+				<key>CODE_SIGN_IDENTITY</key>
+				<string>iPhone Developer</string>
+				<key>CODE_SIGN_STYLE</key>
+				<string>Automatic</string>
+				<key>DEVELOPMENT_TEAM</key>
+				<string>HWV3Q7B59G</string>
+				<key>INFOPLIST_FILE</key>
+				<string>Resources/Info.plist</string>
+				<key>LD_RUNPATH_SEARCH_PATHS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>@executable_path/Frameworks</string>
+				</array>
+				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
+				<string>com.choosegod.app</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>TARGETED_DEVICE_FAMILY</key>
+				<string>1,2</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Release</string>
+		</dict>
+		<key>65E0BE9779E641E88034E8CB</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A50AAA613C5E40C1ACC27059</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>65E2BE733BF35D7DA33A200E</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>productRef</key>
+			<string>9029D26D8D40691B304F4290</string>
+		</dict>
+		<key>66AB92B56579822B41628A3A</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>88D12F5A7E78BEF4C18B5A2D</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Protocols</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6773EC3E4DC6E8BAFBFF91E4</key>
+		<dict>
+			<key>fileRef</key>
+			<string>FC461C576C6B304C245F755C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>677F11B212F0497183DBCE6E</key>
+		<dict>
+			<key>buildSettings</key>
+			<dict>
+				<key>ALWAYS_SEARCH_USER_PATHS</key>
+				<string>NO</string>
+				<key>CLANG_ANALYZER_NONNULL</key>
+				<string>YES</string>
+				<key>CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
+				<string>gnu++14</string>
+				<key>CLANG_CXX_LIBRARY</key>
+				<string>libc++</string>
+				<key>CLANG_ENABLE_MODULES</key>
+				<string>YES</string>
+				<key>CLANG_ENABLE_OBJC_ARC</key>
+				<string>YES</string>
+				<key>CLANG_ENABLE_OBJC_WEAK</key>
+				<string>YES</string>
+				<key>CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING</key>
+				<string>YES</string>
+				<key>CLANG_WARN_BOOL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_COMMA</key>
+				<string>YES</string>
+				<key>CLANG_WARN_CONSTANT_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_DIRECT_OBJC_ISA_USAGE</key>
+				<string>YES_ERROR</string>
+				<key>CLANG_WARN_DOCUMENTATION_COMMENTS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_EMPTY_BODY</key>
+				<string>YES</string>
+				<key>CLANG_WARN_ENUM_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_INFINITE_RECURSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_INT_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_NON_LITERAL_NULL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_LITERAL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_ROOT_CLASS</key>
+				<string>YES_ERROR</string>
+				<key>CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER</key>
+				<string>YES</string>
+				<key>CLANG_WARN_RANGE_LOOP_ANALYSIS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_STRICT_PROTOTYPES</key>
+				<string>YES</string>
+				<key>CLANG_WARN_SUSPICIOUS_MOVE</key>
+				<string>YES</string>
+				<key>CLANG_WARN_UNGUARDED_AVAILABILITY</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>CLANG_WARN_UNREACHABLE_CODE</key>
+				<string>YES</string>
+				<key>CLANG_WARN__DUPLICATE_METHOD_MATCH</key>
+				<string>YES</string>
+				<key>CODE_SIGN_STYLE</key>
+				<string>Automatic</string>
+				<key>COPY_PHASE_STRIP</key>
+				<string>NO</string>
+				<key>CURRENT_PROJECT_VERSION</key>
+				<string>1</string>
+				<key>DEBUG_INFORMATION_FORMAT</key>
+				<string>dwarf-with-dsym</string>
+				<key>ENABLE_NS_ASSERTIONS</key>
+				<string>NO</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>GCC_C_LANGUAGE_STANDARD</key>
+				<string>gnu11</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>GCC_WARN_64_TO_32_BIT_CONVERSION</key>
+				<string>YES</string>
+				<key>GCC_WARN_ABOUT_RETURN_TYPE</key>
+				<string>YES_ERROR</string>
+				<key>GCC_WARN_UNDECLARED_SELECTOR</key>
+				<string>YES</string>
+				<key>GCC_WARN_UNINITIALIZED_AUTOS</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>GCC_WARN_UNUSED_FUNCTION</key>
+				<string>YES</string>
+				<key>GCC_WARN_UNUSED_VARIABLE</key>
+				<string>YES</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>17.0</string>
+				<key>MARKETING_VERSION</key>
+				<string>1.0.0</string>
+				<key>MTL_ENABLE_DEBUG_INFO</key>
+				<string>NO</string>
+				<key>MTL_FAST_MATH</key>
+				<string>YES</string>
+				<key>PRODUCT_NAME</key>
+				<string>$(TARGET_NAME)</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SWIFT_COMPILATION_MODE</key>
+				<string>wholemodule</string>
+				<key>SWIFT_OPTIMIZATION_LEVEL</key>
+				<string>-O</string>
+				<key>SWIFT_VERSION</key>
+				<string>5.9</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Release</string>
+		</dict>
+		<key>6824EA911A83402E6EA06533</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ScanResultView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6CFD816912EDFF0922081830</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Journal.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6D4909E7206448F780482A52</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Prayers/ViewModels/PrayerViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>6E2E085CC36D8C393C54CBB4</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseAuthService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6E82CF17867B6BDD94BFF556</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>InsightModels.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>704CD9CF37E3DD33A897003F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B0DABECBB1BD945620076615</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>70550AE63E5C44B07A29C130</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AudioPlayerBar.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>70BD920647644D72A1729CE3</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Devotionals/Views/DevotionalEpisodeListView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>70FED2DC09CDDD289AFFBD4E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9E44B55166194167D5280485</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>71107FCD5CC08E5BA2E47593</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ConfettiView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>72F67EFBA8161D4FEEAADCBE</key>
+		<dict>
+			<key>fileRef</key>
+			<string>79274B575A7D0CF7661FE754</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>73513B413900E629014CD52B</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ScriptureScanService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>737465CEE8F01630041BE78C</key>
+		<dict>
+			<key>fileRef</key>
+			<string>4A8484B3D78342EDF24D233B</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>739314E4929A4B5D9414BC24</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6D4909E7206448F780482A52</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>73D897D6F59396E1C6E1BC1A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>90DC434AA867B379BE718790</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>747F6F607C4E106A17C748EF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>OnboardingCoordinatorView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>751404A1AFFF501C68F138A0</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Haptics.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>757E69C8359641C7A910EB17</key>
+		<dict>
+			<key>fileRef</key>
+			<string>C34E4229F14948CF8558C07B</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>75D53545BB99DE4B5CB907AD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9EB7112148D053595030F4A7</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>76D515656765EB40E8B27247</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChatContextBar.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7905CA8AFDD274591CB1AC7F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B8C66923E5FC6941B90B7A01</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>79274B575A7D0CF7661FE754</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AudioPlayerManager.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7A4977AEFF3A6D1D9E3D9D61</key>
+		<dict>
+			<key>fileRef</key>
+			<string>AEB45A320E27E362B2FB40E2</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>7A725699E14D16A113FBD413</key>
+		<dict>
+			<key>isa</key>
+			<string>XCRemoteSwiftPackageReference</string>
+			<key>repositoryURL</key>
+			<string>https://github.com/RevenueCat/purchases-ios</string>
+			<key>requirement</key>
+			<dict>
+				<key>kind</key>
+				<string>upToNextMajorVersion</string>
+				<key>minimumVersion</key>
+				<string>4.44.2</string>
+			</dict>
+		</dict>
+		<key>7A982B804BE2B398263E3BD9</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MemoryVerse.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7B5BA2914816431481204BCF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E99B5089844446DB961D2636</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>7B620C36621DC5F519E038B2</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>73513B413900E629014CD52B</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Vision</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7C1B39C1547EB7F1079C2C7F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>TimelineView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7E12C160F383208800654BB6</key>
+		<dict>
+			<key>fileRef</key>
+			<string>DDC7931D430A30CA79458C4A</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>7E671A35ACE4890594409BFB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChatModels.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7F0D2F42801462BC193929F0</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>CircleViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7F14400814DEFCCA256D141B</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Animations.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>7F80519250C11919FC245A11</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E7D424E65CF113743EA26C5F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>8118F2A758A142E9ADB01FA9</key>
+		<dict>
+			<key>fileRef</key>
+			<string>EF01244EE6A1405BA7C66062</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>81ECA782F1A1FB4734D277BC</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChooseGODApp.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>8330CB6CBC153E664026F2D3</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JournalDetailView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>835E9D8370334892BBBDEA1C</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1962E19563534B5F93AF1D8F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>83E1F61172E44C38942FBFE4</key>
+		<dict>
+			<key>fileRef</key>
+			<string>EC4D38B6E817441AB9685BCD</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>85AE0B29D90AC0DA0A372626</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ReferralView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>864D073AA540E17C31292B5D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>D879837DE29CB1FF7EB7593D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>8870867A0E4741989A1404FE</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Core/Services/Supabase/BookmarkService.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>88D12F5A7E78BEF4C18B5A2D</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AuthServiceProtocol.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>8CF564D2E3FCC31BEA4E51C3</key>
+		<dict>
+			<key>fileRef</key>
+			<string>EEED5193F0DC3796FB63E265</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>8DD3BFBC913D4DCE91D9DED6</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1E1C0C7FF69E49318DEACD99</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>8E25CB69F39ACFDE00A919CF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>PrayersView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>8E2E743DA39343AA20FE48BB</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>57F0874DF3BF33FF4327FEDD</string>
+				<string>5B379F40598E6C19D777C912</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Paywall</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>8EA540BD5AF34552BC535BFD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9EBD87705B964C6686822631</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>8F871C1628F8C389EEA79FBC</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>D8C81A1E5927039B4C0CA30F</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>8FCB5720506B6EAF0F8A2933</key>
+		<dict>
+			<key>isa</key>
+			<string>XCSwiftPackageProductDependency</string>
+			<key>package</key>
+			<string>FB6ECECAED681290F554FAF2</string>
+			<key>productName</key>
+			<string>Supabase</string>
+		</dict>
+		<key>9029D26D8D40691B304F4290</key>
+		<dict>
+			<key>isa</key>
+			<string>XCSwiftPackageProductDependency</string>
+			<key>package</key>
+			<string>7A725699E14D16A113FBD413</string>
+			<key>productName</key>
+			<string>RevenueCat</string>
+		</dict>
+		<key>9029DFC682065CCEBFA8605C</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>AudioModels.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>90DC434AA867B379BE718790</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>PersonalizationQuizView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>91EB79AA81D5040D74A25358</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>5EFCB1DF98F2ACF5AAABA22C</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>91EC1529ADD939AF27275690</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>VoiceInputButton.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9324127082C2AAA4B3F76802</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Accessibility.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>938ACD99279445859CDF2BEF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChatView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>94004EA9313DBF4C275FF36B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>D5F10D9ED639D90319683280</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>9679F68347F7F09ED93F0B84</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>NotificationSetupView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>97AB8683139E89B9054DE363</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>19EEFD75EBAF999D83BB94B8</string>
+				<string>A0E1688D960D50E5E6B2F431</string>
+				<string>49CC568D0A36F8AC3B683FBB</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>97DBF4D8D88A64174E1CB73B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A937FE76E484179CE37871E5</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>99BECD537428437E28DA3658</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>1DF05A8BBBA005203F0CEFA9</string>
+				<string>81ECA782F1A1FB4734D277BC</string>
+				<string>F673CBF47C2CEB4F1955E0BC</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>App</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9A4844F8BAE636985A3BA241</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>99BECD537428437E28DA3658</string>
+				<string>130A6EE5DD9608942F01E39E</string>
+				<string>2D1389D3A13133F94936DBB7</string>
+				<string>FED599ADFF0DA84DAF767F0E</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9E44B55166194167D5280485</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JournalViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9EB7112148D053595030F4A7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>DailyDevotionalView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9F401146D99102F19E5E4F78</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ReferralService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A006AAAF2ABEB2C97C3B3A5B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>298077A766F8003184A0D7FC</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A03BFA89E9002825A7E9DFF2</key>
+		<dict>
+			<key>fileRef</key>
+			<string>81ECA782F1A1FB4734D277BC</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A0738CCB317F41F87CECECB8</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>PrayerCirclesView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A0E1688D960D50E5E6B2F431</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MemoryPracticeView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A0E16CEBD40217B06C747424</key>
+		<dict>
+			<key>fileRef</key>
+			<string>BC17C75B25F6F9CDF602EAB3</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A215DCFD1A9BE7BA82A487AF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>76D515656765EB40E8B27247</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A27FFB398D49A35C9EFB6E7A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>5EFCB1DF98F2ACF5AAABA22C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A27FFC84862041F5A88014D0</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Core/Models/TranslationModels.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>A2D42052CD2E7069EADB0AFF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>PaywallViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A4B5494E8F094209BA1083FB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Devotionals/Views/DevotionalSeriesListView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>A580C02325CC5152AD28D7CF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>KeychainManager.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A5E353871C2645569471FB0F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>8C92953BCB8F4B7EA800AD88</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A6E51377A7C8F7F1DB12D009</key>
+		<dict>
+			<key>fileRef</key>
+			<string>523B877627A2795C6EC4B295</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A8BC2E0C7B58791727A96FCB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>OnboardingViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A90C5A30D68DB8D33906B1D6</key>
+		<dict>
+			<key>fileRef</key>
+			<string>28729EAA1F5A4FC698779F64</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>A937FE76E484179CE37871E5</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>RecommendationsView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>AA7A6488787CC36C7D62EFBD</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>DevotionalCompleteView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>AB937765035648C4B0C5B16E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>3E9E4EDC8EBA4F43A7F17DC1</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>ABFFA9F2B83049F7ACDC0EFB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Core/Models/HebrewCalendarModels.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>AE0C6EA3EEC034440C29FFEB</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MilestonesView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>AEB45A320E27E362B2FB40E2</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SignUpView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B0AB533C81E9BC565D49A315</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>6824EA911A83402E6EA06533</string>
+				<string>40B3E01A98D9AA3EC22D01A8</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B0AD4C91F2B93B3B8CE0447C</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>LectioDivinaView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B0DABECBB1BD945620076615</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Date+Extensions.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B10D9AC2C43D51DF4BCE4057</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E6208C410F97E16CFE92E620</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>B15EF392524A5A24B7CBE3A8</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SeriesLibraryView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B3A996BD7016DBF038D0211E</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>CreateCircleSheet.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B3D98539567280F628EEF30E</key>
+		<dict>
+			<key>buildConfigurations</key>
+			<array>
+				<string>1D08A5199E6213993282EDD5</string>
+				<string>65B13AB13B1BA4F271856E5E</string>
+			</array>
+			<key>defaultConfigurationIsVisible</key>
+			<string>0</string>
+			<key>defaultConfigurationName</key>
+			<string>Debug</string>
+			<key>isa</key>
+			<string>XCConfigurationList</string>
+		</dict>
+		<key>B682FCB8175CFD34862B0673</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>NotificationCategories.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B773973CCC58053B8B5868BA</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>4A8484B3D78342EDF24D233B</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B7A6F36D0BB4389B6E836C82</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>91EB79AA81D5040D74A25358</string>
+				<string>C6DD19B47D8553213F2BC920</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Journey</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B88EAC3ADB6D864349F150DB</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9029DFC682065CCEBFA8605C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>B8C66923E5FC6941B90B7A01</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>CircleDetailView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>B9A50683553A484F6FF2768D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>BF0EC7627C1432D2984117E9</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>BC17C75B25F6F9CDF602EAB3</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>CrossReferencesSheet.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>BC3687C136CE1DFA105F6228</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>0192D851671A0D7A539AD7CD</string>
+				<string>5F6F9BC1586A5A7958250772</string>
+				<string>1F5221618716F0AB1F6C8BD0</string>
+				<string>0C7E7635EBC48FCC6EFC7063</string>
+				<string>66AB92B56579822B41628A3A</string>
+				<string>1E587C40C702A52B4D1BD0C9</string>
+				<string>0CDB03522526B354DD0F0B25</string>
+				<string>4EF36821817FCA86D2BC2FB9</string>
+				<string>F1470A83A5C653D8050B8723</string>
+				<string>7B620C36621DC5F519E038B2</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Services</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>BC3A997CF90153195FF00D3A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9324127082C2AAA4B3F76802</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>BD97B9FA40308A35066E499A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A2D42052CD2E7069EADB0AFF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>BDF226EEEFA5C1AEE7E9CE37</key>
+		<dict>
+			<key>fileRef</key>
+			<string>357CB1662D9F60FF46440911</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>BE7992A4DE68EF7354FE2774</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9679F68347F7F09ED93F0B84</string>
+				<string>747F6F607C4E106A17C748EF</string>
+				<string>90DC434AA867B379BE718790</string>
+				<string>A937FE76E484179CE37871E5</string>
+				<string>3AD8510E51C673414997561A</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>BF0EC7627C1432D2984117E9</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseJournalService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C1579DE003299235117C7177</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>HomeView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C1F228F80B9C2C5AD7D15267</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>EnrollmentConfirmView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C34E4229F14948CF8558C07B</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Devotionals/Views/DevotionalNowPlayingView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>C361483A0689EA1CC3B434F4</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1ADEBC411100737504883EDE</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>C4EFAD1CEACC9993AF88593C</key>
+		<dict>
+			<key>fileRef</key>
+			<string>747F6F607C4E106A17C748EF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>C5092A16BC3D31B8C9FB35C2</key>
+		<dict>
+			<key>buildSettings</key>
+			<dict>
+				<key>ALWAYS_SEARCH_USER_PATHS</key>
+				<string>NO</string>
+				<key>CLANG_ANALYZER_NONNULL</key>
+				<string>YES</string>
+				<key>CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
+				<string>gnu++14</string>
+				<key>CLANG_CXX_LIBRARY</key>
+				<string>libc++</string>
+				<key>CLANG_ENABLE_MODULES</key>
+				<string>YES</string>
+				<key>CLANG_ENABLE_OBJC_ARC</key>
+				<string>YES</string>
+				<key>CLANG_ENABLE_OBJC_WEAK</key>
+				<string>YES</string>
+				<key>CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING</key>
+				<string>YES</string>
+				<key>CLANG_WARN_BOOL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_COMMA</key>
+				<string>YES</string>
+				<key>CLANG_WARN_CONSTANT_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_DIRECT_OBJC_ISA_USAGE</key>
+				<string>YES_ERROR</string>
+				<key>CLANG_WARN_DOCUMENTATION_COMMENTS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_EMPTY_BODY</key>
+				<string>YES</string>
+				<key>CLANG_WARN_ENUM_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_INFINITE_RECURSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_INT_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_NON_LITERAL_NULL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_LITERAL_CONVERSION</key>
+				<string>YES</string>
+				<key>CLANG_WARN_OBJC_ROOT_CLASS</key>
+				<string>YES_ERROR</string>
+				<key>CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER</key>
+				<string>YES</string>
+				<key>CLANG_WARN_RANGE_LOOP_ANALYSIS</key>
+				<string>YES</string>
+				<key>CLANG_WARN_STRICT_PROTOTYPES</key>
+				<string>YES</string>
+				<key>CLANG_WARN_SUSPICIOUS_MOVE</key>
+				<string>YES</string>
+				<key>CLANG_WARN_UNGUARDED_AVAILABILITY</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>CLANG_WARN_UNREACHABLE_CODE</key>
+				<string>YES</string>
+				<key>CLANG_WARN__DUPLICATE_METHOD_MATCH</key>
+				<string>YES</string>
+				<key>CODE_SIGN_STYLE</key>
+				<string>Automatic</string>
+				<key>COPY_PHASE_STRIP</key>
+				<string>NO</string>
+				<key>CURRENT_PROJECT_VERSION</key>
+				<string>1</string>
+				<key>DEBUG_INFORMATION_FORMAT</key>
+				<string>dwarf</string>
+				<key>ENABLE_STRICT_OBJC_MSGSEND</key>
+				<string>YES</string>
+				<key>ENABLE_TESTABILITY</key>
+				<string>YES</string>
+				<key>GCC_C_LANGUAGE_STANDARD</key>
+				<string>gnu11</string>
+				<key>GCC_DYNAMIC_NO_PIC</key>
+				<string>NO</string>
+				<key>GCC_NO_COMMON_BLOCKS</key>
+				<string>YES</string>
+				<key>GCC_OPTIMIZATION_LEVEL</key>
+				<string>0</string>
+				<key>GCC_PREPROCESSOR_DEFINITIONS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>DEBUG=1</string>
+				</array>
+				<key>GCC_WARN_64_TO_32_BIT_CONVERSION</key>
+				<string>YES</string>
+				<key>GCC_WARN_ABOUT_RETURN_TYPE</key>
+				<string>YES_ERROR</string>
+				<key>GCC_WARN_UNDECLARED_SELECTOR</key>
+				<string>YES</string>
+				<key>GCC_WARN_UNINITIALIZED_AUTOS</key>
+				<string>YES_AGGRESSIVE</string>
+				<key>GCC_WARN_UNUSED_FUNCTION</key>
+				<string>YES</string>
+				<key>GCC_WARN_UNUSED_VARIABLE</key>
+				<string>YES</string>
+				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
+				<string>17.0</string>
+				<key>MARKETING_VERSION</key>
+				<string>1.0.0</string>
+				<key>MTL_ENABLE_DEBUG_INFO</key>
+				<string>INCLUDE_SOURCE</string>
+				<key>MTL_FAST_MATH</key>
+				<string>YES</string>
+				<key>ONLY_ACTIVE_ARCH</key>
+				<string>YES</string>
+				<key>PRODUCT_NAME</key>
+				<string>$(TARGET_NAME)</string>
+				<key>SDKROOT</key>
+				<string>iphoneos</string>
+				<key>SWIFT_ACTIVE_COMPILATION_CONDITIONS</key>
+				<string>DEBUG</string>
+				<key>SWIFT_OPTIMIZATION_LEVEL</key>
+				<string>-Onone</string>
+				<key>SWIFT_VERSION</key>
+				<string>5.9</string>
+			</dict>
+			<key>isa</key>
+			<string>XCBuildConfiguration</string>
+			<key>name</key>
+			<string>Debug</string>
+		</dict>
+		<key>C639AD976A467A875A2E94CF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>VoiceInputService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C6DD19B47D8553213F2BC920</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>1A7F3302A2F89B84FF1DCD73</string>
+				<string>AE0C6EA3EEC034440C29FFEB</string>
+				<string>7C1B39C1547EB7F1079C2C7F</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C9065D12448221C1D8F26416</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>CompanionService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>CB5C6C5D4021205608C5924F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>JournalListView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>CCEFCF75A46633BEE619CA8D</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseBibleService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>CE81174A43A3F974EFD5A158</key>
+		<dict>
+			<key>fileRef</key>
+			<string>8E25CB69F39ACFDE00A919CF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>CF51D50315B88D1434C28AEE</key>
+		<dict>
+			<key>fileRef</key>
+			<string>C639AD976A467A875A2E94CF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>CFA750DE2BB5EE3B497851A4</key>
+		<dict>
+			<key>fileRef</key>
+			<string>11BE2D309F460C353C2AFF86</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>CFB991BF5EC94F6C9E8BB71B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>BBA5EBAD0C1E4AD5859E1EB6</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D0D5DBF2A636235780FAF06A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A580C02325CC5152AD28D7CF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D30295A0AA47E588B1D191CF</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>BibleAudioService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>D3C5080D89A5402900A89420</key>
+		<dict>
+			<key>fileRef</key>
+			<string>C1F228F80B9C2C5AD7D15267</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D5F10D9ED639D90319683280</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ShimmerView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>D688F9B389C4A7991E9D63D1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>C1579DE003299235117C7177</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D7597AABF210F75528E0AAE1</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabasePrayerService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>D7D5D54A01BC5A51472CFD05</key>
+		<dict>
+			<key>fileRef</key>
+			<string>4BD2BA4C3100A8F9529B0E69</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D8815D421D4F4F5980595BE3</key>
+		<dict>
+			<key>fileRef</key>
+			<string>E949F8253B74443FABD48605</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>D8C81A1E5927039B4C0CA30F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ChatViewModel.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>D8FF19DA2AA7BFC3C676B447</key>
+		<dict>
+			<key>explicitFileType</key>
+			<string>wrapper.application</string>
+			<key>includeInIndex</key>
+			<string>0</string>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>path</key>
+			<string>ChooseGOD.app</string>
+			<key>sourceTree</key>
+			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
+		<key>D911E61B057C4895ECBE54EE</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B8C66923E5FC6941B90B7A01</string>
+				<string>B3A996BD7016DBF038D0211E</string>
+				<string>0CF3906B59D258F5BF7AEFF6</string>
+				<string>A0738CCB317F41F87CECECB8</string>
+				<string>8E25CB69F39ACFDE00A919CF</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>DB199DFB4DB24804D507FAD2</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>8F871C1628F8C389EEA79FBC</string>
+				<string>4928039BF23C9A91EFAB0DC7</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Chat</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>DB547C4A7BE809C47CC7E2DF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>CCEFCF75A46633BEE619CA8D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>DB6DAB331A0E4680ABA33CFF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A5D2B59022F047C085D03664</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>DDC7931D430A30CA79458C4A</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Theme.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>DE8FDFB60697543D75DF374A</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>3DD69FD8DB6B0F3C1A2B76D9</string>
+				<string>D911E61B057C4895ECBE54EE</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Prayers</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E06383FE0D7E0681CDE73425</key>
+		<dict>
+			<key>children</key>
+			<array/>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>ViewModels</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E0E081AA5254C7CDD1A044A1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6824EA911A83402E6EA06533</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E15E992BAC3A36DF58B96AD5</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9029DFC682065CCEBFA8605C</string>
+				<string>E6208C410F97E16CFE92E620</string>
+				<string>7E671A35ACE4890594409BFB</string>
+				<string>E7D424E65CF113743EA26C5F</string>
+				<string>6E82CF17867B6BDD94BFF556</string>
+				<string>6CFD816912EDFF0922081830</string>
+				<string>7A982B804BE2B398263E3BD9</string>
+				<string>0C039A7C2D6B4E5A3FDF5C38</string>
+				<string>357CB1662D9F60FF46440911</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Models</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E2966CF6D75B43A08347F1EE</key>
+		<dict>
+			<key>fileRef</key>
+			<string>ABFFA9F2B83049F7ACDC0EFB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E2B1B7BC653392BEF79FEE5A</key>
+		<dict>
+			<key>fileRef</key>
+			<string>938ACD99279445859CDF2BEF</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E30A90A0779FC0EE0C37B498</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6CFD816912EDFF0922081830</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E52367E3A9F2A89A0B0E3A43</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1DF05A8BBBA005203F0CEFA9</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E6208C410F97E16CFE92E620</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Bible.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E6C7272275F8DCFA02219CCA</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SeriesDetailView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E6CE639CB3F872386E608A6D</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>NotificationService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E6EC62CEC27013E75CA16AD1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1A7F3302A2F89B84FF1DCD73</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E7D424E65CF113743EA26C5F</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Devotional.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>E7FA217F476ADA6120274A7F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>AE0C6EA3EEC034440C29FFEB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E807115BA997E5C9082CFBBD</key>
+		<dict>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array>
+				<string>4FFD3561F1EF4FE0EE2F60EA</string>
+				<string>65E2BE733BF35D7DA33A200E</string>
+			</array>
+			<key>isa</key>
+			<string>PBXFrameworksBuildPhase</string>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+		</dict>
+		<key>E850A120B334998301F6A776</key>
+		<dict>
+			<key>fileRef</key>
+			<string>73513B413900E629014CD52B</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>E949F8253B74443FABD48605</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Features/Prayers/Views/AddPrayerView.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>E9788CE38BE149698752D28C</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A27FFC84862041F5A88014D0</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>EA3520BCFAF7361EA4915451</key>
+		<dict>
+			<key>fileRef</key>
+			<string>B682FCB8175CFD34862B0673</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>EC2DFA969A879D3363679D64</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MockServices.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>EC4D38B6E817441AB9685BCD</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Core/Services/Supabase/DevotionalAudioService.swift</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>EEED5193F0DC3796FB63E265</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>ReflectionSheet.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>EF23DD7F2FC69967079DAA87</key>
+		<dict>
+			<key>fileRef</key>
+			<string>8330CB6CBC153E664026F2D3</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>EFD857D2A5813CDFFAB2AC4A</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SettingsView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>EFFE16071B7BC2F9C9CBFE54</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>B0AD4C91F2B93B3B8CE0447C</string>
+				<string>28729EAA1F5A4FC698779F64</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F0D59185B385E44442E48EE7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>0BE1735056D957B68DF2A6C4</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F1470A83A5C653D8050B8723</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>6E2E085CC36D8C393C54CBB4</string>
+				<string>CCEFCF75A46633BEE619CA8D</string>
+				<string>1ADEBC411100737504883EDE</string>
+				<string>0896FA34BBDC42928AD223B4</string>
+				<string>1F30A08C9D577E9A35823425</string>
+				<string>BF0EC7627C1432D2984117E9</string>
+				<string>49F0B5DE384B1D9A582ECA0F</string>
+				<string>FC461C576C6B304C245F755C</string>
+				<string>0BE1735056D957B68DF2A6C4</string>
+				<string>D7597AABF210F75528E0AAE1</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Supabase</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F27E6848DCC2B30D145B27C7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>40B3E01A98D9AA3EC22D01A8</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F3F101268479793C572D582B</key>
+		<dict>
+			<key>fileRef</key>
+			<string>42EA5B3673E10ED87D2E4642</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F3F63F94F1D84CCF97BBA9C1</key>
+		<dict>
+			<key>fileRef</key>
+			<string>A4B5494E8F094209BA1083FB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F53B08DAA7EB4B57CDB8E8B1</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>558B1BD4E9BDD0B04F8C42F8</string>
+				<string>EFFE16071B7BC2F9C9CBFE54</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Lectio</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F5B4D3E2F4D7813DAA469FD8</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>71107FCD5CC08E5BA2E47593</string>
+				<string>51E2E02CDA4C9ECB6F42AB75</string>
+				<string>D5F10D9ED639D90319683280</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F60CCF8B5804C177008E7039</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>RevenueCatService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F673CBF47C2CEB4F1955E0BC</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>MainTabView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F7328A1D13B866DEE704A19F</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>157CCC907162CA1F972C9B67</string>
+				<string>3035FF773CF58716F28C0AD2</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Bible</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F8406FDCECE80BD5EEA7AF6F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>414B97A385B8A429F191EF4E</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F8EF89FF01DCE2873F27679F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>49F0B5DE384B1D9A582ECA0F</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>F9D5F19706C7DE02275050B0</key>
+		<dict>
+			<key>fileRef</key>
+			<string>FCEA972E53A5FFE7086D0165</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FB17387CAA23DC74E3EF9D0E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>F673CBF47C2CEB4F1955E0BC</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FB6ECECAED681290F554FAF2</key>
+		<dict>
+			<key>isa</key>
+			<string>XCRemoteSwiftPackageReference</string>
+			<key>repositoryURL</key>
+			<string>https://github.com/supabase-community/supabase-swift</string>
+			<key>requirement</key>
+			<dict>
+				<key>kind</key>
+				<string>upToNextMajorVersion</string>
+				<key>minimumVersion</key>
+				<string>2.40.0</string>
+			</dict>
+		</dict>
+		<key>FB736D219F2AEE9778C39717</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7E671A35ACE4890594409BFB</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FB9C3BF91185CE57F5E58F6F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>513BC8F210E916D14B93B339</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FC27428C7103E1B0EBE6BD2E</key>
+		<dict>
+			<key>fileRef</key>
+			<string>EFD857D2A5813CDFFAB2AC4A</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FC461C576C6B304C245F755C</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SupabaseMemoryService.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>FD005896F21AE1268F6481C9</key>
+		<dict>
+			<key>fileRef</key>
+			<string>C9065D12448221C1D8F26416</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>FED599ADFF0DA84DAF767F0E</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>D8FF19DA2AA7BFC3C676B447</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Products</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>FF3729F3DEC5A1B5426C559D</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>208399AF61830613FA358028</string>
+				<string>2F84DC8DB523C5F9A47EB7ED</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Settings</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>FF8B5FA7792E40813EC6A56E</key>
+		<dict>
+			<key>children</key>
+			<array>
+				<string>9EB7112148D053595030F4A7</string>
+				<string>AA7A6488787CC36C7D62EFBD</string>
+				<string>414B97A385B8A429F191EF4E</string>
+				<string>C1F228F80B9C2C5AD7D15267</string>
+				<string>E6C7272275F8DCFA02219CCA</string>
+				<string>B15EF392524A5A24B7CBE3A8</string>
+			</array>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>path</key>
+			<string>Views</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+	</dict>
+	<key>rootObject</key>
+	<string>2512875B75AE6E27ED67BE2F</string>
+</dict>
+</plist>

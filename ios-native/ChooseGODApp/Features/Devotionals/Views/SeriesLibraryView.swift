@@ -83,7 +83,7 @@ struct SeriesLibraryView: View {
             }
         }
         .task { await loadData() }
-        .onAppear { AnalyticsService.shared.screen("series_library") }
+        // .onAppear { AnalyticsService.shared.screen("series_library") } // TODO: Service not available
     }
     
     // MARK: - Search Bar

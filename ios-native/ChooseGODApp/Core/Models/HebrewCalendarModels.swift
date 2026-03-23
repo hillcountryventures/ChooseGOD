@@ -22,9 +22,10 @@ struct TorahPortion: Codable, Hashable {
     let hebrewName: String // Hebrew name: "פרשת בראשית"
     let date: Date
     let aliyot: [String] // breakdown of the 7 readings: ["Genesis 1:1-1:5", ...]
+    var description: String? // One-line English summary of the Torah portion
 
     enum CodingKeys: String, CodingKey {
-        case id, name, hebrewName, date, aliyot
+        case id, name, hebrewName, date, aliyot, description
     }
 }
 

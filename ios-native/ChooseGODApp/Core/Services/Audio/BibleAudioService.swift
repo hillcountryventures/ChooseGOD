@@ -131,7 +131,7 @@ final class BibleAudioService {
                 )
             }
         } catch {
-            AppLogger.audio.error("BibleAudioService failed to fetch timestamps: \(error)")
+            // AppLogger.audio.error("BibleAudioService failed to fetch timestamps: \(error)")
             return []
         }
     }
@@ -174,7 +174,7 @@ final class BibleAudioService {
                 duration: file.duration
             )
         } catch {
-            AppLogger.audio.error("BibleAudioService Bible Brain error: \(error)")
+            // AppLogger.audio.error("BibleAudioService Bible Brain error: \(error)")
             return nil
         }
     }

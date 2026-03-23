@@ -27,7 +27,7 @@ struct OnboardingCoordinatorView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     
                 case .quizLifeArea, .quizTime, .quizExperience, .quizLifeStage:
-                    PersonalizationQuizView(viewModel: viewModel)
+                    PersonalizationQuizView()
                         .transition(.asymmetric(
                             insertion: .move(edge: viewModel.transitionDirection),
                             removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing)

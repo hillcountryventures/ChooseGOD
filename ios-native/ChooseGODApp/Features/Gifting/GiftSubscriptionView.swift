@@ -1,5 +1,6 @@
 import SwiftUI
 import RevenueCat
+import Supabase
 
 /// Gift a ChooseGOD Premium subscription
 struct GiftSubscriptionView: View {
@@ -221,39 +222,69 @@ struct GiftSubscriptionView: View {
     }
     
     private func purchaseGift() async {
+        guard !recipientName.isEmpty, !senderName.isEmpty else {
+            errorMessage = "Please fill in all fields."
+            return
+        }
+
         isPurchasing = true
         errorMessage = nil
-        
+
         do {
-            // Purchase via RevenueCat
+            // 1. Purchase subscription via RevenueCat
             let success = try await appState.subscriptionService.purchase(package: selectedPlan)
-            
-            if success {
-                // Generate a pseudo promo code (real implementation uses RevenueCat promo API)
-                promoCode = generatePromoCode()
-                
-                AnalyticsService.shared.capture("gift_purchased", properties: [
-                    "plan": selectedPlan.rawValue,
-                    "has_sender_name": (!senderName.isEmpty).description
-                ])
-                
-                withAnimation {
-                    purchaseComplete = true
-                }
-            } else {
+
+            guard success else {
                 errorMessage = "Purchase was not completed. Please try again."
+                isPurchasing = false
+                return
+            }
+
+            // 2. Generate gift code
+            let code = generateCode()
+            let durationMonths = selectedPlan == .annual ? 12 : 1
+
+            // 3. Store in Supabase
+            guard let userId = appState.currentUser?.id,
+                  let client = try? SupabaseManager.shared.requireClient() else {
+                errorMessage = "Unable to save gift code. Please contact support."
+                isPurchasing = false
+                return
+            }
+
+            let expiry = Calendar.current.date(byAdding: .year, value: 1, to: Date())!
+            let formatter = ISO8601DateFormatter()
+
+            let row: [String: AnyJSON] = [
+                "code": .string(code),
+                "gifter_user_id": .string(userId),
+                "duration_months": .double(Double(durationMonths)),
+                "expires_at": .string(formatter.string(from: expiry))
+            ]
+
+            try await client.from("gift_codes").insert(row).execute()
+
+            promoCode = code
+
+            AnalyticsService.shared.capture("gift_purchased", properties: [
+                "plan": selectedPlan.rawValue,
+                "sender_name": senderName,
+                "recipient_name": recipientName
+            ])
+
+            withAnimation {
+                purchaseComplete = true
             }
         } catch {
             errorMessage = error.localizedDescription
         }
-        
+
         isPurchasing = false
     }
-    
-    private func generatePromoCode() -> String {
-        let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-        let code = (0..<8).map { _ in String(chars.randomElement()!) }.joined()
-        return "GIFT-\(code)"
+
+    private func generateCode() -> String {
+        let letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        return String((0..<8).map { _ in letters.randomElement()! })
     }
     
     @MainActor

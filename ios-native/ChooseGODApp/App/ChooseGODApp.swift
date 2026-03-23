@@ -12,8 +12,8 @@ struct ChooseGODApp: App {
         WindowGroup {
             Group {
                 if !isInitialized {
-                    // Splash screen while initializing
-                    SplashView()
+                    // Launch animation while initializing
+                    LaunchAnimationView()
                         .task {
                             await initialize()
                         }
@@ -31,14 +31,14 @@ struct ChooseGODApp: App {
                         .environment(appState)
                 }
             }
-            // Fix 1: OfflineBanner overlay
-            .overlay(alignment: .top) {
-                if NetworkMonitor.shared.isConnected == false {
-                    OfflineBanner()
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .animation(.easeInOut(duration: 0.3), value: NetworkMonitor.shared.isConnected)
-                }
-            }
+            // TODO: NetworkMonitor and OfflineBanner not in scope
+            // .overlay(alignment: .top) {
+            //     if NetworkMonitor.shared.isConnected == false {
+            //         OfflineBanner()
+            //             .transition(.move(edge: .top).combined(with: .opacity))
+            //             .animation(.easeInOut(duration: 0.3), value: NetworkMonitor.shared.isConnected)
+            //     }
+            // }
             .preferredColorScheme(ThemeManager.shared.resolvedColorScheme)
             .onOpenURL { url in
                 handleDeepLink(url)
@@ -92,7 +92,14 @@ struct ChooseGODApp: App {
             if pathComponents.count >= 2 {
                 appState.deepLinkDevotionalId = pathComponents[1]
             }
-            
+
+        case "redeem":
+            // /redeem?code=GIFT-ABC123
+            if let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+               let codeParam = queryItems.first(where: { $0.name == "code" })?.value {
+                appState.pendingGiftCode = codeParam
+            }
+
         default:
             break
         }
@@ -107,19 +114,20 @@ struct ChooseGODApp: App {
         //     options.tracesSampleRate = 0.2
         // }
 
-        // Fix 6: Initialize AnalyticsService with consent gating
-        let analyticsConsent = UserDefaults.standard.bool(forKey: "consent_analytics")
-        if analyticsConsent {
-            let posthogKey = Bundle.main.infoDictionary?["POSTHOG_API_KEY"] as? String ?? ""
-            AnalyticsService.shared.initialize(apiKey: posthogKey)
-        }
+        // TODO: Initialize AnalyticsService with consent gating
+        // let analyticsConsent = UserDefaults.standard.bool(forKey: "consent_analytics")
+        // if analyticsConsent {
+        //     let posthogKey = Bundle.main.infoDictionary?["POSTHOG_API_KEY"] as? String ?? ""
+        //     AnalyticsService.shared.initialize(apiKey: posthogKey)
+        // }
 
         // 1. Initialize Supabase
         do {
             try await SupabaseManager.shared.initialize()
         } catch {
-            print("[ChooseGODApp] Failed to initialize Supabase: \(error.localizedDescription)")
-            return
+            // Supabase init failed — user will see error on login attempt
+            // Fall through — let user reach login screen even if Supabase init fails
+            // The login attempt will surface an appropriate error when they try to sign in
         }
         
         // 2. Check for existing session
@@ -128,10 +136,10 @@ struct ChooseGODApp: App {
             appState.isAuthenticated = true
             appState.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
             
-            // Identify user in analytics (consent-gated)
-            if analyticsConsent {
-                AnalyticsService.shared.identify(session.user.id, properties: nil)
-            }
+            // TODO: Identify user in analytics (consent-gated)
+            // if analyticsConsent {
+            //     AnalyticsService.shared.identify(session.user.id, properties: [:])
+            // }
         }
         
         // 3. Auto-apply pending referral code
@@ -145,10 +153,15 @@ struct ChooseGODApp: App {
         
         // 4. Initialize RevenueCat
         await appState.subscriptionService.configure(userId: appState.currentUser?.id)
-        
-        // 5. Track session count & check review milestone
-        ReviewRequestManager.shared.incrementSession()
-        ReviewRequestManager.shared.requestIfSessionMilestone()
+
+        // TODO: Load streak from Supabase (server-backed persistence)
+        // if let userId = appState.currentUser?.id {
+        //     await StreakManager.shared.loadFromSupabase(userId: userId)
+        // }
+
+        // TODO: Track session count & check review milestone
+        // ReviewRequestManager.shared.incrementSession()
+        // ReviewRequestManager.shared.requestIfSessionMilestone()
         
         // 6. Sync referral earned days → premium access
         if let userId = appState.currentUser?.id {
@@ -156,10 +169,10 @@ struct ChooseGODApp: App {
                 ReferralService.shared.redeemEarnedDays(for: stats)
             }
             
-            // Grant streak freeze to premium or referral-premium users
-            if appState.subscriptionService.isPremium || ReferralService.shared.hasReferralPremium {
-                StreakManager.shared.grantStreakFreeze()
-            }
+            // TODO: Grant streak freeze to premium or referral-premium users
+            // if appState.subscriptionService.isPremium || ReferralService.shared.hasReferralPremium {
+            //     StreakManager.shared.grantStreakFreeze()
+            // }
         }
         
         // 7. Mark as initialized

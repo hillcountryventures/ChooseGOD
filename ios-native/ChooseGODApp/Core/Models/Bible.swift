@@ -218,3 +218,56 @@ let BIBLE_BOOKS: [BibleBook] = [
 func getChapterCount(for book: String) -> Int {
     BIBLE_BOOKS.first { $0.name == book }?.chapters ?? 28
 }
+
+// MARK: - Bible Translation
+
+enum BibleTranslation: String, Codable, CaseIterable, Hashable, Identifiable {
+    // Supabase (16 translations, all free!)
+    case kjv = "KJV"
+    case asv = "ASV"
+    case bbe = "BBE"
+    case cuv = "CUV"
+    case finnish = "FINNISH"
+    case french = "FRENCH"
+    case greek = "GREEK"
+    case korean = "KOREAN"
+    case niv = "NIV"
+    case paa = "PAA"
+    case romanian = "ROMANIAN"
+    case rvr = "RVR"
+    case rvr1960 = "RVR1960"
+    case schlachter = "SCHLACHTER"
+    case synodal = "SYNODAL"
+    case vietnamese = "VIETNAMESE"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .kjv: return "King James Version"
+        case .asv: return "American Standard Version"
+        case .bbe: return "Bible in Basic English"
+        case .cuv: return "Chinese Union Version"
+        case .finnish: return "Finnish Bible"
+        case .french: return "French Bible"
+        case .greek: return "Greek New Testament"
+        case .korean: return "Korean Bible"
+        case .niv: return "New International Version"
+        case .paa: return "Pazgupta Bible"
+        case .romanian: return "Romanian Bible"
+        case .rvr: return "Reina Valera Revisada"
+        case .rvr1960: return "Reina Valera 1960"
+        case .schlachter: return "Schlachter Bible (German)"
+        case .synodal: return "Synodal Bible (Russian)"
+        case .vietnamese: return "Vietnamese Bible"
+        }
+    }
+
+    var requiresApiKey: Bool {
+        false // All from Supabase, no keys needed!
+    }
+
+    var apiProvider: String {
+        "supabase" // Everything comes from Supabase
+    }
+}

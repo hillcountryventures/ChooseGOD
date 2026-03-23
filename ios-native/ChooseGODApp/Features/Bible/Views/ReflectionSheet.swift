@@ -1,41 +1,41 @@
 import os
 import SwiftUI
 
-/// Quick reflection modal after reading a verse
+/// Reflection modal for saving verse reflections
 struct ReflectionSheet: View {
     let verseRef: String
     let verseText: String
-    
+    let book: String
+    let chapter: Int
+    let verse: Int
+
+    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
+
     @State private var reflection = ""
-    @State private var selectedTags: Set<String> = []
+    @State private var characterCount = 0
     @State private var isSaving = false
     @FocusState private var isTextFocused: Bool
-    
-    private let emotionTags = [
-        "Grateful", "Peaceful", "Convicted", "Hopeful",
-        "Curious", "Comforted", "Challenged", "Joyful"
-    ]
-    
-    private let themeTags = [
-        "Love", "Faith", "Grace", "Forgiveness",
-        "Wisdom", "Courage", "Trust", "Praise"
-    ]
-    
+
+    private let maxCharacters = 500
+    private var isSaveEnabled: Bool {
+        characterCount >= 10 && !isSaving
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
                     // Verse card
                     verseCard
-                    
+
                     // Prompt
                     Text("What stood out to you?")
                         .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.text)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    // Journal entry
+
+                    // Text editor with placeholder
                     TextEditor(text: $reflection)
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
@@ -57,12 +57,18 @@ struct ReflectionSheet: View {
                             }
                         }
                         .focused($isTextFocused)
-                    
-                    // Emotion tags
-                    tagSection(title: "How did this make you feel?", tags: emotionTags)
-                    
-                    // Theme tags
-                    tagSection(title: "Themes", tags: themeTags)
+
+                    // Character count
+                    HStack {
+                        Spacer()
+                        Text("\(characterCount)/\(maxCharacters)")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(
+                                characterCount > maxCharacters
+                                    ? Color.red
+                                    : Theme.Colors.textTertiary
+                            )
+                    }
                 }
                 .padding(Theme.Spacing.lg)
             }
@@ -76,11 +82,9 @@ struct ReflectionSheet: View {
                             .foregroundStyle(Theme.Colors.text)
                     }
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        save()
-                    } label: {
+                    Button(action: save) {
                         Text("Save")
                             .font(Theme.Typography.button)
                             .foregroundStyle(.white)
@@ -88,28 +92,37 @@ struct ReflectionSheet: View {
                             .padding(.vertical, Theme.Spacing.xs)
                             .background(Capsule().fill(Theme.Colors.primary))
                     }
-                    .disabled(reflection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
-                    .opacity(reflection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
+                    .disabled(!isSaveEnabled)
+                    .opacity(isSaveEnabled ? 1 : 0.5)
                 }
             }
-            .onAppear { isTextFocused = true }
+            .onChange(of: reflection) { _, newValue in
+                characterCount = newValue.count
+                if newValue.count > maxCharacters {
+                    reflection = String(newValue.prefix(maxCharacters))
+                }
+            }
+            .onAppear {
+                isTextFocused = true
+                // AnalyticsService.shared.screen("reflection_sheet") // TODO: Service not available
+            }
         }
     }
-    
+
     // MARK: - Verse Card
-    
+
     private var verseCard: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack(spacing: Theme.Spacing.xs) {
                 Image(systemName: "book")
                     .font(Theme.Typography.bodySmall)
                     .foregroundStyle(Theme.Colors.primary)
-                
+
                 Text(verseRef)
                     .font(Theme.Typography.label)
                     .foregroundStyle(Theme.Colors.primary)
             }
-            
+
             Text("\"\(verseText)\"")
                 .font(Theme.Typography.scripture)
                 .foregroundStyle(Theme.Colors.text)
@@ -127,76 +140,71 @@ struct ReflectionSheet: View {
                 )
         )
     }
-    
-    // MARK: - Tag Section
-    
-    private func tagSection(title: String, tags: [String]) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text(title)
-                .font(Theme.Typography.label)
-                .foregroundStyle(Theme.Colors.textSecondary)
-            
-            FlowLayout(spacing: Theme.Spacing.sm) {
-                ForEach(tags, id: \.self) { tag in
-                    tagChip(tag)
-                }
-            }
-        }
-    }
-    
-    private func tagChip(_ tag: String) -> some View {
-        let isSelected = selectedTags.contains(tag)
-        return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                if isSelected {
-                    selectedTags.remove(tag)
-                } else {
-                    selectedTags.insert(tag)
-                }
-            }
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        } label: {
-            Text(tag)
-                .font(Theme.Typography.labelSmall)
-                .foregroundStyle(isSelected ? .white : Theme.Colors.textSecondary)
-                .padding(.horizontal, Theme.Spacing.mds)
-                .padding(.vertical, Theme.Spacing.sm)
-                .background(
-                    Capsule().fill(isSelected ? Theme.Colors.primary : Theme.Colors.surface)
-                )
-                .overlay(
-                    Capsule().stroke(isSelected ? Color.clear : Theme.Colors.textTertiary.opacity(0.3), lineWidth: 1)
-                )
-        }
-    }
-    
+
     // MARK: - Save
-    
+
     private func save() {
-        guard !reflection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let trimmed = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 10 else { return }
+
         isSaving = true
-        
-        // TODO: Save to Supabase journal/spiritual_moments
-        Logger(subsystem: "com.choosegod.app", category: "journal").info("Reflection saved for \(verseRef)")
-        
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-        
-        dismiss()
+
+        let moment = SpiritualMoment(
+            id: UUID().uuidString,
+            userId: appState.currentUser?.id ?? "",
+            momentType: .journal,
+            content: trimmed,
+            aiReflection: nil,
+            linkedVerses: [
+                VerseSource(
+                    book: book,
+                    chapter: chapter,
+                    verse: verse,
+                    text: verseText,
+                    translation: appState.preferences.preferredTranslation.rawValue
+                )
+            ],
+            sentimentScore: nil,
+            themes: [],
+            createdAt: Date(),
+            updatedAt: nil,
+            metadata: nil,
+            media: nil,
+            aiInsights: nil,
+            status: nil,
+            source: JournalSource(type: .verseReflection)
+        )
+
+        Task {
+            do {
+                _ = try await SupabaseJournalService().createMoment(moment)
+            } catch {
+                // Fallback: save to UserDefaults
+                var saved = (UserDefaults.standard.array(forKey: "localReflections") as? [[String: String]]) ?? []
+                saved.append([
+                    "ref": verseRef,
+                    "text": trimmed,
+                    "date": ISO8601DateFormatter().string(from: Date())
+                ])
+                UserDefaults.standard.set(saved, forKey: "localReflections")
+            }
+
+            await MainActor.run {
+                isSaving = false
+                HapticManager.shared.success()
+                dismiss()
+            }
+        }
     }
 }
-
-// MARK: - Flow Layout
-
-/// Simple wrapping horizontal layout for tags
-
-// MARK: - Preview
 
 #Preview {
     ReflectionSheet(
         verseRef: "Psalm 46:10",
-        verseText: "Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth."
+        verseText: "Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth.",
+        book: "Psalms",
+        chapter: 46,
+        verse: 10
     )
     .preferredColorScheme(.dark)
 }

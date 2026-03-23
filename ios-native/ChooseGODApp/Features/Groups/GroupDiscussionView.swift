@@ -94,7 +94,7 @@ struct GroupDiscussionView: View {
             .padding(Theme.Spacing.md)
             .background {
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.lg)
-                    .fill(isCurrentUser ? Theme.Colors.primary : Color(.ultraThinMaterial).opacity(0.8))
+                    .fill(isCurrentUser ? AnyShapeStyle(Theme.Colors.primary) : AnyShapeStyle(Material.ultraThin))
             }
             
             HStack(spacing: 8) {

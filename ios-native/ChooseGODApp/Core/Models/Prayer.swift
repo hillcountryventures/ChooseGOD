@@ -43,7 +43,7 @@ struct PrayerRequest: Identifiable, Codable {
     let id: String
     let userId: String
     var circleId: String?
-    let request: String
+    var request: String
     var scriptureAnchor: ScriptureAnchor?
     var status: PrayerStatus
     var answeredAt: Date?

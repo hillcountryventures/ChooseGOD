@@ -123,7 +123,7 @@ struct DevotionalCompleteView: View {
             }
         }
         .sheet(isPresented: $showShareSheet) {
-            DevotionalShareSheet(activityItems: [shareText])
+            DevotionalShareSheet(items: [shareText])
         }
         .onAppear {
             // Record activity and get real streak

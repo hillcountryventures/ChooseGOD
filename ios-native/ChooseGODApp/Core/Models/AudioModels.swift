@@ -17,6 +17,7 @@ struct AudioTrack: Identifiable, Equatable {
     enum AudioSource: String, Codable {
         case audioTreasure = "audio_treasure"
         case bibleBrain = "bible_brain"
+        case devotional = "devotional"
     }
 }
 

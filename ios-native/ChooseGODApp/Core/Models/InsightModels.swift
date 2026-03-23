@@ -26,6 +26,7 @@ struct AIGrowthSummary: Codable {
     let scriptureConnection: String?
     let growthPrediction: String?
     let encouragement: String?
+    var lastGeneratedAt: Date?
 }
 
 // MARK: - Milestone
@@ -214,13 +215,13 @@ struct TimelineItem: Identifiable {
 
 struct SpiritualHealthScore {
     let score: Int // 0-100
-    let change: Int // percentage change
+    let change: Double? // percentage change (nil if no prior period data)
     let prayerDays: Int
     let versesRead: Int
     let stepsCompleted: Int
     let message: String
-    
-    static let empty = SpiritualHealthScore(score: 0, change: 0, prayerDays: 0, versesRead: 0, stepsCompleted: 0, message: "Start your journey with God today.")
+
+    static let empty = SpiritualHealthScore(score: 0, change: nil, prayerDays: 0, versesRead: 0, stepsCompleted: 0, message: "Start your journey with God today.")
 }
 
 // MARK: - Topic Engagement

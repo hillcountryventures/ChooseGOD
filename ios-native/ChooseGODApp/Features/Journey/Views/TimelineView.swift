@@ -41,8 +41,23 @@ struct TimelineView: View {
                         ForEach(groupedByDate, id: \.0) { date, dayItems in
                             dateSection(date: date, items: dayItems)
                         }
+
+                        // Timeline cap note
+                        if items.count >= 50 {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundStyle(Theme.Colors.textSecondary)
+                                Text("Showing your 50 most recent entries. Full timeline coming soon.")
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(Theme.Colors.textSecondary)
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Theme.Colors.surface)
+                            .cornerRadius(12)
+                        }
                     }
-                    
+
                     Color.clear.frame(height: 80)
                 }
                 .padding(.horizontal)

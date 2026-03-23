@@ -1,5 +1,6 @@
 import SwiftUI
 import Observation
+import os.log
 
 /// Root application state container
 /// Uses @Observable (iOS 17+) for efficient SwiftUI updates
@@ -14,11 +15,13 @@ final class AppState {
     var isLoading = false
     var errorMessage: String?
     var showError = false
+    var selectedTab: Tab = .home
 
     // MARK: - Deep Link Navigation
     var deepLinkVerseRef: String?
     var deepLinkInviteCode: String?
     var deepLinkDevotionalId: String?
+    var pendingGiftCode: String?
     
     // MARK: - User Preferences
     var preferences: UserPreferences
@@ -33,7 +36,7 @@ final class AppState {
     
     init(
         authService: AuthServiceProtocol = SupabaseAuthService(),
-        bibleService: BibleServiceProtocol = BibleServiceRouter(),
+        bibleService: BibleServiceProtocol = SupabaseBibleService(),
         subscriptionService: SubscriptionServiceProtocol = RevenueCatService.shared,
         notificationService: NotificationServiceProtocol = NotificationService.shared
     ) {
@@ -143,43 +146,3 @@ struct UserPreferences: Codable {
     }
 }
 
-// MARK: - Bible Translation
-
-enum BibleTranslation: String, Codable, CaseIterable, Identifiable {
-    case kjv = "KJV"
-    case asv = "ASV"
-    case web = "WEB"
-    case niv = "NIV"
-    case rvr = "RVR"  // Spanish
-    case cuv = "CUV"  // Chinese
-    
-    var id: String { rawValue }
-    
-    var displayName: String {
-        switch self {
-        case .kjv: return "King James Version"
-        case .asv: return "American Standard Version"
-        case .web: return "World English Bible"
-        case .niv: return "New International Version"
-        case .rvr: return "Reina Valera"
-        case .cuv: return "Chinese Union Version"
-        }
-    }
-    
-    var language: String {
-        switch self {
-        case .kjv, .asv, .web, .niv: return "English"
-        case .rvr: return "Español"
-        case .cuv: return "中文"
-        }
-    }
-    
-    /// Whether audio is available for this translation
-    var hasAudio: Bool {
-        switch self {
-        case .kjv: return true  // AudioTreasure
-        case .asv, .web: return true  // Bible Brain
-        default: return false
-        }
-    }
-}
