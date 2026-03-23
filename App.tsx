@@ -31,6 +31,7 @@ import { ScreenErrorBoundary } from './src/components/ScreenErrorBoundary';
 
 // Screens (root-level modals/stacks)
 import ChatHubScreen from './src/screens/ChatHubScreen';
+import ConversationListScreen from './src/screens/chat/ConversationListScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReferralScreen from './src/screens/settings/ReferralScreen';
 import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
@@ -67,6 +68,7 @@ function withErrorBoundary<P extends object>(Component: React.ComponentType<P>, 
 
 // Wrapped root screens
 const SafeChatHubScreen = withErrorBoundary(ChatHubScreen, 'ChatHub');
+const SafeConversationListScreen = withErrorBoundary(ConversationListScreen, 'ConversationList');
 const SafeSettingsScreen = withErrorBoundary(SettingsScreen, 'Settings');
 const SafeReferralScreen = withErrorBoundary(ReferralScreen, 'Referral');
 const SafeSubscriptionDebugScreen = withErrorBoundary(SubscriptionDebugScreen, 'SubscriptionDebug');
@@ -135,6 +137,7 @@ function App() {
                   <RootStack.Screen name="Referral" component={SafeReferralScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
                   <RootStack.Screen name="SubscriptionDebug" component={SafeSubscriptionDebugScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="ChatHub" component={SafeChatHubScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+                  <RootStack.Screen name="ConversationList" component={SafeConversationListScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
                   <RootStack.Screen name="CameraScreen" component={SafeCameraScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="MemoryPractice" component={SafeMemoryPracticeScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="LectioDivina" component={SafeLectioDivinaScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />

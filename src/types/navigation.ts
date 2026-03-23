@@ -57,7 +57,9 @@ export type RootStackParamList = {
     };
     contextMode?: ChatMode;
     initialMessage?: string;
+    conversationId?: string; // Resume a saved conversation
   };
+  ConversationList: undefined;
   ReflectionModal: {
     verse: BibleVerse;
     reference: string;

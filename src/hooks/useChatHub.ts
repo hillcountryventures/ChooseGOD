@@ -20,6 +20,7 @@ import NetInfo from '@react-native-community/netinfo';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 import { useStore } from '../store/useStore';
+import { useChatHistoryStore } from '../store/chatHistoryStore';
 import { ChatMessage, VerseSource, SuggestedAction, RootStackParamList, ChatMode, Translation } from '../types';
 import { getSupabaseConfig } from '../lib/supabase';
 import { CHAT_LIMITS } from '../constants/limits';
@@ -70,6 +71,23 @@ export function useChatHub() {
     hasSeeds,
     consumeSeed,
   } = useChatQuota();
+
+  // Chat history
+  const updateCurrentConversation = useChatHistoryStore((s) => s.updateCurrentConversation);
+  const enforceHistoryLimit = useChatHistoryStore((s) => s.enforceHistoryLimit);
+  const shareSheetRef = useRef<BottomSheet>(null);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+
+  // Auto-save conversation when messages change (debounced)
+  useEffect(() => {
+    if (messages.length >= 3) {
+      const timer = setTimeout(() => {
+        updateCurrentConversation(messages, currentMode);
+        enforceHistoryLimit(isPremium);
+      }, 2000); // Save after 2s of inactivity
+      return () => clearTimeout(timer);
+    }
+  }, [messages, currentMode, isPremium, updateCurrentConversation, enforceHistoryLimit]);
 
   // Local state
   const [inputText, setInputText] = useState('');
@@ -376,26 +394,22 @@ export function useChatHub() {
     ]);
   }, [clearMessages]);
 
-  const handleShareConversation = useCallback(async () => {
+  const handleShareConversation = useCallback(() => {
     if (messages.length === 0) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    try {
-      const conversationText = messages
-        .map((m) => {
-          const role = m.role === 'user' ? 'You' : 'Companion';
-          let text = `${role}: ${m.content}`;
-          if (m.sources && m.sources.length > 0) {
-            const refs = m.sources.map((s) => `${s.book} ${s.chapter}:${s.verse}`).join(', ');
-            text += `\n📖 ${refs}`;
-          }
-          return text;
-        })
-        .join('\n\n---\n\n');
-      await Share.share({ message: `${conversationText}\n\n✝️ Shared from ChooseGOD` });
-    } catch (error) {
-      logger.error('Share failed:', error);
-    }
-  }, [messages]);
+    setShowShareSheet(true);
+    shareSheetRef.current?.snapToIndex(0);
+  }, [messages.length]);
+
+  const handleCloseShareSheet = useCallback(() => {
+    setShowShareSheet(false);
+    shareSheetRef.current?.close();
+  }, []);
+
+  const handleOpenHistory = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate('ConversationList');
+  }, [navigation]);
 
   const handleVersePress = useCallback((verse: VerseSource) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -449,10 +463,12 @@ export function useChatHub() {
     flashListRef,
     inputRef,
     verseQuickViewRef,
+    shareSheetRef,
 
     // Derived
     isPrayerMode,
     hasMessages,
+    showShareSheet,
 
     // Handlers
     handleSend,
@@ -461,6 +477,8 @@ export function useChatHub() {
     handleModeSelect,
     handleClearChat,
     handleShareConversation,
+    handleCloseShareSheet,
+    handleOpenHistory,
     handleVersePress,
     handleCloseVerseQuickView,
   };

@@ -107,6 +107,11 @@ export const useStore = create<AppState>()(
           messages: [],
         })),
 
+      setMessages: (messages: ChatMessage[]) =>
+        set(() => ({
+          messages,
+        })),
+
       setIsQuerying: (isQuerying: boolean) =>
         set(() => ({
           isQuerying,

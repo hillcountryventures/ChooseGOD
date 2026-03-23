@@ -32,6 +32,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { SeedTracker, FinalSeedBanner, NoSeedsCard } from '../components/chat/SeedComponents';
 import { ChatModeSelector, getModeName } from '../components/chat/ChatModeSelector';
 import { ChatEmptyState } from '../components/chat/ChatEmptyState';
+import { ShareConversationSheet } from '../components/chat/ShareConversationSheet';
 import { useChatHub } from '../hooks/useChatHub';
 import { useTrackScreen } from '../hooks/useAnalytics';
 
@@ -64,14 +65,18 @@ export default function ChatHubScreen() {
     flashListRef,
     inputRef,
     verseQuickViewRef,
+    shareSheetRef,
     isPrayerMode,
     hasMessages,
+    showShareSheet,
     handleSend,
     handleStop,
     handleSuggestedActionPress,
     handleModeSelect,
     handleClearChat,
     handleShareConversation,
+    handleCloseShareSheet,
+    handleOpenHistory,
     handleVersePress,
     handleCloseVerseQuickView,
   } = hub;
@@ -145,6 +150,9 @@ export default function ChatHubScreen() {
               isPremium={isPremium}
               onUpgradePress={showPaywall}
             />
+            <TouchableOpacity style={styles.headerButton} onPress={handleOpenHistory} accessibilityRole="button" accessibilityLabel="Chat history">
+              <Ionicons name="time-outline" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
             {hasMessages && (
               <>
                 <TouchableOpacity style={styles.headerButton} onPress={handleShareConversation} accessibilityRole="button" accessibilityLabel="Share conversation">
@@ -290,6 +298,13 @@ export default function ChatHubScreen() {
         bottomSheetRef={verseQuickViewRef}
         reference={selectedVerseRef}
         onClose={handleCloseVerseQuickView}
+      />
+
+      {/* Share Conversation Bottom Sheet */}
+      <ShareConversationSheet
+        messages={messages}
+        onClose={handleCloseShareSheet}
+        sheetRef={shareSheetRef}
       />
     </SafeAreaView>
   );

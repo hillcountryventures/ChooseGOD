@@ -56,6 +56,7 @@ export interface AppState {
   addMessage: (message: ChatMessage) => void;
   updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
   clearMessages: () => void;
+  setMessages: (messages: ChatMessage[]) => void;
   setDailyVerse: (verse: DailyVerse | null) => void;
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
   setPreferences: (prefs: Partial<UserPreferences>) => void;
