@@ -41,6 +41,8 @@ import {
 import { MediaPreviewList } from '../../components/journal/MediaPreview';
 import VoiceNoteRecorder from '../../components/journal/VoiceNoteRecorder';
 import { getTimeBasedPrompts } from '../../components/journal/JournalPromptsCarousel';
+import { useJournalPremiumStore, FREE_ENTRIES_PER_MONTH } from '../../store/journalPremiumStore';
+import { useIsPremium, useSubscriptionStore } from '../../store/subscriptionStore';
 import { logger } from '../../utils/logger';
 import { useTrackScreen } from '../../hooks/useAnalytics';
 
@@ -79,6 +81,15 @@ export default function JournalComposeScreen() {
   const clearDraft = useStore((state) => state.clearDraft);
   const savedDrafts = useStore((state) => state.savedDrafts);
   const dailyPrompts = useStore((state) => state.dailyPrompts);
+
+  // Premium / entry limits
+  const isPremium = useIsPremium();
+  const showPaywall = useSubscriptionStore((s) => s.showPaywall);
+  const canAddEntry = useJournalPremiumStore((s) => s.canAddEntry);
+  const getRemainingEntries = useJournalPremiumStore((s) => s.getRemainingEntries);
+  const recordEntry = useJournalPremiumStore((s) => s.recordEntry);
+  const remainingEntries = getRemainingEntries(isPremium);
+  const canPost = canAddEntry(isPremium);
 
   // State
   const [content, setContent] = useState('');
@@ -224,6 +235,19 @@ export default function JournalComposeScreen() {
       return;
     }
 
+    // Check entry limit for free users
+    if (!canPost) {
+      Alert.alert(
+        'Entry Limit Reached',
+        `You've used all ${FREE_ENTRIES_PER_MONTH} free entries this month. Upgrade to continue journaling.`,
+        [
+          { text: 'Not Now', style: 'cancel' },
+          { text: 'Upgrade', onPress: () => showPaywall() },
+        ]
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -244,6 +268,7 @@ export default function JournalComposeScreen() {
       };
 
       addMoment(moment);
+      recordEntry(); // Track entry for monthly limit
       clearDraft();
       navigation.goBack();
     } catch (error) {
@@ -252,7 +277,7 @@ export default function JournalComposeScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [content, linkedVerses, media, source, addMoment, clearDraft, navigation]);
+  }, [content, linkedVerses, media, source, addMoment, clearDraft, navigation, canPost, showPaywall, recordEntry]);
 
   const handlePromptPress = (promptText: string) => {
     setContent(promptText + '\n\n');
@@ -407,7 +432,8 @@ export default function JournalComposeScreen() {
     });
   };
 
-  const canPost = content.trim().length > 0;
+  const hasContent = content.trim().length > 0;
+  const canSubmit = hasContent && canPost;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -420,20 +446,30 @@ export default function JournalComposeScreen() {
           <TouchableOpacity onPress={handleClose} style={styles.closeButton} accessibilityLabel="Close journal" accessibilityRole="button">
             <Ionicons name="close" size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Journal</Text>
+          
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>Journal</Text>
+            {/* Entry limit indicator (free users only) */}
+            {!isPremium && (
+              <Text style={styles.entryLimitText}>
+                {remainingEntries} of {FREE_ENTRIES_PER_MONTH} entries left
+              </Text>
+            )}
+          </View>
+          
           <TouchableOpacity
             onPress={handlePost}
             style={[
               styles.postButton,
-              !canPost && styles.postButtonDisabled,
+              !canSubmit && styles.postButtonDisabled,
               isSaving && styles.postButtonDisabled,
             ]}
-            disabled={!canPost || isSaving}
+            disabled={!canSubmit || isSaving}
           >
             <Text
               style={[
                 styles.postButtonText,
-                !canPost && styles.postButtonTextDisabled,
+                !canSubmit && styles.postButtonTextDisabled,
               ]}
             >
               {isSaving ? 'Saving...' : 'Post'}
@@ -655,10 +691,19 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: theme.spacing.xs,
   },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.text,
+  },
+  entryLimitText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    marginTop: 2,
   },
   postButton: {
     paddingVertical: theme.spacing.xs,

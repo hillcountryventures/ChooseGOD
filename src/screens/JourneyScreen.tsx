@@ -31,6 +31,8 @@ import { RootStackParamList } from '../types';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
 import { generateJourneyPDF } from '../lib/journeyPDF';
 import { TimelineView, InsightsView } from '../components/journey';
+import { JournalReflectionModal } from '../components/journal/JournalReflectionModal';
+import { useJournalPremiumStore } from '../store/journalPremiumStore';
 import { logger } from '../utils/logger';
 import { useTrackScreen } from '../hooks/useAnalytics';
 
@@ -77,6 +79,13 @@ export default function JourneyScreen() {
 
   // Premium status for PDF export
   const { isPremium, showPaywall } = usePremiumStatus();
+
+  // AI Reflection modal
+  const [showReflectionModal, setShowReflectionModal] = useState(false);
+  
+  // Journal premium features
+  const getLockedCount = useJournalPremiumStore((s) => s.getLockedCount);
+  const lockedCount = getLockedCount(recentMoments, isPremium);
 
   // Calculate streak for header
   const streak = Math.min(recentMoments.length, 30);
@@ -136,9 +145,30 @@ export default function JourneyScreen() {
               <Text style={styles.streakBadgeText}>{streak}</Text>
             </View>
           )}
+          {/* AI Reflection Button */}
+          <TouchableOpacity
+            style={[styles.actionButton, !isPremium && styles.actionButtonLocked]}
+            onPress={() => setShowReflectionModal(true)}
+            accessibilityRole="button"
+            accessibilityLabel="AI Reflection"
+          >
+            <Ionicons
+              name="sparkles"
+              size={18}
+              color={isPremium ? theme.colors.primary : theme.colors.textMuted}
+            />
+            {!isPremium && (
+              <Ionicons
+                name="lock-closed"
+                size={10}
+                color={theme.colors.primary}
+                style={styles.actionLockIcon}
+              />
+            )}
+          </TouchableOpacity>
           {/* PDF Export Button (Pro feature) */}
           <TouchableOpacity
-            style={[styles.exportButton, !isPremium && styles.exportButtonLocked]}
+            style={[styles.actionButton, !isPremium && styles.actionButtonLocked]}
             onPress={handleExportPDF}
             disabled={isExporting}
           >
@@ -156,7 +186,7 @@ export default function JourneyScreen() {
                     name="lock-closed"
                     size={10}
                     color={theme.colors.accent}
-                    style={styles.exportLockIcon}
+                    style={styles.actionLockIcon}
                   />
                 )}
               </>
@@ -182,9 +212,26 @@ export default function JourneyScreen() {
         />
       </View>
 
+      {/* Locked entries banner (free users) */}
+      {lockedCount > 0 && !isPremium && (
+        <TouchableOpacity style={styles.lockedBanner} onPress={showPaywall}>
+          <Ionicons name="lock-closed" size={16} color={theme.colors.accent} />
+          <Text style={styles.lockedBannerText}>
+            {lockedCount} older {lockedCount === 1 ? 'entry' : 'entries'} locked
+          </Text>
+          <Text style={styles.lockedBannerLink}>Unlock</Text>
+        </TouchableOpacity>
+      )}
+
       {/* Content */}
       {activeTab === 'timeline' && <TimelineView moments={recentMoments} />}
       {activeTab === 'insights' && <InsightsView moments={recentMoments} />}
+
+      {/* AI Reflection Modal */}
+      <JournalReflectionModal
+        visible={showReflectionModal}
+        onClose={() => setShowReflectionModal(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -234,22 +281,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.sm,
   },
-  exportButton: {
+  actionButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.accentAlpha[10],
+    backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.accentAlpha[20],
+    borderColor: theme.colors.border,
     position: 'relative',
   },
-  exportButtonLocked: {
+  actionButtonLocked: {
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,
   },
-  exportLockIcon: {
+  actionLockIcon: {
     position: 'absolute',
     top: 6,
     right: 6,
@@ -289,5 +336,30 @@ const styles = StyleSheet.create({
   },
   tabButtonTextActive: {
     color: theme.colors.text,
+  },
+  
+  // Locked entries banner
+  lockedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    backgroundColor: theme.colors.accentAlpha[10],
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.accentAlpha[20],
+  },
+  lockedBannerText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  lockedBannerLink: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.accent,
   },
 });
