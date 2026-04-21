@@ -29,6 +29,7 @@ import { sanitizeChatMessage } from '../utils/inputSanitizer';
 import { validateAIResponse, getGuardrailFallback } from '../utils/theologicalGuardrails';
 import { usePremiumStatus } from './usePremiumStatus';
 import { trackChatModeUsed } from '../services/analytics';
+import { trackMagicMoment } from '../services/magicMoments';
 import { useChatQuota } from './useChatQuota';
 import { streamCompanionResponse } from '../components/chat/utils';
 import { useVoiceInput } from './useVoiceInput';
@@ -196,6 +197,7 @@ export function useChatHub() {
     };
     addMessage(userMessage);
     trackChatModeUsed(currentMode, isPremium);
+    trackMagicMoment('day1_first_chat_sent', { mode: currentMode });
     setIsQuerying(true);
 
     const assistantMessageId = (Date.now() + 1).toString();

@@ -24,6 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../lib/theme';
 import { trackEvent } from '../../services/analytics';
+import { trackMagicMoment } from '../../services/magicMoments';
 
 // Pre-written demo content \u2014 no API call needed so the demo works offline
 // and costs nothing. The actual product uses real scripture + AI.
@@ -79,10 +80,12 @@ export default function GraceModeDemoScreen() {
       useNativeDriver: true,
     }).start();
     trackEvent('onboarding_grace_demo_revealed');
+    trackMagicMoment('day0_grace_demo_revealed');
   };
 
   const handleContinue = () => {
     trackEvent('onboarding_grace_demo_completed', { revealed: expanded });
+    trackMagicMoment('day0_grace_demo_seen', { revealed: expanded });
     // Next screen in the 4-screen flow: Pick Your Path
     navigation.navigate('PersonalizationQuiz' as never);
   };
