@@ -29,8 +29,10 @@ import {
   FontSizePicker,
 } from "../components/settings";
 import { useSettingsHandlers } from "../components/settings/useSettingsHandlers";
+import { RedeemGiftModal } from "../components/settings/RedeemGiftModal";
 
 export default function SettingsScreen() {
+  const [showRedeemGift, setShowRedeemGift] = React.useState(false);
   const {
     preferences,
     updatePreferences,
@@ -187,13 +189,20 @@ export default function SettingsScreen() {
             iconColor={theme.colors.info}
             label={isRestoring ? "Restoring..." : "Restore Purchases"}
             description="Recover your subscription"
-            isLast
             onPress={isRestoring ? undefined : handleRestorePurchases}
             rightElement={
               isRestoring ? (
                 <ActivityIndicator size="small" color={theme.colors.accent} />
               ) : undefined
             }
+          />
+          <SettingRow
+            icon="ticket-outline"
+            iconColor={theme.colors.accent}
+            label="Redeem a Gift Code"
+            description="Activate a gift of ChooseGOD Pro"
+            isLast
+            onPress={() => setShowRedeemGift(true)}
           />
         </View>
 
@@ -326,6 +335,12 @@ export default function SettingsScreen() {
       <PhilosophyModal
         visible={showPhilosophy}
         onClose={() => setShowPhilosophy(false)}
+      />
+
+      {/* Redeem Gift Modal */}
+      <RedeemGiftModal
+        visible={showRedeemGift}
+        onClose={() => setShowRedeemGift(false)}
       />
     </SafeAreaView>
   );

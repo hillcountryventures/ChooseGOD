@@ -1,12 +1,13 @@
 /**
  * Gift Subscription Redemption Function
  *
- * Redeems a gift subscription code and grants the recipient premium access
+ * Thin wrapper over the redeem_gift_code_atomic RPC which handles
+ * validation + code consumption + subscription grant as one transaction.
  *
- * Security:
- * - Validates gift code exists, is not expired, and has not been redeemed
- * - Uses service_role to update subscriptions table
- * - Requires authenticated user
+ * The previous implementation had a race condition: it marked the code
+ * redeemed THEN inserted the subscription in two separate queries. If the
+ * second step failed, the user lost the code without getting access. The
+ * RPC makes it atomic.
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -23,19 +24,10 @@ interface RedeemRequest {
   userId: string;
 }
 
-interface RedeemResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
-  // Only accept POST requests
   if (req.method !== "POST") {
     return new Response(
       JSON.stringify({ error: "Method not allowed" }),
@@ -45,9 +37,9 @@ serve(async (req) => {
 
   try {
     const payload: RedeemRequest = await req.json();
-    const { code, userId } = payload;
+    const code = (payload.code ?? "").trim().toUpperCase();
+    const userId = payload.userId;
 
-    // Validate input
     if (!code || !userId) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing code or userId" }),
@@ -55,66 +47,18 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[Gift] Attempting to redeem code ${code} for user ${userId}`);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // Initialize Supabase client with service role
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data, error } = await supabase.rpc("redeem_gift_code_atomic", {
+      p_code: code,
+      p_user_id: userId,
+    });
 
-    // 1. Fetch the gift code
-    const { data: giftCode, error: codeError } = await supabase
-      .from("gift_codes")
-      .select("*")
-      .eq("code", code)
-      .single();
-
-    if (codeError || !giftCode) {
-      console.error("[Gift] Code not found:", codeError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Gift code not found. Please check the code and try again.",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // 2. Validate code is not expired
-    if (giftCode.expires_at && new Date(giftCode.expires_at) < new Date()) {
-      console.warn(`[Gift] Code ${code} has expired`);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "This gift code has expired. Please ask the gifter for a new code.",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // 3. Validate code has not been redeemed
-    if (giftCode.redeemed_by !== null) {
-      console.warn(`[Gift] Code ${code} has already been redeemed`);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "This gift code has already been redeemed. Each code can only be used once.",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // 4. Mark code as redeemed
-    const { error: updateCodeError } = await supabase
-      .from("gift_codes")
-      .update({
-        redeemed_by: userId,
-        redeemed_at: new Date().toISOString(),
-      })
-      .eq("code", code);
-
-    if (updateCodeError) {
-      console.error("[Gift] Failed to mark code as redeemed:", updateCodeError);
+    if (error) {
+      console.error("[Gift] RPC error:", error);
       return new Response(
         JSON.stringify({
           success: false,
@@ -124,59 +68,28 @@ serve(async (req) => {
       );
     }
 
-    // 5. Create subscription for recipient
-    const expirationDate = new Date();
-    expirationDate.setMonth(expirationDate.getMonth() + (giftCode.duration_months || 1));
-
-    const { error: subscriptionError } = await supabase
-      .from("subscriptions")
-      .upsert(
-        {
-          user_id: userId,
-          revenuecat_app_user_id: `gift_${code}`,
-          original_app_user_id: `gift_${code}`,
-          status: "active",
-          is_active: true,
-          entitlement_id: "ChooseGOD Pro",
-          product_id: `gift_${giftCode.duration_months}m`,
-          purchase_date: new Date().toISOString(),
-          expiration_date: expirationDate.toISOString(),
-          store: "gift",
-          is_sandbox: false,
-          is_trial_period: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-          ignoreDuplicates: false,
-        }
-      )
-      .select()
-      .single();
-
-    if (subscriptionError) {
-      console.error("[Gift] Failed to create subscription:", subscriptionError);
+    if (!data?.success) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Gift redeemed but failed to activate. Please contact support.",
+          error: data?.error ?? "Failed to redeem gift code.",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[Gift] Successfully redeemed code ${code} for user ${userId}`);
-
+    const months = data.duration_months ?? 1;
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Gift redeemed! You now have ${giftCode.duration_months} month(s) of ChooseGOD Premium access.`,
+        message: `Gift redeemed! You now have ${months} month${months === 1 ? "" : "s"} of ChooseGOD Pro.`,
+        durationMonths: months,
+        expirationDate: data.expiration_date,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[Gift] Error processing redemption:", error);
+    console.error("[Gift] error:", error);
     return new Response(
       JSON.stringify({
         success: false,
