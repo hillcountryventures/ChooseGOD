@@ -1,12 +1,97 @@
 /**
  * Chat Mode Constants
  *
- * Centralized constants for all chat modes to prevent hardcoded strings
- * across the codebase. This ensures consistency and makes it easier to
- * add or modify chat modes in the future.
+ * The user-facing picker collapses to 3 INTENTS per market-capture Decision #6:
+ *   Ask / Pray / Reflect
+ *
+ * Internally, the existing ChatMode enum is preserved and used as the prompt
+ * routing key. A resolver (intentToMode) maps intent + screen context + user
+ * input signals to the best internal mode.
+ *
+ * Lectio Divina, Examen, Memory Verse practice are moved OUT of chat modes
+ * and into the Practices Hub as guided linear flows.
  */
 
 import { ChatMode } from '../types';
+
+// =====================================================
+// User-facing intents (new in Decision #6)
+// =====================================================
+
+export type ChatIntent = 'ask' | 'pray' | 'reflect';
+
+export const CHAT_INTENT_LABELS: Record<ChatIntent, string> = {
+  ask: 'Ask',
+  pray: 'Pray',
+  reflect: 'Reflect',
+} as const;
+
+export const CHAT_INTENT_DESCRIPTIONS: Record<ChatIntent, string> = {
+  ask: 'Questions about Scripture, theology, or the faith',
+  pray: 'A companion for prayer \u2014 intercession, help, lament',
+  reflect: 'Process what you\u2019re feeling with God',
+} as const;
+
+export const CHAT_INTENT_ICONS: Record<ChatIntent, string> = {
+  ask: 'chatbubbles',
+  pray: 'heart',
+  reflect: 'leaf',
+} as const;
+
+export const CHAT_INTENTS: ChatIntent[] = ['ask', 'pray', 'reflect'];
+
+/**
+ * Signal-based lightweight classifier. If the user's message obviously
+ * signals a sub-type under 'reflect' (gratitude / confession / celebration /
+ * examen / journal / devotional), route to that specialized prompt instead
+ * of the generic reflection flow. Never called server-side from prod flow;
+ * the companion function does the sophisticated routing with LLM context.
+ */
+export function detectReflectSubtype(input: string): ChatMode {
+  const lower = (input || '').toLowerCase();
+
+  // Gratitude signals
+  if (/\b(thank|grateful|thankful|blessed|praise|gratitude)\b/.test(lower)) {
+    return 'gratitude';
+  }
+  // Confession signals
+  if (/\b(sin|confess|forgive|repent|wrong|ashamed|guilty)\b/.test(lower)) {
+    return 'confession';
+  }
+  // Celebration signals
+  if (/\b(celebrat|joy|rejoice|wonderful|amazing|answered\s+prayer)\b/.test(lower)) {
+    return 'celebration';
+  }
+  // Examen signals (end-of-day review)
+  if (/\b(today|this\s+day|reviewing|end\s+of\s+day|before\s+bed)\b/.test(lower)) {
+    return 'examen';
+  }
+  // Devotional signals
+  if (/\b(devotional|devote|devotion|read\s+today)\b/.test(lower)) {
+    return 'devotional';
+  }
+
+  return 'journal';
+}
+
+/**
+ * Map intent + context + user input to the legacy ChatMode used as a prompt
+ * routing key on the server. Companion function already handles all 10 modes;
+ * this resolver is strictly a client-side mapping layer.
+ */
+export function intentToMode(
+  intent: ChatIntent,
+  userInput?: string,
+): ChatMode {
+  switch (intent) {
+    case 'ask':
+      return 'auto';
+    case 'pray':
+      return 'prayer';
+    case 'reflect':
+      return detectReflectSubtype(userInput ?? '');
+  }
+}
 
 /**
  * Display labels for each chat mode
