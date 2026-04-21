@@ -34,11 +34,26 @@ export const REVENUECAT_ENTITLEMENTS = {
  * These must match exactly what's configured in RevenueCat.
  */
 export const REVENUECAT_PRODUCT_IDS = {
-  // Monthly subscription with 7-day free trial
+  // Monthly subscription with 14-day free trial
   monthly: 'choosegodmonthly',
 
-  // Yearly subscription (~25% savings) with 7-day free trial
+  // Yearly subscription (2 months free vs monthly) with 14-day free trial
   yearly: 'choosegodannual',
+
+  // Non-renewing "Founding Member" lifetime tier \u2014 capped at first 1,000
+  // users per Decision #5. RevenueCat lifetime product.
+  lifetime: 'choosegodlifetime_founding',
+} as const;
+
+// =====================================================
+// Pricing (display-only; real prices come from RevenueCat)
+// =====================================================
+export const PRICING = {
+  monthly: { price: '$6.99', period: '/month' },
+  annual: { price: '$49.99', period: '/year', monthlyEquiv: '$4.17' },
+  lifetime: { price: '$99', period: 'one-time' },
+  trialDays: 14,
+  foundingMemberCap: 1000,
 } as const;
 
 // =====================================================
@@ -47,8 +62,10 @@ export const REVENUECAT_PRODUCT_IDS = {
 
 /**
  * Number of free AI chat queries allowed per day for non-premium users.
+ * Increased from 1 \u2192 3 in the paywall rearchitecture (Decision #12).
+ * The paywall shifts from "breadth of access" to "frequency and depth."
  */
-export const FREE_CHAT_LIMIT = 1;
+export const FREE_CHAT_LIMIT = 3;
 
 /**
  * Number of active devotional enrollments allowed for free users.
@@ -245,21 +262,31 @@ export const PAYWALL_CONTENT = {
   // Monthly plan
   monthly: {
     label: 'Monthly',
-    price: '$4.99',
+    price: '$6.99',
     period: '/month',
     description: 'Flexible monthly billing',
-    monthlyEquiv: '$4.99',
+    monthlyEquiv: '$6.99',
   },
 
   // Annual plan (recommended)
   annual: {
     label: 'Annual',
-    price: '$29.99',
+    price: '$49.99',
     period: '/year',
-    description: 'Just $2.50/month',
-    badge: 'SAVE 50%',
-    monthlyEquiv: '$2.50',
-    savings: '50%',
+    description: 'Just $4.17/month',
+    badge: '2 MONTHS FREE',
+    monthlyEquiv: '$4.17',
+    savings: '40%',
+  },
+
+  // Founding Member lifetime tier (first 1,000 users only per Decision #5)
+  lifetime: {
+    label: 'Founding Member',
+    price: '$99',
+    period: 'one-time',
+    description: 'Lifetime access \u2014 for the first 1,000 supporters',
+    badge: 'LIMITED',
+    footnote: 'Pay once, walk with God forever.',
   },
 
   // Support message
@@ -268,8 +295,8 @@ export const PAYWALL_CONTENT = {
 
   // Free tier messaging (when limit reached)
   freeLimitReached: {
-    title: 'Daily Limit Reached',
-    message: `You've used your ${FREE_CHAT_LIMIT} free questions for today. Upgrade for unlimited access, or come back tomorrow!`,
+    title: 'Daily Grace Reached',
+    message: `You've had your ${FREE_CHAT_LIMIT} free conversations today. Upgrade for unlimited, or come back tomorrow \u2014 no guilt.`,
   },
 
   // Premium mode blocked messaging
@@ -304,16 +331,23 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: REVENUECAT_PRODUCT_IDS.yearly,
     name: 'Annual',
-    price: '$29.99',
+    price: '$49.99',
     period: 'year',
     isRecommended: true,
-    savings: 'Save 50%',
+    savings: '2 months free',
   },
   {
     id: REVENUECAT_PRODUCT_IDS.monthly,
     name: 'Monthly',
-    price: '$4.99',
+    price: '$6.99',
     period: 'month',
+    isRecommended: false,
+  },
+  {
+    id: REVENUECAT_PRODUCT_IDS.lifetime,
+    name: 'Founding Member',
+    price: '$99',
+    period: 'lifetime',
     isRecommended: false,
   },
 ];
