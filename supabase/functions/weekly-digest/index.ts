@@ -71,14 +71,24 @@ serve(async (req: Request) => {
       try {
         // Gather user's weekly stats
         const digestData = await gatherUserDigestData(supabase, user.user_id, oneWeekAgo);
-        
+
         if (digestData) {
-          // Send email via your email provider (e.g., Resend, SendGrid)
-          await sendDigestEmail(digestData);
+          // Create a one-shot unsubscribe token for this email.
+          // Click-to-unsubscribe sets weekly_digest_enabled=false with no login.
+          const { data: tokenRow } = await supabase
+            .from('email_unsubscribe_tokens')
+            .insert({
+              user_id: user.user_id,
+              scope: 'weekly_digest',
+            })
+            .select('token')
+            .single();
+
+          await sendDigestEmail(digestData, tokenRow?.token);
           digestsSent++;
         }
       } catch (err) {
-        errors.push(`User ${user.user_id}: ${err.message}`);
+        errors.push(`User ${user.user_id}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
@@ -191,80 +201,85 @@ async function gatherUserDigestData(
   };
 }
 
-async function sendDigestEmail(data: UserDigestData): Promise<void> {
-  // TODO: Integrate with email provider (Resend, SendGrid, etc.)
-  // For now, just log the digest
-  console.log(`📧 Would send digest to ${data.email}:`, {
-    name: data.displayName,
-    chaptersRead: data.bibleChaptersRead,
-    prayersAnswered: data.prayersAnswered,
-    journalEntries: data.journalEntries,
-    streak: data.currentStreak,
-    topVerse: data.topVerse?.reference,
-  });
-
-  // Example Resend integration:
-  /*
+async function sendDigestEmail(
+  data: UserDigestData,
+  unsubscribeToken?: string,
+): Promise<void> {
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   if (!RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY not configured');
+    // Fail loudly; a silent no-op is worse than an error that alerts ops.
+    throw new Error('RESEND_API_KEY not configured \u2014 Sunday Digest cannot send');
   }
+
+  const FROM_ADDRESS = Deno.env.get('DIGEST_FROM_ADDRESS') || 'ChooseGOD <digest@choosegod.app>';
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'ChooseGOD <digest@choosegod.app>',
+      from: FROM_ADDRESS,
       to: data.email,
-      subject: `Your Week with ChooseGOD 📖`,
-      html: generateDigestHtml(data),
+      subject: `Your Sunday with ChooseGOD`,
+      html: generateDigestHtml(data, unsubscribeToken),
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to send email: ${await response.text()}`);
+    const text = await response.text().catch(() => '(unreadable body)');
+    throw new Error(`Resend send failed (${response.status}): ${text}`);
   }
-  */
 }
 
-function generateDigestHtml(data: UserDigestData): string {
+function generateDigestHtml(data: UserDigestData, unsubscribeToken?: string): string {
+  const APP_URL = Deno.env.get('APP_URL') || 'https://choosegod.app';
+  const unsubscribeHref = unsubscribeToken
+    ? `${APP_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}&scope=weekly_digest`
+    : `${APP_URL}/settings`;
+
   return `
-    <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #1a365d;">Your Week with ChooseGOD</h1>
-      <p>Hi ${data.displayName}! Here's your spiritual journey this week:</p>
-      
-      <div style="background: #f7fafc; border-radius: 12px; padding: 20px; margin: 20px 0;">
-        <h2 style="margin-top: 0;">📊 This Week's Progress</h2>
-        <ul style="list-style: none; padding: 0;">
-          <li>📖 <strong>${data.bibleChaptersRead}</strong> chapters read</li>
-          <li>🙏 <strong>${data.prayersAnswered}</strong> prayers answered</li>
-          <li>✍️ <strong>${data.journalEntries}</strong> journal entries</li>
-          <li>🔥 <strong>${data.currentStreak}</strong> day streak</li>
+    <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1a1a1a;">
+      <h1 style="font-size: 28px; color: #1a1a1a; margin-bottom: 8px;">Your Sunday with ChooseGOD</h1>
+      <p style="color: #555; font-size: 16px; margin-top: 0;">Everyone can use a little more grace.</p>
+
+      <p style="font-size: 16px;">Hi ${data.displayName}, here's what your walk looked like this week:</p>
+
+      <div style="background: #faf7f2; border-left: 4px solid #c9a962; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h2 style="margin-top: 0; font-size: 18px;">This Week</h2>
+        <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+          <li><strong>${data.bibleChaptersRead}</strong> chapters read</li>
+          <li><strong>${data.prayersAnswered}</strong> prayers answered</li>
+          <li><strong>${data.journalEntries}</strong> journal entries</li>
+          <li><strong>${data.currentStreak}</strong> Days With God</li>
         </ul>
       </div>
-      
+
       ${data.topVerse ? `
-        <div style="background: #ebf8ff; border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">✨ Your Highlighted Verse</h3>
-          <blockquote style="font-style: italic; margin: 0;">
-            "${data.topVerse.text}"
+        <div style="background: #f2f6fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h3 style="margin-top: 0; font-size: 16px;">Your highlighted verse</h3>
+          <blockquote style="font-style: italic; margin: 0 0 8px 0; font-size: 17px;">
+            \u201C${data.topVerse.text}\u201D
           </blockquote>
-          <p style="margin-bottom: 0; color: #4a5568;">— ${data.topVerse.reference}</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">\u2014 ${data.topVerse.reference}</p>
         </div>
       ` : ''}
-      
-      <p style="color: #718096; font-size: 14px;">
-        Keep growing in faith! Open ChooseGOD to continue your journey.
-      </p>
-      
-      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-      
-      <p style="color: #a0aec0; font-size: 12px;">
-        You're receiving this because you opted in to weekly digests.
-        <a href="choosegod://settings">Manage preferences</a>
+
+      <div style="margin: 32px 0; text-align: center;">
+        <a href="choosegod://home"
+           style="display: inline-block; padding: 12px 28px; background: #c9a962; color: white;
+                  text-decoration: none; border-radius: 6px; font-weight: 600;">
+          Open ChooseGOD
+        </a>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #e2e2e2; margin: 32px 0 16px 0;" />
+
+      <p style="color: #888; font-size: 12px; line-height: 1.5;">
+        You're receiving this because you opted in to weekly digests.<br/>
+        <a href="${unsubscribeHref}" style="color: #888;">Unsubscribe</a> \u00b7
+        <a href="choosegod://settings" style="color: #888;">Manage preferences</a>
       </p>
     </div>
   `;
