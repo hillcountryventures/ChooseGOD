@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { DevotionalSeries, DevotionalDay, UserSeriesEnrollment, OnboardingResponses, EnrollmentProgress, toDevotionalSeries, toDevotionalDay, toUserSeriesEnrollment, DevotionalSeriesRow, DevotionalDayRow, UserSeriesEnrollmentRow } from '../types/devotional';
 import { logger } from '../utils/logger';
+import { trackDevotionalEnrolled, trackDevotionalDayCompleted } from '../services/analytics';
 
 // =====================================================
 // STORE INTERFACE
@@ -207,6 +208,9 @@ export const useDevotionalStore = create<DevotionalState>()(
             primaryEnrollmentId: isPrimary ? enrollment.id : state.primaryEnrollmentId,
           }));
 
+          // Analytics: devotional enrollment
+          if (series?.slug) trackDevotionalEnrolled(series.slug);
+
           return enrollment;
         } catch (error) {
           logger.error('Error enrolling in series:', error);
@@ -305,6 +309,11 @@ export const useDevotionalStore = create<DevotionalState>()(
                 : e
             ),
           }));
+
+          // Analytics: devotional day completed
+          const enrollment = get().enrollments.find((e) => e.id === enrollmentId);
+          const seriesSlug = enrollment?.series?.slug;
+          if (seriesSlug) trackDevotionalDayCompleted(seriesSlug, dayNumber);
 
           return true;
         } catch (error) {

@@ -19,7 +19,7 @@ type NavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-export function ContextualCard() {
+function ContextualCardInner() {
   const navigation = useNavigation<NavigationProp>();
   const memoryVersesDue = useStore((state) => state.memoryVersesDue);
   const activePrayers = useStore((state) => state.activePrayers);
@@ -134,3 +134,5 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
 });
+
+export const ContextualCard = React.memo(ContextualCardInner);

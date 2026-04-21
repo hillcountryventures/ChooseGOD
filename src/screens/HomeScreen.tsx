@@ -23,6 +23,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../lib/theme";
+import { STREAK_DISPLAY_LIMITS, UI_TIMING } from "../constants/limits";
 import { useStore } from "../store/useStore";
 import { BottomTabParamList, RootStackParamList } from "../types";
 import { CompositeNavigationProp } from "@react-navigation/native";
@@ -120,7 +121,7 @@ export default function HomeScreen() {
 
   // Streak milestone celebration
   const recentMoments = useStore((state) => state.recentMoments);
-  const currentStreak = Math.min(recentMoments.length, 365);
+  const currentStreak = Math.min(recentMoments.length, STREAK_DISPLAY_LIMITS.home);
   const { showMilestone, pendingMilestone, dismissMilestone } =
     useStreakMilestone(currentStreak);
 
@@ -135,7 +136,7 @@ export default function HomeScreen() {
       // Small delay to let home screen render first
       const timer = setTimeout(() => {
         setShowTrialPaywall(true);
-      }, 1000);
+      }, UI_TIMING.trialPaywallDelayMs);
       return () => clearTimeout(timer);
     }
   }, [isPremium, shouldShowTrialEndPaywall]);
@@ -157,7 +158,7 @@ export default function HomeScreen() {
       const timer = setTimeout(() => {
         setShowStreakFreezeModal(true);
         setStreakFreezeChecked(true);
-      }, 2000);
+      }, UI_TIMING.streakFreezeDelayMs);
       return () => clearTimeout(timer);
     } else if (status === 'active') {
       setStreakFreezeChecked(true);
@@ -383,7 +384,7 @@ export default function HomeScreen() {
         <AskTheBibleButton />
 
         {/* Bottom padding */}
-        <View style={{ height: 20 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Reminder Setup Modal for Wayfarer enrollment */}
@@ -470,5 +471,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+  bottomSpacer: {
+    height: 20,
   },
 });

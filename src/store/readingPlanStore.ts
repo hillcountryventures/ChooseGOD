@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from './authStore';
 import {
   ReadingPlan,
   PlanSection,
@@ -21,13 +22,14 @@ import {
   TodaysReadingRow,
 } from '../types/readingPlan';
 import { TABLES, RPC_FUNCTIONS } from '../constants';
+import { READING_PLAN_LIMITS } from '../constants/limits';
 import { logger } from '../utils/logger';
 
 // =====================================================
 // WAYFARER INTERVENTION THRESHOLD
 // =====================================================
 
-const INTERVENTION_THRESHOLD_DAYS = 2;
+const INTERVENTION_THRESHOLD_DAYS = READING_PLAN_LIMITS.interventionThresholdDays;
 
 // =====================================================
 // STORE INTERFACE
@@ -465,11 +467,10 @@ export const useReadingPlanStore = create<ReadingPlanState>()(
             },
           }));
 
-          // Refresh today's reading
-          const userId = get().activeProgress?.progressId;
+          // Refresh today's reading using the actual authenticated user id.
+          const userId = useAuthStore.getState().user?.id;
           if (userId) {
-            // Note: We'd need the actual userId here - this is a simplification
-            // In practice, you'd pass it from the component
+            await get().fetchTodaysReading(userId);
           }
 
           return true;

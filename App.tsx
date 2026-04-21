@@ -25,6 +25,7 @@ import { AuthNavigator, OnboardingNavigator, TabNavigator, DarkTheme, linking } 
 import { DivineEntranceSplash } from './src/components/DivineEntranceSplash';
 import { ChatBottomSheet } from './src/components/chat/ChatBottomSheet';
 import { PaywallModal } from './src/components/PaywallModal';
+import { OfflineBanner } from './src/components/OfflineBanner';
 
 // Components
 import { ScreenErrorBoundary } from './src/components/ScreenErrorBoundary';
@@ -154,6 +155,7 @@ function App() {
                 <PaywallModal visible={isPaywallVisible} onClose={hidePaywall} />
               </>
             )}
+            <OfflineBanner />
           </View>
         </NavigationContainer>
       </SafeAreaProvider>

@@ -12,7 +12,7 @@ import { WEEK_DAYS } from "../../constants/strings";
 import { useGreeting } from "../../hooks/useGreeting";
 import { trackStreakDay } from "../../services/analytics";
 
-export function StreakBar() {
+function StreakBarInner() {
   const recentMoments = useStore((state) => state.recentMoments);
   const greeting = useGreeting();
 
@@ -119,3 +119,5 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
 });
+
+export const StreakBar = React.memo(StreakBarInner);

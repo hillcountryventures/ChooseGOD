@@ -26,6 +26,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../lib/theme';
+import { STREAK_DISPLAY_LIMITS } from '../constants/limits';
 import { useStore } from '../store/useStore';
 import { RootStackParamList } from '../types';
 import { usePremiumStatus } from '../hooks/usePremiumStatus';
@@ -88,7 +89,7 @@ export default function JourneyScreen() {
   const lockedCount = getLockedCount(recentMoments, isPremium);
 
   // Calculate streak for header
-  const streak = Math.min(recentMoments.length, 30);
+  const streak = Math.min(recentMoments.length, STREAK_DISPLAY_LIMITS.journey);
 
   const handleNewJournal = () => {
     navigation.navigate('JournalCompose', {});

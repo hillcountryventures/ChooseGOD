@@ -43,7 +43,7 @@ interface VerseRowProps {
   onSwipeHighlight: () => void;
 }
 
-export function VerseRow({
+function VerseRowInner({
   verse,
   isSelected,
   isTargetVerse,
@@ -255,4 +255,28 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.bold,
   },
+});
+
+/**
+ * Memoized VerseRow. Skips re-renders when verse annotations, selection,
+ * and font size are unchanged. Critical for scroll performance in long chapters.
+ */
+export const VerseRow = React.memo(VerseRowInner, (prev, next) => {
+  return (
+    prev.verse.book === next.verse.book &&
+    prev.verse.chapter === next.verse.chapter &&
+    prev.verse.verse === next.verse.verse &&
+    prev.verse.text === next.verse.text &&
+    prev.verse.highlight?.color === next.verse.highlight?.color &&
+    prev.verse.notes?.length === next.verse.notes?.length &&
+    prev.verse.bookmark?.id === next.verse.bookmark?.id &&
+    prev.isSelected === next.isSelected &&
+    prev.isTargetVerse === next.isTargetVerse &&
+    prev.fontSize === next.fontSize &&
+    prev.onPress === next.onPress &&
+    prev.onLongPress === next.onLongPress &&
+    prev.onDoubleTap === next.onDoubleTap &&
+    prev.onLayout === next.onLayout &&
+    prev.onSwipeHighlight === next.onSwipeHighlight
+  );
 });

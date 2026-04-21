@@ -41,3 +41,20 @@ export const SEARCH_LIMITS = {
   maxResults: 100,
   semanticResults: 10,
 } as const;
+
+// Streak display limits (what's shown in the UI, not the actual streak)
+export const STREAK_DISPLAY_LIMITS = {
+  home: 365,
+  journey: 365,
+} as const;
+
+// UI timing delays (ms)
+export const UI_TIMING = {
+  trialPaywallDelayMs: 1000,
+  streakFreezeDelayMs: 2000,
+} as const;
+
+// Reading plan Wayfarer intervention
+export const READING_PLAN_LIMITS = {
+  interventionThresholdDays: 2,
+} as const;

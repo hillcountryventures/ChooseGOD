@@ -98,15 +98,19 @@ function getStatusFromEvent(eventType: RevenueCatEventType): {
   }
 }
 
-// Verify webhook signature (optional but recommended)
+// Verify webhook signature. REJECTS if secret or signature is missing — do not allow bypass.
 async function verifyWebhookSignature(
   payload: string,
   signature: string | null,
   secret: string
 ): Promise<boolean> {
-  if (!signature || !secret) {
-    console.warn("[Webhook] No signature or secret provided, skipping verification");
-    return true; // Allow if not configured
+  if (!secret) {
+    console.error("[Webhook] No secret configured — rejecting");
+    return false;
+  }
+  if (!signature) {
+    console.error("[Webhook] No signature provided — rejecting");
+    return false;
   }
 
   try {
@@ -152,28 +156,34 @@ serve(async (req) => {
     const rawBody = await req.text();
     const webhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 
-    // Verify Authorization header (simpler method - recommended by RevenueCat)
-    if (webhookSecret) {
-      const authHeader = req.headers.get("authorization");
-      const expectedAuth = `Bearer ${webhookSecret}`;
-
-      if (authHeader !== expectedAuth) {
-        // Also try checking for signature header as fallback
-        const signature = req.headers.get("x-revenuecat-webhook-signature");
-        const isValidSignature = await verifyWebhookSignature(rawBody, signature, webhookSecret);
-
-        if (!isValidSignature) {
-          console.error("[Webhook] Invalid authorization - header:", authHeader?.substring(0, 20) + "...");
-          return new Response(
-            JSON.stringify({ error: "Unauthorized" }),
-            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-      }
-      console.log("[Webhook] Authorization verified successfully");
-    } else {
-      console.warn("[Webhook] No REVENUECAT_WEBHOOK_SECRET configured - accepting all requests");
+    // REQUIRE webhook secret — reject all requests if not configured.
+    // Otherwise anyone could POST fake purchase events and grant premium.
+    if (!webhookSecret) {
+      console.error("[Webhook] REVENUECAT_WEBHOOK_SECRET not configured — rejecting request");
+      return new Response(
+        JSON.stringify({ error: "Webhook not configured. Set REVENUECAT_WEBHOOK_SECRET in Edge Function env vars." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Verify Authorization header (recommended by RevenueCat) or fall back to signature check
+    const authHeader = req.headers.get("authorization");
+    const expectedAuth = `Bearer ${webhookSecret}`;
+
+    if (authHeader !== expectedAuth) {
+      // Also try signature header as fallback
+      const signature = req.headers.get("x-revenuecat-webhook-signature");
+      const isValidSignature = await verifyWebhookSignature(rawBody, signature, webhookSecret);
+
+      if (!isValidSignature) {
+        console.error("[Webhook] Invalid authorization - header:", authHeader?.substring(0, 20) + "...");
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+    console.log("[Webhook] Authorization verified successfully");
 
     const payload: RevenueCatWebhookPayload = JSON.parse(rawBody);
     const event = payload.event;

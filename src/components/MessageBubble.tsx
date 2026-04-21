@@ -33,7 +33,7 @@ interface MessageBubbleProps {
   onSaveToJourney?: (message: ChatMessage) => void;
 }
 
-export function MessageBubble({
+function MessageBubbleInner({
   message,
   onVersePress,
   onActionPress,
@@ -343,6 +343,22 @@ const styles = StyleSheet.create({
     color: theme.colors.prayer,
     fontWeight: '600',
   },
+});
+
+/**
+ * Memoized export. Re-renders only when the message object identity changes
+ * or callbacks change. Message content is effectively immutable per id, so
+ * this skips re-renders during chat list scroll and streaming updates to
+ * sibling messages.
+ */
+export const MessageBubble = React.memo(MessageBubbleInner, (prev, next) => {
+  return (
+    prev.message.id === next.message.id &&
+    prev.message.content === next.message.content &&
+    prev.onVersePress === next.onVersePress &&
+    prev.onActionPress === next.onActionPress &&
+    prev.onSaveToJourney === next.onSaveToJourney
+  );
 });
 
 export default MessageBubble;

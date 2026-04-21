@@ -18,6 +18,11 @@ import {
   ChatContext,
 } from '../types';
 import { logger } from '../utils/logger';
+import {
+  trackPrayerAdded,
+  trackPrayerAnswered,
+  trackJournalEntryCreated,
+} from '../services/analytics';
 
 const defaultPreferences: UserPreferences = {
   preferredTranslation: 'KJV',
@@ -64,7 +69,7 @@ export const useChatSheetOpen = () => useStore((state) => state.chatSheetOpen);
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       messages: [],
       isQuerying: false,
@@ -174,9 +179,7 @@ export const useStore = create<AppState>()(
         })),
 
       getCachedVerse: (key: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const state = (set as any).getState?.() || {};
-        return state.offlineVerses?.[key] || null;
+        return get().offlineVerses?.[key] || null;
       },
 
       // Prayer actions
@@ -186,17 +189,19 @@ export const useStore = create<AppState>()(
         })),
 
       addPrayer: (prayer: PrayerRequest) => {
-        // Track for trial stats
+        // Track for trial stats + analytics
         useTrialStore.getState().incrementStat('prayersAdded');
+        trackPrayerAdded();
         set((state) => ({
           activePrayers: [prayer, ...state.activePrayers],
         }));
       },
 
       updatePrayer: (id: string, updates: Partial<PrayerRequest>) => {
-        // Track answered prayers for trial stats
+        // Track answered prayers for trial stats + analytics
         if (updates.status === 'answered') {
           useTrialStore.getState().incrementStat('prayersAnswered');
+          trackPrayerAnswered();
         }
         set((state) => ({
           activePrayers: state.activePrayers.map((p) =>
@@ -224,8 +229,11 @@ export const useStore = create<AppState>()(
         })),
 
       addMoment: (moment: SpiritualMoment) => {
-        // Track journal entries for trial stats
+        // Track journal entries for trial stats + analytics
         useTrialStore.getState().incrementStat('journalEntries');
+        const hasVerse = !!(moment.linkedVerses && moment.linkedVerses.length > 0);
+        const hasMedia = !!(moment.media && moment.media.length > 0);
+        trackJournalEntryCreated(hasVerse, hasMedia);
         set((state) => ({
           recentMoments: [moment, ...state.recentMoments].slice(0, 50),
         }));

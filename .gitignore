@@ -36,6 +36,12 @@ yarn-error.*
 .env*.local
 !.env.example
 
+# Secrets — never commit these
+SUPABASE_SERVICE_KEY
+SUPABASE_SERVICE_ROLE_KEY
+*service_role*
+*service-role*
+
 # Claude Code settings
 .claude/settings.local.json
 

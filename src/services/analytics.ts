@@ -138,6 +138,53 @@ export function trackStreakDay(count: number): void {
 }
 
 // =====================================================
+// MID-FUNNEL EVENTS (P2-4)
+// =====================================================
+
+/** User highlights a verse (color-coded). */
+export function trackVerseHighlighted(book: string, color: string): void {
+  posthog?.capture('verse_highlighted', { book, color });
+}
+
+/** User bookmarks a verse. */
+export function trackVerseBookmarked(book: string): void {
+  posthog?.capture('verse_bookmarked', { book });
+}
+
+/** User enrolls in a devotional series. */
+export function trackDevotionalEnrolled(seriesSlug: string): void {
+  posthog?.capture('devotional_enrolled', { series: seriesSlug });
+}
+
+/** User completes a day of a devotional series. */
+export function trackDevotionalDayCompleted(seriesSlug: string, day: number): void {
+  posthog?.capture('devotional_day_completed', { series: seriesSlug, day });
+}
+
+/** User adds a new prayer request. */
+export function trackPrayerAdded(): void {
+  posthog?.capture('prayer_added');
+}
+
+/** User marks a prayer as answered. */
+export function trackPrayerAnswered(): void {
+  posthog?.capture('prayer_answered');
+}
+
+/** User saves a new journal entry. */
+export function trackJournalEntryCreated(hasVerse: boolean, hasMedia: boolean): void {
+  posthog?.capture('journal_entry_created', {
+    has_verse: hasVerse,
+    has_media: hasMedia,
+  });
+}
+
+/** User sends a message in a specific chat mode. */
+export function trackChatModeUsed(mode: string, isPremium: boolean): void {
+  posthog?.capture('chat_mode_used', { mode, is_premium: isPremium });
+}
+
+// =====================================================
 // GENERIC CAPTURE (escape hatch)
 // =====================================================
 

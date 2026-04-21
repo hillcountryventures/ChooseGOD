@@ -42,6 +42,8 @@ export default function BibleScreen() {
     targetVerse,
     verses,
     isLoading,
+    loadError,
+    retryLoadChapter,
     highlights,
     notes,
     bookmarks,
@@ -145,6 +147,18 @@ export default function BibleScreen() {
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading chapter...</Text>
         </View>
+      ) : loadError ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.errorText}>{loadError}</Text>
+          <TouchableOpacity
+            onPress={retryLoadChapter}
+            style={styles.retryButton}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading chapter"
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <ErrorBoundary level="component" name="BibleVerseRenderer">
           <ScrollView
@@ -175,7 +189,7 @@ export default function BibleScreen() {
                 }}
               />
             ))}
-            <View style={{ height: 100 }} />
+            <View style={styles.bottomSpacer} />
           </ScrollView>
         </ErrorBoundary>
       )}
@@ -375,8 +389,29 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.textMuted,
   },
+  errorText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    paddingHorizontal: theme.spacing.lg,
+  },
+  retryButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginTop: theme.spacing.sm,
+  },
+  retryButtonText: {
+    color: theme.colors.background,
+    fontSize: theme.fontSize.md,
+    fontWeight: '600',
+  },
   versesContainer: {
     flex: 1,
+  },
+  bottomSpacer: {
+    height: 100,
   },
   versesContent: {
     padding: theme.spacing.lg,

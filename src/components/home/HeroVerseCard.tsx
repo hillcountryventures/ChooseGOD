@@ -27,7 +27,7 @@ type NavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-export function HeroVerseCard() {
+function HeroVerseCardInner() {
   const navigation = useNavigation<NavigationProp>();
   const { dailyVerse, fetchDailyVerse, isLoading } = useDailyVerse();
 
@@ -317,3 +317,5 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
 });
+
+export const HeroVerseCard = React.memo(HeroVerseCardInner);

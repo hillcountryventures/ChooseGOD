@@ -27,7 +27,12 @@ import {
 } from "../lib/supabase";
 import { getCachedChapter, cacheChapter } from "../services/bibleCache";
 import { queueAction } from "../services/syncQueue";
-import { trackBibleRead, trackScreenView } from "../services/analytics";
+import {
+  trackBibleRead,
+  trackScreenView,
+  trackVerseHighlighted,
+  trackVerseBookmarked,
+} from "../services/analytics";
 import { useReadingProgressStore } from "../store/readingProgressStore";
 import {
   BottomTabParamList,
@@ -69,6 +74,7 @@ export function useBibleReader() {
   // Verses and loading state
   const [verses, setVerses] = useState<VerseWithAnnotations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Annotations
   const [highlights, setHighlights] = useState<Map<string, VerseHighlight>>(
@@ -108,6 +114,7 @@ export function useBibleReader() {
   // Load chapter — offline-first
   const loadChapter = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     const translation = preferences.preferredTranslation;
 
     try {
@@ -141,7 +148,17 @@ export function useBibleReader() {
         }
       }
 
-      if (!chapterVerses) {
+      if (!chapterVerses || chapterVerses.length === 0) {
+        // Nothing in cache and network failed (or returned empty) — surface an error
+        if (isOffline) {
+          setLoadError(
+            `This chapter isn't downloaded for offline use. Connect to the internet to read ${currentBook} ${currentChapter}.`
+          );
+        } else {
+          setLoadError(
+            `Couldn't load ${currentBook} ${currentChapter}. Pull to retry.`
+          );
+        }
         chapterVerses = [];
       }
 
@@ -165,6 +182,11 @@ export function useBibleReader() {
       }
     } catch (error) {
       logger.error("Error loading chapter:", error);
+      setLoadError(
+        error instanceof Error && error.message
+          ? `Couldn't load chapter: ${error.message}`
+          : "Something went wrong loading this chapter. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -177,6 +199,11 @@ export function useBibleReader() {
     bookmarks,
     isOffline,
   ]);
+
+  // Expose a retry handler for error states
+  const retryLoadChapter = useCallback(() => {
+    loadChapter();
+  }, [loadChapter]);
 
   // Update from route params
   useEffect(() => {
@@ -241,6 +268,7 @@ export function useBibleReader() {
         color: newHighlight.color,
         created_at: newHighlight.createdAt.toISOString(),
       });
+      trackVerseHighlighted(newHighlight.book, color);
       setSelectedVerse(null);
     },
     [selectedVerse, highlights],
@@ -290,6 +318,7 @@ export function useBibleReader() {
         createdAt: new Date(),
       };
       setBookmarks(new Map(bookmarks.set(key, newBookmark)));
+      trackVerseBookmarked(newBookmark.book);
       queueAction("bookmark_add", {
         id: newBookmark.id,
         user_id: newBookmark.userId,
@@ -557,6 +586,8 @@ export function useBibleReader() {
     targetVerse,
     verses,
     isLoading,
+    loadError,
+    retryLoadChapter,
     highlights,
     notes,
     bookmarks,

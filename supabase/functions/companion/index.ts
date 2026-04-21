@@ -11,7 +11,7 @@ import OpenAI from "https://esm.sh/openai@4";
 
 interface SubscriptionStatus {
   isPremium: boolean;
-  source: "database" | "revenuecat_api" | "client_claimed";
+  source: "database" | "revenuecat_api" | "no_record" | "verification_error";
   verified: boolean;
 }
 
@@ -77,19 +77,35 @@ async function verifySubscriptionStatus(
       };
     }
 
-    // No record found - trust client for now (pre-webhook era users)
-    // This provides backwards compatibility
+    // No record found — default to NOT premium. Do not trust the client.
+    // If a user legitimately has a paid subscription, the RevenueCat webhook
+    // will have written a record to the subscriptions table.
+    if (clientClaimedPremium) {
+      console.warn(
+        `[Subscription] ANOMALY: Client claims premium but no DB record exists for user ${userId}. Defaulting to free tier.`
+      );
+      // Log anomaly for fraud detection
+      await supabase.from("chat_interactions").insert({
+        user_id: userId,
+        mode: "anomaly_no_record",
+        is_premium: false,
+        has_bible_context: false,
+        response_length: 0,
+        created_at: new Date().toISOString(),
+      }).catch(() => {}); // Non-fatal
+    }
     return {
-      isPremium: clientClaimedPremium,
-      source: "client_claimed",
-      verified: false,
+      isPremium: false,
+      source: "no_record",
+      verified: true,
     };
   } catch (error) {
     console.error("[Subscription] Verification error:", error);
-    // On error, trust client to avoid breaking the app
+    // On error, deny premium access rather than trust the client.
+    // Better to briefly inconvenience a paying user than grant free premium to attackers.
     return {
-      isPremium: clientClaimedPremium,
-      source: "client_claimed",
+      isPremium: false,
+      source: "verification_error",
       verified: false,
     };
   }
@@ -1399,25 +1415,83 @@ serve(async (req) => {
     // =====================================================
     // Server-Side Premium Verification
     // =====================================================
-    // Verify premium status server-side instead of trusting client
+    // ALWAYS verify premium status server-side regardless of client claim.
+    // The server is the single source of truth.
     let verifiedPremiumStatus: SubscriptionStatus | null = null;
-    if (normalizedUserId && normalizedQuotaContext?.isPremium) {
+    if (normalizedUserId) {
       verifiedPremiumStatus = await verifySubscriptionStatus(
         supabase,
         normalizedUserId,
-        normalizedQuotaContext.isPremium
+        normalizedQuotaContext?.isPremium ?? false
       );
 
-      // Override client-claimed premium if server verification fails
-      if (verifiedPremiumStatus.verified && !verifiedPremiumStatus.isPremium) {
-        console.log(`[Companion] Server override: User ${normalizedUserId} is NOT premium`);
-        // Update quota context to reflect server-verified status
-        if (normalizedQuotaContext) {
-          normalizedQuotaContext.isPremium = false;
-          normalizedQuotaContext.isFreeTier = true;
+      // ALWAYS override the quota context with the server-verified value.
+      // This closes the bypass where a client sends isPremium: true.
+      if (normalizedQuotaContext) {
+        if (normalizedQuotaContext.isPremium !== verifiedPremiumStatus.isPremium) {
+          console.log(
+            `[Companion] Overriding client premium claim (${normalizedQuotaContext.isPremium}) with server-verified value (${verifiedPremiumStatus.isPremium}) for user ${normalizedUserId}`
+          );
         }
+        normalizedQuotaContext.isPremium = verifiedPremiumStatus.isPremium;
+        normalizedQuotaContext.isFreeTier = !verifiedPremiumStatus.isPremium;
+      }
+    } else {
+      // No user_id — treat as anonymous free tier
+      if (normalizedQuotaContext) {
+        normalizedQuotaContext.isPremium = false;
+        normalizedQuotaContext.isFreeTier = true;
       }
     }
+
+    // =====================================================
+    // Server-Side Rate Limiting (P0-4)
+    // =====================================================
+    // Enforce daily quota on the server regardless of what the client claims.
+    // Free users: FREE_DAILY_CHAT_LIMIT queries/day. Premium users: no limit.
+    const FREE_DAILY_CHAT_LIMIT = 3;
+    if (normalizedUserId && !(verifiedPremiumStatus?.isPremium ?? false)) {
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from("chat_interactions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", normalizedUserId)
+        .neq("mode", "anomaly_detection")
+        .neq("mode", "anomaly_no_record")
+        .gte("created_at", todayStart.toISOString());
+
+      if ((count ?? 0) >= FREE_DAILY_CHAT_LIMIT) {
+        console.log(`[Companion] Rate limit hit for free user ${normalizedUserId}: ${count}/${FREE_DAILY_CHAT_LIMIT}`);
+        return new Response(
+          JSON.stringify({
+            error: "Daily limit reached",
+            code: "QUOTA_EXCEEDED",
+            message: "You've used your free chats for today. Upgrade to ChooseGOD Pro for unlimited access.",
+            resetAt: new Date(todayStart.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
+    // =====================================================
+    // Server-Side Mode/Wit Validation (P1-2)
+    // =====================================================
+    const ALLOWED_MODES: ChatMode[] = [
+      "auto", "devotional", "prayer", "journal", "lectio",
+      "examen", "memory", "confession", "gratitude", "celebration",
+    ];
+    const ALLOWED_WIT_LEVELS: WitLevel[] = ["low", "medium", "high"];
+    const safeMode: ChatMode = ALLOWED_MODES.includes(normalizedMode as ChatMode)
+      ? (normalizedMode as ChatMode)
+      : "auto";
+    const safeWitLevel: WitLevel = ALLOWED_WIT_LEVELS.includes(normalizedWitLevel)
+      ? normalizedWitLevel
+      : "medium";
 
     // Gather user context (use default if no user_id)
     let userContext: UserContext;
@@ -1465,13 +1539,13 @@ serve(async (req) => {
       }
     }
 
-    // Build the system prompt
+    // Build the system prompt using validated mode/wit values
     const systemPrompt = buildSystemPrompt(
       userContext,
-      normalizedMode as ChatMode,
+      safeMode,
       relevantVerses,
       devotionalContext,
-      normalizedWitLevel,
+      safeWitLevel,
       normalizedQuotaContext
     );
 
@@ -1506,8 +1580,8 @@ serve(async (req) => {
         return null;
       }).filter(Boolean) || [];
 
-    // Generate suggested follow-up actions based on mode
-    const suggestedActions = getSuggestedActions(normalizedMode as ChatMode, normalizedQuotaContext?.isPremium ?? false);
+    // Generate suggested follow-up actions based on validated mode
+    const suggestedActions = getSuggestedActions(safeMode, normalizedQuotaContext?.isPremium ?? false);
 
     // Generate a unique thread ID for caching
     const threadId = crypto.randomUUID();
@@ -1543,7 +1617,7 @@ serve(async (req) => {
               sources,
               suggestedActions,
               thread_id: threadId,
-              wit_level: normalizedWitLevel,
+              wit_level: safeWitLevel,
             })}\n\n`;
             controller.enqueue(encoder.encode(metaEvent));
 
@@ -1571,8 +1645,8 @@ serve(async (req) => {
               const clientClaimedPremium = rawQuotaContext?.is_premium ?? rawQuotaContext?.isPremium ?? false;
               await supabase.from("chat_interactions").insert({
                 user_id: normalizedUserId || null,
-                mode: normalizedMode,
-                wit_level: normalizedWitLevel,
+                mode: safeMode,
+                wit_level: safeWitLevel,
                 is_premium: normalizedQuotaContext?.isPremium ?? false,
                 seeds_remaining: normalizedQuotaContext?.isPremium ? null : (normalizedQuotaContext?.seedsRemaining ?? null),
                 thread_id: threadId,
@@ -1670,7 +1744,7 @@ serve(async (req) => {
       console.warn("[Scripture Fidelity Warning]", {
         threadId,
         userId: normalizedUserId,
-        mode: normalizedMode,
+        mode: safeMode,
         warnings: validation.warnings,
         response: responseText.substring(0, 200), // First 200 chars for context
       });
@@ -1681,7 +1755,7 @@ serve(async (req) => {
           await supabase.from("companion_audit_logs").insert({
             user_id: normalizedUserId,
             thread_id: threadId,
-            mode: normalizedMode,
+            mode: safeMode,
             validation_warnings: validation.warnings,
             response_preview: responseText.substring(0, 500),
             retrieved_verses_count: sources.length,
@@ -1698,8 +1772,8 @@ serve(async (req) => {
       const clientClaimedPremium = rawQuotaContext?.is_premium ?? rawQuotaContext?.isPremium ?? false;
       await supabase.from("chat_interactions").insert({
         user_id: normalizedUserId || null,
-        mode: normalizedMode,
-        wit_level: normalizedWitLevel,
+        mode: safeMode,
+        wit_level: safeWitLevel,
         is_premium: normalizedQuotaContext?.isPremium ?? false,
         seeds_remaining: normalizedQuotaContext?.isPremium ? null : (normalizedQuotaContext?.seedsRemaining ?? null),
         thread_id: threadId,
@@ -1726,7 +1800,7 @@ serve(async (req) => {
         suggestedActions,
         savedData,
         thread_id: threadId,
-        wit_level: normalizedWitLevel,
+        wit_level: safeWitLevel,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
