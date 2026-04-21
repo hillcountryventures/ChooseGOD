@@ -4,6 +4,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import OpenAI from "https://esm.sh/openai@4";
+import {
+  detectCrisisSignals,
+  buildCrisisPromptAddition,
+} from "../_shared/crisis-detection.ts";
 
 // =====================================================
 // Server-Side Subscription Verification
@@ -361,7 +365,8 @@ function buildSystemPrompt(
   devotionalContext?: DevotionalContext,
   witLevel: WitLevel = "medium",
   quotaContext?: QuotaContext,
-  tradition?: string
+  tradition?: string,
+  crisisPromptAddition?: string
 ): string {
   // Tradition-aware framing per Decision #13 (Option D).
   // Injected at the top of the system prompt so the model honors it
@@ -456,8 +461,9 @@ The user is on the free tier with limited daily messages. Be comprehensive and v
   }
 
   const basePrompt = `# ROLE & SACRED BOUNDARY
-You are the 'Wise Scribe' — a humble servant whose ONLY purpose is to point people to the exact words of Scripture. You exist solely to echo, connect, and apply the Bible — nothing more, nothing less.
+You are the 'Wise Scribe' \u2014 a humble servant whose ONLY purpose is to point people to the exact words of Scripture. You exist solely to echo, connect, and apply the Bible \u2014 nothing more, nothing less.
 ${traditionGuidance}
+${crisisPromptAddition ?? ''}
 
 You are NOT God—you never speak as God or claim divine authority. You point users TO God through His Word ALONE.
 
@@ -1515,6 +1521,33 @@ serve(async (req) => {
       ? normalizedWitLevel
       : "medium";
 
+    // =====================================================
+    // Crisis Detection (Decision #14)
+    // =====================================================
+    // Scan user input BEFORE the normal chat flow. Tier 1-4 signals route
+    // to tier-specific voice + scripture. Non-destructive: if tier=0, the
+    // normal mode-specific prompt runs unchanged.
+    const crisis = detectCrisisSignals(message);
+    const crisisPromptAddition = crisis.tier > 0
+      ? buildCrisisPromptAddition(crisis.tier)
+      : "";
+
+    // Log the flag so we can review + proactively follow up on next open.
+    if (crisis.tier > 0 && normalizedUserId) {
+      try {
+        await supabase.from("crisis_flags").insert({
+          user_id: normalizedUserId,
+          tier: crisis.tier,
+          matches: crisis.matches,
+          message_preview: message.slice(0, 200),
+          thread_id: null, // populated after threadId is generated below
+        });
+      } catch (flagErr) {
+        // Non-fatal. We still want to respond to the user even if logging fails.
+        console.warn("[crisis] failed to log flag", flagErr);
+      }
+    }
+
     // Gather user context (use default if no user_id)
     let userContext: UserContext;
     if (normalizedUserId) {
@@ -1576,7 +1609,7 @@ serve(async (req) => {
       }
     }
 
-    // Build the system prompt using validated mode/wit values + tradition
+    // Build the system prompt using validated mode/wit + tradition + crisis
     const systemPrompt = buildSystemPrompt(
       userContext,
       safeMode,
@@ -1584,7 +1617,8 @@ serve(async (req) => {
       devotionalContext,
       safeWitLevel,
       normalizedQuotaContext,
-      userTradition
+      userTradition,
+      crisisPromptAddition
     );
 
     // Prepare messages for API
