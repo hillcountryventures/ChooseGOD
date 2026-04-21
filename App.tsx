@@ -48,8 +48,19 @@ import VersePickerScreen from './src/screens/journal/VersePickerScreen';
 
 // Stores & hooks
 import { useSubscriptionStore, useIsPaywallVisible } from './src/store/subscriptionStore';
+import {
+  registerPremiumResolver,
+  useChatHistoryStore,
+} from './src/store/chatHistoryStore';
 import { useAppInitialization } from './src/hooks/useAppInitialization';
 import { useSyncQueue } from './src/hooks/useSyncQueue';
+
+// Wire chat-history cloud sync gating to the subscription store
+// (Pro users get cloud sync; free users stay AsyncStorage-only).
+registerPremiumResolver(() => {
+  const state = useSubscriptionStore.getState() as unknown as { isPremium?: boolean };
+  return !!state.isPremium;
+});
 
 // Types
 import { RootStackParamList } from './src/types';
@@ -100,6 +111,16 @@ function App() {
 
   const hidePaywall = useSubscriptionStore((s) => s.hidePaywall);
   const isPaywallVisible = useIsPaywallVisible();
+
+  // When a Pro user becomes authenticated, merge their cloud chat history
+  // down. Upload happens automatically on each subsequent save.
+  const syncFromCloud = useChatHistoryStore((s) => s.syncFromCloud);
+  const isPremiumForSync = (useSubscriptionStore.getState() as unknown as { isPremium?: boolean }).isPremium;
+  React.useEffect(() => {
+    if (user && isPremiumForSync) {
+      void syncFromCloud();
+    }
+  }, [user, isPremiumForSync, syncFromCloud]);
 
   // Show Divine Entrance splash while initializing
   if (shouldShowSplash) {
