@@ -14,14 +14,18 @@ export type AuthStackParamList = {
 
 // Onboarding Stack Navigator param list
 export type OnboardingStackParamList = {
+  // Primary 4-screen flow (Decision #7)
   Welcome: undefined;
-  Carousel: undefined; // Legacy - kept for backwards compat
+  GraceModeDemo: undefined;
   Quiz: { emotionalContext?: string } | undefined;
+  NotificationSetup: { selectedSeriesIds?: string[] };
+
+  // Legacy \u2014 retained for deep-link compat only
+  Carousel: undefined;
   Recommendations: { quizResponses: OnboardingResponses };
   AIDemo: { selectedSeriesIds?: string[]; emotionalContext?: string; skipPaywall?: boolean };
   TranslationSelect: { emotionalContext?: string };
   Paywall: { selectedSeriesIds: string[] };
-  NotificationSetup: { selectedSeriesIds?: string[] };
   EnrollConfirm: { seriesIds: string[]; primarySeriesId: string };
 };
 

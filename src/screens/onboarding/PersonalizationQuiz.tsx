@@ -78,18 +78,10 @@ export default function PersonalizationQuiz() {
           }).start();
         });
       } else {
-        // All questions answered
-        const finalResponses = { ...responses, [field]: option.value };
-        
-        if (emotionalContext) {
-          // New flow: Skip recommendations, go straight to notifications
-          navigation.navigate("NotificationSetup", {});
-        } else {
-          // Legacy flow: Go to recommendations
-          navigation.navigate("Recommendations", {
-            quizResponses: finalResponses,
-          });
-        }
+        // All questions answered \u2014 always route to NotificationSetup
+        // in the 4-screen flow (Decision #7). Recommendations screen is
+        // deleted from the primary flow; home surfaces the rec as a top card.
+        navigation.navigate("NotificationSetup", {});
       }
     }, 200);
   };
@@ -119,11 +111,8 @@ export default function PersonalizationQuiz() {
       if (currentQuestion < totalQuestions - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        if (emotionalContext) {
-          navigation.navigate("NotificationSetup", {});
-        } else {
-          navigation.navigate("Recommendations", { quizResponses: responses });
-        }
+        // 4-screen flow: skip always lands on NotificationSetup
+        navigation.navigate("NotificationSetup", {});
       }
     }
   };

@@ -24,6 +24,7 @@ import PersonalizationQuiz from '../screens/onboarding/PersonalizationQuiz';
 import TranslationSelectScreen from '../screens/onboarding/TranslationSelectScreen';
 import RecommendationsScreen from '../screens/onboarding/RecommendationsScreen';
 import AIDemoScreen from '../screens/onboarding/AIDemoScreen';
+import GraceModeDemoScreen from '../screens/onboarding/GraceModeDemoScreen';
 import PaywallScreen from '../screens/onboarding/PaywallScreen';
 import NotificationSetupScreen from '../screens/onboarding/NotificationSetupScreen';
 import EnrollmentConfirmScreen from '../screens/onboarding/EnrollmentConfirmScreen';
@@ -98,7 +99,12 @@ export function AuthNavigator() {
 }
 
 export function OnboardingNavigator() {
-  // New flow: Welcome (emotional) → AI Demo → Translation → Quiz (short) → Notifications
+  // New 4-screen flow per Decision #7:
+  //   Welcome (emotional) \u2192 Grace Mode Demo \u2192 Pick Your Path (quiz) \u2192 Notifications
+  // Deleted from the primary flow: AIDemo, TranslationSelect, Recommendations,
+  // EnrollConfirm. Those screens remain registered for deep-link compat so
+  // any in-flight sessions don't crash, but the Welcome screen now routes
+  // directly to GraceModeDemo.
   return (
     <OnboardingStackNav.Navigator
       screenOptions={{
@@ -106,16 +112,17 @@ export function OnboardingNavigator() {
         animation: 'slide_from_right',
       }}
     >
-      {/* New flow */}
+      {/* Primary 4-screen flow */}
       <OnboardingStackNav.Screen name="Welcome" component={EmotionalWelcomeScreen} />
+      <OnboardingStackNav.Screen name="GraceModeDemo" component={GraceModeDemoScreen} />
+      <OnboardingStackNav.Screen name="Quiz" component={PersonalizationQuiz} />
+      <OnboardingStackNav.Screen name="NotificationSetup" component={NotificationSetupScreen} />
+
+      {/* Legacy screens \u2014 deep-link compat only. Not in the primary flow. */}
       <OnboardingStackNav.Screen name="AIDemo" component={AIDemoScreen} />
       <OnboardingStackNav.Screen name="TranslationSelect" component={TranslationSelectScreen} />
-      <OnboardingStackNav.Screen name="Quiz" component={PersonalizationQuiz} />
       <OnboardingStackNav.Screen name="Recommendations" component={RecommendationsScreen} />
-      <OnboardingStackNav.Screen name="NotificationSetup" component={NotificationSetupScreen} />
       <OnboardingStackNav.Screen name="EnrollConfirm" component={EnrollmentConfirmScreen} />
-      
-      {/* Legacy screens (kept for deep links / backwards compat) */}
       <OnboardingStackNav.Screen name="Carousel" component={OnboardingCarousel} />
       <OnboardingStackNav.Screen name="Paywall" component={PaywallScreen} />
     </OnboardingStackNav.Navigator>

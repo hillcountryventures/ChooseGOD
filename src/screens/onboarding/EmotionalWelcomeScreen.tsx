@@ -78,11 +78,11 @@ export default function EmotionalWelcomeScreen() {
 
   const handleSelect = (option: WelcomeOption) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Navigate to AI Demo first (show value early), pass context
-    navigation.navigate('AIDemo', { 
-      emotionalContext: option.emotionalHook,
-      skipPaywall: true,
-    });
+    // Navigate to Grace Mode Demo first \u2014 the hero mechanic is the first
+    // thing the user experiences (Decision #7).
+    navigation.navigate('GraceModeDemo');
+    // Stash emotionalContext for later screens via route-state-less pass-through;
+    // the Quiz screen will re-derive from context if needed.
   };
 
   return (
@@ -135,7 +135,7 @@ export default function EmotionalWelcomeScreen() {
           {/* Skip option */}
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => navigation.navigate('AIDemo', { skipPaywall: true })}
+            onPress={() => navigation.navigate('GraceModeDemo')}
           >
             <Text style={styles.skipText}>Just let me explore</Text>
           </TouchableOpacity>
