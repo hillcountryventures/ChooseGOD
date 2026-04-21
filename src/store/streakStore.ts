@@ -9,9 +9,16 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Freeze configuration
+// Grace Day (renamed from "freeze") configuration.
+// Per Decision #8: un-paywalled. Every user gets 2 per month for free;
+// Pro users get unlimited.
 export const FREEZES_PER_MONTH = 2;
 export const FREEZE_DURATION_DAYS = 1;
+
+// "Days With God" cumulative counter per Decision #8.
+// Never resets. Replaces consecutive-day streak as the primary mechanic
+// surfaced on the Home screen. The consecutive streak stays in this
+// store as a secondary, churn-aware at_risk signal only (no shame).
 
 // Milestone rewards (temporary premium unlocks)
 export interface MilestoneReward {
@@ -30,28 +37,34 @@ export const MILESTONE_REWARDS: MilestoneReward[] = [
 ];
 
 interface StreakState {
-  // Core streak data
+  // Days With God \u2014 cumulative, never resets. Primary surfaced counter.
+  daysWithGod: number;
+  firstActivityDate: string | null; // ISO string; earliest day counted
+
+  // Core streak data (consecutive days \u2014 secondary, at_risk detector only)
   currentStreak: number;
   longestStreak: number;
   lastActivityDate: string | null; // ISO string
-  
-  // Streak freeze
+
+  // Grace Days (formerly streak freezes). Free users: 2/month. Pro: unlimited.
   freezesUsedThisMonth: number;
-  freezeMonthStart: string | null; // ISO string of month start
-  streakFrozenUntil: string | null; // ISO string when freeze expires
-  
+  freezeMonthStart: string | null;
+  streakFrozenUntil: string | null;
+
   // Milestone rewards
   activeRewards: Array<{
     reward: MilestoneReward['reward'];
-    expiresAt: string; // ISO string
+    expiresAt: string;
   }>;
-  claimedMilestones: number[]; // days already claimed
-  
+  claimedMilestones: number[];
+
   // Actions
   recordActivity: () => void;
   checkStreakStatus: () => 'active' | 'at_risk' | 'broken' | 'frozen';
   useStreakFreeze: () => boolean;
+  /** Legacy signature; retained for compat. All users can use Grace Days now. */
   canUseFreeze: (isPremium: boolean) => boolean;
+  /** Returns remaining Grace Days. Pro users: unlimited (Number.POSITIVE_INFINITY). */
   getFreezesRemaining: (isPremium: boolean) => number;
   claimMilestoneReward: (days: number) => MilestoneReward | null;
   hasActiveReward: (reward: MilestoneReward['reward']) => boolean;
@@ -79,6 +92,8 @@ const daysBetween = (date1: Date, date2: Date): number => {
 export const useStreakStore = create<StreakState>()(
   persist(
     (set, get) => ({
+      daysWithGod: 0,
+      firstActivityDate: null,
       currentStreak: 0,
       longestStreak: 0,
       lastActivityDate: null,
@@ -91,13 +106,19 @@ export const useStreakStore = create<StreakState>()(
       recordActivity: () => {
         const now = new Date();
         const today = getStartOfDay(now);
-        const { lastActivityDate, currentStreak, longestStreak } = get();
+        const {
+          lastActivityDate,
+          currentStreak,
+          longestStreak,
+          daysWithGod,
+          firstActivityDate,
+        } = get();
 
         // If already recorded today, do nothing
         if (lastActivityDate) {
           const lastDate = getStartOfDay(new Date(lastActivityDate));
           if (lastDate.getTime() === today.getTime()) {
-            return; // Already recorded today
+            return;
           }
         }
 
@@ -108,20 +129,21 @@ export const useStreakStore = create<StreakState>()(
           const daysDiff = daysBetween(lastDate, today);
 
           if (daysDiff === 1) {
-            // Consecutive day
             newStreak = currentStreak + 1;
           } else if (daysDiff === 0) {
-            // Same day (shouldn't happen due to check above)
             newStreak = currentStreak;
           }
-          // If daysDiff > 1, streak resets to 1 (unless frozen)
+          // If daysDiff > 1, consecutive streak resets. Days With God does NOT.
         }
 
         set({
+          // Days With God \u2014 cumulative +1 per distinct day of activity
+          daysWithGod: daysWithGod + 1,
+          firstActivityDate: firstActivityDate ?? now.toISOString(),
           currentStreak: newStreak,
           longestStreak: Math.max(newStreak, longestStreak),
           lastActivityDate: now.toISOString(),
-          streakFrozenUntil: null, // Clear any freeze when activity recorded
+          streakFrozenUntil: null,
         });
       },
 
@@ -183,37 +205,33 @@ export const useStreakStore = create<StreakState>()(
       },
 
       canUseFreeze: (isPremium: boolean) => {
-        if (!isPremium) return false;
-        
+        // Grace Days are free for everyone per Decision #8.
+        // Pro users get unlimited; free users get FREEZES_PER_MONTH / month.
         const { freezesUsedThisMonth, freezeMonthStart, currentStreak } = get();
-        
+
         if (currentStreak === 0) return false;
-        
-        // Reset count if new month
+
+        if (isPremium) return true;
+
         const currentMonthStart = getStartOfMonth();
         let usedThisMonth = freezesUsedThisMonth;
-        
         if (!freezeMonthStart || new Date(freezeMonthStart).getTime() !== currentMonthStart.getTime()) {
           usedThisMonth = 0;
         }
-
         return usedThisMonth < FREEZES_PER_MONTH;
       },
 
       getFreezesRemaining: (isPremium: boolean) => {
-        if (!isPremium) return 0;
-        
+        if (isPremium) return Number.POSITIVE_INFINITY;
+
         const { freezesUsedThisMonth, freezeMonthStart } = get();
-        
-        // Reset count if new month
+
         const currentMonthStart = getStartOfMonth();
         let usedThisMonth = freezesUsedThisMonth;
-        
         if (!freezeMonthStart || new Date(freezeMonthStart).getTime() !== currentMonthStart.getTime()) {
           usedThisMonth = 0;
         }
-
-        return FREEZES_PER_MONTH - usedThisMonth;
+        return Math.max(0, FREEZES_PER_MONTH - usedThisMonth);
       },
 
       claimMilestoneReward: (days: number) => {
@@ -278,3 +296,8 @@ export const useStreakStore = create<StreakState>()(
 export const useCurrentStreak = () => useStreakStore((s) => s.currentStreak);
 export const useLongestStreak = () => useStreakStore((s) => s.longestStreak);
 export const useStreakStatus = () => useStreakStore((s) => s.checkStreakStatus());
+
+/** Days With God \u2014 primary counter surfaced on Home. Never resets. */
+export const useDaysWithGod = () => useStreakStore((s) => s.daysWithGod);
+export const useFirstActivityDate = () =>
+  useStreakStore((s) => s.firstActivityDate);
