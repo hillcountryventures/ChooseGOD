@@ -1671,6 +1671,7 @@ serve(async (req) => {
       // Tool processing happens in a separate non-streaming call if needed
       const streamResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
+        user: "companion-stream", // privacy pillar #3
         messages: apiMessages,
         temperature: 0.7,
         max_tokens: 1200,
@@ -1762,6 +1763,7 @@ serve(async (req) => {
     // Call OpenAI with tools
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      user: "companion", // privacy pillar #3
       messages: apiMessages,
       tools: spiritualTools,
       tool_choice: "auto",

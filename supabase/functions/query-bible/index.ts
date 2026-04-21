@@ -142,9 +142,12 @@ serve(async (req) => {
       context = "The verses above represent thematic connections to your question. Use these biblical principles to guide your response.";
     }
 
-    // Step 5: Generate response using LLM
+    // Step 5: Generate response using LLM.
+    // Privacy pillar #3 (Decision #16): anonymized `user` field so the
+    // OpenAI API doesn't associate queries with our user IDs. No training.
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Cost-effective and capable
+      model: "gpt-4o-mini",
+      user: "query-bible",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {

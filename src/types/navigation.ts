@@ -45,6 +45,7 @@ export type RootStackParamList = {
   Main: undefined;
   Settings: undefined;
   Referral: undefined;
+  PrivacyCenter: undefined;
   Chat: {
     initialMessage?: string;
     conversationId?: string;

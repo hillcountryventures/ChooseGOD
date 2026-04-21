@@ -35,6 +35,7 @@ import ChatHubScreen from './src/screens/ChatHubScreen';
 import ConversationListScreen from './src/screens/chat/ConversationListScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ReferralScreen from './src/screens/settings/ReferralScreen';
+import PrivacyCenterScreen from './src/screens/settings/PrivacyCenterScreen';
 import SubscriptionDebugScreen from './src/screens/SubscriptionDebugScreen';
 import ReflectionModal from './src/screens/ReflectionModal';
 import CameraScreen from './src/screens/CameraScreen';
@@ -83,6 +84,7 @@ const SafeChatHubScreen = withErrorBoundary(ChatHubScreen, 'ChatHub');
 const SafeConversationListScreen = withErrorBoundary(ConversationListScreen, 'ConversationList');
 const SafeSettingsScreen = withErrorBoundary(SettingsScreen, 'Settings');
 const SafeReferralScreen = withErrorBoundary(ReferralScreen, 'Referral');
+const SafePrivacyCenterScreen = withErrorBoundary(PrivacyCenterScreen, 'PrivacyCenter');
 const SafeSubscriptionDebugScreen = withErrorBoundary(SubscriptionDebugScreen, 'SubscriptionDebug');
 const SafeReflectionModal = withErrorBoundary(ReflectionModal, 'ReflectionModal');
 const SafeCameraScreen = withErrorBoundary(CameraScreen, 'CameraScreen');
@@ -157,6 +159,7 @@ function App() {
                   <RootStack.Screen name="VersePicker" component={SafeVersePickerScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="Settings" component={SafeSettingsScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="Referral" component={SafeReferralScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
+                  <RootStack.Screen name="PrivacyCenter" component={SafePrivacyCenterScreen} options={{ presentation: 'card', animation: 'slide_from_right' }} />
                   <RootStack.Screen name="SubscriptionDebug" component={SafeSubscriptionDebugScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="ChatHub" component={SafeChatHubScreen} options={{ headerShown: false, animation: 'slide_from_bottom' }} />
                   <RootStack.Screen name="ConversationList" component={SafeConversationListScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
