@@ -79,38 +79,111 @@ serve(async (req) => {
     const uniqueChapters = [...new Set(allChapters)];
     const totalDaysMissed = missedSections.length;
 
+    // =====================================================
+    // L2 FIX — Fetch actual verse text from bible_verses
+    // =====================================================
+    // Previous implementation passed only chapter labels to GPT. GPT
+    // fabricated the "summary" of content it had never seen (hallucination).
+    // Now: for each missed section, pull the actual verses from the DB and
+    // feed them into the prompt so GPT summarizes what the user actually
+    // would have read.
+    const translation = (preferredTranslation || "KJV").toUpperCase();
+
+    // Cap total text to keep prompts bounded.
+    const MAX_CHARS_PER_CHAPTER = 1500;
+    const MAX_TOTAL_CHARS = 12000;
+    let totalChars = 0;
+
+    const chapterTexts: string[] = [];
+    for (const section of missedSections) {
+      for (const ref of section.versesJson) {
+        if (totalChars >= MAX_TOTAL_CHARS) break;
+        for (
+          let chapter = ref.startChapter;
+          chapter <= ref.endChapter;
+          chapter++
+        ) {
+          if (totalChars >= MAX_TOTAL_CHARS) break;
+
+          const { data: verses, error: versesErr } = await supabase
+            .from("bible_verses")
+            .select("verse, text")
+            .eq("translation", translation)
+            .eq("book", ref.book)
+            .eq("chapter", chapter)
+            .order("verse");
+
+          if (versesErr || !verses || verses.length === 0) {
+            // Fallback: if translation-specific lookup fails, try without
+            // translation filter (some DB rows may use lowercased codes)
+            const { data: fallback } = await supabase
+              .from("bible_verses")
+              .select("verse, text")
+              .eq("book", ref.book)
+              .eq("chapter", chapter)
+              .order("verse")
+              .limit(200);
+            if (!fallback || fallback.length === 0) continue;
+            const formatted = fallback
+              .map((v: { verse: number; text: string }) => `${v.verse}. ${v.text}`)
+              .join(" ")
+              .slice(0, MAX_CHARS_PER_CHAPTER);
+            chapterTexts.push(`${ref.book} ${chapter}: ${formatted}`);
+            totalChars += formatted.length;
+            continue;
+          }
+
+          const formatted = verses
+            .map((v: { verse: number; text: string }) => `${v.verse}. ${v.text}`)
+            .join(" ")
+            .slice(0, MAX_CHARS_PER_CHAPTER);
+          chapterTexts.push(`${ref.book} ${chapter}: ${formatted}`);
+          totalChars += formatted.length;
+        }
+      }
+    }
+
+    const scriptureContext = chapterTexts.length > 0
+      ? chapterTexts.join("\n\n")
+      : "(scripture text unavailable; summarize from chapter labels only)";
+
     // Build the system prompt for grace-filled summarization
-    const systemPrompt = `You are an encouraging spiritual mentor and Bible scholar. A user has missed ${totalDaysMissed} days of their Bible reading plan. Your goal is to provide a "Grace Path" summary that helps them catch up quickly while feeling encouraged rather than guilty.
+    const systemPrompt = `You are an encouraging spiritual mentor. A user has missed ${totalDaysMissed} days of their Bible reading plan. Your goal is to provide a "Grace Path" summary that helps them catch up quickly while feeling encouraged rather than guilty.
 
 The user missed these readings:
 ${missedReadingsList}
 
-Covering these chapters: ${uniqueChapters.join(", ")}
+ACTUAL SCRIPTURE TEXT FROM THE MISSED CHAPTERS (summarize from THIS, not from memory):
+
+${scriptureContext}
 
 Please provide a summary in this structure:
 
 1. **The Story So Far** (1-2 paragraphs)
-   Summarize the main narrative arc and key events. Focus on what happened, who was involved, and the progression of events.
+   Summarize the actual narrative from the text above. Mention specific people, events, and places that appear in the provided scripture. Do NOT invent content that isn't in the text.
 
 2. **God's Character Revealed** (1 paragraph)
-   Highlight one or two aspects of God's character that shine through these chapters. What do we learn about who God is?
+   Highlight one or two aspects of God's character that emerge from the actual text above.
 
 3. **A Word for Your Journey** (1 paragraph)
-   Offer an encouraging closing thought that applies these truths to the reader's life today. Remind them that God's grace covers their journey, including the days they missed.
+   Offer an encouraging closing thought. Remind them that God's grace covers their journey, including the days they missed.
 
-Keep your tone warm, encouraging, and pastoral. Avoid any language that could induce guilt. This is about grace and moving forward together.
-
-The summary should be concise but spiritually nourishing - aim for about 300-400 words total.`;
+RULES:
+- Only reference content that appears in the scripture above.
+- Do not invent verses, people, or events not in the text.
+- Warm, encouraging, pastoral tone. No guilt language.
+- About 300-400 words total.`;
 
     // Generate the summary
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Cost-effective for summaries
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: "Please provide the Grace Path summary for my missed readings." },
       ],
-      temperature: 0.7,
+      temperature: 0.4, // lowered from 0.7 for fidelity to source text
       max_tokens: 800,
+      user: "grace-path", // privacy pillar 3
     });
 
     const summary = completion.choices[0]?.message?.content || "";
