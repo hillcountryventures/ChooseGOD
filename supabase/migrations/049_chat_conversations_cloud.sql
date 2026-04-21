@@ -37,18 +37,22 @@ CREATE POLICY "Users CRUD own chat_conversations"
   WITH CHECK (auth.uid() = user_id);
 
 CREATE OR REPLACE FUNCTION public.touch_chat_conversations_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $func$
 BEGIN
   NEW.updated_at := NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$func$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS chat_conversations_updated_at ON public.chat_conversations;
-CREATE TRIGGER chat_conversations_updated_at
-  BEFORE UPDATE ON public.chat_conversations
-  FOR EACH ROW
-  EXECUTE FUNCTION public.touch_chat_conversations_updated_at();
+DO $trigger_setup$
+BEGIN
+  DROP TRIGGER IF EXISTS chat_conversations_updated_at ON public.chat_conversations;
+  CREATE TRIGGER chat_conversations_updated_at
+    BEFORE UPDATE ON public.chat_conversations
+    FOR EACH ROW
+    EXECUTE FUNCTION public.touch_chat_conversations_updated_at();
+END
+$trigger_setup$;
 
 COMMENT ON TABLE public.chat_conversations IS
   'Pro-only: cloud-synced chat history. Free users store in AsyncStorage only.';

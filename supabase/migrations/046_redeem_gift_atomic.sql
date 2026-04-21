@@ -3,7 +3,7 @@
 -- The previous two-step flow (mark code redeemed THEN insert subscription)
 -- had a race condition: if the subscription insert failed, the code was
 -- already marked redeemed and the user was left with no access. This RPC
--- wraps both operations in a single transaction \u2014 both succeed or neither does.
+-- wraps both operations in a single transaction — both succeed or neither does.
 
 CREATE OR REPLACE FUNCTION public.redeem_gift_code_atomic(
   p_code TEXT,
@@ -13,7 +13,7 @@ RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $func$
 DECLARE
   v_gift RECORD;
   v_expiration TIMESTAMPTZ;
@@ -104,12 +104,16 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
   RAISE;
 END;
-$$;
+$func$;
 
--- Only service role can call this (no authenticated grant).
-REVOKE ALL ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) FROM authenticated;
-GRANT EXECUTE ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) TO service_role;
+-- Lock down access. Wrapped in a DO block so the parser sees one statement.
+DO $grants$
+BEGIN
+  REVOKE ALL ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) FROM PUBLIC;
+  REVOKE ALL ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) FROM authenticated;
+  GRANT EXECUTE ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) TO service_role;
+END
+$grants$;
 
 COMMENT ON FUNCTION public.redeem_gift_code_atomic(TEXT, UUID) IS
   'Atomically validates + redeems a gift code and grants premium subscription. Replaces the previous two-step non-atomic flow.';

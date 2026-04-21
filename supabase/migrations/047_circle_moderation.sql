@@ -81,7 +81,7 @@ CREATE POLICY "Users manage own blocks"
 CREATE OR REPLACE FUNCTION public.enforce_circle_member_cap()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-AS $$
+AS $func$
 DECLARE
   current_count INT;
   CIRCLE_MAX_MEMBERS CONSTANT INT := 50;
@@ -98,9 +98,9 @@ BEGIN
 
   RETURN NEW;
 END;
-$$;
+$func$;
 
-DO $$
+DO $trigger_setup$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.tables
@@ -112,7 +112,8 @@ BEGIN
       FOR EACH ROW
       EXECUTE FUNCTION public.enforce_circle_member_cap();
   END IF;
-END $$;
+END
+$trigger_setup$;
 
 COMMENT ON TABLE public.reports IS
   'User-submitted reports for prayers/members/circles. Triaged manually via Supabase Studio in Phase 1; proper admin UI is Phase 2.';

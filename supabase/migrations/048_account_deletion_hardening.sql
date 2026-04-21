@@ -21,7 +21,7 @@ RETURNS TABLE(table_name TEXT)
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $func$
   SELECT c.table_name::TEXT
     FROM information_schema.columns c
     JOIN information_schema.tables t
@@ -37,10 +37,14 @@ AS $$
        'email_unsubscribe_tokens'
      )
    ORDER BY c.table_name;
-$$;
+$func$;
 
-REVOKE ALL ON FUNCTION public.get_tables_with_user_id() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_tables_with_user_id() TO service_role;
+DO $grants$
+BEGIN
+  REVOKE ALL ON FUNCTION public.get_tables_with_user_id() FROM PUBLIC;
+  GRANT EXECUTE ON FUNCTION public.get_tables_with_user_id() TO service_role;
+END
+$grants$;
 
 -- =====================================================
 -- 2. Deletion grace window
