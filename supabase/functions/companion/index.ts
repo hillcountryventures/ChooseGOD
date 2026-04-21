@@ -360,8 +360,29 @@ function buildSystemPrompt(
   relevantVerses: string,
   devotionalContext?: DevotionalContext,
   witLevel: WitLevel = "medium",
-  quotaContext?: QuotaContext
+  quotaContext?: QuotaContext,
+  tradition?: string
 ): string {
+  // Tradition-aware framing per Decision #13 (Option D).
+  // Injected at the top of the system prompt so the model honors it
+  // across every mode and never presents a contested doctrine as settled.
+  const traditionGuidance = (() => {
+    switch (tradition) {
+      case "catholic":
+        return "\n## USER TRADITION: Catholic\nRespect sacramental theology, Marian devotion, and the Magisterium. Use Catholic vocabulary naturally (Our Lord, Blessed Mother) when fitting. Avoid Protestant-bias framings of Communion or intercession.";
+      case "protestant_conservative":
+        return "\n## USER TRADITION: Conservative Protestant\nHonor Scripture as the final authority. Treat traditional readings of gender, sexuality, and salvation as valid without asserting them as the ONLY valid reading. Avoid progressive reinterpretations unless the text plainly supports them.";
+      case "protestant_progressive":
+        return "\n## USER TRADITION: Progressive Protestant\nRespect affirming interpretations of contested passages. Do not invalidate the user's identity or experience. Emphasize the love-ethic of Christ and the parables of radical welcome. Avoid culture-war framings.";
+      case "orthodox":
+        return "\n## USER TRADITION: Orthodox\nHonor theosis (becoming more like God), the veneration of icons, liturgical rhythm, and apostolic tradition. Avoid Western-scholastic framings where possible. Respect the Eastern fathers.";
+      case "exploring":
+        return "\n## USER TRADITION: Exploring / seeking\nThe user is exploring faith, possibly rebuilding after hurt or still figuring it out. Be especially gentle. Present multiple traditions' views when relevant (\"Some Christians hold... others believe...\"). Never present contested theology as settled. Honor doubt as a sacred posture.";
+      case "non_denominational":
+      default:
+        return "\n## USER TRADITION: Non-denominational Protestant\nUse broadly evangelical vocabulary. Avoid denominational distinctives. Stay close to what nearly all Christians historically agree on.";
+    }
+  })();
   // Wit level instructions
   const witInstructions = {
     low: "Be straightforward and direct. Focus on clarity over cleverness.",
@@ -436,6 +457,7 @@ The user is on the free tier with limited daily messages. Be comprehensive and v
 
   const basePrompt = `# ROLE & SACRED BOUNDARY
 You are the 'Wise Scribe' — a humble servant whose ONLY purpose is to point people to the exact words of Scripture. You exist solely to echo, connect, and apply the Bible — nothing more, nothing less.
+${traditionGuidance}
 
 You are NOT God—you never speak as God or claim divine authority. You point users TO God through His Word ALONE.
 
@@ -1539,14 +1561,30 @@ serve(async (req) => {
       }
     }
 
-    // Build the system prompt using validated mode/wit values
+    // Fetch user's tradition preference (Decision #13). Non-fatal on error.
+    let userTradition: string | undefined;
+    if (normalizedUserId) {
+      try {
+        const { data: prefs } = await supabase
+          .from("user_preferences")
+          .select("tradition")
+          .eq("user_id", normalizedUserId)
+          .maybeSingle();
+        userTradition = prefs?.tradition ?? undefined;
+      } catch {
+        // Safe default \u2014 non_denominational kicks in via the switch default.
+      }
+    }
+
+    // Build the system prompt using validated mode/wit values + tradition
     const systemPrompt = buildSystemPrompt(
       userContext,
       safeMode,
       relevantVerses,
       devotionalContext,
       safeWitLevel,
-      normalizedQuotaContext
+      normalizedQuotaContext,
+      userTradition
     );
 
     // Prepare messages for API
