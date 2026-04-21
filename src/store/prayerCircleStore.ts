@@ -14,6 +14,10 @@ import { TABLES } from '../constants/database';
 import { PrayerCircle, CircleMember, PrayerRequest, PrayerStatus } from '../types/domain/prayer';
 import { logger } from '../utils/logger';
 
+// Circles are intended to be intimate small groups, not feed-scale communities.
+// See Decision #L6 in the market-capture plan.
+export const CIRCLE_MAX_MEMBERS = 50;
+
 // =====================================================
 // TYPES
 // =====================================================
@@ -60,7 +64,18 @@ interface PrayerCircleState {
   fetchCirclePrayers: (circleId: string, userId: string) => Promise<void>;
   sharePrayerToCircle: (prayerId: string, circleId: string) => Promise<boolean>;
   markPraying: (requestId: string, userId: string) => Promise<boolean>;
-  
+
+  // Actions - Moderation
+  reportContent: (args: {
+    targetType: 'prayer_request' | 'circle_member' | 'prayer_circle';
+    targetId: string;
+    reason: string;
+    notes?: string;
+  }) => Promise<boolean>;
+  blockUser: (blockedUserId: string) => Promise<boolean>;
+  unblockUser: (blockedUserId: string) => Promise<boolean>;
+  fetchBlockedUsers: () => Promise<string[]>;
+
   // Utility
   setCurrentCircle: (circle: CircleWithMembers | null) => void;
   clearError: () => void;
@@ -340,6 +355,26 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
         set({ loading: true, error: null });
 
         try {
+          // Only the creator can delete a circle.
+          // Resolve current auth user id by asking Supabase directly.
+          const { data: authData } = await supabase.auth.getUser();
+          const currentUserId = authData?.user?.id;
+
+          const { data: circle, error: fetchErr } = await supabase
+            .from(TABLES.prayerCircles)
+            .select('created_by')
+            .eq('id', circleId)
+            .single();
+
+          if (fetchErr || !circle) {
+            throw new Error('Circle not found');
+          }
+
+          if (!currentUserId || circle.created_by !== currentUserId) {
+            set({ loading: false, error: 'Only the creator can delete this circle' });
+            return false;
+          }
+
           // Delete all members first (RLS will handle this)
           await supabase.from(TABLES.circleMembers).delete().eq('circle_id', circleId);
 
@@ -386,6 +421,21 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
           if (findError || !circle) {
             set({ loading: false });
             return { success: false, error: 'Invalid invite code' };
+          }
+
+          // Enforce member cap to keep circles intimate (see Decision #L6).
+          // Growth beyond 50 members degrades the "small group" UX.
+          const { count: currentMembers } = await supabase
+            .from(TABLES.circleMembers)
+            .select('*', { count: 'exact', head: true })
+            .eq('circle_id', circle.id);
+
+          if ((currentMembers ?? 0) >= CIRCLE_MAX_MEMBERS) {
+            set({ loading: false });
+            return {
+              success: false,
+              error: `This circle is full (${CIRCLE_MAX_MEMBERS} members).`,
+            };
           }
 
           // Check if already a member
@@ -591,6 +641,85 @@ export const usePrayerCircleStore = create<PrayerCircleState>()(
             ),
           }));
           return true;
+        }
+      },
+
+      // =====================================================
+      // MODERATION ACTIONS
+      // =====================================================
+
+      reportContent: async ({ targetType, targetId, reason, notes }) => {
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          const reporterId = authData?.user?.id;
+          if (!reporterId) return false;
+
+          const { error } = await supabase.from('reports').insert({
+            reporter_user_id: reporterId,
+            target_type: targetType,
+            target_id: targetId,
+            reason: reason.slice(0, 500),
+            notes: notes ?? null,
+          });
+          if (error) throw error;
+          return true;
+        } catch (error) {
+          logger.error('Error submitting report:', error);
+          return false;
+        }
+      },
+
+      blockUser: async (blockedUserId) => {
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          const blockerId = authData?.user?.id;
+          if (!blockerId || blockerId === blockedUserId) return false;
+
+          const { error } = await supabase.from('user_blocks').upsert(
+            { blocker_user_id: blockerId, blocked_user_id: blockedUserId },
+            { onConflict: 'blocker_user_id,blocked_user_id' },
+          );
+          if (error) throw error;
+          return true;
+        } catch (error) {
+          logger.error('Error blocking user:', error);
+          return false;
+        }
+      },
+
+      unblockUser: async (blockedUserId) => {
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          const blockerId = authData?.user?.id;
+          if (!blockerId) return false;
+
+          const { error } = await supabase
+            .from('user_blocks')
+            .delete()
+            .eq('blocker_user_id', blockerId)
+            .eq('blocked_user_id', blockedUserId);
+          if (error) throw error;
+          return true;
+        } catch (error) {
+          logger.error('Error unblocking user:', error);
+          return false;
+        }
+      },
+
+      fetchBlockedUsers: async () => {
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          const blockerId = authData?.user?.id;
+          if (!blockerId) return [];
+          const { data, error } = await supabase
+            .from('user_blocks')
+            .select('blocked_user_id')
+            .eq('blocker_user_id', blockerId);
+          if (error) throw error;
+          return (data ?? []).map((r: { blocked_user_id: string }) => r.blocked_user_id);
+        } catch (error) {
+          logger.error('Error fetching blocked users:', error);
+          return [];
         }
       },
 
