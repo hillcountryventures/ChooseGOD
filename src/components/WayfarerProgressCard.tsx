@@ -431,7 +431,7 @@ export default function WayfarerProgressCard({
           </View>
           <View>
             <Text style={styles.headerTitle}>
-              {isIntervention ? "Your Journey Awaits" : "Wayfarer Bible"}
+              {isIntervention ? "Grace Mode" : "Your Reading Plan"}
             </Text>
             <Text style={styles.headerSubtitle}>{activeProgress.planName}</Text>
           </View>

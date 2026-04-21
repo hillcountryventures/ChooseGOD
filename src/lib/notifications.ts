@@ -529,7 +529,7 @@ export async function scheduleWayfarerReminder(
     // Set up Android channel for Wayfarer if needed
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('wayfarer-reminders', {
-        name: 'Wayfarer Reading Reminders',
+        name: 'Reading Reminders',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: theme.colors.primary,
