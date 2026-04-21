@@ -99,6 +99,11 @@ export function useJourneyInsights(): JourneyInsightsData {
   const [chatLogs, setChatLogs] = useState<
     Array<{ query: string; themes?: string[]; created_at: string }>
   >([]);
+  // Real AI insight from the journey-insights Edge Function (cached 7d).
+  // When present, overrides the rule-based growthInsight below.
+  const [aiGrowthInsight, setAiGrowthInsight] = useState<GrowthInsight | null>(
+    null,
+  );
 
   const user = useAuthStore((state) => state.user);
   const { currentStreak } = useJourneyStore();
@@ -167,6 +172,42 @@ export function useJourneyInsights(): JourneyInsightsData {
 
       setMoments(transformedMoments);
       setChatLogs(chatData || []);
+
+      // ---- Fetch real AI insight (journey-insights Edge Function) ----
+      // Non-fatal: if this errors or returns nothing, we fall back to the
+      // rule-based growthInsight below.
+      try {
+        const { data: aiData, error: aiErr } = await supabase.functions.invoke(
+          'journey-insights',
+          { body: { userId: user.id } },
+        );
+        if (!aiErr && aiData?.insight) {
+          const ai = aiData.insight as {
+            themes?: Array<{ label: string; summary: string }>;
+            sentimentArc?: string;
+            growthObservation?: string;
+            growthOpportunity?: string;
+            suggestedVerse?: string;
+          };
+          const title = ai.themes && ai.themes.length > 0
+            ? ai.themes[0].label
+            : 'Your Walk This Month';
+          const content = [ai.sentimentArc, ai.growthObservation, ai.growthOpportunity]
+            .filter(Boolean)
+            .join('\n\n');
+          if (content) {
+            setAiGrowthInsight({
+              id: 'ai-insight',
+              title,
+              content,
+              suggestedVerse: ai.suggestedVerse,
+              icon: '\u2728',
+            });
+          }
+        }
+      } catch (aiErr) {
+        logger.warn('[useJourneyInsights] AI insight unavailable, using fallback', aiErr);
+      }
     } catch (err) {
       logger.error('[useJourneyInsights] Fetch error:', err);
       setError(
@@ -221,18 +262,21 @@ export function useJourneyInsights(): JourneyInsightsData {
   }, [moments]);
 
   // ---- Growth insight ----
+  // Prefer real AI insight from journey-insights Edge Function.
+  // Fall back to rule-based template only if AI unavailable.
   const growthInsight = useMemo((): GrowthInsight | null => {
+    if (aiGrowthInsight) return aiGrowthInsight;
     if (topicsExplored.length === 0) return null;
     const topTopic = topicsExplored[0];
 
     return {
-      id: 'insight-1',
+      id: 'insight-fallback',
       title: 'Growth Insight',
       content: `You've been exploring ${topTopic.label.toLowerCase()} topics more frequently. This suggests you're intentionally seeking God's guidance in this area. Consider deeper study in this theme.`,
       suggestedVerse: SUGGESTED_VERSES[topTopic.id],
-      icon: '💡',
+      icon: '\u{1F4A1}',
     };
-  }, [topicsExplored]);
+  }, [aiGrowthInsight, topicsExplored]);
 
   // ---- Milestones ----
   const milestones = useMemo((): RecentMilestone[] => {
