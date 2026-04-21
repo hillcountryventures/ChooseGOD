@@ -194,13 +194,12 @@ export const isPrayerMode = (mode: ChatMode): boolean => {
 };
 
 /**
- * Modes that require premium access
+ * Chat modes are no longer gated by premium per Decision #12.
+ * Pro gating has moved to the Practices Hub (Lectio Divina, Evening Examen).
+ * Keeping this const for call-site compatibility \u2014 now empty.
  */
-export const PREMIUM_MODES: ChatMode[] = ['lectio', 'examen'];
+export const PREMIUM_MODES: ChatMode[] = [];
 
-/**
- * Check if a mode requires premium
- */
-export const requiresPremium = (mode: ChatMode): boolean => {
-  return PREMIUM_MODES.includes(mode);
+export const requiresPremium = (_mode: ChatMode): boolean => {
+  return false;
 };

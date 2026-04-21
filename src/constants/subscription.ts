@@ -74,47 +74,52 @@ export const FREE_CHAT_LIMIT = 3;
 export const FREE_ENROLLMENT_LIMIT = 1;
 
 // =====================================================
-// Chat Mode Gating
+// Chat Mode Gating (Decision #12 \u2014 paywall by depth + frequency)
 // =====================================================
 
 /**
- * Chat modes available to free users.
- * These are the basic spiritual guidance modes.
+ * All chat modes are now free, gated only by the daily quota (FREE_CHAT_LIMIT).
+ * The previous arbitrary free/premium split (e.g. confession locked, journal
+ * locked) conflicted with the wedge: new believers and seekers need exactly
+ * those modes most.
+ *
+ * Lectio Divina + Examen remain Pro, but have moved OUT of chat-mode gating
+ * and INTO the Practices Hub as guided linear flows. Memory is free-forever.
+ *
+ * Kept as a const array for any remaining UI that filters "show premium
+ * badge" \u2014 now empty so the badge never shows on chat modes.
  */
 export const FREE_CHAT_MODES: ChatMode[] = [
-  'auto',       // General Q&A
-  'devotional', // Devotional guidance
-  'prayer',     // Prayer companion
+  'auto',
+  'devotional',
+  'prayer',
+  'journal',
+  'confession',
+  'gratitude',
+  'celebration',
+  'examen',
+  'memory',
+  'lectio',
 ];
 
-/**
- * Premium-only chat modes.
- * These provide deeper spiritual practice experiences.
- */
-export const PREMIUM_CHAT_MODES: ChatMode[] = [
-  'lectio',      // Lectio Divina (ancient contemplative reading)
-  'examen',      // Evening Examen (Ignatian reflection)
-  'memory',      // Scripture memorization
-  'confession',  // Heart check-in / confession
-  'gratitude',   // Gratitude focusing
-  'celebration', // Celebration moments
-  'journal',     // Deep journaling support
-];
+export const PREMIUM_CHAT_MODES: ChatMode[] = []; // intentionally empty
 
 /**
- * Check if a chat mode requires premium subscription.
+ * Practices are the new premium-gated surface. Decision #12.
  */
-export function isPremiumChatMode(mode: ChatMode): boolean {
-  return PREMIUM_CHAT_MODES.includes(mode);
+export const PREMIUM_PRACTICES = ['lectio', 'examen'] as const;
+export type PremiumPractice = typeof PREMIUM_PRACTICES[number];
+
+export function isPremiumPractice(practice: string): practice is PremiumPractice {
+  return (PREMIUM_PRACTICES as readonly string[]).includes(practice);
 }
 
-/**
- * Get all available chat modes for a user based on premium status.
- */
-export function getAvailableChatModes(isPremium: boolean): ChatMode[] {
-  if (isPremium) {
-    return [...FREE_CHAT_MODES, ...PREMIUM_CHAT_MODES];
-  }
+/** Chat mode gating is now noop. Kept for call-site compatibility. */
+export function isPremiumChatMode(_mode: ChatMode): boolean {
+  return false;
+}
+
+export function getAvailableChatModes(_isPremium: boolean): ChatMode[] {
   return FREE_CHAT_MODES;
 }
 
@@ -216,42 +221,50 @@ export const PAYWALL_CONTENT = {
     ],
   },
 
-  // Feature list - organized by value perception (highest first)
+  // Feature list \u2014 depth + time-saved, not access-gating.
+  // Per Decision #12: every surface in the app stays free; Pro unlocks
+  // unlimited, deeper, AI-personalized, and synced.
   features: [
     {
       icon: 'infinite',
       title: 'Unlimited AI Conversations',
-      description: 'Ask anything about Scripture — no limits, anytime.',
+      description: 'Ask anything about Scripture \u2014 no limits, anytime.',
       highlight: true,
-    },
-    {
-      icon: 'snow',
-      title: 'Streak Freeze Protection',
-      description: 'Life happens. Protect your streak when you miss a day.',
-      highlight: true,
-    },
-    {
-      icon: 'time',
-      title: 'Complete Chat History',
-      description: 'Access all your past conversations forever.',
-      highlight: false,
     },
     {
       icon: 'sparkles',
-      title: 'AI Journal Reflections',
-      description: 'Personalized insights on your spiritual growth.',
+      title: 'AI Journal Insights',
+      description: 'Monthly reflections on what God seems to be doing in your life.',
+      highlight: true,
+    },
+    {
+      icon: 'mic',
+      title: 'Audio Grace Mode',
+      description: 'Catch up on missed readings with voice narration when life gets loud.',
+      highlight: false,
+    },
+    {
+      icon: 'leaf',
+      title: 'Guided Practices',
+      description: 'Lectio Divina and Evening Examen \u2014 ancient rhythms in short sessions.',
+      highlight: false,
+    },
+    {
+      icon: 'cloud-done',
+      title: 'Chat History Across Devices',
+      description: 'Switch phones without losing a single conversation.',
       highlight: false,
     },
     {
       icon: 'library',
       title: 'Unlimited Devotional Series',
-      description: 'Enroll in multiple series simultaneously.',
+      description: 'Enroll in multiple series + AI-personalized series on your own topic.',
       highlight: false,
     },
     {
-      icon: 'notifications',
-      title: 'Prayer Reminders',
-      description: 'Never forget to pray for what matters most.',
+      icon: 'people-circle',
+      title: 'Create Prayer Circles',
+      description: 'Start private circles for your small group or family.',
       highlight: false,
     },
   ],
@@ -299,10 +312,10 @@ export const PAYWALL_CONTENT = {
     message: `You've had your ${FREE_CHAT_LIMIT} free conversations today. Upgrade for unlimited, or come back tomorrow \u2014 no guilt.`,
   },
 
-  // Premium mode blocked messaging
+  // Premium practice blocked messaging (Lectio / Examen)
   premiumModeBlocked: {
-    title: 'Premium Practice',
-    message: 'This spiritual practice requires ChooseGOD Pro. Upgrade to unlock Lectio Divina, Evening Examen, and more.',
+    title: 'A Pro Practice',
+    message: 'Lectio Divina and Evening Examen are Pro \u2014 guided ancient rhythms for deeper seasons. Try a 14-day Pro trial free.',
   },
 
   // Restore purchases
