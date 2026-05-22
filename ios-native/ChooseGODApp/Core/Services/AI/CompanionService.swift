@@ -70,44 +70,4 @@ final class CompanionService {
         
         return response
     }
-    
-    /// Log chat interaction for analytics (fire and forget)
-    func logInteraction(query: String, response: String, sources: [VerseSource]?, responseTimeMs: Int) {
-        Task {
-            do {
-                let session = try await requireSupabase().auth.session
-                let userId = session.user.id.uuidString
-                
-                let payload: [String: AnyEncodable] = [
-                    "user_id": AnyEncodable(userId),
-                    "query": AnyEncodable(query),
-                    "response": AnyEncodable(String(response.prefix(2000))),
-                    "sources": AnyEncodable(sources ?? []),
-                    "response_time_ms": AnyEncodable(responseTimeMs),
-                    "created_at": AnyEncodable(ISO8601DateFormatter().string(from: Date()))
-                ]
-                
-                try await requireSupabase().from("chat_interactions").insert(payload).execute()
-            } catch {
-                // Silently fail — analytics should not disrupt UX
-                Logger(subsystem: "com.choosegod.app", category: "ai").error("CompanionService analytics log failed: \(error.localizedDescription)")
-            }
-        }
-    }
-}
-
-// MARK: - Type-erased Encodable wrapper
-
-struct AnyEncodable: Encodable {
-    private let _encode: (Encoder) throws -> Void
-    
-    init<T: Encodable>(_ wrapped: T) {
-        _encode = { encoder in
-            try wrapped.encode(to: encoder)
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        try _encode(encoder)
-    }
 }

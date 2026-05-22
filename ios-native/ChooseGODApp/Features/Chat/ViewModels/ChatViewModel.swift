@@ -11,6 +11,9 @@ final class ChatViewModel {
     var inputText = ""
     var isLoading = false
     var errorMessage: String?
+    /// Decision #6 — user-facing intent. The legacy `currentMode` is now
+    /// derived from this + the user's input at send time.
+    var currentIntent: ChatIntent = .ask
     var currentMode: ChatMode = .auto
     var context: ChatContext = ChatContext()
     var suggestedActions: [SuggestedAction] = []
@@ -56,9 +59,22 @@ final class ChatViewModel {
         // Strip prompt injection patterns before sending
         let sanitized = rawInput // TODO: Re-enable TheologicalGuardrails when service is available
 
+        // Decision #6 — resolve the user-facing intent into the internal
+        // mode just before sending so we pick up signals from the actual
+        // typed message (Reflect → gratitude / confession / celebration / journal).
+        currentMode = currentIntent.resolveMode(forInput: rawInput)
+
         // Add user message (show original text to user, send sanitized to AI)
-        // HapticManager.shared.tap() // TODO: Async issue needs fixing
-        // AnalyticsService.shared.capture("chat_message_sent") // TODO: Service not available
+        AnalyticsService.shared.capture(
+            "chat_message_sent",
+            properties: ["intent": currentIntent.rawValue, "mode": currentMode.rawValue]
+        )
+        // Decision #15 — fire on the user's very first chat send. The
+        // `message_count == 0` guard means this only fires once per device
+        // (the user's first conversation, before this message is appended).
+        if messages.isEmpty {
+            MagicMomentsService.shared.capture(.day1_first_chat_sent)
+        }
         let userMessage = ChatMessage(role: .user, content: rawInput)
         messages.append(userMessage)
         inputText = ""
@@ -75,7 +91,6 @@ final class ChatViewModel {
         let messageToSend = sanitized.isEmpty ? rawInput : sanitized
         
         Task { @MainActor in
-            let startTime = Date()
             do {
                 let response = try await companionService.sendMessage(
                     message: messageToSend,
@@ -99,24 +114,23 @@ final class ChatViewModel {
                         mode: currentMode,
                         toolsUsed: response.toolsUsed,
                         celebration: response.celebration,
-                        suggestedActions: response.suggestedActions
+                        suggestedActions: response.suggestedActions,
+                        // Decision #14: server-classified crisis tier rendered
+                        // inline by ChatView via CrisisResourceCard.
+                        crisisTier: response.crisisTier
                     )
                     messages.append(aiMessage)
                     suggestedActions = response.suggestedActions ?? []
                 }
                 
-                // Log analytics
-                let elapsed = Int(Date().timeIntervalSince(startTime) * 1000)
-                companionService.logInteraction(
-                    query: messageToSend,
-                    response: response.response,
-                    sources: response.sources,
-                    responseTimeMs: elapsed
-                )
-
                 // Record sent chat on server
                 if let userId = userId {
                     try await self.quotaManager.recordSent(userId: userId)
+                    // Decision #8 — chatting counts toward Days With God.
+                    StreakManager.shared.recordActivity(
+                        isPremium: isPremium,
+                        userId: userId
+                    )
                 }
             } catch {
                 // Only show error if we didn't already show crisis message
@@ -136,6 +150,10 @@ final class ChatViewModel {
     
     func setMode(_ mode: ChatMode) {
         currentMode = mode
+    }
+
+    func setIntent(_ intent: ChatIntent) {
+        currentIntent = intent
     }
     
     func setBibleContext(book: String, chapter: Int, selectedVerse: ChatBibleContext.SelectedVerse? = nil, pendingMessage: String? = nil) {
