@@ -17,6 +17,9 @@ packages:
   PostHog:
     url: https://github.com/PostHog/posthog-ios
     from: "3.0.0"
+  Sentry:
+    url: https://github.com/getsentry/sentry-cocoa
+    from: "8.0.0"
 
 targets:
   ChooseGOD:
@@ -28,6 +31,11 @@ targets:
         excludes:
           - Widgets/**
           - WatchApp/**
+          - build/**
+          - "**/build/**"
+          - "ChooseGOD.xcodeproj/**"
+          - "ChooseGOD.xcodeproj.bak/**"
+          - "ChooseGOD.xcodeproj.disabled/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.choosegod.app
@@ -47,8 +55,18 @@ targets:
         product: RevenueCat
       - package: PostHog
         product: PostHog
+      - package: Sentry
+        product: Sentry
     entitlements:
       path: ChooseGODApp/ChooseGOD.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default
+        aps-environment: development
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.choosegod.app
+        com.apple.security.application-groups:
+          - group.com.choosegod.app
 
   ChooseGODTests:
     type: bundle.unit-test
@@ -79,6 +97,9 @@ targets:
         SWIFT_VERSION: "5.9"
     entitlements:
       path: ChooseGODApp/Widgets/ChooseGODWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.choosegod.app
     dependencies:
       - target: ChooseGOD
         embed: false
@@ -100,3 +121,6 @@ targets:
         WATCHOS_DEPLOYMENT_TARGET: "10.0"
     entitlements:
       path: ChooseGODApp/WatchApp/ChooseGODWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.choosegod.app
