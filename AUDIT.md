@@ -9,7 +9,8 @@ PHYSICS TEST     BUILD SUCCEEDED (iPhone 17 sim) — green after every tier
 P0 KILL SHOTS    0 found
 P1 FIXES         5
 P2 FIXES         6 + 30 orphaned files deleted
-COMMITS          c103267 (P1) · 391450c (P2) · f4b8ad7 (cleanup)
+COMMITS          c103267 (P1) · 391450c (P2) · f4b8ad7 (cleanup) · 620e29c (docs) · 69bb8af (re-audit fix)
+RE-AUDIT         clean-from-scratch build PASS · removed dead chat logging
 ```
 
 ## Headline
@@ -26,7 +27,7 @@ work was a handful of silent-failure P1s and a large dead-code cleanup.
 | # | File | Issue | Fix |
 |---|------|-------|-----|
 | 1 | `Features/Bible/Views/BibleReaderView.swift` | "Word Study (Hebrew/Greek)" shipped ON but the Strong's lexicon JSON was never bundled (no `resources:` in project.yml; files live outside the iOS tree) → opened to an empty result | Removed the menu item + sheet + state (user decision); deleted `StrongsLookupView` + `StrongsService` |
-| 2 | `Core/Services/AI/CompanionService.swift:90` | Chat analytics inserted into non-existent table `chat_logs` (fire-and-forget, so chat never crashed — but every chat analytic was silently dropped) | `chat_logs` → `chat_interactions` |
+| 2 | `Core/Services/AI/CompanionService.swift` | Chat analytics inserted into a non-existent table `chat_logs` (fire-and-forget; dead since inception) | **Removed** the client-side `logInteraction` (commit `69bb8af`). The re-audit found `chat_interactions` has no `query/response/sources/response_time_ms` columns *and* the companion edge fn already logs server-side with a privacy-safe metadata schema — so the client write was redundant + a raw-Q&A PII leak |
 | 3 | `Features/Paywall/ViewModels/PaywallViewModel.swift` | Purchase-funnel `AnalyticsService.capture()` calls were commented out ("// TODO: Service not available" — stale; the service is used elsewhere) → no conversion tracking | Re-enabled the 5 capture calls |
 | 4 | `App/AppState.swift` (`signOut()`) | Sign-out didn't clear per-user caches → journal/intention/context could leak across accounts on a shared device | Clear `UserPreferencesService` / `UserIntentionsService` / `UserContextService` on sign-out |
 | 5 | `Core/Views/OfflineBanner.swift` | White text on a light-gray background → invisible in light mode | Opaque `Theme.Colors.primary` background + white text (readable in both modes) |
@@ -74,6 +75,15 @@ Founding card, PrayerCircles, SeriesGenerator.
 - **App Group / capabilities** need registering in the Apple Developer portal for device/TestFlight signing (entitlements are now declared correctly in source).
 - `SupabaseBibleService` still has dead `verse_bookmarks`/`verse_notes` methods (now caller-less after SyncQueue removal) — remove or repoint to `bookmarks` if a notes/sync feature is revived.
 - **Runtime smoke test pending** — this audit verified a clean compile after each tier; the next step is launching in the simulator to walk every v1.2 surface + capture buyer screenshots.
+
+## Verification re-audit (2026-05-22)
+
+Re-ran to confirm the fixes actually work, not just compile:
+- **Clean-from-scratch build** (fresh DerivedData, full SPM re-fetch) — **BUILD SUCCEEDED**.
+- **Entitlements** regenerate populated from `project.yml` (Apple Sign-In / push / keychain / App Group on the app; App Group on Watch + Widgets). ✓
+- **Zero dangling references** to any of the 30 deleted types; no duplicate symbols from the relocated cards. ✓
+- **Sign-out `reset()` methods** verified to actually clear cached tradition / intention / moat-context state. ✓
+- **Caught + fixed** the only real regression: the `chat_interactions` rename compiled but the table lacks the payload columns and the edge fn already logs server-side → removed the dead client log (commit `69bb8af`).
 
 ## Health
 
