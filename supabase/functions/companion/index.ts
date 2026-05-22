@@ -357,6 +357,36 @@ interface QuotaContext {
   isLastSeed?: boolean;
 }
 
+/**
+ * Decision G1 — personalization moat. Sent on every chat from the iOS client
+ * so the AI grounds replies in the user's actual walk, not generic answers.
+ * All fields optional; AI gracefully degrades when any signal is missing.
+ */
+interface PersonalContextBundle {
+  currentIntention?: string;
+  tradition?: string;
+  daysWithGod?: number;
+  currentDevotionalSeries?: {
+    title: string;
+    currentDay: number;
+    totalDays: number;
+  };
+  recentJournalSummaries?: Array<{
+    type: string;
+    setAt: string;
+    excerpt: string;
+    themes: string[];
+  }>;
+  recentPrayers?: Array<{
+    text: string;
+    status: string;          // "active" | "answered" | "ongoing"
+    testimony?: string | null; // answered_reflection, if answered
+    setAt: string;
+  }>;
+  lastScriptureRef?: { book: string; chapter: number };
+  recentCrisisTier?: number;
+}
+
 // Build the system prompt based on context and mode
 function buildSystemPrompt(
   context: UserContext,
@@ -366,8 +396,56 @@ function buildSystemPrompt(
   witLevel: WitLevel = "medium",
   quotaContext?: QuotaContext,
   tradition?: string,
-  crisisPromptAddition?: string
+  crisisPromptAddition?: string,
+  userPersonalContext?: PersonalContextBundle | null
 ): string {
+  // Decision G1 — personalization moat. Render the user's bundle as a
+  // compact context block the model can reference when relevant. Each piece
+  // is optional; the AI is instructed to reference these only when the
+  // connection is real, never to force a callback that feels manipulative.
+  const personalContextBlock = (() => {
+    if (!userPersonalContext) return "";
+    const lines: string[] = [];
+    if (userPersonalContext.currentIntention) {
+      lines.push(`- Currently praying through: "${userPersonalContext.currentIntention}"`);
+    }
+    if (userPersonalContext.daysWithGod) {
+      lines.push(`- Days With God so far: ${userPersonalContext.daysWithGod}`);
+    }
+    if (userPersonalContext.currentDevotionalSeries) {
+      const s = userPersonalContext.currentDevotionalSeries;
+      lines.push(`- Active series: "${s.title}" (Day ${s.currentDay} of ${s.totalDays})`);
+    }
+    if (userPersonalContext.lastScriptureRef) {
+      const r = userPersonalContext.lastScriptureRef;
+      lines.push(`- Last opened: ${r.book} ${r.chapter}`);
+    }
+    if (userPersonalContext.recentJournalSummaries?.length) {
+      lines.push(`- Recent journal entries:`);
+      for (const j of userPersonalContext.recentJournalSummaries.slice(0, 5)) {
+        lines.push(`  • [${j.type}] ${j.excerpt.replace(/\n+/g, ' ').slice(0, 160)}`);
+      }
+    }
+    if (userPersonalContext.recentPrayers?.length) {
+      const active = userPersonalContext.recentPrayers.filter((p) => p.status !== 'answered');
+      const answered = userPersonalContext.recentPrayers.filter((p) => p.status === 'answered');
+      if (active.length) {
+        lines.push(`- Active prayers (still waiting on God):`);
+        for (const p of active.slice(0, 5)) lines.push(`  • ${p.text}`);
+      }
+      if (answered.length) {
+        lines.push(`- Answered prayers (God came through — reference these to celebrate His faithfulness):`);
+        for (const p of answered.slice(0, 3)) {
+          lines.push(`  • ${p.text}${p.testimony ? ` — testimony: "${p.testimony}"` : ''}`);
+        }
+      }
+    }
+    if (userPersonalContext.recentCrisisTier && userPersonalContext.recentCrisisTier <= 2) {
+      lines.push(`- IMPORTANT: User flagged tier ${userPersonalContext.recentCrisisTier} crisis in last 14 days. Be extra gentle, surface counselor resources proactively, avoid heavy theology.`);
+    }
+    if (lines.length === 0) return "";
+    return `\n## WHAT YOU KNOW ABOUT THIS USER\n${lines.join('\n')}\n\n**How to use this context:**\n- Reference these details ONLY when the connection is genuinely meaningful. Never force a callback.\n- When you do reference it, be specific: "Three weeks ago you wrote about feeling overlooked" — not "based on your past entries..."\n- This is the user's life. Treat it like sacred ground. Never quote a journal entry verbatim back at them; paraphrase.\n- If their current intention or recent prayers connect to today's question, lead with that connection.\n`;
+  })();
   // Tradition-aware framing per Decision #13 (Option D).
   // Injected at the top of the system prompt so the model honors it
   // across every mode and never presents a contested doctrine as settled.
@@ -463,6 +541,7 @@ The user is on the free tier with limited daily messages. Be comprehensive and v
   const basePrompt = `# ROLE & SACRED BOUNDARY
 You are the 'Wise Scribe' \u2014 a humble servant whose ONLY purpose is to point people to the exact words of Scripture. You exist solely to echo, connect, and apply the Bible \u2014 nothing more, nothing less.
 ${traditionGuidance}
+${personalContextBlock}
 ${crisisPromptAddition ?? ''}
 
 You are NOT God—you never speak as God or claim divine authority. You point users TO God through His Word ALONE.
@@ -1401,6 +1480,12 @@ serve(async (req) => {
       // Cross-references for deeper study (premium feature)
       include_cross_refs,
       includeCrossRefs, // Alternative casing for compatibility
+      // Decision G1 (post-grill) — personalization moat. Bundle of journal
+      // summaries, recent prayers, current intention, Days With God, etc.
+      // Injected into the system prompt so the AI grounds replies in the
+      // user's actual walk.
+      user_context,
+      userContext: requestUserContext, // alt casing
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
@@ -1421,6 +1506,9 @@ serve(async (req) => {
     } : undefined;
     // Cross-references: enabled by request or automatically for premium users
     const normalizedIncludeCrossRefs = include_cross_refs ?? includeCrossRefs ?? false;
+
+    // Personalization context (Decision G1).
+    const normalizedUserContext = user_context ?? requestUserContext ?? null;
 
     if (!message || typeof message !== "string") {
       return new Response(
@@ -1618,7 +1706,8 @@ serve(async (req) => {
       safeWitLevel,
       normalizedQuotaContext,
       userTradition,
-      crisisPromptAddition
+      crisisPromptAddition,
+      normalizedUserContext as PersonalContextBundle | null
     );
 
     // Prepare messages for API
