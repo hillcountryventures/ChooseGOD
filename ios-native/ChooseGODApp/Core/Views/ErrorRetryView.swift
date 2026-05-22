@@ -14,7 +14,7 @@ struct ErrorRetryView: View {
                 .font(Theme.Typography.body)
                 .multilineTextAlignment(.center)
             Button("Try Again", action: retryAction)
-                .buttonStyle(.borderedProminent)
+                .primaryButtonStyle()
         }
         .padding()
     }

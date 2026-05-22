@@ -10,6 +10,7 @@ struct DiscoverView: View {
     @State private var allSeries: [DevotionalSeries] = []
     @State private var selectedSeries: DevotionalSeries?
     @State private var devotionalLoading = true
+    @State private var showSeriesGenerator: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -65,10 +66,27 @@ struct DiscoverView: View {
                 }
             }
             .navigationTitle("Discover")
+            .toolbar {
+                if FeatureFlags.seriesGenerator {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showSeriesGenerator = true
+                        } label: {
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(Theme.Colors.primary)
+                        }
+                        .accessibilityLabel("Generate a personalized series")
+                    }
+                }
+            }
             .sheet(item: $selectedSeries) { series in
                 SeriesDetailSheet(series: series) {
                     Task { await loadDevotionalData() }
                 }
+            }
+            .sheet(isPresented: $showSeriesGenerator) {
+                SeriesGeneratorView()
+                    .environment(appState)
             }
             .task {
                 await loadDevotionalData()
@@ -159,14 +177,21 @@ struct DiscoverView: View {
                         .font(Theme.Typography.body)
                         .foregroundStyle(.white.opacity(0.7))
 
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        ForEach(allSeries) { series in
-                            Button {
-                                selectedSeries = series
-                            } label: {
-                                SeriesBrowseCard(series: series)
+                    if allSeries.isEmpty {
+                        Text("More series are on the way.")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.white.opacity(0.5))
+                            .padding(.vertical, 8)
+                    } else {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            ForEach(allSeries) { series in
+                                Button {
+                                    selectedSeries = series
+                                } label: {
+                                    SeriesBrowseCard(series: series)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }

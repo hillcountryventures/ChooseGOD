@@ -8,14 +8,14 @@ struct ShimmerView: View {
         VStack(spacing: 16) {
             ForEach(0..<5) { _ in
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.3))
+                    .fill(Theme.Colors.secondaryText.opacity(0.25))
                     .frame(height: height)
                     .overlay {
                         GeometryReader { geo in
                             LinearGradient(
                                 gradient: Gradient(stops: [
                                     Gradient.Stop(color: .clear, location: 0),
-                                    Gradient.Stop(color: .white.opacity(0.3), location: 0.5),
+                                    Gradient.Stop(color: Theme.Colors.text.opacity(0.15), location: 0.5),
                                     Gradient.Stop(color: .clear, location: 1)
                                 ]),
                                 startPoint: .leading,

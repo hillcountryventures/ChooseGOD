@@ -424,7 +424,6 @@ struct VerseRow: View {
     var onHighlightToggle: ((HighlightColor) -> Void)?
     var onCrossRefTap: (() -> Void)?
 
-    @State private var showShareCard = false
     @State private var showReflectionSheet = false
 
     var body: some View {
@@ -513,19 +512,7 @@ struct VerseRow: View {
             ShareLink(item: "\(verse.reference)\n\n\(verse.text)") {
                 Label("Share Text", systemImage: "square.and.arrow.up")
             }
-
-            Button {
-                showShareCard = true
-            } label: {
-                Label("Share as Card", systemImage: "photo")
-            }
         }
-        // .sheet(isPresented: $showShareCard) {
-        //     ShareCardPickerView(
-        //         verseText: verse.text,
-        //         reference: "\(verse.reference) \(verse.translation)"
-        //     )
-        // }
         .sheet(isPresented: $showReflectionSheet) {
             ReflectionSheet(
                 verseRef: verse.reference,
