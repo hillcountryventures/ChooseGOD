@@ -55,11 +55,11 @@ final class RevenueCatService: SubscriptionServiceProtocol {
     func purchase(package: SubscriptionPackage) async throws -> Bool {
         // Get offerings
         let offerings = try await Purchases.shared.offerings()
-        
+
         guard let offering = offerings.current else {
             throw SubscriptionError.noOfferingsAvailable
         }
-        
+
         // Find the matching package
         let rcPackage: Package?
         switch package {
@@ -67,19 +67,36 @@ final class RevenueCatService: SubscriptionServiceProtocol {
             rcPackage = offering.monthly
         case .annual:
             rcPackage = offering.annual
+        case .foundingMember:
+            // RevenueCat exposes one-time non-consumables via the `lifetime` accessor
+            rcPackage = offering.lifetime
         }
-        
+
         guard let packageToPurchase = rcPackage else {
             throw SubscriptionError.packageNotFound
         }
-        
-        // Make purchase
-        let (_, customerInfo, _) = try await Purchases.shared.purchase(package: packageToPurchase)
-        
-        isPremium = customerInfo.entitlements["premium"]?.isActive == true
-        if isPremium {
-            // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("subscription_purchased", properties: ["package": String(describing: package)])
+
+        // For Founding Member, gate on the server-side cap before charging the user.
+        if package == .foundingMember {
+            let available = try await FoundingMemberService.shared.isAvailable()
+            guard available else {
+                throw SubscriptionError.foundingMemberCapReached
+            }
         }
+
+        // Make purchase
+        let (transaction, customerInfo, _) = try await Purchases.shared.purchase(package: packageToPurchase)
+
+        isPremium = customerInfo.entitlements["premium"]?.isActive == true
+
+        // Record the founding-member claim atomically against the cap. If recording fails
+        // (cap raced past 1,000 between gate and charge), the user is still entitled, but
+        // the team will reconcile via support.
+        if isPremium && package == .foundingMember {
+            let txId = transaction?.transactionIdentifier
+            try? await FoundingMemberService.shared.recordClaim(transactionId: txId)
+        }
+
         return isPremium
     }
     
@@ -98,7 +115,8 @@ enum SubscriptionError: Error, LocalizedError {
     case noOfferingsAvailable
     case packageNotFound
     case purchaseFailed(Error)
-    
+    case foundingMemberCapReached
+
     var errorDescription: String? {
         switch self {
         case .noOfferingsAvailable:
@@ -107,6 +125,8 @@ enum SubscriptionError: Error, LocalizedError {
             return "The selected subscription package was not found."
         case .purchaseFailed(let error):
             return "Purchase failed: \(error.localizedDescription)"
+        case .foundingMemberCapReached:
+            return "All 500 Founding Member spots have been claimed."
         }
     }
 }

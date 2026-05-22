@@ -63,7 +63,12 @@ enum Theme {
                 ? UIColor(Color(hex: "262626"))
                 : UIColor(Color(hex: "F0F0F5"))
         })
-        
+
+        /// Translucent "glass" surface used by Discover cards. Alias to the
+        /// elevated surface (a dedicated token DiscoverView referenced but that
+        /// was never defined — added to fix the build).
+        static let glass = surfaceElevated
+
         // Text — adaptive
         static let text = Color(UIColor { traits in
             traits.userInterfaceStyle == .dark

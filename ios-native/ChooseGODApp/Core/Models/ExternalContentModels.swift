@@ -90,7 +90,7 @@ struct GutendexAuthor: Codable, Hashable {
     let death_year: Int?
 }
 
-struct GutendexFormats: Codable {
+struct GutendexFormats: Codable, Hashable {
     let html: String?
     let epub: String?
     let kindle: String?
@@ -162,8 +162,9 @@ struct ScholarlyWork: Codable, Hashable {
         return authors.prefix(3).map { $0.family ?? "Unknown" }.joined(separator: ", ")
     }
 
-    var doiURL: URL? {
-        URL(string: "https://doi.org/\(DOI)")
+    var doiURL: Foundation.URL? {
+        // Fully-qualified: this struct has a `URL` String field that shadows the type.
+        Foundation.URL(string: "https://doi.org/\(DOI)")
     }
 }
 

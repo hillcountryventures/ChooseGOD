@@ -306,12 +306,5 @@ enum AppStrings {
     }
 }
 
-// MARK: - App URLs (pre-validated, safe to force unwrap)
-enum AppURLs {
-    // swiftlint:disable force_unwrapping
-    static let privacy = URL(string: "https://choosegod.app/privacy")!
-    static let terms = URL(string: "https://choosegod.app/terms")!
-    static let support = URL(string: "mailto:support@choosegod.app")!
-    static let website = URL(string: "https://choosegod.app")!
-    // swiftlint:enable force_unwrapping
-}
+// AppURLs is defined canonically in Core/Constants/AppURLs.swift
+// (this duplicate enum caused an ambiguous-lookup build error — removed).

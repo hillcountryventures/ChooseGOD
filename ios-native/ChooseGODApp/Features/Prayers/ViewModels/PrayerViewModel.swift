@@ -100,14 +100,21 @@ final class PrayerViewModel: ObservableObject {
 
     // MARK: - Mark as Answered
 
-    func markAsAnswered(_ prayer: PrayerRequest) async throws {
+    /// Marks a prayer answered with an optional testimony reflection — the
+    /// emotional core of the app. The testimony feeds the Timeline faithfulness
+    /// log + the personalization moat (the AI can reference answered prayers).
+    func markAsAnswered(_ prayer: PrayerRequest, reflection: String?) async throws {
+        let trimmed = reflection?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let testimony = (trimmed?.isEmpty == false) ? trimmed : nil
         do {
-            try await service.markAsAnswered(id: prayer.id, reflection: nil)
+            try await service.markAsAnswered(id: prayer.id, reflection: testimony)
 
             // Update in-place
             if let index = personalPrayers.firstIndex(where: { $0.id == prayer.id }) {
                 var updated = personalPrayers[index]
                 updated.status = .answered
+                updated.answeredAt = Date()
+                updated.answeredReflection = testimony
                 personalPrayers[index] = updated
             }
 
@@ -115,9 +122,13 @@ final class PrayerViewModel: ObservableObject {
             let current = UserDefaults.standard.integer(forKey: "totalAnsweredPrayers")
             UserDefaults.standard.set(current + 1, forKey: "totalAnsweredPrayers")
 
-            // Haptic + Analytics
+            // The moat should reflect the just-answered prayer on the next chat.
+            UserContextService.shared.invalidate()
+
+            // Haptic + analytics + magic moment (Decision #15 day 11-12).
             HapticManager.shared.prayerAnswered()
-            // AnalyticsService.shared.capture("prayer_answered")
+            AnalyticsService.shared.capture("prayer_answered")
+            MagicMomentsService.shared.capture(.day1112_celebration_shown)
         } catch {
             throw error
         }

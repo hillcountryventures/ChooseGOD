@@ -1,33 +1,8 @@
 import SwiftUI
 
-// MARK: - Hebrew Calendar Models (inline to avoid import issues)
-
-/// Hebrew date information
-struct HebrewDate: Codable, Hashable {
-    let gregorianDate: Date
-    let hebrewDateString: String // e.g., "18 Tevet 5784"
-    let hebrewYear: Int
-    let hebrewMonth: Int
-    let hebrewDay: Int
-
-    enum CodingKeys: String, CodingKey {
-        case gregorianDate, hebrewDateString, hebrewYear, hebrewMonth, hebrewDay
-    }
-}
-
-/// Torah portion (Parasha) information
-struct TorahPortion: Codable, Hashable {
-    let id: String // e.g., "parashat-bereishit"
-    let name: String // English name: "Parashat Bereishit"
-    let hebrewName: String // Hebrew name: "פרשת בראשית"
-    let date: Date
-    let aliyot: [String] // breakdown of the 7 readings: ["Genesis 1:1-1:5", ...]
-    var description: String? // One-line English summary of the Torah portion
-
-    enum CodingKeys: String, CodingKey {
-        case id, name, hebrewName, date, aliyot, description
-    }
-}
+// HebrewDate + TorahPortion are defined canonically in
+// Core/Models/HebrewCalendarModels.swift (these were duplicated here, causing
+// an invalid-redeclaration build error — removed).
 
 /// Card showing Hebrew date + Torah portion context
 struct CalendarContextCard: View {

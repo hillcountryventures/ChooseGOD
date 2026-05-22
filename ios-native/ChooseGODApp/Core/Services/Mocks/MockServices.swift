@@ -156,11 +156,13 @@ struct Verse: Identifiable, Codable, Equatable {
 enum SubscriptionPackage: String {
     case monthly
     case annual
-    
+    case foundingMember
+
     var displayName: String {
         switch self {
         case .monthly: return "Monthly"
         case .annual: return "Annual"
+        case .foundingMember: return "Founding Member"
         }
     }
 }

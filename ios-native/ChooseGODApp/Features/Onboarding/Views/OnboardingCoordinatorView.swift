@@ -1,17 +1,19 @@
 import SwiftUI
 
-/// Coordinator view for the enhanced onboarding flow
-/// Flow: Welcome → Quiz (4 steps) → Recommendations → Notification Setup → Done
+/// Strategy Decision #7 — collapsed onboarding flow.
+/// AgeGate (COPPA) → Welcome → GraceModeDemo → TraditionPicker → NotificationSetup → Done.
+/// The conversion paywall has been pulled out of onboarding entirely; per the
+/// resolved decisions, the paywall is shown at the conversion moment (Day 14)
+/// when the user *believes* the value, not as a blocking install-time gate.
 struct OnboardingCoordinatorView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = OnboardingViewModel()
-    @State private var showPaywallSheet = false
-    
+
     var body: some View {
         ZStack {
             Theme.Colors.background
                 .ignoresSafeArea()
-            
+
             Group {
                 switch viewModel.currentStep {
                 case .ageGate:
@@ -19,43 +21,31 @@ struct OnboardingCoordinatorView: View {
                         viewModel.advance()
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-                    
+
                 case .welcome:
                     WelcomeView {
                         viewModel.advance()
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-                    
-                case .quizLifeArea, .quizTime, .quizExperience, .quizLifeStage:
-                    PersonalizationQuizView()
-                        .transition(.asymmetric(
-                            insertion: .move(edge: viewModel.transitionDirection),
-                            removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing)
-                        ))
-                    
-                case .recommendations:
-                    RecommendationsView(viewModel: viewModel) {
+
+                case .graceModeDemo:
+                    GraceModeDemoView {
                         viewModel.advance()
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-                    
-                case .paywall:
-                    OnboardingPaywallView(
-                        onSubscribe: {
-                            showPaywallSheet = true
-                        },
-                        onSkip: {
-                            viewModel.advance()
-                        },
-                        onRestore: {
-                            Task {
-                                _ = try? await RevenueCatService.shared.restorePurchases()
-                                viewModel.advance()
-                            }
-                        }
-                    )
+
+                case .traditionPicker:
+                    PersonalizationQuizView(viewModel: viewModel) {
+                        viewModel.advance()
+                    }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-                    
+
+                case .intentionCapture:
+                    IntentionCaptureView(viewModel: viewModel) {
+                        viewModel.advance()
+                    }
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+
                 case .notificationSetup:
                     OnboardingNotificationSetupView {
                         completeOnboarding()
@@ -67,14 +57,8 @@ struct OnboardingCoordinatorView: View {
             }
             .animation(Theme.Animation.spring, value: viewModel.currentStep)
         }
-        // TODO: Fix AnalyticsService import - .onAppear { AnalyticsService.shared.screen("onboarding_coordinator") }
-        .sheet(isPresented: $showPaywallSheet) {
-            PaywallView()
-                .environment(appState)
-                .onDisappear { viewModel.advance() }
-        }
     }
-    
+
     private func completeOnboarding() {
         Task {
             await viewModel.saveAndComplete(userId: appState.currentUser?.id)

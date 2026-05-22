@@ -151,6 +151,11 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         try await requireSupabase().auth.signOut()
         try KeychainManager.delete(key: .session)
         currentUser = nil
+        // Clear cached preferences so the next signed-in user doesn't inherit
+        // the previous user's tradition, intention, or context bundle.
+        UserPreferencesService.shared.reset()
+        UserIntentionsService.shared.reset()
+        UserContextService.shared.reset()
         // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.reset()
     }
     
@@ -226,11 +231,12 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
             updatedAt: Date()
         )
         
-        // Upsert to profiles table
-        try await requireSupabase().from("profiles")
+        // Upsert to user_profiles (canonical table; non-fatal if the row/columns
+        // don't fully match — sign-in must not hard-fail on a profile write).
+        try? await requireSupabase().from("user_profiles")
             .upsert(profile)
             .execute()
-        
+
         return User(
             id: profile.id,
             email: profile.email,
@@ -240,25 +246,36 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
             createdAt: profile.createdAt
         )
     }
-    
+
     private func fetchUserProfile(authUser: Supabase.User) async throws -> User {
-        let profile: UserProfile = try await requireSupabase().from("profiles")
+        let isPremium = await RevenueCatService.shared.checkPremiumStatus()
+
+        // Try to load the profile row; fall back to an auth-derived user if the
+        // row is missing or the schema differs. Sign-in must not break here.
+        if let profile: UserProfile = try? await requireSupabase().from("user_profiles")
             .select()
             .eq("id", value: authUser.id.uuidString)
             .single()
             .execute()
-            .value
-        
-        // Also check subscription status
-        let isPremium = await RevenueCatService.shared.checkPremiumStatus()
-        
+            .value {
+            return User(
+                id: profile.id,
+                email: profile.email,
+                displayName: profile.displayName,
+                avatarUrl: profile.avatarUrl,
+                isPremium: isPremium,
+                createdAt: profile.createdAt
+            )
+        }
+
+        let fallbackName = (authUser.email?.components(separatedBy: "@").first?.capitalized) ?? "Friend"
         return User(
-            id: profile.id,
-            email: profile.email,
-            displayName: profile.displayName,
-            avatarUrl: profile.avatarUrl,
+            id: authUser.id.uuidString,
+            email: authUser.email ?? "",
+            displayName: fallbackName,
+            avatarUrl: nil,
             isPremium: isPremium,
-            createdAt: profile.createdAt
+            createdAt: Date()
         )
     }
     

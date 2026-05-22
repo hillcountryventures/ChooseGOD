@@ -20,15 +20,25 @@ struct ChatView: View {
                 Color.clear // background via .screenBackground()
                 
                 VStack(spacing: 0) {
-                    // Context bar (if context is set)
-                    if viewModel.contextDescription != nil {
+                    // Strategy Decision #14: persistent crisis disclaimer at every chat entry
+                    CrisisDisclaimer()
+
+                    // Strategy Decision #6: 3-intent picker replaces the
+                    // 10-mode mess. Hidden when a context bar (Bible/devotional)
+                    // is active so the screen doesn't compete for attention.
+                    if viewModel.contextDescription == nil {
+                        ChatIntentPicker(
+                            selected: viewModel.currentIntent,
+                            onSelect: { viewModel.setIntent($0) }
+                        )
+                    } else {
                         ChatContextBar(
                             context: viewModel.context,
                             currentMode: viewModel.currentMode,
                             onModeChange: { viewModel.setMode($0) }
                         )
                     }
-                    
+
                     // Chat quota indicator (free users)
                     if !isEffectivelyPremium {
                         quotaIndicator
@@ -45,10 +55,19 @@ struct ChatView: View {
                                 ForEach(viewModel.messages) { message in
                                     VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
                                         MessageBubble(message: message)
-                                        
+
                                         // Source verse pills
                                         if let sources = message.sources, !sources.isEmpty {
                                             SourceVersePills(sources: sources)
+                                                .padding(.horizontal, 4)
+                                        }
+
+                                        // Decision #14: render the resource card inline beneath
+                                        // assistant messages classified as tier 1 (life safety) or 2.
+                                        if message.role == .assistant,
+                                           let tier = message.crisisTier,
+                                           tier == 1 || tier == 2 {
+                                            CrisisResourceCard(tier: tier)
                                                 .padding(.horizontal, 4)
                                         }
                                     }
@@ -110,10 +129,13 @@ struct ChatView: View {
                 if let ctx = verseContext {
                     viewModel.setBibleContext(book: ctx.book, chapter: ctx.chapter, selectedVerse: ctx.selectedVerse)
                 }
-                // Load chat quota from server
+                // Load chat quota + user tradition from server (parallel)
                 if let userId = userId {
                     Task {
                         try? await ChatQuotaManager.shared.loadCount(userId: userId)
+                    }
+                    Task {
+                        await UserPreferencesService.shared.load(userId: userId)
                     }
                 }
                 if let prompt = initialPrompt {

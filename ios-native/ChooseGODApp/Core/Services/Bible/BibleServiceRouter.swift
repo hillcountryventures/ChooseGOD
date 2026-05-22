@@ -26,8 +26,23 @@ final class BibleServiceRouter: BibleServiceProtocol {
     // MARK: - BibleServiceProtocol
 
     func fetchChapter(book: String, chapter: Int, translation: BibleTranslation) async throws -> [Verse] {
-        // All current translations are from Supabase
-        return try await supabaseService.fetchChapter(book: book, chapter: chapter, translation: translation)
+        // Full-offline: if this translation is downloaded, serve from disk first
+        // (instant + works with no signal).
+        if OfflineBibleStore.shared.isDownloaded(translation),
+           let offline = OfflineBibleStore.shared.chapter(book: book, chapter: chapter, translation: translation) {
+            return offline
+        }
+
+        // Otherwise hit the network. If that fails (offline, not downloaded),
+        // make one last attempt to serve any locally cached copy before erroring.
+        do {
+            return try await supabaseService.fetchChapter(book: book, chapter: chapter, translation: translation)
+        } catch {
+            if let offline = OfflineBibleStore.shared.chapter(book: book, chapter: chapter, translation: translation) {
+                return offline
+            }
+            throw error
+        }
     }
 
     func searchVerses(query: String, translation: BibleTranslation, limit: Int) async throws -> [Verse] {

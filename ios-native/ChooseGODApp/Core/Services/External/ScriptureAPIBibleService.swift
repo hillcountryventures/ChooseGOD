@@ -19,10 +19,11 @@ final class ScriptureAPIBibleService: ScriptureAPIBibleServiceProtocol {
     private let cache = NSCache<NSString, CachedVerses>()
 
     // Bible IDs for scripture.api.bible (using default IDs; these vary by API account)
+    // Reference implementation for the keyed scripture.api.bible (not wired —
+    // BibleServiceRouter serves everything from Supabase). ESV/NLT were removed
+    // from BibleTranslation, so only the NIV mapping remains.
     private let bibleIds: [BibleTranslation: String] = [
-        .niv: "de4e12af7f28f599-02", // NIV
-        .esv: "c00fb6c7da9a67f5-01", // ESV
-        .nlt: "e4ed3d42515e3fe4-06" // NLT
+        .niv: "de4e12af7f28f599-02" // NIV
     ]
 
     private init() {
@@ -104,7 +105,16 @@ final class ScriptureAPIBibleService: ScriptureAPIBibleServiceProtocol {
             let decoder = JSONDecoder()
             let result = try decoder.decode(ScriptureApiBibleResponse.self, from: data)
 
-            return result.data.verses
+            return result.data.verses.map { v in
+                BibleVerse(
+                    id: v.id,
+                    book: v.bookName,
+                    chapter: v.chapter,
+                    verse: v.verse,
+                    text: v.verseText ?? v.text,
+                    translation: "NIV"
+                )
+            }
         } catch {
             logger.error("Failed to fetch chapter from Scripture API: \(error)")
             throw APIError.networkError

@@ -1,6 +1,68 @@
 import Foundation
 
-// MARK: - Chat Mode
+// MARK: - Chat Intent (user-facing per Decision #6)
+
+/// Strategy Decision #6 — what the user picks. The full set of `ChatMode`
+/// values still exists internally for prompt routing, but the UI surfaces
+/// just three intents.
+enum ChatIntent: String, CaseIterable, Identifiable {
+    case ask
+    case pray
+    case reflect
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .ask:     return "Ask"
+        case .pray:    return "Pray"
+        case .reflect: return "Reflect"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .ask:     return "What does Scripture say about…"
+        case .pray:    return "Help me pray about…"
+        case .reflect: return "Sit with what's on my heart"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .ask:     return "questionmark.circle"
+        case .pray:    return "hands.sparkles"
+        case .reflect: return "leaf"
+        }
+    }
+
+    /// Maps an intent + the user's typed message into the legacy ChatMode
+    /// the companion edge function expects. `reflect` auto-adapts to the
+    /// finer-grained mode based on simple text signals so the AI can switch
+    /// tone without making the user pick.
+    func resolveMode(forInput input: String = "") -> ChatMode {
+        switch self {
+        case .ask:
+            return .auto
+        case .pray:
+            return .prayer
+        case .reflect:
+            let lowered = input.lowercased()
+            if lowered.contains("thank") || lowered.contains("grateful") || lowered.contains("blessed") {
+                return .gratitude
+            }
+            if lowered.contains("sorry") || lowered.contains("forgive") || lowered.contains("confess") {
+                return .confession
+            }
+            if lowered.contains("celebrate") || lowered.contains("answered") || lowered.contains("praise") {
+                return .celebration
+            }
+            return .journal
+        }
+    }
+}
+
+// MARK: - Chat Mode (legacy / internal prompt routing)
 
 enum ChatMode: String, Codable, CaseIterable {
     case auto
@@ -57,13 +119,17 @@ struct ChatMessage: Identifiable, Codable {
     var toolsUsed: [String]?
     var celebration: CelebrationData?
     var suggestedActions: [SuggestedAction]?
-    
+    /// Strategy Decision #14 — set by the companion edge function via
+    /// `_shared/crisis-detection.ts`. 1 = life safety, 2 = serious pattern,
+    /// 3 = faith crisis, 4 = grief. Drives inline resource-card rendering.
+    var crisisTier: Int?
+
     enum MessageRole: String, Codable {
         case user
         case assistant
         case system
     }
-    
+
     init(
         id: String = UUID().uuidString,
         role: MessageRole,
@@ -73,7 +139,8 @@ struct ChatMessage: Identifiable, Codable {
         mode: ChatMode? = nil,
         toolsUsed: [String]? = nil,
         celebration: CelebrationData? = nil,
-        suggestedActions: [SuggestedAction]? = nil
+        suggestedActions: [SuggestedAction]? = nil,
+        crisisTier: Int? = nil
     ) {
         self.id = id
         self.role = role
@@ -84,6 +151,7 @@ struct ChatMessage: Identifiable, Codable {
         self.toolsUsed = toolsUsed
         self.celebration = celebration
         self.suggestedActions = suggestedActions
+        self.crisisTier = crisisTier
     }
 }
 
@@ -172,7 +240,19 @@ struct CompanionRequest: Encodable {
     let conversationHistory: [[String: String]]
     let contextMode: String
     let verseContext: VerseContextPayload?
-    
+    /// Strategy Decision #13 — sent on every chat so the companion edge
+    /// function can route to tradition-aware system prompts.
+    let tradition: String?
+    /// Decision G1 — the personalization moat. Bundle of journal summaries,
+    /// recent prayers, current intention, Days With God, etc., injected into
+    /// the system prompt so the AI grounds replies in the user's actual walk.
+    let userContext: UserContextService.Bundle?
+
+    enum CodingKeys: String, CodingKey {
+        case userId, message, conversationHistory, contextMode, verseContext, tradition
+        case userContext = "user_context"
+    }
+
     struct VerseContextPayload: Encodable {
         let book: String
         let chapter: Int
@@ -188,7 +268,11 @@ struct CompanionResponse: Decodable {
     let celebration: CelebrationData?
     let suggestedActions: [SuggestedAction]?
     let savedData: SavedData?
-    
+    /// Strategy Decision #14 — populated by `_shared/crisis-detection.ts`
+    /// when a crisis signal is detected. 1 = life safety, 2 = serious pattern,
+    /// 3 = faith crisis, 4 = grief. Nil for normal exchanges.
+    let crisisTier: Int?
+
     struct SavedData: Decodable {
         let journalId: String?
         let prayerId: String?

@@ -154,7 +154,6 @@ struct GiftRedemptionView: View {
 
             let response: RedeemResponse = try await client.functions
                 .invoke("redeem-gift", options: .init(body: request))
-                .value
 
             if response.success {
                 // Refresh subscription status

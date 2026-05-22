@@ -1,5 +1,6 @@
 import SwiftUI
 import Supabase
+import Sentry
 
 /// Main entry point for ChooseGOD iOS app
 @main
@@ -108,18 +109,28 @@ struct ChooseGODApp: App {
     // MARK: - Initialization
     
     private func initialize() async {
-        // TODO: Add Sentry iOS SDK
-        // SentrySDK.start { options in
-        //     options.dsn = Bundle.main.infoDictionary?["SENTRY_DSN"] as? String
-        //     options.tracesSampleRate = 0.2
-        // }
+        // Crash reporting (Sentry). DSN comes from Info.plist (xcconfig-backed).
+        // No-ops cleanly if the DSN isn't set (e.g. local dev).
+        if let dsn = Bundle.main.object(forInfoDictionaryKey: "SENTRY_DSN") as? String, !dsn.isEmpty {
+            SentrySDK.start { options in
+                options.dsn = dsn
+                options.tracesSampleRate = 0.2
+                #if DEBUG
+                options.environment = "debug"
+                #else
+                options.environment = "production"
+                #endif
+            }
+        }
 
-        // TODO: Initialize AnalyticsService with consent gating
-        // let analyticsConsent = UserDefaults.standard.bool(forKey: "consent_analytics")
-        // if analyticsConsent {
-        //     let posthogKey = Bundle.main.infoDictionary?["POSTHOG_API_KEY"] as? String ?? ""
-        //     AnalyticsService.shared.initialize(apiKey: posthogKey)
-        // }
+        // Analytics (PostHog), consent-gated. AnalyticsService.capture() already
+        // guards on consent internally, but we only initialize after consent so
+        // nothing is sent pre-consent.
+        let analyticsConsent = UserDefaults.standard.bool(forKey: "consent_analytics")
+        if analyticsConsent {
+            let posthogKey = (Bundle.main.object(forInfoDictionaryKey: "POSTHOG_API_KEY") as? String) ?? ""
+            AnalyticsService.shared.initialize(apiKey: posthogKey)
+        }
 
         // 1. Initialize Supabase
         do {

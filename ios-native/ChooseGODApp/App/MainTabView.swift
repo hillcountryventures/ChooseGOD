@@ -12,8 +12,7 @@ struct MainTabView: View {
                 HomeView()
                     .tag(Tab.home)
 
-                // DiscoverView() // TODO: Implement DiscoverView
-                Text("Discover")
+                DiscoverView()
                     .tag(Tab.discover)
 
                 BibleReaderView()
@@ -59,8 +58,7 @@ struct MainTabView: View {
         }
         .sheet(isPresented: .constant(appState.pendingGiftCode != nil)) {
             if let code = appState.pendingGiftCode {
-                // GiftRedemptionView(code: code) // TODO: Implement GiftRedemptionView
-                Text("Gift Code: \(code)")
+                GiftRedemptionView(code: code)
                     .environment(appState)
                     .presentationBackground(Material.ultraThinMaterial)
                     .presentationCornerRadius(32)

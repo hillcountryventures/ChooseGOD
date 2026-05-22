@@ -68,7 +68,7 @@ struct UpgradeView: View {
             VStack(spacing: 10) {
                 benefitRow(icon: "infinity", text: "Unlimited AI conversations")
                 benefitRow(icon: "sparkles", text: "10+ spiritual practice modes")
-                benefitRow(icon: "crown.fill", text: "7-day free trial")
+                benefitRow(icon: "crown.fill", text: "30-day free trial")
             }
             .padding(Theme.Spacing.mdl)
             .glassCard(cornerRadius: Theme.CornerRadius.xl)
