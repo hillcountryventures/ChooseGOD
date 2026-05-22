@@ -77,6 +77,10 @@ final class AppState {
     func signOut() async {
         do {
             try await authService.signOut()
+            // Clear per-user caches so data never leaks across accounts on a shared device.
+            UserPreferencesService.shared.reset()
+            UserIntentionsService.shared.reset()
+            UserContextService.shared.reset()
             withAnimation {
                 isAuthenticated = false
                 currentUser = nil

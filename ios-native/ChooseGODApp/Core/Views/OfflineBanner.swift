@@ -9,10 +9,10 @@ struct OfflineBanner: View {
             Text("You're offline — changes will sync when connected")
                 .font(Theme.Typography.caption)
         }
-        .foregroundStyle(.white.opacity(0.9))
+        .foregroundStyle(.white)
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.vertical, Theme.Spacing.sm)
         .frame(maxWidth: .infinity)
-        .background(Theme.Colors.secondaryText.opacity(0.8))
+        .background(Theme.Colors.primary)
     }
 }

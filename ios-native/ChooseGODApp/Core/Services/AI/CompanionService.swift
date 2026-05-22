@@ -39,12 +39,28 @@ final class CompanionService {
             )
         }
         
+        // Hydrate the user's tradition + intention lazily so they're available
+        // for the context bundle. Both load() calls are idempotent.
+        if !UserPreferencesService.shared.isLoaded {
+            await UserPreferencesService.shared.load(userId: userId)
+        }
+        if !UserIntentionsService.shared.isLoaded {
+            await UserIntentionsService.shared.load(userId: userId)
+        }
+        let tradition = UserPreferencesService.shared.tradition.rawValue
+
+        // Decision G1 — assemble the personalization bundle. Cached for 5 min
+        // so consecutive chat turns don't re-query Supabase.
+        let userContext = await UserContextService.shared.bundle(for: userId)
+
         let request = CompanionRequest(
             userId: userId,
             message: message,
             conversationHistory: history,
             contextMode: contextMode.rawValue,
-            verseContext: versePayload
+            verseContext: versePayload,
+            tradition: tradition,
+            userContext: userContext.isEmpty ? nil : userContext
         )
         
         let response: CompanionResponse = try await requireSupabase().functions.invoke(
@@ -71,7 +87,7 @@ final class CompanionService {
                     "created_at": AnyEncodable(ISO8601DateFormatter().string(from: Date()))
                 ]
                 
-                try await requireSupabase().from("chat_logs").insert(payload).execute()
+                try await requireSupabase().from("chat_interactions").insert(payload).execute()
             } catch {
                 // Silently fail — analytics should not disrupt UX
                 Logger(subsystem: "com.choosegod.app", category: "ai").error("CompanionService analytics log failed: \(error.localizedDescription)")

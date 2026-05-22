@@ -16,13 +16,23 @@ final class PaywallViewModel {
     var errorMessage: String?
     var showError = false
     var purchaseSucceeded = false
-    
-    // Offerings from RevenueCat
-    var monthlyPrice: String = "$3.99/month"
-    var annualPrice: String = "$36.00/year"
-    var annualMonthlyEquivalent: String = "$3.00/mo"
+
+    // Offerings from RevenueCat. Fallbacks match the post-grill bootstrap
+    // pricing (Decision G8): below Hallow on monthly + annual, higher Founding
+    // price filters for true believers, 30-day trial buys time for the
+    // personalization moat to compound.
+    var monthlyPrice: String = "$4.99/month"
+    var annualPrice: String = "$39.99/year"
+    var annualMonthlyEquivalent: String = "$3.33/mo"
     var hasFreeTrial = true
-    var trialDays: Int = 7
+    var trialDays: Int = 30
+
+    // Founding Member ($129 lifetime, cap 500) — Decision G8
+    var foundingPrice: String = "$129 lifetime"
+    var foundingClaimed: Int = 0
+    let foundingCap: Int = FoundingMemberService.cap
+    var foundingAvailable: Bool { foundingClaimed < foundingCap }
+    var foundingSpotsRemaining: Int { max(0, foundingCap - foundingClaimed) }
 
     // MARK: - Testimonials
     
@@ -46,36 +56,40 @@ final class PaywallViewModel {
     // MARK: - Feature Comparison
     
     static let comparisonRows: [(feature: String, free: String, premium: String)] = [
-        ("AI Conversations", "5 total", "Unlimited"),
-        ("Spiritual Practices", "3 basic", "10+ modes"),
-        ("Devotional Series", "1 active", "Unlimited"),
-        ("Verse Card Designs", "3", "12+"),
-        ("Journal Insights", "Basic", "Advanced AI"),
-        ("Export / Backup", "—", "✓"),
+        ("AI Conversations", "5 lifetime", "Unlimited"),
+        ("Grace Mode catch-ups", "Text", "Founder-voice audio"),
+        ("Devotional Series", "1 active", "Unlimited + AI-personalized"),
+        ("Spiritual Practices", "—", "Lectio, Examen, Memory SRS"),
+        ("Journal Insights", "Basic", "Monthly AI Insights"),
+        ("Bible Tools", "Bookmarks, highlights", "Cross-refs + AI explanations"),
+        ("Privacy", "Standard", "Encrypted at rest"),
+        ("Export / Backup", "—", "Full PDF journey"),
     ]
     
     // MARK: - Initialization
     
     init() {
-        // // AnalyticsService.shared.capture("paywall_presented") // TODO: Service not available // TODO: Service not available
-        Task { await loadOfferings() }
+        Task {
+            await loadOfferings()
+            await loadFoundingMemberCount()
+        }
     }
-    
+
     // MARK: - Load Offerings
-    
+
     func loadOfferings() async {
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
             let offerings = try await Purchases.shared.offerings()
             guard let current = offerings.current else { return }
-            
+
             if let monthly = current.monthly {
                 let p = monthly.storeProduct
                 monthlyPrice = p.localizedPriceString + "/month"
             }
-            
+
             if let annual = current.annual {
                 let p = annual.storeProduct
                 annualPrice = p.localizedPriceString + "/year"
@@ -86,7 +100,7 @@ final class PaywallViewModel {
                 if let str = fmt.string(from: monthlyEquiv as NSDecimalNumber) {
                     annualMonthlyEquivalent = str + "/mo"
                 }
-                
+
                 // Check for intro offer (free trial)
                 if let intro = p.introductoryDiscount, intro.paymentMode == .freeTrial {
                     hasFreeTrial = true
@@ -95,15 +109,28 @@ final class PaywallViewModel {
                     hasFreeTrial = false
                 }
             }
+
+            // Founding Member is configured as a non-consumable in App Store Connect
+            // and exposed via the offering's `lifetime` accessor in RevenueCat.
+            if let lifetime = current.lifetime {
+                foundingPrice = lifetime.storeProduct.localizedPriceString + " lifetime"
+            }
         } catch {
-            // AppLogger.subscription.error("PaywallVM failed to load offerings: \(error)") // TODO: Service not available
+            // Fallbacks above remain accurate for first paint.
         }
+    }
+
+    // MARK: - Founding Member counter
+
+    func loadFoundingMemberCount() async {
+        await FoundingMemberService.shared.loadClaimCount()
+        self.foundingClaimed = FoundingMemberService.shared.claimCount
     }
     
     // MARK: - Purchase
     
     func purchase(using service: SubscriptionServiceProtocol) async {
-        // AnalyticsService.shared.capture("purchase_tapped", properties: ["plan": String(describing: selectedPlan)]) // TODO: Service not available
+        AnalyticsService.shared.capture("purchase_tapped", properties: ["plan": String(describing: selectedPlan)])
         isPurchasing = true
         defer { isPurchasing = false }
         
@@ -111,13 +138,13 @@ final class PaywallViewModel {
             let success = try await service.purchase(package: selectedPlan)
             if success {
                 purchaseSucceeded = true
-                // AnalyticsService.shared.capture("subscription_purchased", properties: ["plan": String(describing: selectedPlan)]) // TODO: Service not available
+                AnalyticsService.shared.capture("subscription_purchased", properties: ["plan": String(describing: selectedPlan)])
             }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
-            // AnalyticsService.shared.capture("subscription_failed", properties: ["plan": String(describing: selectedPlan), "error": error.localizedDescription]) // TODO: Service not available
-            // AnalyticsService.shared.capture("error", properties: ["source": "purchase", "message": error.localizedDescription]) // TODO: Service not available
+            AnalyticsService.shared.capture("subscription_failed", properties: ["plan": String(describing: selectedPlan), "error": error.localizedDescription])
+            AnalyticsService.shared.capture("error", properties: ["source": "purchase", "message": error.localizedDescription])
         }
     }
     
@@ -138,7 +165,7 @@ final class PaywallViewModel {
         } catch {
             errorMessage = error.localizedDescription
             showError = true
-            // AnalyticsService.shared.capture("error", properties: ["source": "restore_purchase", "message": error.localizedDescription]) // TODO: Service not available
+            AnalyticsService.shared.capture("error", properties: ["source": "restore_purchase", "message": error.localizedDescription])
         }
     }
 }

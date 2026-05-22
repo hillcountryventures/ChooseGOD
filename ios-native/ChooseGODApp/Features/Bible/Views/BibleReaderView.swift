@@ -19,6 +19,8 @@ struct BibleReaderView: View {
     @State private var bookmarkedVerseNumbers: Set<Int> = []
     @State private var chapterHighlights: [VerseHighlight] = []
     @State private var showSearchSheet = false
+    @State private var showScriptureScan = false
+    @AppStorage("readerFontScale") private var readerFontScale: Double = 1.0
     
     var body: some View {
         NavigationStack {
@@ -51,6 +53,7 @@ struct BibleReaderView: View {
                                         isBookmarked: isBookmarked,
                                         highlight: highlight,
                                         isHighlightedByAudio: audioPlayer.playbackState.currentVerse == verse.verse,
+                                        fontScale: readerFontScale,
                                         onBookmarkToggle: {
                                             Task { await toggleBookmark(verse: verse) }
                                         },
@@ -122,14 +125,38 @@ struct BibleReaderView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: Theme.Spacing.sm) {
-                        // Search button
-                        Button {
-                            showSearchSheet = true
+                        // Tools menu (Search, Word Study, Scripture Scan)
+                        Menu {
+                            Button {
+                                showSearchSheet = true
+                            } label: {
+                                Label("Search Bible", systemImage: "magnifyingglass")
+                            }
+                            Menu {
+                                Button {
+                                    readerFontScale = min(1.8, readerFontScale + 0.1)
+                                } label: { Label("Larger", systemImage: "textformat.size.larger") }
+                                Button {
+                                    readerFontScale = max(0.8, readerFontScale - 0.1)
+                                } label: { Label("Smaller", systemImage: "textformat.size.smaller") }
+                                Button {
+                                    readerFontScale = 1.0
+                                } label: { Label("Reset text size", systemImage: "arrow.counterclockwise") }
+                            } label: {
+                                Label("Text size", systemImage: "textformat.size")
+                            }
+                            if FeatureFlags.scriptureScan {
+                                Button {
+                                    showScriptureScan = true
+                                } label: {
+                                    Label("Scan a verse", systemImage: "camera.viewfinder")
+                                }
+                            }
                         } label: {
-                            Image(systemName: "magnifyingglass")
+                            Image(systemName: "ellipsis.circle")
                                 .foregroundStyle(Theme.Colors.primary)
                         }
-                        .accessibilityLabel("Search Bible")
+                        .accessibilityLabel("Bible tools")
 
                         // Translation menu
                         translationMenuView
@@ -152,6 +179,10 @@ struct BibleReaderView: View {
                     verse: verseNum,
                     translation: appState.preferences.preferredTranslation.rawValue
                 )
+            }
+            .sheet(isPresented: $showScriptureScan) {
+                ScriptureScanView()
+                    .environment(appState)
             }
             .sheet(isPresented: $showSearchSheet) {
                 BibleSearchView { book, chapter in
@@ -223,6 +254,16 @@ struct BibleReaderView: View {
                 )) ?? []
             } else {
                 chapterHighlights.removeAll()
+            }
+
+            // Decision #8: opening a chapter counts as activity for Days With God.
+            // First-call-of-the-day increments the cumulative counter; subsequent
+            // calls today are no-ops inside StreakManager.
+            if let userId = appState.currentUser?.id {
+                StreakManager.shared.recordActivity(
+                    isPremium: appState.currentUser?.isPremium ?? false,
+                    userId: userId
+                )
             }
 
             // Persist reading position and record progress
@@ -375,6 +416,10 @@ struct VerseRow: View {
     var isBookmarked: Bool = false
     var highlight: VerseHighlight? = nil
     var isHighlightedByAudio: Bool = false
+    /// Reader font scale (0.8–1.8), controlled by the in-app "Aa" control.
+    /// Accessibility: lets older users enlarge scripture independent of the
+    /// system Dynamic Type setting — the #1 a11y need for a Bible app.
+    var fontScale: Double = 1.0
     var onBookmarkToggle: (() -> Void)?
     var onHighlightToggle: ((HighlightColor) -> Void)?
     var onCrossRefTap: (() -> Void)?
@@ -385,14 +430,14 @@ struct VerseRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(verse.verse)")
-                .font(Theme.Typography.verseNumber)
+                .font(.system(size: 13 * fontScale, weight: .semibold, design: .serif))
                 .foregroundStyle(isHighlightedByAudio ? Theme.Colors.accent : Theme.Colors.primary)
                 .frame(width: 28, alignment: .trailing)
 
             Text(verse.text)
-                .font(Theme.Typography.bodySerif)
+                .font(.system(size: 18 * fontScale, weight: .regular, design: .serif))
                 .foregroundStyle(Theme.Colors.text)
-                .lineSpacing(6)
+                .lineSpacing(6 * fontScale)
         }
         .padding(.horizontal)
         .padding(.vertical, Theme.Spacing.sm)
