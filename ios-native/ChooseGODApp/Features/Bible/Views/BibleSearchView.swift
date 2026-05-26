@@ -163,31 +163,30 @@ struct BibleSearchView: View {
     // MARK: - Highlighting
 
     private func highlightedText(_ text: String, query: String) -> Text {
+        guard !query.isEmpty else {
+            return Text(text).foregroundStyle(Theme.Colors.text)
+        }
         var result = Text("")
-        var remaining = text
-        let queryLower = query.lowercased()
-        let textLower = text.lowercased()
-        var currentIndex = textLower.startIndex
+        // Search and slice the SAME value so the indices are always valid. The prior
+        // version found ranges in `text.lowercased()` then used those indices to
+        // subscript `text`/`remaining` (different String instances, re-sliced each
+        // loop) — which traps or mis-highlights on multi-match or non-ASCII queries.
+        var remaining = Substring(text)
 
-        while let range = textLower[currentIndex...].range(of: queryLower, options: .caseInsensitive) {
-            let before = String(remaining[remaining.startIndex..<range.lowerBound])
-            let match = String(remaining[range])
-
+        while let range = remaining.range(of: query, options: .caseInsensitive) {
+            let before = remaining[..<range.lowerBound]
             if !before.isEmpty {
-                result = result + Text(before).foregroundStyle(Theme.Colors.text)
+                result = result + Text(String(before)).foregroundStyle(Theme.Colors.text)
             }
-            result = result + Text(match)
+            result = result + Text(String(remaining[range]))
                 .bold()
                 .foregroundStyle(Theme.Colors.primary)
-
-            remaining = String(remaining[range.upperBound...])
-            currentIndex = range.upperBound
+            remaining = remaining[range.upperBound...]
         }
 
         if !remaining.isEmpty {
-            result = result + Text(remaining).foregroundStyle(Theme.Colors.text)
+            result = result + Text(String(remaining)).foregroundStyle(Theme.Colors.text)
         }
-
         return result
     }
 }

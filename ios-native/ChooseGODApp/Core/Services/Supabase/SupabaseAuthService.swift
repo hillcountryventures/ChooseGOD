@@ -205,8 +205,19 @@ final class SupabaseAuthService: NSObject, AuthServiceProtocol {
         
         // Call Supabase edge function or RPC for account deletion
         do {
-            try await requireSupabase().rpc("delete_user_account", params: ["user_id": userId])
-                .execute()
+            struct DeleteAccountBody: Encodable {
+                let userId: String
+                let confirmation: String
+                let mode: String
+            }
+            struct DeleteAccountResponse: Decodable { let success: Bool? }
+            // The old `delete_user_account` RPC never existed. Route through the
+            // `delete-account` edge function (service-role: deletes the auth user +
+            // sweeps every user-scoped table). mode:"finalize" = immediate wipe.
+            let _: DeleteAccountResponse = try await requireSupabase().functions.invoke(
+                "delete-account",
+                options: .init(body: DeleteAccountBody(userId: userId, confirmation: "DELETE", mode: "finalize"))
+            )
         } catch {
             // TODO: Fix AnalyticsService import - // TODO: Fix AnalyticsService import - AnalyticsService.shared.capture("error", properties: ["source": "auth", "method": "delete_account", "message": error.localizedDescription])
             throw error
