@@ -46,7 +46,10 @@ struct PaywallView: View {
                     Button("Restore") {
                         Task {
                             await viewModel.restore(using: RevenueCatService.shared)
-                            if viewModel.purchaseSucceeded { dismiss() }
+                            if viewModel.purchaseSucceeded {
+                                await appState.refreshPremiumStatus()
+                                dismiss()
+                            }
                         }
                     }
                     .foregroundStyle(Theme.Colors.secondaryText)
@@ -63,7 +66,10 @@ struct PaywallView: View {
                     .day14_converted,
                     properties: ["plan": viewModel.selectedPlan.rawValue]
                 )
-                dismiss()
+                Task {
+                    await appState.refreshPremiumStatus()
+                    dismiss()
+                }
             }
         }
     }

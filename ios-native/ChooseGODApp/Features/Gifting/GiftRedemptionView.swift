@@ -156,8 +156,8 @@ struct GiftRedemptionView: View {
                 .invoke("redeem-gift", options: .init(body: request))
 
             if response.success {
-                // Refresh subscription status
-                await appState.subscriptionService.checkPremiumStatus()
+                // Refresh premium so gated features unlock immediately (no restart)
+                await appState.refreshPremiumStatus()
                 redeemSuccess = true
             } else {
                 redeemError = response.error ?? "Unable to redeem this code. It may be invalid or already used."

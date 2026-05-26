@@ -91,6 +91,16 @@ final class AppState {
         }
     }
     
+    /// Re-checks entitlements and updates `currentUser.isPremium` so premium gating
+    /// reflects a just-completed purchase / gift redemption / restore — without an
+    /// app restart. (Gated features read `currentUser?.isPremium`, which is otherwise
+    /// only set at login.)
+    @MainActor
+    func refreshPremiumStatus() async {
+        let premium = await subscriptionService.checkPremiumStatus()
+        currentUser?.isPremium = premium
+    }
+
     /// Configure notifications after authentication
     func setupNotifications() async {
         let status = await NotificationService.shared.checkPermissionStatus()
