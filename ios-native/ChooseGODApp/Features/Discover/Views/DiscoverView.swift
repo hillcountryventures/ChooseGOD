@@ -60,6 +60,9 @@ struct DiscoverView: View {
                             if !viewModel.biblicalScholarship.isEmpty {
                                 scholarshipSection
                             }
+
+                            // Clear the floating tab bar + FAB
+                            Color.clear.frame(height: Theme.Spacing.tabBarInset)
                         }
                         .padding()
                     }

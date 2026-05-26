@@ -221,6 +221,9 @@ enum Theme {
         static let lg: CGFloat = 24
         static let xl: CGFloat = 32
         static let xxl: CGFloat = 48
+        /// Bottom space a scrollable tab must reserve so its last row clears the
+        /// floating GlassTabBar + chat FAB (they overlay content, they don't inset it).
+        static let tabBarInset: CGFloat = 96
     }
     
     // MARK: - Corner Radius

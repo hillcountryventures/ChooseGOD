@@ -68,8 +68,8 @@ struct BibleReaderView: View {
                                 }
                             }
                             .padding(.vertical)
-                            // Extra padding at bottom for audio bar
-                            .padding(.bottom, audioPlayer.playbackState.currentTrack != nil ? 70 : 0)
+                            // Reserve space for the floating tab bar (+ audio bar when playing)
+                            .padding(.bottom, Theme.Spacing.tabBarInset + (audioPlayer.playbackState.currentTrack != nil ? 70 : 0))
                         }
                         .simultaneousGesture(
                             DragGesture(minimumDistance: 50)

@@ -67,7 +67,8 @@ struct PracticesHubView: View {
                 }
                 .padding(.horizontal, 20)
 
-                Spacer()
+                // Clear the floating tab bar + FAB
+                Color.clear.frame(height: Theme.Spacing.tabBarInset)
             }
             .padding(.vertical, 16)
         }

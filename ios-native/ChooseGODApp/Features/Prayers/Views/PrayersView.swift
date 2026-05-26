@@ -84,6 +84,9 @@ struct PrayersView: View {
                         Task { try? await viewModel.deletePrayer(prayer) }
                     }
                 }
+
+                // Clear the floating tab bar + FAB
+                Color.clear.frame(height: Theme.Spacing.tabBarInset)
             }
             .padding()
         }

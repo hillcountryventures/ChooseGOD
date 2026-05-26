@@ -46,6 +46,7 @@ struct InsightsView: View {
                             errorState(loadError)
                         }
                         if mode == .conversion { conversionFooter }
+                        Color.clear.frame(height: Theme.Spacing.tabBarInset)
                     }
                     .padding(20)
                 }
