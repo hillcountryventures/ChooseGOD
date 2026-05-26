@@ -77,74 +77,50 @@ import os
     // MARK: - Private Loaders
 
     private func loadLectionary() async {
-        do {
-            if let lectionary = await lectionaryService.getTodaysLectionary() {
-                await MainActor.run {
-                    self.todaysLectionary = lectionary
-                }
+        if let lectionary = await lectionaryService.getTodaysLectionary() {
+            await MainActor.run {
+                self.todaysLectionary = lectionary
             }
-        } catch {
-            logger.error("Failed to load lectionary: \(error)")
         }
     }
 
     private func loadPoetry() async {
-        do {
-            if let poem = await poetryService.getRandomDevotionalPoem() {
-                await MainActor.run {
-                    self.dailyPoem = poem
-                }
+        if let poem = await poetryService.getRandomDevotionalPoem() {
+            await MainActor.run {
+                self.dailyPoem = poem
             }
-        } catch {
-            logger.error("Failed to load poetry: \(error)")
         }
     }
 
     private func loadArtwork() async {
-        do {
-            if let artwork = await metService.searchBiblicalArtwork(query: "Jesus", limit: 5) {
-                await MainActor.run {
-                    self.biblicalArtwork = artwork
-                }
+        if let artwork = await metService.searchBiblicalArtwork(query: "Jesus", limit: 5) {
+            await MainActor.run {
+                self.biblicalArtwork = artwork
             }
-        } catch {
-            logger.error("Failed to load artwork: \(error)")
         }
     }
 
     private func loadCommentaries() async {
-        do {
-            if let books = await gutendexService.getClassicCommentaries() {
-                await MainActor.run {
-                    self.classicCommentaries = Array(books.prefix(6))
-                }
+        if let books = await gutendexService.getClassicCommentaries() {
+            await MainActor.run {
+                self.classicCommentaries = Array(books.prefix(6))
             }
-        } catch {
-            logger.error("Failed to load commentaries: \(error)")
         }
     }
 
     private func loadBooks() async {
-        do {
-            if let books = await openLibraryService.getRecommendedBibleCommentaries() {
-                await MainActor.run {
-                    self.recommendedBooks = Array(books.prefix(6))
-                }
+        if let books = await openLibraryService.getRecommendedBibleCommentaries() {
+            await MainActor.run {
+                self.recommendedBooks = Array(books.prefix(6))
             }
-        } catch {
-            logger.error("Failed to load books: \(error)")
         }
     }
 
     private func loadScholarship() async {
-        do {
-            if let works = await crossrefService.getBiblicalScholarship() {
-                await MainActor.run {
-                    self.biblicalScholarship = Array(works.prefix(5))
-                }
+        if let works = await crossrefService.getBiblicalScholarship() {
+            await MainActor.run {
+                self.biblicalScholarship = Array(works.prefix(5))
             }
-        } catch {
-            logger.error("Failed to load scholarship: \(error)")
         }
     }
 }

@@ -146,60 +146,6 @@ final class SupabaseBibleService: BibleServiceProtocol {
             .execute()
     }
     
-    // MARK: - Bookmarks
-    
-    func getBookmarks(userId: String) async throws -> [VerseBookmark] {
-        try await requireSupabase()
-            .from("verse_bookmarks")
-            .select()
-            .eq("user_id", value: userId)
-            .order("created_at", ascending: false)
-            .execute()
-            .value
-    }
-    
-    func saveBookmark(_ bookmark: VerseBookmark) async throws {
-        try await requireSupabase()
-            .from("verse_bookmarks")
-            .upsert(bookmark)
-            .execute()
-    }
-    
-    func deleteBookmark(id: String) async throws {
-        try await requireSupabase()
-            .from("verse_bookmarks")
-            .delete()
-            .eq("id", value: id)
-            .execute()
-    }
-    
-    // MARK: - Notes
-    
-    func getNotes(userId: String, book: String, chapter: Int) async throws -> [VerseNote] {
-        try await requireSupabase()
-            .from("verse_notes")
-            .select()
-            .eq("user_id", value: userId)
-            .eq("book", value: book)
-            .eq("chapter", value: chapter)
-            .execute()
-            .value
-    }
-    
-    func saveNote(_ note: VerseNote) async throws {
-        try await requireSupabase()
-            .from("verse_notes")
-            .upsert(note)
-            .execute()
-    }
-    
-    func deleteNote(id: String) async throws {
-        try await requireSupabase()
-            .from("verse_notes")
-            .delete()
-            .eq("id", value: id)
-            .execute()
-    }
 }
 
 // MARK: - Database Row Types

@@ -56,15 +56,15 @@ struct MainTabView: View {
                 .presentationBackground(Material.ultraThinMaterial)
                 .presentationCornerRadius(32)
         }
-        .sheet(isPresented: .constant(appState.pendingGiftCode != nil)) {
+        .sheet(isPresented: Binding(
+            get: { appState.pendingGiftCode != nil },
+            set: { if !$0 { appState.pendingGiftCode = nil } }
+        )) {
             if let code = appState.pendingGiftCode {
                 GiftRedemptionView(code: code)
                     .environment(appState)
                     .presentationBackground(Material.ultraThinMaterial)
                     .presentationCornerRadius(32)
-                    .onDisappear {
-                        appState.pendingGiftCode = nil
-                    }
             }
         }
     }
