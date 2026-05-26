@@ -58,13 +58,21 @@ struct AddMemoryVerseSheet: View {
                         // Verse text
                         VStack(alignment: .leading, spacing: 6) {
                             label("Verse Text")
-                            TextEditor(text: $verseText)
-                                .scrollContentBackground(.hidden)
-                                .foregroundStyle(Theme.Colors.text)
-                                .frame(minHeight: 120)
-                                .padding(Theme.Spacing.mds)
-                                .background(Theme.Colors.surface)
-                                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $verseText)
+                                    .scrollContentBackground(.hidden)
+                                    .foregroundStyle(Theme.Colors.text)
+                                    .frame(minHeight: 120)
+                                    .padding(Theme.Spacing.mds)
+                                    .background(Theme.Colors.surface)
+                                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.lg))
+                                if verseText.isEmpty {
+                                    Text("Type or paste the verse text…")
+                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                        .padding(Theme.Spacing.mds + 5)
+                                        .allowsHitTesting(false)
+                                }
+                            }
                         }
                     }
                     .padding()

@@ -41,6 +41,7 @@ struct JournalComposeView: View {
                     }
                     .padding(20)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)

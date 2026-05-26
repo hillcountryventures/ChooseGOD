@@ -160,10 +160,14 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
             } else {
-                Text("Couldn't load today's verse. Tap to open the Bible.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.Colors.secondaryText)
-                    .onTapGesture { appState.selectedTab = .bible }
+                Button {
+                    appState.selectedTab = .bible
+                } label: {
+                    Text("Couldn't load today's verse. Tap to open the Bible.")
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.primary)
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(16)

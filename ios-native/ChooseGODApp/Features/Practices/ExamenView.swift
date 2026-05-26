@@ -62,6 +62,7 @@ struct ExamenView: View {
             }
             .padding(20)
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     private var progressBar: some View {

@@ -11,6 +11,7 @@ struct PrayersView: View {
 
     @State private var showAddPrayer = false
     @State private var prayerToAnswer: PrayerRequest?
+    @State private var prayerToDelete: PrayerRequest?
     @State private var showCelebration = false
 
     private var activePrayers: [PrayerRequest] {
@@ -66,6 +67,19 @@ struct PrayersView: View {
                 guard let userId = appState.currentUser?.id else { return }
                 await viewModel.fetchPrayers(userId: userId)
             }
+            .confirmationDialog(
+                "Delete this prayer?",
+                isPresented: Binding(get: { prayerToDelete != nil }, set: { if !$0 { prayerToDelete = nil } }),
+                presenting: prayerToDelete
+            ) { prayer in
+                Button("Delete", role: .destructive) {
+                    Task { try? await viewModel.deletePrayer(prayer) }
+                    prayerToDelete = nil
+                }
+                Button("Cancel", role: .cancel) { prayerToDelete = nil }
+            } message: { _ in
+                Text("This can't be undone.")
+            }
         }
     }
 
@@ -81,7 +95,7 @@ struct PrayersView: View {
                     PrayerCard(prayer: prayer) {
                         prayerToAnswer = prayer
                     } onDelete: {
-                        Task { try? await viewModel.deletePrayer(prayer) }
+                        prayerToDelete = prayer
                     }
                 }
 
@@ -180,12 +194,17 @@ private struct PrayerCard: View {
                     .foregroundStyle(Theme.Colors.secondaryText)
                 Spacer()
                 Button(action: onMarkAnswered) {
-                    Label("Answered", systemImage: "checkmark.circle")
+                    Label("Mark answered", systemImage: "checkmark.circle.fill")
                         .font(.caption)
                         .bold()
-                        .foregroundStyle(Color.green)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Color.green)
+                        .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Mark this prayer answered")
             }
         }
         .padding(16)
@@ -260,6 +279,7 @@ private struct AnsweredPrayerSheet: View {
                     }
                     .padding(20)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             .navigationTitle("Answered")
             .navigationBarTitleDisplayMode(.inline)

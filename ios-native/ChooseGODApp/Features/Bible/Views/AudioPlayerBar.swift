@@ -54,27 +54,31 @@ struct AudioPlayerBar: View {
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
                 }
-                
+                .accessibilityLabel("Skip back 15 seconds")
+
                 Button { audioPlayer.togglePlayPause() } label: {
                     Image(systemName: audioPlayer.playbackState.status == .playing ? "pause.fill" : "play.fill")
                         .font(Theme.Typography.title3)
                         .foregroundStyle(Theme.Colors.primary)
                         .frame(width: 36, height: 36)
                 }
-                
+                .accessibilityLabel(audioPlayer.playbackState.status == .playing ? "Pause" : "Play")
+
                 Button { audioPlayer.skipForward(15) } label: {
                     Image(systemName: "goforward.15")
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.text)
                 }
+                .accessibilityLabel("Skip forward 15 seconds")
             }
-            
+
             // Expand button
             Button { withAnimation { isExpanded = true } } label: {
                 Image(systemName: "chevron.up")
                     .font(Theme.Typography.captionBold)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
+            .accessibilityLabel("Expand player")
         }
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.vertical, Theme.Spacing.smd)

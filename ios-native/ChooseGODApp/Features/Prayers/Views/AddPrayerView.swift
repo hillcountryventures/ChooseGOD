@@ -44,6 +44,7 @@ struct AddPrayerView: View {
                     }
                     .padding(20)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             .navigationTitle("New Prayer")
             .navigationBarTitleDisplayMode(.inline)

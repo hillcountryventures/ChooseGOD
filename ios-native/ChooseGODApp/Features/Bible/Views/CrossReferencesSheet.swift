@@ -40,12 +40,12 @@ struct CrossReferencesSheet: View {
             }
             .navigationTitle("\(book) \(chapter):\(verse)")
             .navigationBarTitleDisplayMode(.inline)
-            // .toolbar { // TODO: Fix ambiguous toolbar
-            //     ToolbarItem(placement: .cancellationAction) {
-            //         Button("Done") { dismiss() }
-            //             .foregroundStyle(Theme.Colors.primary)
-            //     }
-            // }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Theme.Colors.primary)
+                }
+            }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .task { await loadCrossReferences() }
         }
