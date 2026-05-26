@@ -92,3 +92,47 @@ Swift files   213 → 184   (-29 net; 30 deleted, 1 added)
 Build         PASS (iPhone 17 sim) after every tier
 P0 / P1 / P2  0 / 5 fixed / 6 fixed + 30 files removed
 ```
+
+---
+
+# Audit #2 — Deeper verified-bug pass (2026-05-26)
+
+Mandate: find **every** bug, **prove each exists**. Method: Supabase schema-parity diff
+(Swift `.from`/`.rpc`/`.invoke` vs the migrations) + build-warning triage + 3 verification
+agents whose findings were all re-confirmed by reading code (**9 agent false-positives
+rejected**). Every fix build-gated + committed.
+
+## Verified + fixed
+
+- **🔴 P0 — premium not unlocked after purchase** (commit `41f1992`). Gated features read
+  `currentUser.isPremium` (set only at login); purchase / gift / restore updated only
+  `RevenueCatService.isPremium`, so a **paying user stayed locked until an app restart**.
+  Added `AppState.refreshPremiumStatus()` wired into purchase (`PaywallView.onChange`),
+  Restore, and gift redeem.
+- **🟠 P1 — account deletion broken** (commit `c5a83d7`). `SupabaseAuthService:208` called
+  RPC `delete_user_account`, which never existed → deletion always threw. Routed through the
+  `delete-account` edge function (`auth.admin.deleteUser` + full user-table sweep), `finalize` mode.
+- **🟠 P1 — Bible search highlight crash** (commit `c5a83d7`). `highlightedText` used
+  `text.lowercased()` indices to subscript a different, re-sliced `String` → trap/corruption
+  on multi-match or non-ASCII queries. Rewritten to search + slice one `Substring`.
+- **🟡 P2** (commit `143af7d`): deleted 6 dead `SupabaseBibleService` bookmark/note methods
+  (queried non-existent `verse_bookmarks`/`verse_notes`); removed 6 dead `catch` blocks in
+  `DiscoverViewModel`; replaced the gift-sheet `.constant` binding with a proper read-write `Binding`.
+
+## Documented, not fixed (gated/dormant)
+**Groups/Pastor/Church backend was never migrated.** `GroupService` queries
+`bible_study_groups`, `group_members`, `group_discussions`, `group_reading_plans`,
+`group_prayer_requests` + RPC `increment_prayer_count` — none exist in any migration. The
+feature is FeatureFlag-gated OFF and unreachable, so not a v1.2 defect; reviving it requires
+those migrations (or delete the feature).
+
+## Rejected false positives (verified safe)
+VerseOfTheDayWidget date `!` · InsightsViewModel dict `!` (guard-initialized) · `User.initials`
+(guarded) · OfflineBibleStore `urls(...)[0]` · `ScholarlyWork.displayTitle` (`??` safe) ·
+`GroupService.randomElement()!` (non-empty literal) · `SupabaseGlobal` `fatalError` (defensive) ·
+gift-sheet "won't re-present" (the `.constant` re-evaluates) · **column-level schema parity:
+all 24 live tables ✓**.
+
+## Health (after Audit #2)
+Build PASS (iPhone 17 sim) after every tier. Verified: **1 P0 · 2 P1 · 4 P2**. Commits:
+`41f1992` (P0) · `c5a83d7` (P1) · `143af7d` (P2).
