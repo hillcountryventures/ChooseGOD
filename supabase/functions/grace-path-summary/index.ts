@@ -5,7 +5,7 @@
 // chapters a user has missed, allowing them to catch up without guilt.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuthedUser } from "../_shared/auth.ts";
 import OpenAI from "https://esm.sh/openai@4";
 
 const corsHeaders = {
@@ -45,16 +45,17 @@ serve(async (req) => {
       throw new Error("OPENAI_API_KEY not configured");
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Identity from the verified JWT, never the body (was an IDOR over service-role).
+    const auth = await requireAuthedUser(req, corsHeaders);
+    if (auth instanceof Response) return auth;
+    const { userId, admin: supabase } = auth;
 
     const openai = new OpenAI({ apiKey: openaiApiKey });
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse request
-    const { userId, progressId, missedSections, preferredTranslation = "KJV" }: GracePathRequest = await req.json();
+    // Parse request (userId comes from the JWT above, not the body)
+    const { progressId, missedSections, preferredTranslation = "KJV" }: GracePathRequest = await req.json();
 
-    if (!userId || !progressId || !missedSections || missedSections.length === 0) {
+    if (!progressId || !missedSections || missedSections.length === 0) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

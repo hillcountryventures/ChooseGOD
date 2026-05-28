@@ -12,7 +12,7 @@
 // taken a pastor 8+ hours to write by hand.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuthedUser } from "../_shared/auth.ts";
 import OpenAI from "https://esm.sh/openai@4";
 
 const corsHeaders = {
@@ -71,20 +71,22 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    // Identity from the verified JWT, never the body — the body userId also drove
+    // the premium gate below (Pro-bypass) and was an IDOR over the service role.
+    const auth = await requireAuthedUser(req, corsHeaders);
+    if (auth instanceof Response) return auth;
+    const { userId, admin: supabase } = auth;
+
     const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY")! });
 
-    const body: GenerateRequest = await req.json();
-    const { userId, topic } = body;
+    const body: GenerateRequest = await req.json().catch(() => ({} as GenerateRequest));
+    const { topic } = body;
     const durationDays = Math.min(body.durationDays ?? DEFAULT_DAYS, MAX_DAYS);
     const maturityLevel = body.maturityLevel ?? "growing";
 
-    if (!userId || !topic) {
+    if (!topic) {
       return new Response(
-        JSON.stringify({ error: "userId and topic required" }),
+        JSON.stringify({ error: "topic required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
