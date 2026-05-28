@@ -15,6 +15,8 @@ struct PrivacyCenterView: View {
     @State private var showDeleteConfirm = false
     @State private var isExporting = false
     @State private var exportError: String?
+    @State private var deletionError: String?
+    @State private var deletionScheduled = false
 
     var body: some View {
         NavigationStack {
@@ -51,6 +53,14 @@ struct PrivacyCenterView: View {
             .alert("Export error", isPresented: .constant(exportError != nil)) {
                 Button("OK") { exportError = nil }
             } message: { Text(exportError ?? "") }
+            .alert("Deletion error", isPresented: .constant(deletionError != nil)) {
+                Button("OK") { deletionError = nil }
+            } message: { Text(deletionError ?? "") }
+            .alert("Account scheduled for deletion", isPresented: $deletionScheduled) {
+                Button("OK") {}
+            } message: {
+                Text("Your account will be permanently deleted in 24 hours. You can cancel anytime before then from this screen.")
+            }
         }
     }
 
@@ -208,13 +218,24 @@ struct PrivacyCenterView: View {
     @MainActor
     private func requestDeletion() async {
         guard let userId = appState.currentUser?.id else { return }
-        guard let supabase = try? SupabaseManager.shared.requireClient() else { return }
-        struct Body: Encodable { let user_id: String }
-        _ = try? await supabase.functions.invoke(
-            "delete-account",
-            options: .init(body: Body(user_id: userId))
-        )
-        await appState.signOut()
+        guard let supabase = try? SupabaseManager.shared.requireClient() else {
+            deletionError = "Couldn't connect. Please try again."
+            return
+        }
+        do {
+            // The edge function authenticates via the session JWT and requires the
+            // camelCase `userId`, a "DELETE" confirmation, and a mode. Use "queue"
+            // (24h grace window) to match the confirmation copy; keep the user signed
+            // in so they can cancel from this screen before finalization.
+            struct Body: Encodable { let userId: String; let confirmation: String; let mode: String }
+            _ = try await supabase.functions.invoke(
+                "delete-account",
+                options: .init(body: Body(userId: userId, confirmation: "DELETE", mode: "queue"))
+            )
+            deletionScheduled = true
+        } catch {
+            deletionError = "Couldn't schedule deletion. Please try again."
+        }
     }
 }
 
