@@ -8,6 +8,7 @@ import {
   detectCrisisSignals,
   buildCrisisPromptAddition,
 } from "../_shared/crisis-detection.ts";
+import { getOptionalAuthedUserId } from "../_shared/auth.ts";
 
 // =====================================================
 // Server-Side Subscription Verification
@@ -1489,7 +1490,11 @@ serve(async (req) => {
     } = await req.json();
 
     // Normalize parameters (support both snake_case and camelCase)
-    const normalizedUserId = user_id || userId;
+    // Identity from the verified JWT, never the request body. A body user_id over
+    // the service-role client was an IDOR (read/write any user's prayers, journal,
+    // confessions). Anonymous callers (no valid user JWT) → null → no personal
+    // context, no personal writes. Both the RN stream and native invoke send the JWT.
+    const normalizedUserId = await getOptionalAuthedUserId(req);
     const normalizedHistory = conversation_history.length > 0 ? conversation_history : conversationHistory;
     const normalizedMode = context_mode !== "auto" ? context_mode : (contextMode || "auto");
     const normalizedWitLevel = (wit_level || witLevel || "medium") as WitLevel;

@@ -59,3 +59,26 @@ export async function requireAuthedUser(
 
   return { userId: data.user.id, admin };
 }
+
+/**
+ * Optional variant: returns the verified user id when a valid USER JWT is present,
+ * else null (anonymous). NEVER trusts a body-supplied id. Use for endpoints that
+ * allow anonymous use but must not let a caller act as another user. An anon-key
+ * Bearer token resolves to null (it has no user), i.e. treated as anonymous.
+ */
+export async function getOptionalAuthedUserId(req: Request): Promise<string | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return null;
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return null;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const admin = createClient(supabaseUrl, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data?.user) return null;
+  return data.user.id;
+}

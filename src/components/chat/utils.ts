@@ -4,6 +4,7 @@
  */
 
 import { ChatContext } from '../../types';
+import { supabase } from '../../lib/supabase';
 
 // Wit level type
 export type WitLevel = 'low' | 'medium' | 'high';
@@ -230,6 +231,12 @@ export async function streamCompanionResponse(
   let attempt = 0;
   let lastError: Error | null = null;
 
+  // Authenticate the stream with the user's session JWT (not the anon key) so the
+  // companion function derives identity from the verified token, not the request
+  // body. Falls back to the anon key for anonymous use.
+  const { data: { session } } = await supabase.auth.getSession();
+  const authToken = session?.access_token ?? supabaseAnonKey;
+
   while (attempt <= MAX_RETRIES) {
     // Check if user cancelled before attempting
     if (signal?.aborted) {
@@ -296,7 +303,7 @@ export async function streamCompanionResponse(
         eventSource = new EventSource(functionUrl, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Authorization': `Bearer ${authToken}`,
             'apikey': supabaseAnonKey,
           },
           method: 'POST',
