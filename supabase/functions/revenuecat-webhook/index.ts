@@ -18,7 +18,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHmac } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,6 +202,25 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Idempotency: RevenueCat retries deliveries. Claim this event id first; a
+    // duplicate-key conflict means we already processed it — ack and skip so a
+    // replay can't re-run the subscription upsert / grants.
+    if (event.id) {
+      const { error: dedupeError } = await supabase
+        .from("processed_webhook_events")
+        .insert({ event_id: event.id, event_type: event.type });
+      if (dedupeError?.code === "23505") {
+        console.log(`[Webhook] Duplicate event ${event.id} — already processed, skipping`);
+        return new Response(
+          JSON.stringify({ success: true, duplicate: true, event_id: event.id }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (dedupeError) {
+        console.warn("[Webhook] dedup insert error (continuing):", dedupeError.message);
+      }
+    }
 
     // Get status from event
     const { status, isActive } = getStatusFromEvent(event.type);
