@@ -12,8 +12,8 @@
 // - Honors tradition context per Decision #13.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import OpenAI from "https://esm.sh/openai@4";
+import { requireAuthedUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -72,20 +72,17 @@ serve(async (req) => {
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("OPENAI_API_KEY not configured");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Identity comes from the verified JWT, never the request body. Reading a
+    // body `userId` here over the service-role client was an IDOR (any caller
+    // could read/overwrite any user's journal, prayers, highlights, insights).
+    const auth = await requireAuthedUser(req, corsHeaders);
+    if (auth instanceof Response) return auth;
+    const { userId, admin: supabase } = auth;
+
     const openai = new OpenAI({ apiKey: openaiKey });
 
-    const body: RequestBody = await req.json();
-    const { userId, tradition, force } = body;
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: "userId required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const body: RequestBody = await req.json().catch(() => ({} as RequestBody));
+    const { tradition, force } = body;
 
     // ---- Cache lookup ----
     if (!force) {
