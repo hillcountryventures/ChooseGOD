@@ -11,7 +11,7 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuthedUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,21 +36,21 @@ serve(async (req) => {
   }
 
   try {
-    const payload: RedeemRequest = await req.json();
-    const code = (payload.code ?? "").trim().toUpperCase();
-    const userId = payload.userId;
+    // Identity from the verified JWT, never the body — otherwise a caller could
+    // redeem a code into another account (p_user_id was body-supplied + service-role).
+    const auth = await requireAuthedUser(req, corsHeaders);
+    if (auth instanceof Response) return auth;
+    const { userId, admin: supabase } = auth;
 
-    if (!code || !userId) {
+    const payload: RedeemRequest = await req.json().catch(() => ({} as RedeemRequest));
+    const code = (payload.code ?? "").trim().toUpperCase();
+
+    if (!code) {
       return new Response(
-        JSON.stringify({ success: false, error: "Missing code or userId" }),
+        JSON.stringify({ success: false, error: "Missing code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     const { data, error } = await supabase.rpc("redeem_gift_code_atomic", {
       p_code: code,
