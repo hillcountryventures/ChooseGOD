@@ -62,7 +62,9 @@ targets:
       properties:
         com.apple.developer.applesignin:
           - Default
-        aps-environment: development
+        com.apple.developer.associated-domains:
+          - applinks:choosegod.app
+        aps-environment: production
         keychain-access-groups:
           - $(AppIdentifierPrefix)com.choosegod.app
         com.apple.security.application-groups:
