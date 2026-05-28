@@ -1520,6 +1520,15 @@ serve(async (req) => {
       );
     }
 
+    // Cap input length — bound OpenAI cost + block prompt-stuffing abuse.
+    const MAX_MESSAGE_CHARS = 4000;
+    if (message.length > MAX_MESSAGE_CHARS) {
+      return new Response(
+        JSON.stringify({ error: `Message too long (max ${MAX_MESSAGE_CHARS} characters).` }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Initialize clients
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -1634,6 +1643,56 @@ serve(async (req) => {
         // Non-fatal. We still want to respond to the user even if logging fails.
         console.warn("[crisis] failed to log flag", flagErr);
       }
+    }
+
+    // TIER 1 — deterministic life-safety response. Do NOT rely on the LLM to
+    // surface crisis resources: a jailbreak or an injected system turn could
+    // suppress them. Return the hotlines directly (in the client's format),
+    // before any model/RAG call, so they ALWAYS reach the user.
+    if (crisis.tier === 1) {
+      const crisisText = [
+        "I hear you, and what you're feeling right now matters. You don't have to carry this alone.",
+        "",
+        "Please reach out right now — people are ready to help, 24/7:",
+        "• Call or text 988 (Suicide & Crisis Lifeline)",
+        "• Text HOME to 741741 (Crisis Text Line)",
+        "• National Domestic Violence Hotline: 1-800-799-7233",
+        "• If you are in immediate danger, call 911.",
+        "",
+        "\"The LORD is near to the brokenhearted and saves the crushed in spirit.\" — Psalm 34:18",
+        "",
+        "Would you call someone you trust tonight? You matter, and you don't have to face this by yourself.",
+      ].join("\n");
+      const crisisThreadId = crypto.randomUUID();
+
+      if (stream) {
+        const enc = new TextEncoder();
+        const readable = new ReadableStream({
+          start(controller) {
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: "meta", sources: [], suggestedActions: [], thread_id: crisisThreadId, crisis_tier: 1 })}\n\n`));
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: "content", content: crisisText })}\n\n`));
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: "done", fullResponse: crisisText })}\n\n`));
+            controller.close();
+          },
+        });
+        return new Response(readable, {
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          response: crisisText,
+          sources: [],
+          toolsUsed: [],
+          celebration: null,
+          suggestedActions: [],
+          savedData: null,
+          thread_id: crisisThreadId,
+          crisis_tier: 1,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
     }
 
     // Gather user context (use default if no user_id)
