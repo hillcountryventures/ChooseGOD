@@ -2,7 +2,26 @@
 
 **Audit Date:** January 9, 2026
 **Audit Type:** Comprehensive Re-audit After Credential Rotation
-**Status:** ✅ **SECURE - All Issues Resolved**
+**Status:** ⚠️ **PARTIALLY FALSE — see correction below**
+
+---
+
+> ## ⛔ CORRECTION (2026-05-27, gauntlet audit)
+> **This report's "git history is clean" conclusion is PROVABLY FALSE.**
+> `git show c8a6f04:supabase/scripts/run-migration.js` still contains a live JWT with
+> `"role":"service_role"` (exp 2036) — a full-RLS-bypass admin key. The original scan only
+> grepped *tracked working-tree* files and checked history for `.env` /
+> `.claude/settings.local.json` only; it never scanned the historical blob of
+> `run-migration.js`. The working tree was cleaned (commit `75a30f5`) but **the key remains
+> reachable in git history.**
+>
+> **REQUIRED ACTION (treat the project as compromised until done):**
+> 1. Rotate the `service_role` key — Supabase Dashboard → Settings → API (deletion ≠ invalidation).
+> 2. Rotate the RevenueCat webhook secret + Supabase anon key too.
+> 3. Scrub history (`git filter-repo` / BFG) AFTER rotation.
+>
+> Do not trust the ✅ marks below until re-verified with
+> `git log --all -p | grep -c '"role":"service_role"'` returning 0.
 
 ---
 
@@ -136,21 +155,19 @@ const supabaseUrl = 'https://project.supabase.co';
 
 ## Git History Verification
 
-### ✅ Clean History
+### ⛔ NOT Clean — service_role key in history (corrected 2026-05-27)
 
-Verified that sensitive files were never committed:
+The original check only looked at `.env` and `.claude/settings.local.json`. It MISSED
+`supabase/scripts/run-migration.js`, which committed a live service_role JWT:
 
 ```bash
-# .env was never in git history
-git log --all --full-history -- .env
-# Result: Empty (never committed) ✅
-
-# .claude/settings.local.json was never in git history
-git log --all --full-history -- .claude/settings.local.json
-# Result: Empty (never committed) ✅
+git show c8a6f04:supabase/scripts/run-migration.js | grep -o '"role":"service_role"'
+# Result: "role":"service_role"   ❌  (exp 2036 — still valid)
+git log --all --oneline -- supabase/scripts/run-migration.js
+# c8a6f04, 75a30f5   ❌ (added, then removed from the WORKING TREE — not from history)
 ```
 
-**Verdict:** No secrets in git history. No need for history rewriting.
+**Verdict:** History is NOT clean. History rewriting IS required — AFTER rotating the key.
 
 ---
 
